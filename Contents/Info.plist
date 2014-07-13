@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+    <dict>
+        <key>CFBundleDevelopmentRegion</key>
+        <string>English</string>
+        <key>CFBundleExecutable</key>
+        <string>Test Plug-in</string>
+        <key>CFBundleIdentifier</key>
+        <string>com.plexapp.agents.subliminal</string>
+        <key>CFBundleInfoDictionaryVersion</key>
+        <string>6.0</string>
+        <key>CFBundleShortVersionString</key>
+        <string>1.0</string>
+        <key>CFBundleSignature</key>
+        <string>????</string>
+        <key>CFBundleVersion</key>
+        <string>1.0</string>
+        <key>PlexFrameworkVersion</key>
+        <string>2</string>
+        <key>PlexPluginClass</key>
+        <string>Agent</string>
+        <key>PlexPluginMode</key>
+        <string>AlwaysOn</string>
+        <key>PlexPluginConsoleLogging</key>
+        <string>1</string>
+        <key>PlexPluginDevMode</key>
+        <string>1</string>
+         <key>PlexPluginCodePolicy</key>
+            <!-- this allows channels to access some python methods which are otherwise blocked, as well as import external code libraries, and interact with the PMS HTTP API -->     
+            <string>Elevated</string>
+    </dict>
+</plist>
