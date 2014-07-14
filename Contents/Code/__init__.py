@@ -3,8 +3,8 @@
 import string, os, urllib, zipfile, re, copy
 from babelfish import Language
 from datetime import timedelta
-from subliminal import api
-
+import subliminal
+import logger
 
 OS_PLEX_USERAGENT = 'plexapp.com v9.0'
 subtitleExt       = ['utf','utf8','utf-8','sub','srt','smi','rt','ssa','aqt','jss','ass','idx']
@@ -13,11 +13,13 @@ langPrefs2Podnapisi = {'sq':'29','ar':'12','be':'50','bs':'10','bg':'33','ca':'5
 
 mediaCopies = {}
 
+DEPENDENCY_MODULE_NAMES = ['subliminal', 'enzyme', 'guessit', 'requests']
 
 def Start():
     HTTP.CacheTime = 0
     HTTP.Headers['User-agent'] = OS_PLEX_USERAGENT
-    Log.Debug("START CALLED")
+    Log.Debug("START  CALLED")
+    logger.registerLoggingHander(DEPENDENCY_MODULE_NAMES)
 
 def ValidatePrefs():
     Log.Debug("Validate Prefs called.")
@@ -53,6 +55,8 @@ class SubliminalSubtitlesAgentMovies(Agent.Movies):
 
 
 class SubliminalSubtitlesAgentTvShows(Agent.TV_Shows):
+    
+    providers = ['opensubtitles']
     name = 'Subliminal TV Subtitles'
     languages = [Locale.Language.English]
     primary_provider = False
@@ -60,6 +64,8 @@ class SubliminalSubtitlesAgentTvShows(Agent.TV_Shows):
 
     def search(self, results, media, lang):
         Log.Debug("TV SEARCH CALLED")
+        results.Append(MetadataSearchResult(id = 'null', score = 100))
+
         
     def update(self, metadata, media, lang):
         videos= []
@@ -69,8 +75,14 @@ class SubliminalSubtitlesAgentTvShows(Agent.TV_Shows):
                 for item in media.seasons[season].episodes[episode].items:
                     for part in item.parts:
                         Log.Debug("Append: %s" % part.file)
-                        videos.append(subliminal.video.Video(part.file))
+                        try:
+                            scannedVideo = subliminal.video.scan_video(part.file)
+                        except ValueError:
+                            Log.Warn("File could not be guessed by subliminal")
+                            continue
+                        
+                        videos.append(scannedVideo)
                      
-        subliminal.api.list_subtitles(vdeos,Language('eng'),age=timedelta(weeks=1))
-
+        result = subliminal.api.list_subtitles(videos,{Language('eng')}, self.providers)
+        Log.Debug(result)
         
