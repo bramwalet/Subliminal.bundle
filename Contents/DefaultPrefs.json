@@ -1,0 +1,60 @@
+[
+		{
+                "id": "provider.opensubtitles",
+                "label": "Enable OpenSubtitles",
+                "type": "bool",
+                "default": "true"
+        },
+		{
+                "id": "provider.thesubdb",
+                "label": "Enable TheSubDB",
+                "type": "bool",
+                "default": "true"
+        },
+		{
+                "id": "provider.podnapisi",
+                "label": "Enable Podnapisi.NET",
+                "type": "bool",
+                "default": "true"
+        },
+		{
+                "id": "provider.addic7ed",
+                "label": "Enable Addic7ed",
+                "type": "bool",
+                "default": "true"
+        },
+		{
+                "id": "provider.tvsubtitles",
+                "label": "Enable TVsubtitles.net",
+                "type": "bool",
+                "default": "true"
+        },
+		{
+                "id": "provider.addic7ed.username",
+                "label": "Addic7ed Username",
+                "type": "text",
+                "default": "Username"
+        },
+        {
+                "id": "provider.addic7ed.password",
+                "label": "Addic7ed Password",
+                "type": "text",
+                "option": "hidden",
+                "default": "",
+                "secure": "true" 
+        },
+        {
+                "id": "langPref1",
+                "label": "Subtitle Language (1)",
+                "type": "enum",
+                "values": ["sq","ar","be","bs","bg","ca","zh","cs","da","nl","en","et","fi","fr","de","el","he","hi","hu","is","id","it","ja","ko","lv","lt","mk","ms","no","pl","pt","ro","ru","sr","sk","sl","es","sv","th","tr","uk","vi","hr"],
+                "default": "en"
+        },
+        {
+                "id": "langPref2",
+                "label": "Subtitle Language (2)",
+                "type": "enum",
+                "values": ["None", "sq","ar","be","bs","bg","ca","zh","cs","da","nl","en","et","fi","fr","de","el","he","hi","hu","is","id","it","ja","ko","lv","lt","mk","ms","no","pl","pt","ro","ru","sr","sk","sl","es","sv","th","tr","uk","vi","hr"],
+                "default": "None"
+        }            
+]
