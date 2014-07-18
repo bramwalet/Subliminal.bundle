@@ -10,21 +10,6 @@ OS_PLEX_USERAGENT = 'plexapp.com v9.0'
 
 DEPENDENCY_MODULE_NAMES = ['subliminal', 'enzyme', 'guessit', 'requests']
 
-SUPPORTED_PROVIDERS = ['opensubtitles', 'thesubdb', 'podnapisi', 'addic7ed', 'tvsubtitles']
-
-ENABLED_PROVIDERS = {'opensubtitles' : Prefs['provider.opensubtitles'],
-                     'thesubdb' : Prefs['provider.thesubdb'],
-                     'podnapisi' : Prefs['provider.podnapisi'],
-                     'addic7ed' : Prefs['provider.addic7ed'],
-                     'tvsubtitles' : Prefs['provider.tvsubtitles']
-                     }
-# dict((key,value) for key, value in a.iteritems() if key == 1)
-SUPPORTED_PROVIDER_SETTINGS = {'addic7ed': { 
-                                            'username': Prefs['provider.addic7ed.username'], 
-                                            'password': Prefs['provider.addic7ed.password']
-                                            }
-                               }
-
 def Start():
     HTTP.CacheTime = 0
     HTTP.Headers['User-agent'] = OS_PLEX_USERAGENT
