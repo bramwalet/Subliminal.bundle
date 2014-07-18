@@ -66,6 +66,7 @@ class SubliminalSubtitlesAgentMovies(Agent.Movies):
 
 
     def update(self, metadata, media, lang):
+        videos = []
         Log.Debug("MOVIE UPDATE CALLED")
         for item in media.items:
             for part in item.parts:
