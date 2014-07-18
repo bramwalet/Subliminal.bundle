@@ -30,6 +30,7 @@ def Start():
     HTTP.Headers['User-agent'] = OS_PLEX_USERAGENT
     Log.Debug("START CALLED")
     logger.registerLoggingHander(DEPENDENCY_MODULE_NAMES)
+    subliminal.cache_region.configure('dogpile.cache.memory')
 
 def ValidatePrefs():
     Log.Debug("Validate Prefs called.")
