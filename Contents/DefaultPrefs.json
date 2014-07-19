@@ -58,6 +58,17 @@
                 "default": "true"
         },
         {
+                "id": "subtitles.scan.embedded",
+                "label": "Scan embedded subtitles",
+                "type": "bool",
+                "default": "false"
+        },
+        {
+                "id": "subtitles.scan.external",
+                "label": "Scan external subtitles",
+                "type": "bool",
+                "default": "false"
+        },        {
                 "id": "subtitles.save.filesystem",
                 "label": "Store subtitles next to media files (instead of metadata)",
                 "type": "bool",
