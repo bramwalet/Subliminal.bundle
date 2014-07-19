@@ -19,4 +19,4 @@ Uses the following libraries and their LICENSE:
 - [stevedore](https://pypi.python.org/pypi/stevedore/) (Apache)
 - [subliminal](https://pypi.python.org/pypi/subliminal/) (MIT)
 - [xdg](https://pypi.python.org/pypi/pyxdg/) (LGPLv2)
-- [setuptoos](https://pypi.python.org/pypi/setuptools/) (PSF ZPL)
+- [setuptools](https://pypi.python.org/pypi/setuptools/) (PSF ZPL)
