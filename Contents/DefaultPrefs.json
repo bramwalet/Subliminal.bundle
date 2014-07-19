@@ -1,30 +1,30 @@
 [
 		{
-                "id": "provider.opensubtitles",
+                "id": "provider.opensubtitles.enabled",
                 "label": "Enable OpenSubtitles",
                 "type": "bool",
                 "default": "true"
         },
 		{
-                "id": "provider.thesubdb",
+                "id": "provider.thesubdb.enabled",
                 "label": "Enable TheSubDB",
                 "type": "bool",
                 "default": "true"
         },
 		{
-                "id": "provider.podnapisi",
+                "id": "provider.podnapisi.enabled",
                 "label": "Enable Podnapisi.NET",
                 "type": "bool",
                 "default": "true"
         },
 		{
-                "id": "provider.addic7ed",
+                "id": "provider.addic7ed.enabled",
                 "label": "Enable Addic7ed",
                 "type": "bool",
                 "default": "true"
         },
 		{
-                "id": "provider.tvsubtitles",
+                "id": "provider.tvsubtitles.enabled",
                 "label": "Enable TVsubtitles.net",
                 "type": "bool",
                 "default": "true"

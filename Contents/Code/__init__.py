@@ -10,26 +10,12 @@ OS_PLEX_USERAGENT = 'plexapp.com v9.0'
 
 DEPENDENCY_MODULE_NAMES = ['subliminal', 'enzyme', 'guessit', 'requests']
 
-SUPPORTED_PROVIDERS = ['opensubtitles', 'thesubdb', 'podnapisi', 'addic7ed', 'tvsubtitles']
-
-ENABLED_PROVIDERS = {'opensubtitles' : Prefs['provider.opensubtitles'],
-                     'thesubdb' : Prefs['provider.thesubdb'],
-                     'podnapisi' : Prefs['provider.podnapisi'],
-                     'addic7ed' : Prefs['provider.addic7ed'],
-                     'tvsubtitles' : Prefs['provider.tvsubtitles']
-                     }
-# dict((key,value) for key, value in a.iteritems() if key == 1)
-SUPPORTED_PROVIDER_SETTINGS = {'addic7ed': { 
-                                            'username': Prefs['provider.addic7ed.username'], 
-                                            'password': Prefs['provider.addic7ed.password']
-                                            }
-                               }
-
 def Start():
     HTTP.CacheTime = 0
     HTTP.Headers['User-agent'] = OS_PLEX_USERAGENT
     Log.Debug("START CALLED")
     logger.registerLoggingHander(DEPENDENCY_MODULE_NAMES)
+    # configured cache to be in memory as per https://github.com/Diaoul/subliminal/issues/303
     subliminal.cache_region.configure('dogpile.cache.memory')
 
 def ValidatePrefs():
@@ -45,15 +31,20 @@ def getLangList():
     return langList
 
 def getProviders():
-    enabledProviders = []
-    for supportedProvider in SUPPORTED_PROVIDERS:
-        if Prefs["provider." + supportedProvider]:
-            Log.Debug("Provider %s is enabled" % supportedProvider)
-            enabledProviders.append(supportedProvider)
-    return enabledProviders
+    providers = {'opensubtitles' : Prefs['provider.opensubtitles.enabled'],
+                 'thesubdb' : Prefs['provider.thesubdb.enabled'],
+                 'podnapisi' : Prefs['provider.podnapisi.enabled'],
+                 'addic7ed' : Prefs['provider.addic7ed.enabled'],
+                 'tvsubtitles' : Prefs['provider.tvsubtitles.enabled']
+                 }
+    return filter(lambda prov: providers[prov], providers)
 
 def getProviderSettings():
-    return SUPPORTED_PROVIDER_SETTINGS
+    provider_settings = {'addic7ed': {'username': Prefs['provider.addic7ed.username'], 
+                                      'password': Prefs['provider.addic7ed.password']
+                                      }
+                         }
+    return provider_settings
 
 class SubliminalSubtitlesAgentMovies(Agent.Movies):
     name = 'Subliminal Movie Subtitles'
