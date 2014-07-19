@@ -13,7 +13,7 @@ DEPENDENCY_MODULE_NAMES = ['subliminal', 'enzyme', 'guessit', 'requests']
 def Start():
     HTTP.CacheTime = 0
     HTTP.Headers['User-agent'] = OS_PLEX_USERAGENT
-    Log.Debug("START CALLED.")
+    Log.Debug("START CALLED")
     logger.registerLoggingHander(DEPENDENCY_MODULE_NAMES)
     # configured cache to be in memory as per https://github.com/Diaoul/subliminal/issues/303
     subliminal.cache_region.configure('dogpile.cache.memory')
@@ -46,31 +46,57 @@ def getProviderSettings():
                          }
     return provider_settings
 
+def scanTvMedia(media):
+    videos = []
+    for season in media.seasons:
+        for episode in media.seasons[season].episodes:
+            for item in media.seasons[season].episodes[episode].items:
+                for part in item.parts:
+                    videos.append(scanVideo(part))
+    return videos
+
+def scanMovieMedia(media):
+    videos = []
+    for item in media.items:
+        for part in item.parts:
+            videos.append(scanVideo(part))
+    return videos
+
+def scanVideo(part):
+    Log.Debug("Scanning video: %s" % part.file)
+    try:
+        scannedVideo = subliminal.video.scan_video(part.file, subtitles=True, embedded_subtitles=True)
+    except ValueError:
+        Log.Warn("File could not be guessed by subliminal")
+    return scannedVideo
+
+
+def downloadBestSubtitles(videos):
+    return subliminal.api.download_best_subtitles(videos, getLangList(), getProviders(), getProviderSettings())
+
 def saveSubtitles(subtitles):
+    saveSubtitlesToFile(subtitles)
+
+def saveSubtitlesToFile(subtitles):
     fld_custom = Prefs["subFolderCustom"].strip() if bool(Prefs["subFolderCustom"]) else None
     if Prefs["subFolder"] != "current folder" or fld_custom:
-
         # specific subFolder requested, create it if it doesn't exist
         for video, video_subtitles in subtitles.items():
-	    fld_base = os.path.split(video.name)[0]
-	
-	    if fld_custom:
-	        if fld_custom.startswith("/"):
-		    # absolute folder
-		    fld = fld_custom
-
-		else:
-		    fld = os.path.join(fld_base, fld_custom)
-
-	    else:
-		fld = os.path.join(fld_base, Prefs["subFolder"])
-
-	    if not os.path.exists(fld):
-		os.makedirs(fld)
-
-	    subliminal.api.save_subtitles({video: video_subtitles}, directory=fld)
+            fld_base = os.path.split(video.name)[0]
+            if fld_custom:
+                if fld_custom.startswith("/"):
+                    # absolute folder
+                    fld = fld_custom
+                else:
+                    fld = os.path.join(fld_base, fld_custom)
+            else:
+                fld = os.path.join(fld_base, Prefs["subFolder"])
+            if not os.path.exists(fld):
+                os.makedirs(fld)
+            subliminal.api.save_subtitles({video:video_subtitles}, directory=fld)
+    
     else:
-	subliminal.api.save_subtitles(subtitles)
+        subliminal.api.save_subtitles(subtitles)
 
 class SubliminalSubtitlesAgentMovies(Agent.Movies):
     name = 'Subliminal Movie Subtitles'
@@ -82,22 +108,10 @@ class SubliminalSubtitlesAgentMovies(Agent.Movies):
         Log.Debug("MOVIE SEARCH CALLED")
         results.Append(MetadataSearchResult(id='null', score=100))
 
-
     def update(self, metadata, media, lang):
-        videos = []
         Log.Debug("MOVIE UPDATE CALLED")
-        for item in media.items:
-            for part in item.parts:
-                Log.Debug("Append: %s" % part.file)
-                try:
-                    scannedVideo = subliminal.video.scan_video(part.file, subtitles=True, embedded_subtitles=True)
-                except ValueError:
-                    Log.Warn("File could not be guessed by subliminal")
-                    continue
-                
-                videos.append(scannedVideo)
-
-        subtitles = subliminal.api.download_best_subtitles(videos, getLangList(), getProviders(), getProviderSettings())
+        videos = scanMovieMedia(media)
+        subtitles = downloadBestSubtitles(videos)
         saveSubtitles(subtitles)
 
 class SubliminalSubtitlesAgentTvShows(Agent.TV_Shows):
@@ -112,23 +126,10 @@ class SubliminalSubtitlesAgentTvShows(Agent.TV_Shows):
         results.Append(MetadataSearchResult(id='null', score=100))
 
     def update(self, metadata, media, lang):
-        videos = []
         Log.Debug("TvUpdate. Lang %s" % lang)
-        for season in media.seasons:
-            for episode in media.seasons[season].episodes:
-                for item in media.seasons[season].episodes[episode].items:
-                    for part in item.parts:
-                        Log.Debug("Append: %s" % part.file)
-                        try:
-                            scannedVideo = subliminal.video.scan_video(part.file, subtitles=True, embedded_subtitles=True)
-                        except ValueError:
-                            Log.Warn("File could not be guessed by subliminal")
-                            continue
-
-                        videos.append(scannedVideo)
-
+        videos = scanTvMedia(media)
         # video.keys() if videos wil be a dictionary
-        subtitles = subliminal.api.download_best_subtitles(videos, getLangList(), getProviders(), getProviderSettings())
+        subtitles = downloadBestSubtitles(videos)
         saveSubtitles(subtitles)
         # subliminal.api.save_subtitles(subtitles)
 #         for video, video_subtitles in subtitles.items():
