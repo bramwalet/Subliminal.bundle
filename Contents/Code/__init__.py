@@ -47,7 +47,7 @@ def getProviderSettings():
     return provider_settings
 
 def saveSubtitles(subtitles):
-    fld_custom = Prefs["subFolderCustom"].strip()
+    fld_custom = Prefs["subFolderCustom"].strip() if Prefs["subFolderCustom"] else None
     if Prefs["subFolder"] != "current folder" or fld_custom:
 
         # specific subFolder requested, create it if it doesn't exist
