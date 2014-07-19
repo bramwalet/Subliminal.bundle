@@ -102,9 +102,15 @@ class SubliminalSubtitlesAgentTvShows(Agent.TV_Shows):
                         videos.append(scannedVideo)
 
         subtitles = subliminal.api.download_best_subtitles(videos, getLangList(), getProviders(), getProviderSettings())
-        for video, video_subtitles in subtitles.items():
-            path = os.path.join(os.path.split(video.name)[0], "subs")
-	    if not os.path.exists(path):
-		os.makedirs(path)
 
-            subliminal.api.save_subtitles({video: video_subtitles}, directory=path)
+	if Prefs["subFolder"] != "current folder":
+	    # specific subFolder requested, create it if it doesn't exist
+
+            for video, video_subtitles in subtitles.items():
+	        path = os.path.join(os.path.split(video.name)[0], Prefs["subFolder"])
+	        if not os.path.exists(path):
+		    os.makedirs(path)
+
+	        subliminal.api.save_subtitles({video: video_subtitles}, directory=path)
+	else:
+	    subliminal.api.save_subtitles(subtitles)

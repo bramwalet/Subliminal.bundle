@@ -56,5 +56,12 @@
                 "type": "enum",
                 "values": ["None", "sq","ar","be","bs","bg","ca","zh","cs","da","nl","en","et","fi","fr","de","el","he","hi","hu","is","id","it","ja","ko","lv","lt","mk","ms","no","pl","pt","ro","ru","sr","sk","sl","es","sv","th","tr","uk","vi","hr"],
                 "default": "None"
+        },            
+	{
+                "id": "subFolder",
+                "label": "Subtitle Folder (\"current folder\" is the folder the current media file lives in)",
+                "type": "enum",
+                "values": ["current folder", "sub", "subs", "subtitle", "subtitles"],
+                "default": "current folder"
         }            
 ]
