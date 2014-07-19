@@ -105,8 +105,8 @@ class SubliminalSubtitlesAgentTvShows(Agent.TV_Shows):
 
 	fld_custom = Prefs["subFolderCustom"].strip()
 	if Prefs["subFolder"] != "current folder" or fld_custom:
-	    # specific subFolder requested, create it if it doesn't exist
 
+	    # specific subFolder requested, create it if it doesn't exist
             for video, video_subtitles in subtitles.items():
 		fld_base = os.path.split(video.name)[0]
 		
@@ -122,7 +122,7 @@ class SubliminalSubtitlesAgentTvShows(Agent.TV_Shows):
 		    fld = os.path.join(fld_base, Prefs["subFolder"])
 
 	        if not os.path.exists(fld):
-		    os.makedirs(path)
+		    os.makedirs(fld)
 
 	        subliminal.api.save_subtitles({video: video_subtitles}, directory=fld)
 	else:
