@@ -75,8 +75,13 @@ def scanVideo(part):
 def downloadBestSubtitles(videos):
     return subliminal.api.download_best_subtitles(videos, getLangList(), getProviders(), getProviderSettings())
 
-def saveSubtitles(subtitles):
-    saveSubtitlesToFile(subtitles)
+def saveSubtitles(videos, subtitles):
+    if Prefs['subtitles.save.filesystem']:
+        Log.Debug("Saving subtitles to filesystem")
+        saveSubtitlesToFile(subtitles)
+    else:
+        Log.Debug("Saving subtitles as metadata")
+        saveSubtitlesToMetadata(videos, subtitles)
 
 def saveSubtitlesToFile(subtitles):
     fld_custom = Prefs["subtitles.save.subFolder.Custom"].strip() if bool(Prefs["subtitles.save.subFolder.Custom"]) else None
@@ -99,6 +104,12 @@ def saveSubtitlesToFile(subtitles):
     else:
         subliminal.api.save_subtitles(subtitles)
 
+def saveSubtitlesToMetadata(videos, subtitles):
+    for video, video_subtitles in subtitles.items():
+        mediaPart = videos[video]
+        for subtitle in video_subtitles: 
+            mediaPart.subtitles[Locale.Language.Match(subtitle.language.alpha2)][subtitle.page_link] = Proxy.Media(subtitle.content, ext="srt")
+
 class SubliminalSubtitlesAgentMovies(Agent.Movies):
     name = 'Subliminal Movie Subtitles'
     languages = [Locale.Language.English]
@@ -113,7 +124,7 @@ class SubliminalSubtitlesAgentMovies(Agent.Movies):
         Log.Debug("MOVIE UPDATE CALLED")
         videos = scanMovieMedia(media)
         subtitles = downloadBestSubtitles(videos.keys())
-        saveSubtitles(subtitles)
+        saveSubtitles(videos, subtitles)
 
 class SubliminalSubtitlesAgentTvShows(Agent.TV_Shows):
     
@@ -129,11 +140,5 @@ class SubliminalSubtitlesAgentTvShows(Agent.TV_Shows):
     def update(self, metadata, media, lang):
         Log.Debug("TvUpdate. Lang %s" % lang)
         videos = scanTvMedia(media)
-        # video.keys() if videos wil be a dictionary
         subtitles = downloadBestSubtitles(videos.keys())
-        saveSubtitles(subtitles)
-        # subliminal.api.save_subtitles(subtitles)
-#         for video, video_subtitles in subtitles.items():
-#             mediaPart = videos[video]
-#             for subtitle in video_subtitles: 
-#                 mediaPart.subtitles[Locale.Language.Match(subtitle.language.alpha2)][subtitle.page_link] = Proxy.Media(subtitle.content, ext="srt")
+        saveSubtitles(videos, subtitles)

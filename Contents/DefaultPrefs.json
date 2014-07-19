@@ -1,4 +1,18 @@
 [
+		{
+                "id": "provider.addic7ed.username",
+                "label": "Addic7ed Username",
+                "type": "text",
+                "default": "Username"
+        },
+        {
+                "id": "provider.addic7ed.password",
+                "label": "Addic7ed Password",
+                "type": "text",
+                "option": "hidden",
+                "default": "",
+                "secure": "true" 
+        },
         {
                 "id": "langPref1",
                 "label": "Subtitle Language (1)",
@@ -43,19 +57,11 @@
                 "type": "bool",
                 "default": "true"
         },
-		{
-                "id": "provider.addic7ed.username",
-                "label": "Addic7ed Username",
-                "type": "text",
-                "default": "Username"
-        },
         {
-                "id": "provider.addic7ed.password",
-                "label": "Addic7ed Password",
-                "type": "text",
-                "option": "hidden",
-                "default": "",
-                "secure": "true" 
+                "id": "subtitles.save.filesystem",
+                "label": "Store subtitles next to media files (instead of metadata)",
+                "type": "bool",
+                "default": "false"
         },
     	{
                 "id": "subtitles.save.subFolder",
