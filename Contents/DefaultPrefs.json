@@ -29,46 +29,60 @@
         },        
 		{
                 "id": "provider.opensubtitles.enabled",
-                "label": "Enable OpenSubtitles",
+                "label": "Provider: Enable OpenSubtitles",
                 "type": "bool",
                 "default": "true"
         },
 		{
                 "id": "provider.thesubdb.enabled",
-                "label": "Enable TheSubDB",
+                "label": "Provider: Enable TheSubDB",
                 "type": "bool",
                 "default": "true"
         },
 		{
                 "id": "provider.podnapisi.enabled",
-                "label": "Enable Podnapisi.NET",
+                "label": "Provider: Enable Podnapisi.NET",
                 "type": "bool",
                 "default": "true"
         },
 		{
                 "id": "provider.addic7ed.enabled",
-                "label": "Enable Addic7ed",
+                "label": "Provider: Enable Addic7ed",
                 "type": "bool",
                 "default": "true"
         },
 		{
                 "id": "provider.tvsubtitles.enabled",
-                "label": "Enable TVsubtitles.net",
+                "label": "Provider: Enable TVsubtitles.net",
                 "type": "bool",
                 "default": "true"
         },
         {
                 "id": "subtitles.scan.embedded",
-                "label": "Scan embedded subtitles",
+                "label": "Scan: include embedded subtitles",
                 "type": "bool",
                 "default": "false"
         },
         {
                 "id": "subtitles.scan.external",
-                "label": "Scan external subtitles",
+                "label": "Scan: include external subtitles",
                 "type": "bool",
                 "default": "false"
-        },        {
+        },
+        {
+                "id": "subtitles.search.minimumScore",
+                "label": "Minimum score for subtitles to download",
+                "type": "enum",
+                "values": ["100","95","90","85","80","75","70","65","60","55","50","45","40","35","30","25","20","15","10","5","0"],
+                "default": "0"
+        },
+        {
+                "id": "subtitles.search.hearingImpaired",
+                "label": "Download hearing impaired subtitles.",
+                "type": "bool",
+                "default": "false"
+        },
+        {
                 "id": "subtitles.save.filesystem",
                 "label": "Store subtitles next to media files (instead of metadata)",
                 "type": "bool",

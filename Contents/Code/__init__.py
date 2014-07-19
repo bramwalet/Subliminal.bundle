@@ -77,7 +77,10 @@ def scanVideo(part):
 
 
 def downloadBestSubtitles(videos):
-    return subliminal.api.download_best_subtitles(videos, getLangList(), getProviders(), getProviderSettings())
+    min_score = int(Prefs['subtitles.search.minimumScore'])
+    hearing_impaired = Prefs['subtitles.search.hearingImpaired']
+    Log.Debug("Download best subtitles using settings: min_score: %s, hearing_impaired: %s" %(min_score, hearing_impaired))
+    return subliminal.api.download_best_subtitles(videos, getLangList(), getProviders(), getProviderSettings(), min_score, hearing_impaired)
 
 def saveSubtitles(videos, subtitles):
     if Prefs['subtitles.save.filesystem']:
