@@ -1,35 +1,5 @@
 [
 		{
-                "id": "provider.opensubtitles.enabled",
-                "label": "Enable OpenSubtitles",
-                "type": "bool",
-                "default": "true"
-        },
-		{
-                "id": "provider.thesubdb.enabled",
-                "label": "Enable TheSubDB",
-                "type": "bool",
-                "default": "true"
-        },
-		{
-                "id": "provider.podnapisi.enabled",
-                "label": "Enable Podnapisi.NET",
-                "type": "bool",
-                "default": "true"
-        },
-		{
-                "id": "provider.addic7ed.enabled",
-                "label": "Enable Addic7ed",
-                "type": "bool",
-                "default": "true"
-        },
-		{
-                "id": "provider.tvsubtitles.enabled",
-                "label": "Enable TVsubtitles.net",
-                "type": "bool",
-                "default": "true"
-        },
-		{
                 "id": "provider.addic7ed.username",
                 "label": "Addic7ed Username",
                 "type": "text",
@@ -56,16 +26,77 @@
                 "type": "enum",
                 "values": ["None", "sq","ar","be","bs","bg","ca","zh","cs","da","nl","en","et","fi","fr","de","el","he","hi","hu","is","id","it","ja","ko","lv","lt","mk","ms","no","pl","pt","ro","ru","sr","sk","sl","es","sv","th","tr","uk","vi","hr"],
                 "default": "None"
-        },            
-	{
-                "id": "subFolder",
+        },        
+		{
+                "id": "provider.opensubtitles.enabled",
+                "label": "Provider: Enable OpenSubtitles",
+                "type": "bool",
+                "default": "true"
+        },
+		{
+                "id": "provider.thesubdb.enabled",
+                "label": "Provider: Enable TheSubDB",
+                "type": "bool",
+                "default": "true"
+        },
+		{
+                "id": "provider.podnapisi.enabled",
+                "label": "Provider: Enable Podnapisi.NET",
+                "type": "bool",
+                "default": "true"
+        },
+		{
+                "id": "provider.addic7ed.enabled",
+                "label": "Provider: Enable Addic7ed",
+                "type": "bool",
+                "default": "true"
+        },
+		{
+                "id": "provider.tvsubtitles.enabled",
+                "label": "Provider: Enable TVsubtitles.net",
+                "type": "bool",
+                "default": "true"
+        },
+        {
+                "id": "subtitles.scan.embedded",
+                "label": "Scan: include embedded subtitles",
+                "type": "bool",
+                "default": "false"
+        },
+        {
+                "id": "subtitles.scan.external",
+                "label": "Scan: include external subtitles",
+                "type": "bool",
+                "default": "false"
+        },
+        {
+                "id": "subtitles.search.minimumScore",
+                "label": "Minimum score for subtitles to download",
+                "type": "enum",
+                "values": ["100","95","90","85","80","75","70","65","60","55","50","45","40","35","30","25","20","15","10","5","0"],
+                "default": "0"
+        },
+        {
+                "id": "subtitles.search.hearingImpaired",
+                "label": "Download hearing impaired subtitles.",
+                "type": "bool",
+                "default": "false"
+        },
+        {
+                "id": "subtitles.save.filesystem",
+                "label": "Store subtitles next to media files (instead of metadata)",
+                "type": "bool",
+                "default": "false"
+        },
+    	{
+                "id": "subtitles.save.subFolder",
                 "label": "Subtitle Folder (\"current folder\" is the folder the current media file lives in)",
                 "type": "enum",
                 "values": ["current folder", "sub", "subs", "subtitle", "subtitles"],
                 "default": "current folder"
         },
-	{
-                "id": "subFolderCustom",
+		{
+                "id": "subtitles.save.subFolder.Custom",
                 "label": "Custom Subtitle folder (computes to real paths; use for example \"bla\" as a subfolder of the current media file folder - can use real paths aswell)",
                 "type": "text",
                 "default": ""
