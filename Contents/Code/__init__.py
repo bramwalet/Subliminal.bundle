@@ -47,19 +47,20 @@ def getProviderSettings():
     return provider_settings
 
 def scanTvMedia(media):
-    videos = []
+    videos = {}
     for season in media.seasons:
         for episode in media.seasons[season].episodes:
             for item in media.seasons[season].episodes[episode].items:
                 for part in item.parts:
-                    videos.append(scanVideo(part))
+                    videos[part] = scanVideo(part)
     return videos
 
 def scanMovieMedia(media):
-    videos = []
+    videos = {}
     for item in media.items:
         for part in item.parts:
-            videos.append(scanVideo(part))
+            scannedVideo = scanVideo(part)
+            videos[scannedVideo] = part 
     return videos
 
 def scanVideo(part):
@@ -78,8 +79,8 @@ def saveSubtitles(subtitles):
     saveSubtitlesToFile(subtitles)
 
 def saveSubtitlesToFile(subtitles):
-    fld_custom = Prefs["subtitles.subFolderCustom"].strip() if bool(Prefs["subtitles.subFolderCustom"]) else None
-    if Prefs["subtitles.subFolder"] != "current folder" or fld_custom:
+    fld_custom = Prefs["subtitles.save.subFolder.Custom"].strip() if bool(Prefs["subtitles.save.subFolder.Custom"]) else None
+    if Prefs["subtitles.save.subFolder"] != "current folder" or fld_custom:
         # specific subFolder requested, create it if it doesn't exist
         for video, video_subtitles in subtitles.items():
             fld_base = os.path.split(video.name)[0]
@@ -111,7 +112,7 @@ class SubliminalSubtitlesAgentMovies(Agent.Movies):
     def update(self, metadata, media, lang):
         Log.Debug("MOVIE UPDATE CALLED")
         videos = scanMovieMedia(media)
-        subtitles = downloadBestSubtitles(videos)
+        subtitles = downloadBestSubtitles(videos.keys())
         saveSubtitles(subtitles)
 
 class SubliminalSubtitlesAgentTvShows(Agent.TV_Shows):
@@ -129,7 +130,7 @@ class SubliminalSubtitlesAgentTvShows(Agent.TV_Shows):
         Log.Debug("TvUpdate. Lang %s" % lang)
         videos = scanTvMedia(media)
         # video.keys() if videos wil be a dictionary
-        subtitles = downloadBestSubtitles(videos)
+        subtitles = downloadBestSubtitles(videos.keys())
         saveSubtitles(subtitles)
         # subliminal.api.save_subtitles(subtitles)
 #         for video, video_subtitles in subtitles.items():
