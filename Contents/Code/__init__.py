@@ -13,7 +13,7 @@ DEPENDENCY_MODULE_NAMES = ['subliminal', 'enzyme', 'guessit', 'requests']
 def Start():
     HTTP.CacheTime = 0
     HTTP.Headers['User-agent'] = OS_PLEX_USERAGENT
-    Log.Debug("START CALLED")
+    Log.Debug("START CALLED.")
     logger.registerLoggingHander(DEPENDENCY_MODULE_NAMES)
     # configured cache to be in memory as per https://github.com/Diaoul/subliminal/issues/303
     subliminal.cache_region.configure('dogpile.cache.memory')
@@ -86,7 +86,7 @@ class SubliminalSubtitlesAgentTvShows(Agent.TV_Shows):
         results.Append(MetadataSearchResult(id='null', score=100))
         
     def update(self, metadata, media, lang):
-        videos = []
+        videos = {}
         Log.Debug("TvUpdate. Lang %s" % lang)
         for season in media.seasons:
             for episode in media.seasons[season].episodes:
@@ -98,8 +98,12 @@ class SubliminalSubtitlesAgentTvShows(Agent.TV_Shows):
                         except ValueError:
                             Log.Warn("File could not be guessed by subliminal")
                             continue
-                        
-                        videos.append(scannedVideo)
 
-        subtitles = subliminal.api.download_best_subtitles(videos, getLangList(), getProviders(), getProviderSettings())
-        subliminal.api.save_subtitles(subtitles)
+                        videos[scannedVideo] = part
+
+        subtitles = subliminal.api.download_best_subtitles(videos.keys(), getLangList(), getProviders(), getProviderSettings())
+        # subliminal.api.save_subtitles(subtitles)
+        for video, video_subtitles in subtitles.items():
+            mediaPart = videos[video]
+            for subtitle in video_subtitles: 
+                mediaPart.subtitles[Locale.Language.Match(subtitle.language.alpha2)][subtitle.page_link] = Proxy.Media(subtitle.content, ext="srt")
