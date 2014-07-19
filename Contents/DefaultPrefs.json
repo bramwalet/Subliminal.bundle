@@ -1,4 +1,18 @@
 [
+        {
+                "id": "langPref1",
+                "label": "Subtitle Language (1)",
+                "type": "enum",
+                "values": ["sq","ar","be","bs","bg","ca","zh","cs","da","nl","en","et","fi","fr","de","el","he","hi","hu","is","id","it","ja","ko","lv","lt","mk","ms","no","pl","pt","ro","ru","sr","sk","sl","es","sv","th","tr","uk","vi","hr"],
+                "default": "en"
+        },
+        {
+                "id": "langPref2",
+                "label": "Subtitle Language (2)",
+                "type": "enum",
+                "values": ["None", "sq","ar","be","bs","bg","ca","zh","cs","da","nl","en","et","fi","fr","de","el","he","hi","hu","is","id","it","ja","ko","lv","lt","mk","ms","no","pl","pt","ro","ru","sr","sk","sl","es","sv","th","tr","uk","vi","hr"],
+                "default": "None"
+        },        
 		{
                 "id": "provider.opensubtitles.enabled",
                 "label": "Enable OpenSubtitles",
@@ -43,29 +57,15 @@
                 "default": "",
                 "secure": "true" 
         },
-        {
-                "id": "langPref1",
-                "label": "Subtitle Language (1)",
-                "type": "enum",
-                "values": ["sq","ar","be","bs","bg","ca","zh","cs","da","nl","en","et","fi","fr","de","el","he","hi","hu","is","id","it","ja","ko","lv","lt","mk","ms","no","pl","pt","ro","ru","sr","sk","sl","es","sv","th","tr","uk","vi","hr"],
-                "default": "en"
-        },
-        {
-                "id": "langPref2",
-                "label": "Subtitle Language (2)",
-                "type": "enum",
-                "values": ["None", "sq","ar","be","bs","bg","ca","zh","cs","da","nl","en","et","fi","fr","de","el","he","hi","hu","is","id","it","ja","ko","lv","lt","mk","ms","no","pl","pt","ro","ru","sr","sk","sl","es","sv","th","tr","uk","vi","hr"],
-                "default": "None"
-        },            
-	{
-                "id": "subFolder",
+    	{
+                "id": "subtitles.subFolder",
                 "label": "Subtitle Folder (\"current folder\" is the folder the current media file lives in)",
                 "type": "enum",
                 "values": ["current folder", "sub", "subs", "subtitle", "subtitles"],
                 "default": "current folder"
         },
-	{
-                "id": "subFolderCustom",
+		{
+                "id": "subtitles.subFolder.Custom",
                 "label": "Custom Subtitle folder (computes to real paths; use for example \"bla\" as a subfolder of the current media file folder - can use real paths aswell)",
                 "type": "text",
                 "default": ""

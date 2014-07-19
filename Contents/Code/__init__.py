@@ -78,8 +78,8 @@ def saveSubtitles(subtitles):
     saveSubtitlesToFile(subtitles)
 
 def saveSubtitlesToFile(subtitles):
-    fld_custom = Prefs["subFolderCustom"].strip() if bool(Prefs["subFolderCustom"]) else None
-    if Prefs["subFolder"] != "current folder" or fld_custom:
+    fld_custom = Prefs["subtitles.subFolderCustom"].strip() if bool(Prefs["subtitles.subFolderCustom"]) else None
+    if Prefs["subtitles.subFolder"] != "current folder" or fld_custom:
         # specific subFolder requested, create it if it doesn't exist
         for video, video_subtitles in subtitles.items():
             fld_base = os.path.split(video.name)[0]
