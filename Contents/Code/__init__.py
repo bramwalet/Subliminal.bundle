@@ -46,6 +46,32 @@ def getProviderSettings():
                          }
     return provider_settings
 
+def saveSubtitles(subtitles):
+    fld_custom = Prefs["subFolderCustom"].strip() if bool(Prefs["subFolderCustom"]) else None
+    if Prefs["subFolder"] != "current folder" or fld_custom:
+
+        # specific subFolder requested, create it if it doesn't exist
+        for video, video_subtitles in subtitles.items():
+	    fld_base = os.path.split(video.name)[0]
+	
+	    if fld_custom:
+	        if fld_custom.startswith("/"):
+		    # absolute folder
+		    fld = fld_custom
+
+		else:
+		    fld = os.path.join(fld_base, fld_custom)
+
+	    else:
+		fld = os.path.join(fld_base, Prefs["subFolder"])
+
+	    if not os.path.exists(fld):
+		os.makedirs(fld)
+
+	    subliminal.api.save_subtitles({video: video_subtitles}, directory=fld)
+    else:
+	subliminal.api.save_subtitles(subtitles)
+
 class SubliminalSubtitlesAgentMovies(Agent.Movies):
     name = 'Subliminal Movie Subtitles'
     languages = [Locale.Language.English]
@@ -72,7 +98,7 @@ class SubliminalSubtitlesAgentMovies(Agent.Movies):
                 videos.append(scannedVideo)
 
         subtitles = subliminal.api.download_best_subtitles(videos, getLangList(), getProviders(), getProviderSettings())
-        subliminal.api.save_subtitles(subtitles)
+        saveSubtitles(subtitles)
 
 class SubliminalSubtitlesAgentTvShows(Agent.TV_Shows):
     
@@ -84,9 +110,9 @@ class SubliminalSubtitlesAgentTvShows(Agent.TV_Shows):
     def search(self, results, media, lang):
         Log.Debug("TV SEARCH CALLED")
         results.Append(MetadataSearchResult(id='null', score=100))
-        
+
     def update(self, metadata, media, lang):
-        videos = {}
+        videos = []
         Log.Debug("TvUpdate. Lang %s" % lang)
         for season in media.seasons:
             for episode in media.seasons[season].episodes:
@@ -99,11 +125,13 @@ class SubliminalSubtitlesAgentTvShows(Agent.TV_Shows):
                             Log.Warn("File could not be guessed by subliminal")
                             continue
 
-                        videos[scannedVideo] = part
+                        videos.append(scannedVideo)
 
-        subtitles = subliminal.api.download_best_subtitles(videos.keys(), getLangList(), getProviders(), getProviderSettings())
+        # video.keys() if videos wil be a dictionary
+        subtitles = subliminal.api.download_best_subtitles(videos, getLangList(), getProviders(), getProviderSettings())
+        saveSubtitles(subtitles)
         # subliminal.api.save_subtitles(subtitles)
-        for video, video_subtitles in subtitles.items():
-            mediaPart = videos[video]
-            for subtitle in video_subtitles: 
-                mediaPart.subtitles[Locale.Language.Match(subtitle.language.alpha2)][subtitle.page_link] = Proxy.Media(subtitle.content, ext="srt")
+#         for video, video_subtitles in subtitles.items():
+#             mediaPart = videos[video]
+#             for subtitle in video_subtitles: 
+#                 mediaPart.subtitles[Locale.Language.Match(subtitle.language.alpha2)][subtitle.page_link] = Proxy.Media(subtitle.content, ext="srt")
