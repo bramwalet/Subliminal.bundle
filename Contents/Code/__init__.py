@@ -93,7 +93,7 @@ class SubliminalSubtitlesAgentTvShows(Agent.TV_Shows):
     def search(self, results, media, lang):
         Log.Debug("TV SEARCH CALLED")
         results.Append(MetadataSearchResult(id='null', score=100))
-        
+
     def update(self, metadata, media, lang):
         videos = []
         Log.Debug("TvUpdate. Lang %s" % lang)
@@ -111,4 +111,9 @@ class SubliminalSubtitlesAgentTvShows(Agent.TV_Shows):
                         videos.append(scannedVideo)
 
         subtitles = subliminal.api.download_best_subtitles(videos, getLangList(), getProviders(), getProviderSettings())
-        subliminal.api.save_subtitles(subtitles)
+        for video, video_subtitles in subtitles.items():
+            path = os.path.join(os.path.split(video.name)[0], "subs")
+	    if not os.path.exists(path):
+		os.makedirs(path)
+
+            subliminal.api.save_subtitles({video: video_subtitles}, directory=path)
