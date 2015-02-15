@@ -20,10 +20,14 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from guessit.containers import PropertiesContainer, WeakValidator, LeavesValidator, QualitiesContainer
+from guessit.containers import PropertiesContainer, WeakValidator, LeavesValidator, QualitiesContainer, NoValidator, \
+    ChainedValidator, DefaultValidator, OnlyOneValidator, LeftValidator, NeighborValidator
+from guessit.patterns import sep, build_or_pattern
 from guessit.patterns.extension import subtitle_exts, video_exts, info_exts
+from guessit.patterns.numeral import numeral, parse_numeral
 from guessit.plugins.transformers import Transformer
-from guessit.matcher import GuessFinder
+from guessit.matcher import GuessFinder, found_property
+import re
 
 
 class GuessProperties(Transformer):
@@ -33,15 +37,22 @@ class GuessProperties(Transformer):
         self.container = PropertiesContainer()
         self.qualities = QualitiesContainer()
 
-        def register_property(propname, props):
+        def register_property(propname, props, **kwargs):
             """props a dict of {value: [patterns]}"""
             for canonical_form, patterns in props.items():
                 if isinstance(patterns, tuple):
-                    patterns2, kwargs = patterns
-                    kwargs = dict(kwargs)
-                    kwargs['canonical_form'] = canonical_form
-                    self.container.register_property(propname, *patterns2, **kwargs)
-
+                    patterns2, pattern_kwarg = patterns
+                    if kwargs:
+                        current_kwarg = dict(kwargs)
+                        current_kwarg.update(pattern_kwarg)
+                    else:
+                        current_kwarg = dict(pattern_kwarg)
+                    current_kwarg['canonical_form'] = canonical_form
+                    self.container.register_property(propname, *patterns2, **current_kwarg)
+                elif kwargs:
+                    current_kwarg = dict(kwargs)
+                    current_kwarg['canonical_form'] = canonical_form
+                    self.container.register_property(propname, *patterns, **current_kwarg)
                 else:
                     self.container.register_property(propname, *patterns, canonical_form=canonical_form)
 
@@ -53,22 +64,22 @@ class GuessProperties(Transformer):
         register_property('container', {'mp4': ['MP4']})
 
         # http://en.wikipedia.org/wiki/Pirated_movie_release_types
-        register_property('format', {'VHS': ['VHS'],
-                                     'Cam': ['CAM', 'CAMRip'],
+        register_property('format', {'VHS': ['VHS', 'VHS-Rip'],
+                                     'Cam': ['CAM', 'CAMRip', 'HD-CAM'],
                                      #'Telesync': ['TELESYNC', 'PDVD'],
-                                     'Telesync': (['TS'], {'confidence': 0.2}),
+                                     'Telesync': (['TS', 'HD-TS'], {'confidence': 0.4}),
                                      'Workprint': ['WORKPRINT', 'WP'],
                                      'Telecine': ['TELECINE', 'TC'],
                                      'PPV': ['PPV', 'PPV-Rip'],  # Pay Per View
                                      'TV': ['SD-TV', 'SD-TV-Rip', 'Rip-SD-TV', 'TV-Rip', 'Rip-TV'],
                                      'DVB': ['DVB-Rip', 'DVB', 'PD-TV'],
-                                     'DVD': ['DVD', 'DVD-Rip', 'VIDEO-TS'],
+                                     'DVD': ['DVD', 'DVD-Rip', 'VIDEO-TS', 'DVD-R', 'DVD-9', 'DVD-5'],
                                      'HDTV': ['HD-TV', 'TV-RIP-HD', 'HD-TV-RIP'],
                                      'VOD': ['VOD', 'VOD-Rip'],
                                      'WEBRip': ['WEB-Rip'],
-                                     'WEB-DL': ['WEB-DL'],
+                                     'WEB-DL': ['WEB-DL', 'WEB-HD', 'WEB'],
                                      'HD-DVD': ['HD-(?:DVD)?-Rip', 'HD-DVD'],
-                                     'BluRay': ['Blu-ray', 'B[DR]', 'B[DR]-Rip', 'BD[59]', 'BD25', 'BD50']
+                                     'BluRay': ['Blu-ray(?:-Rip)?', 'B[DR]', 'B[DR]-Rip', 'BD[59]', 'BD25', 'BD50']
                                      })
 
         register_quality('format', {'VHS': -100,
@@ -96,9 +107,36 @@ class GuessProperties(Transformer):
                                          '720p': ['(?:\d{3,}(?:\\|\/|x|\*))?720(?:i|p?x?)'],
                                          '900p': ['(?:\d{3,}(?:\\|\/|x|\*))?900(?:i|p?x?)'],
                                          '1080i': ['(?:\d{3,}(?:\\|\/|x|\*))?1080i'],
-                                         '1080p': ['(?:\d{3,}(?:\\|\/|x|\*))?1080(?:p?x?)'],
+                                         '1080p': ['(?:\d{3,}(?:\\|\/|x|\*))?1080p?x?'],
                                          '4K': ['(?:\d{3,}(?:\\|\/|x|\*))?2160(?:i|p?x?)']
-                                         })
+                                         },
+                          validator=ChainedValidator(DefaultValidator(), OnlyOneValidator()))
+
+        class ResolutionValidator(object):
+            """Make sure our match is surrounded by separators, or by another entry"""
+            def validate(self, prop, string, node, match, entry_start, entry_end):
+                """
+                span = _get_span(prop, match)
+                span = _trim_span(span, string[span[0]:span[1]])
+                start, end = span
+
+                sep_start = start <= 0 or string[start - 1] in sep
+                sep_end = end >= len(string) or string[end] in sep
+                start_by_other = start in entry_end
+                end_by_other = end in entry_start
+                if (sep_start or start_by_other) and (sep_end or end_by_other):
+                    return True
+                return False
+                """
+                return True
+
+        _digits_re = re.compile('\d+')
+
+        def resolution_formatter(value):
+            digits = _digits_re.findall(value)
+            return 'x'.join(digits)
+
+        self.container.register_property('screenSize', '\d{3,4}-?[x\*]-?\d{3,4}', canonical_from_pattern=False, formatter=resolution_formatter, validator=ChainedValidator(DefaultValidator(), ResolutionValidator()))
 
         register_quality('screenSize', {'360p': -300,
                                         '368p': -200,
@@ -135,7 +173,8 @@ class GuessProperties(Transformer):
         self.container.register_property('videoProfile', 'XP', 'EP', canonical_form='XP', validator=LeavesValidator(lambdas=[lambda node: 'videoCodec' in node.guess]))
         self.container.register_property('videoProfile', 'MP', validator=LeavesValidator(lambdas=[lambda node: 'videoCodec' in node.guess]))
         self.container.register_property('videoProfile', 'HP', 'HiP', canonical_form='HP', validator=LeavesValidator(lambdas=[lambda node: 'videoCodec' in node.guess]))
-        self.container.register_property('videoProfile', '10.?bit', 'Hi10P', canonical_form='10bit', validator=LeavesValidator(lambdas=[lambda node: 'videoCodec' in node.guess]))
+        self.container.register_property('videoProfile', '10.?bit', 'Hi10P', canonical_form='10bit')
+        self.container.register_property('videoProfile', '8.?bit', canonical_form='8bit')
         self.container.register_property('videoProfile', 'Hi422P', validator=LeavesValidator(lambdas=[lambda node: 'videoCodec' in node.guess]))
         self.container.register_property('videoProfile', 'Hi444PP', validator=LeavesValidator(lambdas=[lambda node: 'videoCodec' in node.guess]))
 
@@ -152,12 +191,12 @@ class GuessProperties(Transformer):
         # releases use it and it helps to identify release groups, so we adapt
         register_property('videoApi', {'DXVA': ['DXVA']})
 
-        register_property('audioCodec', {'MP3': ['MP3'],
+        register_property('audioCodec', {'MP3': ['MP3', 'LAME', 'LAME(?:\d)+-(?:\d)+'],
                                          'DolbyDigital': ['DD'],
                                          'AAC': ['AAC'],
                                          'AC3': ['AC3'],
                                          'Flac': ['FLAC'],
-                                         'DTS': ['DTS'],
+                                         'DTS': (['DTS'], {'validator': LeftValidator()}),
                                          'TrueHD': ['True-HD']
                                          })
 
@@ -183,8 +222,8 @@ class GuessProperties(Transformer):
                                           'HE': 20
                                           })
 
-        register_property('audioChannels', {'7.1': ['7[\W_]1', '7ch'],
-                                            '5.1': ['5[\W_]1', '5ch'],
+        register_property('audioChannels', {'7.1': ['7[\W_]1', '7ch', '8ch'],
+                                            '5.1': ['5[\W_]1', '5ch', '6ch'],
                                             '2.0': ['2[\W_]0', '2ch', 'stereo'],
                                             '1.0': ['1[\W_]0', '1ch', 'mono']
                                             })
@@ -197,6 +236,11 @@ class GuessProperties(Transformer):
 
         self.container.register_property('episodeFormat', r'Minisodes?', canonical_form='Minisode')
 
+        self.container.register_property('crc32', '(?:[a-fA-F]|[0-9]){8}', enhance=False, canonical_from_pattern=False)
+
+        weak_episode_words = ['pt', 'part']
+        self.container.register_property(None, '(' + build_or_pattern(weak_episode_words) + sep + '?(?P<part>' + numeral + '))[^0-9]', enhance=False, canonical_from_pattern=False, confidence=0.4, formatter=parse_numeral)
+
         register_property('other', {'AudioFix': ['Audio-Fix', 'Audio-Fixed'],
                                     'SyncFix': ['Sync-Fix', 'Sync-Fixed'],
                                     'DualAudio': ['Dual-Audio'],
@@ -204,10 +248,17 @@ class GuessProperties(Transformer):
                                     'Netflix': ['Netflix', 'NF']
                                     })
 
-        self.container.register_property('other', 'Real', 'Fix', canonical_form="Proper", validator=WeakValidator())
-        self.container.register_property('other', 'Proper', 'Repack', 'Rerip', canonical_form="Proper")
+        self.container.register_property('other', 'Real', 'Fix', canonical_form='Proper', validator=NeighborValidator())
+        self.container.register_property('other', 'Proper', 'Repack', 'Rerip', canonical_form='Proper')
+        self.container.register_property('other', 'Fansub', canonical_form='Fansub')
+        self.container.register_property('other', 'Fastsub', canonical_form='Fastsub')
+        self.container.register_property('other', '(?:Seasons?' + sep + '?)?Complete', canonical_form='Complete')
+        self.container.register_property('other', 'R5', 'RC', canonical_form='R5')
+        self.container.register_property('other', 'Pre-Air', 'Preair', canonical_form='Preair')
 
-        self.container.register_canonical_properties('other', 'R5', 'Screener', '3D', 'HD', 'HQ', 'DDC', 'HR')
+        self.container.register_canonical_properties('other', 'Screener', 'Remux', '3D', 'HD', 'mHD', 'HDLight', 'HQ',
+                                                     'DDC',
+                                                     'HR', 'PAL', 'SECAM', 'NTSC')
         self.container.register_canonical_properties('other', 'Limited', 'Complete', 'Classic', 'Unrated', 'LiNE', 'Bonus', 'Trailer', validator=WeakValidator())
 
         for prop in self.container.get_properties('format'):
@@ -218,7 +269,7 @@ class GuessProperties(Transformer):
                 self.container.register_property('container', container, confidence=0.3)
 
     def guess_properties(self, string, node=None, options=None):
-        found = self.container.find_properties(string, node)
+        found = self.container.find_properties(string, node, options)
         return self.container.as_guess(found, string)
 
     def supported_properties(self):
@@ -226,6 +277,12 @@ class GuessProperties(Transformer):
 
     def process(self, mtree, options=None):
         GuessFinder(self.guess_properties, 1.0, self.log, options).process_nodes(mtree.unidentified_leaves())
+        proper_count = 0
+        for other_leaf in mtree.leaves_containing('other'):
+            if 'other' in other_leaf.info and 'Proper' in other_leaf.info['other']:
+                proper_count += 1
+        if proper_count:
+            found_property(mtree, 'properCount', proper_count)
 
     def rate_quality(self, guess, *props):
         return self.qualities.rate_quality(guess, *props)

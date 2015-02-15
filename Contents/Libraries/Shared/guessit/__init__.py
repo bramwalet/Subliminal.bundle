@@ -25,7 +25,8 @@ from .__version__ import __version__
 
 __all__ = ['Guess', 'Language',
            'guess_file_info', 'guess_video_info',
-           'guess_movie_info', 'guess_episode_info']
+           'guess_movie_info', 'guess_episode_info',
+           'default_options']
 
 
 # Do python3 detection before importing any other module, to be sure that
@@ -88,11 +89,11 @@ else:   # pragma: no cover
 from guessit.guess import Guess, smart_merge
 from guessit.language import Language
 from guessit.matcher import IterativeMatcher
-from guessit.textutils import clean_string, is_camel, from_camel
+from guessit.textutils import clean_default, is_camel, from_camel
 import babelfish
 import os.path
 import logging
-import json
+from copy import deepcopy
 
 log = logging.getLogger(__name__)
 
@@ -108,7 +109,8 @@ log.addHandler(h)
 
 def _guess_filename(filename, options=None, **kwargs):
     mtree = _build_filename_mtree(filename, options=options, **kwargs)
-    _add_camel_properties(mtree, options=options)
+    if options.get('split_camel'):
+        _add_camel_properties(mtree, options=options)
     return mtree.matched()
 
 
@@ -116,7 +118,7 @@ def _build_filename_mtree(filename, options=None, **kwargs):
     mtree = IterativeMatcher(filename, options=options, **kwargs)
     second_pass_options = mtree.second_pass_options
     if second_pass_options:
-        log.info("Running 2nd pass")
+        log.debug("Running 2nd pass")
         merged_options = dict(options)
         merged_options.update(second_pass_options)
         mtree = IterativeMatcher(filename, options=merged_options, **kwargs)
@@ -135,14 +137,19 @@ def _add_camel_properties(mtree, options=None, **kwargs):
 
 def _guess_camel_string(mtree, string, options=None, skip_title=False, **kwargs):
     if string and is_camel(string):
-        log.info('"%s" is camel cased. Try to detect more properties.' % (string,))
+        log.debug('"%s" is camel cased. Try to detect more properties.' % (string,))
         uncameled_value = from_camel(string)
-        camel_tree = _build_filename_mtree(uncameled_value, options=options, name_only=True, skip_title=skip_title, **kwargs)
+        merged_options = dict(options)
+        if 'type' in mtree.match_tree.info:
+            current_type = mtree.match_tree.info.get('type')
+            if current_type and current_type != 'unknown':
+                merged_options['type'] = current_type
+        camel_tree = _build_filename_mtree(uncameled_value, options=merged_options, name_only=True, skip_title=skip_title, **kwargs)
         if len(camel_tree.matched()) > 0:
-            # Title has changed.
             mtree.matched().update(camel_tree.matched())
             return True
     return False
+
 
 def guess_video_metadata(filename):
     """Gets the video metadata properties out of a given file. The file needs to
@@ -251,6 +258,8 @@ def guess_video_metadata(filename):
         log.error('Error: %s' % e)
         return result
 
+default_options = {}
+
 
 def guess_file_info(filename, info=None, options=None, **kwargs):
     """info can contain the names of the various plugins, such as 'filename' to
@@ -263,6 +272,10 @@ def guess_file_info(filename, info=None, options=None, **kwargs):
     """
     info = info or 'filename'
     options = options or {}
+    if default_options:
+        merged_options = deepcopy(default_options)
+        merged_options.update(options)
+        options = merged_options
 
     result = []
     hashers = []

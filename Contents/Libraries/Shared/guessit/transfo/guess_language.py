@@ -22,7 +22,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from guessit.language import search_language, subtitle_prefixes, subtitle_suffixes
 from guessit.patterns.extension import subtitle_exts
-from guessit.textutils import clean_string, find_words
+from guessit.textutils import find_words
 from guessit.plugins.transformers import Transformer
 from guessit.matcher import GuessFinder
 
@@ -31,11 +31,18 @@ class GuessLanguage(Transformer):
     def __init__(self):
         Transformer.__init__(self, 30)
 
+    def register_arguments(self, opts, naming_opts, output_opts, information_opts, webservice_opts, other_options):
+        naming_opts.add_argument('-L', '--allowed-languages', action='append', dest='allowed_languages',
+                               help='Allowed language (can be used multiple times)')
+
     def supported_properties(self):
         return ['language', 'subtitleLanguage']
 
     def guess_language(self, string, node=None, options=None):
-        guess = search_language(string)
+        allowed_languages = None
+        if options and 'allowed_languages' in options:
+            allowed_languages = options.get('allowed_languages')
+        guess = search_language(string, allowed_languages)
         return guess
 
     def _skip_language_on_second_pass(self, mtree, node):
@@ -71,7 +78,7 @@ class GuessLanguage(Transformer):
             title_ends[title_node.span[1]] = title_node
 
         return node.span[0] in title_ends.keys() and (node.span[1] in unidentified_starts.keys() or node.span[1] + 1 in property_starts.keys()) or\
-                node.span[1] in title_starts.keys() and (node.span[0] == node.group_node().span[0] or node.span[0] in unidentified_ends.keys() or node.span[0] in property_ends.keys())
+            node.span[1] in title_starts.keys() and (node.span[0] == node.group_node().span[0] or node.span[0] in unidentified_ends.keys() or node.span[0] in property_ends.keys())
 
     def second_pass_options(self, mtree, options=None):
         m = mtree.matched()
@@ -88,13 +95,13 @@ class GuessLanguage(Transformer):
 
                     # if filetype is subtitle and the language appears last, just before
                     # the extension, then it is likely a subtitle language
-                    parts = clean_string(lang_node.root.value).split()
-                    if (m.get('type') in ['moviesubtitle', 'episodesubtitle'] and
-                        (parts.index(lang_node.value) == len(parts) - 2)):
-                        continue
-
+                    parts = mtree.clean_string(lang_node.root.value).split()
+                    if m.get('type') in ['moviesubtitle', 'episodesubtitle']:
+                        if lang_node.value in parts and \
+                                (parts.index(lang_node.value) == len(parts) - 2):
+                            continue
                     to_skip_language_nodes.append(lang_node)
-                elif not lang in langs:
+                elif lang not in langs:
                     langs[lang] = lang_node
                 else:
                     # The same language was found. Keep the more confident one,
@@ -126,15 +133,16 @@ class GuessLanguage(Transformer):
 
     def should_process(self, mtree, options=None):
         options = options or {}
-        return 'nolanguage' not in options
+        return options.get('language', True)
 
     def process(self, mtree, options=None):
         GuessFinder(self.guess_language, None, self.log, options).process_nodes(mtree.unidentified_leaves())
 
     def promote_subtitle(self, node):
-        node.guess.set('subtitleLanguage', node.guess['language'],
-                       confidence=node.guess.confidence('language'))
-        del node.guess['language']
+        if 'language' in node.guess:
+            node.guess.set('subtitleLanguage', node.guess['language'],
+                           confidence=node.guess.confidence('language'))
+            del node.guess['language']
 
     def post_process(self, mtree, options=None):
         # 1- try to promote language to subtitle language where it makes sense
@@ -147,7 +155,7 @@ class GuessLanguage(Transformer):
             #   language of the subtitle
             #   (eg: 'xxx.english.srt')
             if (mtree.node_at((-1,)).value.lower() in subtitle_exts and
-                node == list(mtree.leaves())[-2]):
+                    node == list(mtree.leaves())[-2]):
                 self.promote_subtitle(node)
 
             # - if we find in the same explicit group
@@ -159,12 +167,12 @@ class GuessLanguage(Transformer):
 
             for sub_prefix in subtitle_prefixes:
                 if (sub_prefix in find_words(group_str) and
-                    0 <= group_str.find(sub_prefix) < (node.span[0] - explicit_group.span[0])):
+                        0 <= group_str.find(sub_prefix) < (node.span[0] - explicit_group.span[0])):
                     self.promote_subtitle(node)
 
             for sub_suffix in subtitle_suffixes:
                 if (sub_suffix in find_words(group_str) and
-                    (node.span[0] - explicit_group.span[0]) < group_str.find(sub_suffix)):
+                        (node.span[0] - explicit_group.span[0]) < group_str.find(sub_suffix)):
                     self.promote_subtitle(node)
 
             # - if a language is in an explicit group just preceded by "st",

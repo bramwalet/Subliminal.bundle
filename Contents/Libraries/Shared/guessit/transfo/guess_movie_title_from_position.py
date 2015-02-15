@@ -41,6 +41,9 @@ class GuessMovieTitleFromPosition(Transformer):
         try to identify the remaining unknown groups by looking at their
         position relative to other known elements
         """
+        if 'title' in mtree.info:
+            return
+
         basename = mtree.node_at((-2,))
         all_valid = lambda leaf: len(leaf.clean_value) > 0
         basename_leftover = list(basename.unidentified_leaves(valid=all_valid))
@@ -58,9 +61,7 @@ class GuessMovieTitleFromPosition(Transformer):
         # specific cases:
         # if we find the same group both in the folder name and the filename,
         # it's a good candidate for title
-        if (folder_leftover and basename_leftover and
-            folder_leftover[0].clean_value == basename_leftover[0].clean_value):
-
+        if folder_leftover and basename_leftover and folder_leftover[0].clean_value == basename_leftover[0].clean_value:
             found_property(folder_leftover[0], 'title', confidence=0.8)
             return
 
@@ -69,51 +70,43 @@ class GuessMovieTitleFromPosition(Transformer):
         # group, and the folder only contains 1 unidentified one, then we have
         # a series
         # ex: Millenium Trilogy (2009)/(1)The Girl With The Dragon Tattoo(2009).mkv
-        try:
+        if len(folder_leftover) > 0 and len(basename_leftover) > 1:
             series = folder_leftover[0]
-            filmNumber = basename_leftover[0]
+            film_number = basename_leftover[0]
             title = basename_leftover[1]
 
             basename_leaves = list(basename.leaves())
 
-            num = int(filmNumber.clean_value)
+            num = None
+            try:
+                num = int(film_number.clean_value)
+            except ValueError:
+                pass
 
-            self.log.debug('series: %s' % series.clean_value)
-            self.log.debug('title: %s' % title.clean_value)
-            if (series.clean_value != title.clean_value and
-                series.clean_value != filmNumber.clean_value and
-                basename_leaves.index(filmNumber) == 0 and
-                basename_leaves.index(title) == 1):
+            if num:
+                self.log.debug('series: %s' % series.clean_value)
+                self.log.debug('title: %s' % title.clean_value)
+                if (series.clean_value != title.clean_value and
+                            series.clean_value != film_number.clean_value and
+                            basename_leaves.index(film_number) == 0 and
+                            basename_leaves.index(title) == 1):
 
-                found_property(title, 'title', confidence=0.6)
-                found_property(series, 'filmSeries', confidence=0.6)
-                found_property(filmNumber, 'filmNumber', num, confidence=0.6)
-            return
-        except Exception:
-            pass
-
-        # specific cases:
-        #  - movies/tttttt (yyyy)/tttttt.ccc
-        try:
-            if mtree.node_at((-4, 0)).value.lower() == 'movies':
-                folder = mtree.node_at((-3,))
-
-                # Note:too generic, might solve all the unittests as they all
-                # contain 'movies' in their path
-                #
-                # if containing_folder.is_leaf() and not containing_folder.guess:
-                #    containing_folder.guess =
-                #        Guess({ 'title': clean_string(containing_folder.value) },
-                #              confidence=0.7)
-
-                year_group = folder.first_leaf_containing('year')
-                groups_before = folder.previous_unidentified_leaves(year_group)
-
-                found_property(next(groups_before), 'title', confidence=0.8)
+                    found_property(title, 'title', confidence=0.6)
+                    found_property(series, 'filmSeries', confidence=0.6)
+                    found_property(film_number, 'filmNumber', num, confidence=0.6)
                 return
 
-        except Exception:
-            pass
+        if folder:
+            year_group = folder.first_leaf_containing('year')
+            if year_group:
+                groups_before = folder.previous_unidentified_leaves(year_group)
+                if groups_before:
+                    try:
+                        node = next(groups_before)
+                        found_property(node, 'title', confidence=0.8)
+                        return
+                    except StopIteration:
+                        pass
 
         # if we have either format or videoCodec in the folder containing the
         # file or one of its parents, then we should probably look for the title
@@ -145,8 +138,7 @@ class GuessMovieTitleFromPosition(Transformer):
             # ex: Movies/Alice in Wonderland DVDRip.XviD-DiAMOND/dmd-aw.avi
             # ex: Movies/Somewhere.2010.DVDRip.XviD-iLG/i-smwhr.avi  <-- TODO: gets caught here?
             if (basename_leftover[0].clean_value.count(' ') == 0 and
-                folder_leftover and
-                folder_leftover[0].clean_value.count(' ') >= 2):
+                    folder_leftover and folder_leftover[0].clean_value.count(' ') >= 2):
 
                 found_property(folder_leftover[0], 'title', confidence=0.7)
                 return

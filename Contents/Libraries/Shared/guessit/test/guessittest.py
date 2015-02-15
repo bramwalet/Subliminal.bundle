@@ -43,8 +43,8 @@ def addImportPath(path):
 log = logging.getLogger(__name__)
 
 from guessit.plugins import transformers
+from guessit.options import get_opts
 import guessit
-from guessit.options import option_parser
 from guessit import *
 from guessit.matcher import *
 from guessit.fileutils import *
@@ -85,9 +85,14 @@ class TestGuessit(TestCase):
 
             if options:
                 args = shlex.split(options)
-                options, _ = option_parser.parse_args(args)
+                options = get_opts().parse_args(args)
                 options = vars(options)
-            found = guess_func(filename, options)
+            try:
+                found = guess_func(filename, options)
+            except Exception as e:
+                fails[filename].append("An exception has occured in %s: %s" % (filename, e))
+                log.exception("An exception has occured in %s: %s" % (filename, e))
+                continue
 
             total = total + 1
 
@@ -97,12 +102,12 @@ class TestGuessit(TestCase):
                     del found['type']
                 except:
                     pass
-            for prop in ('container', 'mimetype'):
+            for prop in ('container', 'mimetype', 'unidentified'):
                 if prop in found:
                     del found[prop]
 
             # props which are list of just 1 elem should be opened for easier writing of the tests
-            for prop in ('language', 'subtitleLanguage', 'other', 'episodeDetails'):
+            for prop in ('language', 'subtitleLanguage', 'other', 'episodeDetails', 'unidentified'):
                 value = found.get(prop, None)
                 if isinstance(value, list) and len(value) == 1:
                     found[prop] = value[0]
@@ -174,9 +179,9 @@ class TestGuessit(TestCase):
                 log.error("FAILED: " + failed_property)
 
         for additional_entry, additional_properties in additionals.items():
-            log.warn('---- ' + additional_entry + ' ----')
+            log.warning('---- ' + additional_entry + ' ----')
             for additional_property in additional_properties:
-                log.warn("ADDITIONAL: " + additional_property)
+                log.warning("ADDITIONAL: " + additional_property)
 
         self.assertTrue(correct == total,
                         msg='Correct: %d < Total: %d' % (correct, total))

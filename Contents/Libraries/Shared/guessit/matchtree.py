@@ -22,7 +22,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import guessit  # @UnusedImport needed for doctests
 from guessit import UnicodeMixin, base_text_type
-from guessit.textutils import clean_string, str_fill
+from guessit.textutils import clean_default, str_fill
 from guessit.patterns import group_delimiters
 from guessit.guess import (merge_similar_guesses, smart_merge,
                            choose_int, choose_string, Guess)
@@ -74,12 +74,14 @@ class BaseMatchTree(UnicodeMixin):
     (as shown by the ``f``'s on the last-but-one line).
     """
 
-    def __init__(self, string='', span=None, parent=None):
+    def __init__(self, string='', span=None, parent=None, clean_function=None):
         self.string = string
         self.span = span or (0, len(string))
         self.parent = parent
         self.children = []
         self.guess = Guess()
+        self._clean_value = None
+        self._clean_function = clean_function or clean_default
 
     @property
     def value(self):
@@ -91,7 +93,12 @@ class BaseMatchTree(UnicodeMixin):
         """Return a cleaned value of the matched substring, with better
         presentation formatting (punctuation marks removed, duplicate
         spaces, ...)"""
-        return clean_string(self.value)
+        if self._clean_value is None:
+            self._clean_value = self.clean_string(self.value)
+        return self._clean_value
+
+    def clean_string(self, string):
+        return self._clean_function(string)
 
     @property
     def offset(self):
@@ -130,7 +137,7 @@ class BaseMatchTree(UnicodeMixin):
 
     def add_child(self, span):
         """Add a new child node to this node with the given span."""
-        child = MatchTree(self.string, span=span, parent=self)
+        child = MatchTree(self.string, span=span, parent=self, clean_function=self._clean_function)
         self.children.append(child)
         return child
 
@@ -180,7 +187,13 @@ class BaseMatchTree(UnicodeMixin):
         If this node is the root of the tree, then return ()."""
         if self.parent is None:
             return ()
-        return self.parent.node_idx + (self.parent.children.index(self),)
+        return self.parent.node_idx + (self.node_last_idx,)
+
+    @property
+    def node_last_idx(self):
+        if self.parent is None:
+            return None
+        return self.parent.children.index(self)
 
     def node_at(self, idx):
         """Return the node at the given index in the subtree rooted at
@@ -346,7 +359,7 @@ class MatchTree(BaseMatchTree):
     """
 
     def unidentified_leaves(self,
-                            valid=lambda leaf: len(leaf.clean_value) >= 2):
+                            valid=lambda leaf: len(leaf.clean_value) > 0):
         """Return a generator of leaves that are not empty."""
         for leaf in self.leaves():
             if not leaf.guess and valid(leaf):
@@ -404,5 +417,10 @@ class MatchTree(BaseMatchTree):
 
             log.debug('Final result: ' + result.nice_string())
             self._matched_result = result
+
+        for unidentified_leaves in self.unidentified_leaves():
+            if 'unidentified' not in self._matched_result:
+                self._matched_result['unidentified'] = []
+            self._matched_result['unidentified'].append(unidentified_leaves.clean_value)
 
         return self._matched_result

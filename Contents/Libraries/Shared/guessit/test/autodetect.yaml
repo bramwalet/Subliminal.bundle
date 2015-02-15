@@ -171,6 +171,18 @@
   releaseGroup: PublicHD
   audioChannels: "5.1"
 
+? White.House.Down.2013.1080p.BluRay.DTSHD.MA.5.1.x264-PublicHD.mkv
+: type: movie
+  title: White House Down
+  year: 2013
+  screenSize: 1080p
+  format: BluRay
+  audioCodec: DTS
+  audioProfile: HDMA
+  videoCodec: h264
+  releaseGroup: PublicHD
+  audioChannels: "5.1"
+
 ? Hostages.S01E01.Pilot.for.Air.720p.WEB-DL.DD5.1.H.264-NTb.nfo
 : type: episodeinfo
   series: Hostages
@@ -306,3 +318,172 @@
 ? star.trek.9.mkv
 : type: movie
   title: star trek 9
+
+? FlexGet.S01E02.TheName.HDTV.xvid
+: options: -n
+  episodeNumber: 2
+  format: HDTV
+  season: 1
+  series: FlexGet
+  title: TheName
+  type: episode
+  videoCodec: XviD
+
+? FlexGet.S01E02.TheName.HDTV.xvid
+: options: -n
+  episodeNumber: 2
+  format: HDTV
+  season: 1
+  series: FlexGet
+  title: TheName
+  type: episode
+  videoCodec: XviD
+
+? some.series.S03E14.Title.Here.720p
+: options: -n
+  episodeNumber: 14
+  screenSize: 720p
+  season: 3
+  series: some series
+  title: Title Here
+  type: episode
+
+? '[the.group] Some.Series.S03E15.Title.Two.720p'
+: options: -n
+  episodeNumber: 15
+  releaseGroup: the.group
+  screenSize: 720p
+  season: 3
+  series: Some Series
+  title: Title Two
+  type: episode
+
+? 'HD 720p: Some series.S03E16.Title.Three'
+: options: -n
+  episodeNumber: 16
+  other: HD
+  screenSize: 720p
+  season: 3
+  series: Some series
+  title: Title Three
+  type: episode
+
+? Something.Season.2.1of4.Ep.Title.HDTV.torrent
+: episodeCount: 4
+  episodeNumber: 1
+  format: HDTV
+  season: 2
+  series: Something
+  title: Title
+  type: episode
+
+? Show-A (US) - Episode Title S02E09 hdtv
+: options: -n
+  country: US
+  episodeNumber: 9
+  format: HDTV
+  season: 2
+  series: Show-A (US)
+  type: episode
+
+? Jack's.Show.S03E01.blah.1080p
+: options: -n
+  episodeNumber: 1
+  screenSize: 1080p
+  season: 3
+  series: Jack's Show
+  title: blah
+  type: episode
+
+? FlexGet.epic
+: options: -n
+  title: FlexGet epic
+  type: movie
+
+? FlexGet.Apt.1
+: options: -n
+  title: FlexGet Apt 1
+  type: movie
+
+? FlexGet.aptitude
+: options: -n
+  title: FlexGet aptitude
+  type: movie
+
+? FlexGet.Step1
+: options: -n
+  title: FlexGet Step1
+  type: movie
+
+? Movies/El Bosque Animado (1987)/El.Bosque.Animado.[Jose.Luis.Cuerda.1987].[Xvid-Dvdrip-720 * 432].avi
+: format: DVD
+  screenSize: 720x432
+  title: El Bosque Animado
+  videoCodec: XviD
+  year: 1987
+  type: movie
+
+? Movies/El Bosque Animado (1987)/El.Bosque.Animado.[Jose.Luis.Cuerda.1987].[Xvid-Dvdrip-720x432].avi
+: format: DVD
+  screenSize: 720x432
+  title: El Bosque Animado
+  videoCodec: XviD
+  year: 1987
+  type: movie
+
+? 2009.shoot.fruit.chan.multi.dvd9.pal
+: options: -n
+  format: DVD
+  language: mul
+  other: PAL
+  title: shoot fruit chan
+  type: movie
+  year: 2009
+
+? 2009.shoot.fruit.chan.multi.dvd5.pal
+: options: -n
+  format: DVD
+  language: mul
+  other: PAL
+  title: shoot fruit chan
+  type: movie
+  year: 2009
+
+? The.Flash.2014.S01E01.PREAIR.WEBRip.XviD-EVO.avi
+: episodeNumber: 1
+  format: WEBRip
+  other: Preair
+  releaseGroup: EVO
+  season: 1
+  series: The Flash
+  type: episode
+  videoCodec: XviD
+  year: 2014
+
+? Ice.Lake.Rebels.S01E06.Ice.Lake.Games.720p.HDTV.x264-DHD
+: options: -n
+  episodeNumber: 6
+  format: HDTV
+  releaseGroup: DHD
+  screenSize: 720p
+  season: 1
+  series: Ice Lake Rebels
+  title: Ice Lake Games
+  type: episode
+  videoCodec: h264
+
+? The League - S06E10 - Epi Sexy.mkv
+: episodeNumber: 10
+  season: 6
+  series: The League
+  title: Epi Sexy
+  type: episode
+
+? Stay (2005) [1080p]/Stay.2005.1080p.BluRay.x264.YIFY.mp4
+: format: BluRay
+  releaseGroup: YIFY
+  screenSize: 1080p
+  title: Stay
+  type: movie
+  videoCodec: h264
+  year: 2005
