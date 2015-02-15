@@ -70,11 +70,9 @@ def scanVideo(part):
     
     Log.Debug("Scanning video: %s, subtitles=%s, embedded_subtitles=%s" % (part.file, external_subtitles, embedded_subtitles))
     try:
-        scannedVideo = subliminal.video.scan_video(part.file, subtitles=external_subtitles, embedded_subtitles=embedded_subtitles)
+        return subliminal.video.scan_video(part.file, subtitles=external_subtitles, embedded_subtitles=embedded_subtitles)
     except ValueError:
         Log.Warn("File could not be guessed by subliminal")
-    return scannedVideo
-
 
 def downloadBestSubtitles(videos):
     min_score = int(Prefs['subtitles.search.minimumScore'])
