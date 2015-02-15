@@ -101,7 +101,7 @@ def saveSubtitlesToFile(subtitles):
                 else:
                     fld = os.path.join(fld_base, fld_custom)
             else:
-                fld = os.path.join(fld_base, Prefs["subFolder"])
+                fld = os.path.join(fld_base, Prefs["subtitles.save.subFolder"])
             if not os.path.exists(fld):
                 os.makedirs(fld)
             subliminal.api.save_subtitles({video:video_subtitles}, directory=fld)
