@@ -43,16 +43,16 @@ french_alt_word_numeral_list = [
 
 
 def __build_word_numeral(*args, **kwargs):
-    re = None
+    re_ = None
     for word_list in args:
         for word in word_list:
-            if not re:
-                re = '(?:(?=\w+)'
+            if not re_:
+                re_ = '(?:(?=\w+)'
             else:
-                re += '|'
-            re += word
-    re += ')'
-    return re
+                re_ += '|'
+            re_ += word
+    re_ += ')'
+    return re_
 
 word_numeral = __build_word_numeral(english_word_numeral_list, french_word_numeral_list, french_alt_word_numeral_list)
 
@@ -84,10 +84,10 @@ def __parse_roman(value):
 
     result = 0
     index = 0
-    for numeral, integer in __romanNumeralMap:
-        while value[index:index + len(numeral)] == numeral:
+    for num, integer in __romanNumeralMap:
+        while value[index:index + len(num)] == num:
             result += integer
-            index += len(numeral)
+            index += len(num)
     return result
 
 
@@ -95,7 +95,7 @@ def __parse_word(value):
     """Convert Word numeral to integer"""
     for word_list in [english_word_numeral_list, french_word_numeral_list, french_alt_word_numeral_list]:
         try:
-            return word_list.index(value)
+            return word_list.index(value.lower())
         except ValueError:
             pass
     raise ValueError
@@ -130,7 +130,7 @@ def parse_numeral(value, int_enabled=True, roman_enabled=True, word_enabled=True
             if clean:
                 for word in value.split():
                     try:
-                        return __parse_roman(word)
+                        return __parse_roman(word.upper())
                     except ValueError:
                         pass
             return __parse_roman(value)

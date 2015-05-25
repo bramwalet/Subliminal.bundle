@@ -19,6 +19,7 @@
 #
 
 from __future__ import absolute_import, division, print_function, unicode_literals
+from guessit.options import reload as reload_options
 
 from stevedore import ExtensionManager
 from pkg_resources import EntryPoint
@@ -53,21 +54,24 @@ class Transformer(object):  # pragma: no cover
     def post_process(self, mtree, options=None):
         pass
 
+    def register_arguments(self, opts, naming_opts, output_opts, information_opts, webservice_opts, other_options):
+        pass
+
     def rate_quality(self, guess, *props):
         return 0
 
 
 class CustomTransformerExtensionManager(ExtensionManager):
     def __init__(self, namespace='guessit.transformer', invoke_on_load=True,
-        invoke_args=(), invoke_kwds={}, propagate_map_exceptions=True, on_load_failure_callback=None,
+                 invoke_args=(), invoke_kwds={}, propagate_map_exceptions=True, on_load_failure_callback=None,
                  verify_requirements=False):
         super(CustomTransformerExtensionManager, self).__init__(namespace=namespace,
-                 invoke_on_load=invoke_on_load,
-                 invoke_args=invoke_args,
-                 invoke_kwds=invoke_kwds,
-                 propagate_map_exceptions=propagate_map_exceptions,
-                 on_load_failure_callback=on_load_failure_callback,
-                 verify_requirements=verify_requirements)
+                                                                invoke_on_load=invoke_on_load,
+                                                                invoke_args=invoke_args,
+                                                                invoke_kwds=invoke_kwds,
+                                                                propagate_map_exceptions=propagate_map_exceptions,
+                                                                on_load_failure_callback=on_load_failure_callback,
+                                                                verify_requirements=verify_requirements)
 
     def order_extensions(self, extensions):
         """Order the loaded transformers
@@ -81,11 +85,14 @@ class CustomTransformerExtensionManager(ExtensionManager):
         extensions.sort(key=lambda ext: -ext.obj.priority)
         return extensions
 
-    def _load_one_plugin(self, ep, invoke_on_load, invoke_args, invoke_kwds, verify_requirements):
+    def _load_one_plugin(self, ep, invoke_on_load, invoke_args, invoke_kwds, verify_requirements=True):
         if not ep.dist:
-            plugin = ep.load(require=False)
+            if hasattr(ep, '_load'):
+                plugin = ep._load()  # `require` argument of ep.load() is deprecated in newer versions of setuptools
+            else:
+                plugin = ep.load(require=False)
         else:
-            plugin = ep.load(require=verify_requirements)
+            plugin = ep.load()
         if invoke_on_load:
             obj = plugin(*invoke_args, **invoke_kwds)
         else:
@@ -107,8 +114,11 @@ class CustomTransformerExtensionManager(ExtensionManager):
         except KeyError:
             return None
 
-    def register_module(self, name, module_name):
-        ep = EntryPoint(name, module_name)
+    def register_module(self, name=None, module_name=None, attrs=(), entry_point=None):
+        if entry_point:
+            ep = EntryPoint.parse(entry_point)
+        else:
+            ep = EntryPoint(name, module_name, attrs)
         loaded = self._load_one_plugin(ep, invoke_on_load=True, invoke_args=(), invoke_kwds={})
         if loaded:
             self.extensions.append(loaded)
@@ -137,7 +147,9 @@ class DefaultTransformerExtensionManager(CustomTransformerExtensionManager):
                                     'split_on_dash = guessit.transfo.split_on_dash:SplitOnDash',
                                     'guess_episode_info_from_position = guessit.transfo.guess_episode_info_from_position:GuessEpisodeInfoFromPosition',
                                     'guess_movie_title_from_position = guessit.transfo.guess_movie_title_from_position:GuessMovieTitleFromPosition',
-                                    'guess_episode_details = guessit.transfo.guess_episode_details:GuessEpisodeDetails']
+                                    'guess_episode_details = guessit.transfo.guess_episode_details:GuessEpisodeDetails',
+                                    'expected_series = guessit.transfo.expected_series:ExpectedSeries',
+                                    'expected_title = guessit.transfo.expected_title:ExpectedTitle',]
 
     def _find_entry_points(self, namespace):
         entry_points = {}
@@ -165,8 +177,25 @@ def get_transformer(name):
     return _extensions.object(name)
 
 
-def add_transformer(name, module_name):
-    _extensions.register_module(name, module_name)
+def add_transformer(name, module_name, class_name):
+    """
+    Add a transformer
+
+    :param name: the name of the transformer. ie: 'guess_regexp_id'
+    :param name: the module name. ie: 'flexget.utils.parsers.transformers.guess_regexp_id'
+    :param class_name: the class name. ie: 'GuessRegexpId'
+    """
+
+    _extensions.register_module(name, module_name, (class_name,))
+
+
+def add_transformer(entry_point):
+    """
+    Add a transformer
+
+    :param entry_point: entry point spec format. ie: 'guess_regexp_id = flexget.utils.parsers.transformers.guess_regexp_id:GuessRegexpId'
+    """
+    _extensions.register_module(entry_point = entry_point)
 
 
 def reload(custom=False):
@@ -182,5 +211,6 @@ def reload(custom=False):
         _extensions = CustomTransformerExtensionManager()
     else:
         _extensions = DefaultTransformerExtensionManager()
+    reload_options(all_transformers())
 
 reload()

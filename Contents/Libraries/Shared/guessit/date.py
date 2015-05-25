@@ -21,40 +21,23 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import datetime
+
 import re
-import math
+
+from dateutil import parser
 
 
 _dsep = r'[-/ \.]'
-_date_rexps = [re.compile(
-        # 20010823
-        r'[^0-9]' +
-        r'(?P<year>[0-9]{4})' +
-        r'(?P<month>[0-9]{2})' +
-        r'(?P<day>[0-9]{2})' +
-        r'[^0-9]'),
+_dsep_bis = r'[-/ \.x]'
 
-        # 2001-08-23
-        re.compile(r'[^0-9]' +
-        r'(?P<year>[0-9]{4})' + _dsep +
-        r'(?P<month>[0-9]{2})' + _dsep +
-        r'(?P<day>[0-9]{2})' +
-        r'[^0-9]'),
-
-        # 23-08-2001
-        re.compile(r'[^0-9]' +
-        r'(?P<day>[0-9]{2})' + _dsep +
-        r'(?P<month>[0-9]{2})' + _dsep +
-        r'(?P<year>[0-9]{4})' +
-        r'[^0-9]'),
-
-        # 23-08-01
-        re.compile(r'[^0-9]' +
-        r'(?P<day>[0-9]{2})' + _dsep +
-        r'(?P<month>[0-9]{2})' + _dsep +
-        r'(?P<year>[0-9]{2})' +
-        r'[^0-9]'),
-        ]
+date_regexps = [
+    re.compile('[^\d](\d{8})[^\d]', re.IGNORECASE),
+    re.compile('[^\d](\d{6})[^\d]', re.IGNORECASE),
+    re.compile('[^\d](\d{2})%s(\d{1,2})%s(\d{1,2})[^\d]' % (_dsep, _dsep), re.IGNORECASE),
+    re.compile('[^\d](\d{1,2})%s(\d{1,2})%s(\d{2})[^\d]' % (_dsep, _dsep), re.IGNORECASE),
+    re.compile('[^\d](\d{4})%s(\d{1,2})%s(\d{1,2})[^\d]' % (_dsep_bis, _dsep), re.IGNORECASE),
+    re.compile('[^\d](\d{1,2})%s(\d{1,2})%s(\d{4})[^\d]' % (_dsep, _dsep_bis), re.IGNORECASE),
+    re.compile('[^\d](\d{1,2}(?:st|nd|rd|th)?%s(?:[a-z]{3,10})%s\d{4})[^\d]' % (_dsep, _dsep), re.IGNORECASE)]
 
 
 def valid_year(year, today=None):
@@ -89,7 +72,7 @@ def search_year(string):
     return (None, None)
 
 
-def search_date(string):
+def search_date(string, year_first=None, day_first=True):
     """Looks for date patterns, and if found return the date and group span.
 
     Assumes there are sentinels at the beginning and end of the string that
@@ -107,40 +90,40 @@ def search_date(string):
     >>> search_date(' no date in here ')
     (None, None)
     """
+    start, end = None, None
+    match = None
+    for date_re in date_regexps:
+        s = date_re.search(string)
+        if s and (match is None or s.end() - s.start() > len(match)):
+            start, end = s.start(), s.end()
+            if date_re.groups:
+                match = '-'.join(s.groups())
+            else:
+                match = s.group()
+
+    if match is None:
+        return None, None
 
     today = datetime.date.today()
-    for drexp in _date_rexps:
-        match = re.search(drexp, string)
-        if match:
-            d = match.groupdict()
-            year, month, day = int(d['year']), int(d['month']), int(d['day'])
-            # years specified as 2 digits should be adjusted here
-            if year < 100:
-                if year > (today.year % 100) + 5:
-                    year = 1900 + year
-                else:
-                    year = 2000 + year
 
+    # If day_first/year_first is undefined, parse is made using both possible values.
+    yearfirst_opts = [False, True]
+    if year_first is not None:
+        yearfirst_opts = [year_first]
+
+    dayfirst_opts = [True, False]
+    if day_first is not None:
+        dayfirst_opts = [day_first]
+
+    kwargs_list = ({'dayfirst': d, 'yearfirst': y} for d in dayfirst_opts for y in yearfirst_opts)
+    for kwargs in kwargs_list:
+        try:
+            date = parser.parse(match, **kwargs)
+        except (ValueError, TypeError) as e: #see https://bugs.launchpad.net/dateutil/+bug/1247643
             date = None
-            try:
-                date = datetime.date(year, month, day)
-            except ValueError:
-                try:
-                    date = datetime.date(year, day, month)
-                except ValueError:
-                    pass
-
-            if date is None:
-                continue
-
-            # check date plausibility
-            if not valid_year(date.year, today=today):
-                continue
-
-            # looks like we have a valid date
-            # note: span is  [+1,-1] because we don't want to include the
-            # non-digit char
-            start, end = match.span()
-            return (date, (start + 1, end - 1))
+            pass
+        # check date plausibility
+        if date and valid_year(date.year, today=today):
+            return date.date(), (start+1, end-1) #compensate for sentinels
 
     return None, None

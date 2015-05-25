@@ -21,30 +21,38 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 from guessit.plugins.transformers import Transformer
-from guessit.matcher import GuessFinder
+from guessit.matcher import GuessFinder, build_guess
 from guessit.containers import PropertiesContainer
 from guessit.patterns import sep
 from guessit.guess import Guess
 from guessit.textutils import strip_brackets
+import re
 
 
 class GuessReleaseGroup(Transformer):
     def __init__(self):
         Transformer.__init__(self, -190)
+
         self.container = PropertiesContainer(canonical_from_pattern=False)
-        self._allowed_groupname_pattern = '[\w@#€£$&]'
+        self._allowed_groupname_pattern = '[\w@#€£$&!\?]'
         self._forbidden_groupname_lambda = [lambda elt: elt in ['rip', 'by', 'for', 'par', 'pour', 'bonus'],
-                               lambda elt: self._is_number(elt),
-                               ]
+                                            lambda elt: self._is_number(elt)]
         # If the previous property in this list, the match will be considered as safe
         # and group name can contain a separator.
-        self.previous_safe_properties = ['videoCodec', 'format', 'videoApi', 'audioCodec', 'audioProfile', 'videoProfile', 'audioChannels']
-
+        self.previous_safe_properties = ['videoCodec', 'format', 'videoApi', 'audioCodec', 'audioProfile', 'videoProfile', 'audioChannels', 'other']
+        self.previous_safe_values = {'other': ['Complete']}
+        self.next_safe_properties = ['extension', 'website']
+        self.next_safe_values = {'format': ['Telesync']}
         self.container.sep_replace_char = '-'
         self.container.canonical_from_pattern = False
         self.container.enhance = True
         self.container.register_property('releaseGroup', self._allowed_groupname_pattern + '+')
         self.container.register_property('releaseGroup', self._allowed_groupname_pattern + '+-' + self._allowed_groupname_pattern + '+')
+        self.re_sep = re.compile('(' + sep + ')')
+
+    def register_arguments(self, opts, naming_opts, output_opts, information_opts, webservice_opts, other_options):
+        naming_opts.add_argument('-G', '--expected-group', action='append', dest='expected_group',
+                               help='Expected release group (can be used multiple times)')
 
     def supported_properties(self):
         return self.container.get_supported_properties()
@@ -58,27 +66,32 @@ class GuessReleaseGroup(Transformer):
 
     def validate_group_name(self, guess):
         val = guess['releaseGroup']
-        if len(val) >= 2:
-
-            if '-' in val:
-                checked_val = ""
-                for elt in val.split('-'):
+        if len(val) > 1:
+            checked_val = ""
+            forbidden = False
+            for elt in self.re_sep.split(val): # separators are in the list because of capturing group
+                if forbidden:
+                    # Previous was forbidden, don't had separator
                     forbidden = False
-                    for forbidden_lambda in self._forbidden_groupname_lambda:
-                        forbidden = forbidden_lambda(elt.lower())
-                        if forbidden:
-                            break
-                    if not forbidden:
+                    continue
+                for forbidden_lambda in self._forbidden_groupname_lambda:
+                    forbidden = forbidden_lambda(elt.lower())
+                    if forbidden:
                         if checked_val:
-                            checked_val += '-'
-                        checked_val += elt
-                    else:
+                            # Removing previous separator
+                            checked_val = checked_val[0:len(checked_val) - 1]
                         break
-                val = checked_val
-                if not val:
-                    return False
-                guess['releaseGroup'] = val
+                if not forbidden:
+                    checked_val += elt
 
+            val = checked_val
+            if not val:
+                return False
+            if self.re_sep.match(val[-1]):
+                val = val[:len(val)-1]
+            if self.re_sep.match(val[0]):
+                val = val[1:]
+            guess['releaseGroup'] = val
             forbidden = False
             for forbidden_lambda in self._forbidden_groupname_lambda:
                 forbidden = forbidden_lambda(val.lower())
@@ -91,20 +104,56 @@ class GuessReleaseGroup(Transformer):
     def is_leaf_previous(self, leaf, node):
         if leaf.span[1] <= node.span[0]:
             for idx in range(leaf.span[1], node.span[0]):
-                if not leaf.root.value[idx] in sep:
+                if leaf.root.value[idx] not in sep:
                     return False
             return True
         return False
 
+    def validate_next_leaves(self, node):
+        if 'series' in node.root.info or 'title' in node.root.info:
+            # --expected-series or --expected-title is used.
+            return True
+
+        # Make sure to avoid collision with 'series' or 'title' guessed later. Should be more precise.
+        leaves = node.root.unidentified_leaves()
+        return len(list(leaves)) > 1
+
+    def validate_node(self, leaf, node, safe=False):
+        if not self.is_leaf_previous(leaf, node):
+            return False
+        if not self.validate_next_leaves(node):
+            return False
+        if safe:
+            for k, v in leaf.guess.items():
+                if k in self.previous_safe_values and not v in self.previous_safe_values[k]:
+                    return False
+        return True
+
     def guess_release_group(self, string, node=None, options=None):
-        found = self.container.find_properties(string, node, 'releaseGroup')
-        guess = self.container.as_guess(found, string, self.validate_group_name, sep_replacement='-')
+        if options and options.get('expected_group'):
+            expected_container = PropertiesContainer(enhance=True, canonical_from_pattern=False)
+            for expected_group in options.get('expected_group'):
+                if expected_group.startswith('re:'):
+                    expected_group = expected_group[3:]
+                    expected_group = expected_group.replace(' ', '-')
+                    expected_container.register_property('releaseGroup', expected_group, enhance=True)
+                else:
+                    expected_group = re.escape(expected_group)
+                    expected_container.register_property('releaseGroup', expected_group, enhance=False)
+
+            found = expected_container.find_properties(string, node, options, 'releaseGroup')
+            guess = expected_container.as_guess(found, string, self.validate_group_name)
+            if guess:
+                return guess
+
+        found = self.container.find_properties(string, node, options, 'releaseGroup')
+        guess = self.container.as_guess(found, string, self.validate_group_name)
         validated_guess = None
         if guess:
-            explicit_group_node = node.group_node()
-            if explicit_group_node:
-                for leaf in explicit_group_node.leaves_containing(self.previous_safe_properties):
-                    if self.is_leaf_previous(leaf, node):
+            group_node = node.group_node()
+            if group_node:
+                for leaf in group_node.leaves_containing(self.previous_safe_properties):
+                    if self.validate_node(leaf, node, True):
                         if leaf.root.value[leaf.span[1]] == '-':
                             guess.metadata().confidence = 1
                         else:
@@ -117,7 +166,7 @@ class GuessReleaseGroup(Transformer):
                 previous_group_node = node.previous_group_node()
                 if previous_group_node:
                     for leaf in previous_group_node.leaves_containing(self.previous_safe_properties):
-                        if self.is_leaf_previous(leaf, node):
+                        if self.validate_node(leaf, node, False):
                             guess = Guess({'releaseGroup': node.value}, confidence=1, input=node.value, span=(0, len(node.value)))
                             if self.validate_group_name(guess):
                                 node.guess = guess
@@ -138,6 +187,12 @@ class GuessReleaseGroup(Transformer):
                             break
                     else:
                         break
+
+            if not validated_guess and node.is_explicit() and node.node_last_idx == 0: # first node from group
+                validated_guess = build_guess(node, 'releaseGroup', value=node.value[1:len(node.value)-1])
+                validated_guess.metadata().confidence = 0.4
+                validated_guess.metadata().span = 1, len(node.value)
+                node.guess = validated_guess
 
         if validated_guess:
             # Strip brackets

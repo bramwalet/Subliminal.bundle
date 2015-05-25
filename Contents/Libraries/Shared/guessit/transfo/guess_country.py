@@ -37,12 +37,16 @@ class GuessCountry(Transformer):
         Transformer.__init__(self, -170)
         self.replace_language = frozenset(['uk'])
 
+    def register_arguments(self, opts, naming_opts, output_opts, information_opts, webservice_opts, other_options):
+        naming_opts.add_argument('-C', '--allowed-country', action='append', dest='allowed_countries',
+                                 help='Allowed country (can be used multiple times)')
+
     def supported_properties(self):
         return ['country']
 
     def should_process(self, mtree, options=None):
         options = options or {}
-        return 'nocountry' not in options.keys()
+        return options.get('country', True)
 
     def _scan_country(self, country, strict=False):
         """
@@ -73,18 +77,22 @@ class GuessCountry(Transformer):
             except babelfish.Error:
                 continue
 
-        return Country.fromguessit(country), None
+        return Country.fromguessit(country), (start, end)
 
-    def is_valid_country(self, country):
-        return (country.name.lower() not in LNG_COMMON_WORDS and
-                country.alpha2.lower() not in LNG_COMMON_WORDS)
+    def is_valid_country(self, country, options=None):
+        if options and options.get('allowed_countries'):
+            allowed_countries = options.get('allowed_countries')
+            return country.name.lower() in allowed_countries or country.alpha2.lower() in allowed_countries
+        else:
+            return (country.name.lower() not in LNG_COMMON_WORDS and
+                    country.alpha2.lower() not in LNG_COMMON_WORDS)
 
     def guess_country(self, string, node=None, options=None):
         c = string.strip().lower()
-        if not c in LNG_COMMON_WORDS:
+        if c not in LNG_COMMON_WORDS:
             try:
                 country, country_span = self._scan_country(c, True)
-                if self.is_valid_country(country):
+                if self.is_valid_country(country, options):
                     guess = Guess(country=country, confidence=1.0, input=node.value, span=(country_span[0] + 1, country_span[1] + 1))
                     return guess
             except babelfish.Error:
@@ -99,7 +107,7 @@ class GuessCountry(Transformer):
                 node.guess.set('language', None)
                 try:
                     country = Country.fromguessit(c)
-                    if self.is_valid_country(country):
+                    if self.is_valid_country(country, options):
                         guess = Guess(country=country, confidence=0.9, input=node.value, span=node.span)
                         found_guess(node, guess, logger=log)
                 except babelfish.Error:

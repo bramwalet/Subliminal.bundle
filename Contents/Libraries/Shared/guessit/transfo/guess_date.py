@@ -29,11 +29,17 @@ class GuessDate(Transformer):
     def __init__(self):
         Transformer.__init__(self, 50)
 
+    def register_arguments(self, opts, naming_opts, output_opts, information_opts, webservice_opts, other_options):
+        naming_opts.add_argument('-Y', '--date-year-first', action='store_true', dest='date_year_first', default=None,
+                                 help='If short date is found, consider the first digits as the year.')
+        naming_opts.add_argument('-D', '--date-day-first', action='store_true', dest='date_day_first', default=None,
+                                 help='If short date is found, consider the second digits as the day.')
+
     def supported_properties(self):
         return ['date']
 
     def guess_date(self, string, node=None, options=None):
-        date, span = search_date(string)
+        date, span = search_date(string, options.get('date_year_first') if options else False, options.get('date_day_first') if options else False)
         if date:
             return {'date': date}, span
         else:
