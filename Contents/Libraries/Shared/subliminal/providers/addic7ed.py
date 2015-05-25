@@ -30,6 +30,14 @@ class Addic7edSubtitle(Subtitle):
         self.version = version
         self.download_link = download_link
 
+    def compute_score(self, video):
+        score = super(Addic7edSubtitle, self).compute_score(video)
+        if score > 40:
+            #logger.info("addic7ed found! %s" % score)
+            score += 15
+        return score
+
+
     def compute_matches(self, video):
         matches = set()
         # series
@@ -50,6 +58,8 @@ class Addic7edSubtitle(Subtitle):
         # release_group
         if video.release_group and self.version and video.release_group.lower() in self.version.lower():
             matches.add('release_group')
+
+        #logger.info("MATCHDEBUG %s %s %s", video.release_group, self.version, self.title)
         """
         # resolution
         if video.resolution and self.version and video.resolution in self.version.lower():
