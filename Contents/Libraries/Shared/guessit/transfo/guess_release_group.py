@@ -39,7 +39,7 @@ class GuessReleaseGroup(Transformer):
                                             lambda elt: self._is_number(elt)]
         # If the previous property in this list, the match will be considered as safe
         # and group name can contain a separator.
-        self.previous_safe_properties = ['videoCodec', 'format', 'videoApi', 'audioCodec', 'audioProfile', 'videoProfile', 'audioChannels', 'other']
+        self.previous_safe_properties = ['videoCodec', 'screenSize', 'format', 'videoApi', 'audioCodec', 'audioProfile', 'videoProfile', 'audioChannels', 'other']
         self.previous_safe_values = {'other': ['Complete']}
         self.next_safe_properties = ['extension', 'website']
         self.next_safe_values = {'format': ['Telesync']}
