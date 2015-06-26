@@ -32,9 +32,9 @@ class Addic7edSubtitle(Subtitle):
 
     def compute_score(self, video):
         score = super(Addic7edSubtitle, self).compute_score(video)
-        if score > 40:
+        if score > 60:
             #logger.info("addic7ed found! %s" % score)
-            score += 15
+            score += 2
         return score
 
 
@@ -194,9 +194,13 @@ class Addic7edProvider(Provider):
         for row in soup('tr', class_='epeven completed'):
             cells = row('td')
             if cells[5].string != 'Completed':
+                #logger.info("SKIPPING cell")
                 continue
             if not cells[3].string:
+                #logger.info("SKIPPING cell2")
                 continue
+
+            #logger.info(u"PARSEDEBUG: %s", cells[4].string)
             subtitles.append(Addic7edSubtitle(babelfish.Language.fromaddic7ed(cells[3].string), series, season,
                                               int(cells[1].string), cells[2].string, year, cells[4].string,
                                               bool(cells[6].string), cells[9].a['href'],
