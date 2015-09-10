@@ -32,6 +32,13 @@ class Addic7edSubtitle(Subtitle):
         self.version = version
         self.download_link = download_link
 
+    def compute_score(self, video):
+        score = super(Addic7edSubtitle, self).compute_score(video)
+        if score > 60:
+            #logger.info("addic7ed found! %s" % score)
+            score += 2
+        return score
+
     @property
     def id(self):
         return self.download_link
