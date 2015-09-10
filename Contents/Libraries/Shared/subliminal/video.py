@@ -249,9 +249,9 @@ def search_external_subtitles(path):
     subtitles = {}
     for p in os.listdir(dirpath):
         # skip badly encoded filenames
-        if isinstance(p, bytes):  # pragma: no cover
-            logger.error('Skipping badly encoded filename %r in %r', p.decode('utf-8', errors='replace'), dirpath)
-            continue
+        #if isinstance(p, bytes):  # pragma: no cover
+        #    logger.error('Skipping badly encoded filename %r in %r', p.decode('utf-8', errors='replace'), dirpath)
+        #    continue
 
         # keep only valid subtitle filenames
         if not p.startswith(fileroot) or not p.endswith(SUBTITLE_EXTENSIONS):
