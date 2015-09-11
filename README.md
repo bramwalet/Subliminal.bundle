@@ -1,3 +1,8 @@
+pannal's fork:
+
+- increased score of addic7ed subtitles a bit
+- support for newest Subliminal and guessit
+
 Subliminal.bundle
 =================
 
