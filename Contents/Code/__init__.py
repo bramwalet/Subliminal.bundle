@@ -4,11 +4,12 @@ import string, os, urllib, zipfile, re, copy
 from babelfish import Language
 from datetime import timedelta
 import subliminal
+import subliminal_patch
 import logger
 
 OS_PLEX_USERAGENT = 'plexapp.com v9.0'
 
-DEPENDENCY_MODULE_NAMES = ['subliminal', 'enzyme', 'guessit', 'requests']
+DEPENDENCY_MODULE_NAMES = ['subliminal', 'subliminal_patch', 'enzyme', 'guessit', 'requests']
 
 def Start():
     HTTP.CacheTime = 0
@@ -16,7 +17,7 @@ def Start():
     Log.Debug("START CALLED")
     logger.registerLoggingHander(DEPENDENCY_MODULE_NAMES)
     # configured cache to be in memory as per https://github.com/Diaoul/subliminal/issues/303
-    subliminal.cache_region.configure('dogpile.cache.memory')
+    subliminal.region.configure('dogpile.cache.memory')
 
 def ValidatePrefs():
     Log.Debug("Validate Prefs called.")
@@ -42,7 +43,7 @@ def getProviders():
 def getProviderSettings():
     provider_settings = {'addic7ed': {'username': Prefs['provider.addic7ed.username'], 
                                       'password': Prefs['provider.addic7ed.password']
-                                      }
+                                      },
                          }
     return provider_settings
 
@@ -78,7 +79,11 @@ def downloadBestSubtitles(videos):
     min_score = int(Prefs['subtitles.search.minimumScore'])
     hearing_impaired = Prefs['subtitles.search.hearingImpaired']
     Log.Debug("Download best subtitles using settings: min_score: %s, hearing_impaired: %s" %(min_score, hearing_impaired))
-    return subliminal.api.download_best_subtitles(videos, getLangList(), getProviders(), getProviderSettings(), min_score, hearing_impaired)
+    
+    # patch subliminal's ProviderPool
+    subliminal.api.ProviderPool = subliminal_patch.PatchedProviderPool
+
+    return subliminal.api.download_best_subtitles(videos, getLangList(), min_score, hearing_impaired, provider_configs=getProviderSettings())
 
 def saveSubtitles(videos, subtitles):
     if Prefs['subtitles.save.filesystem']:
@@ -104,7 +109,7 @@ def saveSubtitlesToFile(subtitles):
                 fld = os.path.join(fld_base, Prefs["subtitles.save.subFolder"])
             if not os.path.exists(fld):
                 os.makedirs(fld)
-            subliminal.api.save_subtitles({video:video_subtitles}, directory=fld)
+            subliminal.api.save_subtitles(video, video_subtitles, directory=fld)
     
     else:
         subliminal.api.save_subtitles(subtitles)
@@ -136,7 +141,7 @@ class SubliminalSubtitlesAgentTvShows(Agent.TV_Shows):
     name = 'Subliminal TV Subtitles'
     languages = [Locale.Language.English]
     primary_provider = False
-    contributes_to = ['com.plexapp.agents.thetvdb']
+    contributes_to = ['com.plexapp.agents.thetvdb', 'com.plexapp.agents.thetvdbdvdorder']
 
     def search(self, results, media, lang):
         Log.Debug("TV SEARCH CALLED")
