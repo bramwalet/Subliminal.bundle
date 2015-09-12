@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 series_year_re = re.compile('^(?P<series>[ \w]+)(?: \((?P<year>\d{4})\))?$')
 
+babelfish.language_converters.register('addic7ed = subliminal.converters.addic7ed:Addic7edConverter')
 
 class Addic7edSubtitle(Subtitle):
     provider_name = 'addic7ed'
