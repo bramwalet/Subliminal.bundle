@@ -20,8 +20,6 @@ logger = logging.getLogger(__name__)
 link_re = re.compile('^(?P<series>.+?)(?: \(?\d{4}\)?| \((?:US|UK)\))? \((?P<first_year>\d{4})-\d{4}\)$')
 episode_id_re = re.compile('^episode-\d+\.html$')
 
-babelfish.language_converters.register('podnapisi = subliminal.converters.tvsubtitles:TVsubtitlesConverter')
-
 class TVsubtitlesSubtitle(Subtitle):
     provider_name = 'tvsubtitles'
 

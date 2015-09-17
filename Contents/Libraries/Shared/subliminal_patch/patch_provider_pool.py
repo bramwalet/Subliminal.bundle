@@ -4,6 +4,7 @@ import logging
 import traceback
 import requests
 import socket
+from babelfish.exceptions import LanguageReverseError
 
 from pkg_resources import EntryPoint, iter_entry_points
 
@@ -171,6 +172,9 @@ class PatchedProviderPool(ProviderPool):
                 logger.error('Provider %r timed out, discarding it', name)
                 self.discarded_providers.add(name)
                 continue
+	    except LanguageReverseError, e:
+		logger.exception("Unexpected language reverse error in %s, skipping. Error: %s", name, traceback.format_exc())
+		continue
             except Exception, e:
                 logger.exception('Unexpected error in provider %r, discarding it, because of: %s', name, traceback.format_exc())
                 self.discarded_providers.add(name)
