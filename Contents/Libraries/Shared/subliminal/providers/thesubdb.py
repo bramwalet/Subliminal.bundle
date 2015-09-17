@@ -12,7 +12,6 @@ from ..subtitle import Subtitle, fix_line_ending
 
 logger = logging.getLogger(__name__)
 
-
 class TheSubDBSubtitle(Subtitle):
     provider_name = 'thesubdb'
 

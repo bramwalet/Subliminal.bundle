@@ -24,7 +24,6 @@ from ..video import Episode, Movie
 
 logger = logging.getLogger(__name__)
 
-
 class PodnapisiSubtitle(Subtitle):
     provider_name = 'podnapisi'
 
