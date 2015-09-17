@@ -12,5 +12,5 @@ subliminal.api.ProviderPool = PatchedProviderPool
 subliminal.providers.addic7ed.Addic7edProvider = PatchedAddic7edProvider
 
 # add language converters
-babelfish.language_converters.register('addic7ed = subliminal.converters.addic7ed:Addic7edConverter')
+babelfish.language_converters.register('addic7ed = subliminal_patch.patch_language:PatchedAddic7edConverter')
 babelfish.language_converters.register('tvsubtitles = subliminal.converters.tvsubtitles:TVsubtitlesConverter')
