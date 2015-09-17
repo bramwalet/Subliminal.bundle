@@ -4,7 +4,8 @@ pannal's fork:
 - support for newest Subliminal and guessit
 - plugin now also works with com.plexapp.agents.thetvdbdvdorder
 - guessit's release-group detection bug fixed (not the correct way, though. has already been fixed in guessit itself, need to merge)
-- addic7ed and tvsubtitles currently broken
+- providers fixed for subliminal 1.0.1 (at least addic7ed)
+- support for addic7ed languages: French (Canadian)
 
 Subliminal.bundle
 =================
