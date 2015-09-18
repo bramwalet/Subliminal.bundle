@@ -1,7 +1,7 @@
 pannal's fork:
 
 - ~~increased score of addic7ed subtitles a bit~~ (not existing currently)
-- **support for newest Subliminal (1.0.1) and guessit (0.10.1)**
+- **support for newest Subliminal (1.0.1) and guessit (0.11.0)**
 - **plugin now also works with com.plexapp.agents.thetvdbdvdorder**
 - guessit's release-group detection bug fixed (*not the correct way, though. has already been fixed in guessit itself, need to merge*)
 - providers fixed for subliminal 1.0.1 (at least addic7ed)
