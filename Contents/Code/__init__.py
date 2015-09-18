@@ -42,7 +42,8 @@ def getProviders():
 
 def getProviderSettings():
     provider_settings = {'addic7ed': {'username': Prefs['provider.addic7ed.username'], 
-                                      'password': Prefs['provider.addic7ed.password']
+                                      'password': Prefs['provider.addic7ed.password'],
+				      'use_random_agents': Prefs['provider.addic7ed.use_random_agents'],
                                       },
                          }
     return provider_settings
