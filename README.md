@@ -1,14 +1,14 @@
 pannal's fork:
 
 - ~~increased score of addic7ed subtitles a bit~~ (not existing currently)
-- **support for newest Subliminal (1.0.1) and guessit (0.11.0)**
-- **plugin now also works with com.plexapp.agents.thetvdbdvdorder**
-- providers fixed for subliminal 1.0.1 (at least addic7ed)
-- providers don't simply fail and get excluded on non-detected language
-- support for addic7ed languages: French (Canadian)
-- support for additional languages: pt-br (Portuguese (Brasil)), fa (Persian (Farsi))
-- support for three (two optional) subtitle languages
-- optionally use random user agent for addic7ed provider (should not be needed)
+- **support for newest Subliminal ([1.0.1](27a6e51cd36ffb2910cd9a7add6d797a2c6469b7)) and guessit ([0.11.0](2814f57e8999dcc31575619f076c0c1a63ce78f2))**
+- **plugin now also [works with com.plexapp.agents.thetvdbdvdorder](924470d2c0db3a71529278bce4b7247eaf2f85b8)**
+- providers fixed for subliminal 1.0.1 ([at least addic7ed](131504e7eed8b3400c457fbe49beea3b115bc916))
+- providers [don't simply fail and get excluded on non-detected language](1a779020792e0201ad689eefbf5a126155e89c97)
+- support for addic7ed languages: [French (Canadian)](b11a051c233fd72033f0c3b5a8c1965260e7e19f)
+- support for additional languages: [pt-br (Portuguese (Brasil)), fa (Persian (Farsi))](131504e7eed8b3400c457fbe49beea3b115bc916)
+- support for [three (two optional) subtitle languages](e543c927cf49c264eaece36640c99d67a99c7da2)
+- optionally use [random user agent for addic7ed provider](83ace14faf75fbd75313f0ceda9b78161895fbcf) (should not be needed)
 
 bugs:
 - skip existing subtitles (not in video's path - e.g. subFolder given) currently broken
