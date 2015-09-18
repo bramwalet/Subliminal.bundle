@@ -28,6 +28,8 @@ def getLangList():
     langList = {Language.fromietf(Prefs["langPref1"])}
     if(Prefs["langPref2"] != "None"):
         langList.update({Language.fromietf(Prefs["langPref2"])})
+    if(Prefs["langPref3"] != "None"):
+        langList.update({Language.fromietf(Prefs["langPref3"])})
         
     return langList
 

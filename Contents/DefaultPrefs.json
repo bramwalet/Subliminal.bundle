@@ -30,10 +30,17 @@
                 "id": "langPref2",
                 "label": "Subtitle Language (2)",
                 "type": "enum",
-                "values": ["None", "sq","ar","be","bs","bg","ca","zh","cs","da","nl","en","et","fi","fr","de","el","he","hi","hu","is","id","it","ja","ko","lv","lt","mk","ms","no","fa""pl","pt","pt-br","ro","ru","sr","sk","sl","es","sv","th","tr","uk","vi","hr"],
+                "values": ["None", "sq","ar","be","bs","bg","ca","zh","cs","da","nl","en","et","fi","fr","de","el","he","hi","hu","is","id","it","ja","ko","lv","lt","mk","ms","no","fa","pl","pt","pt-br","ro","ru","sr","sk","sl","es","sv","th","tr","uk","vi","hr"],
                 "default": "None"
-        },        
-		{
+        },
+	{
+                "id": "langPref3",
+                "label": "Subtitle Language (3)",
+                "type": "enum",
+                "values": ["None", "sq","ar","be","bs","bg","ca","zh","cs","da","nl","en","et","fi","fr","de","el","he","hi","hu","is","id","it","ja","ko","lv","lt","mk","ms","no","fa","pl","pt","pt-br","ro","ru","sr","sk","sl","es","sv","th","tr","uk","vi","hr"],
+                "default": "None"
+        },
+	{
                 "id": "provider.opensubtitles.enabled",
                 "label": "Provider: Enable OpenSubtitles",
                 "type": "bool",
@@ -65,13 +72,13 @@
         },
         {
                 "id": "subtitles.scan.embedded",
-                "label": "Scan: include embedded subtitles",
+                "label": "Scan: include embedded subtitles (skip if existing)",
                 "type": "bool",
                 "default": "false"
         },
         {
                 "id": "subtitles.scan.external",
-                "label": "Scan: include external subtitles",
+                "label": "Scan: include external subtitles (skip if existing)",
                 "type": "bool",
                 "default": "false"
         },
