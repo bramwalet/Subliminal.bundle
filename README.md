@@ -8,6 +8,7 @@ pannal's fork:
 - support for addic7ed languages: French (Canadian)
 - support for additional languages: pt-br (Portuguese (Brasil)), fa (Persian (Farsi))
 - support for three (two optional) subtitle languages
+- optionally use random user agent for addic7ed provider (should not be needed)
 
 bugs:
 - skip existing subtitles (not in video's path - e.g. subFolder given) currently broken
