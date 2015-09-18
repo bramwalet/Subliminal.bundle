@@ -31,12 +31,10 @@ keywords = yaml.load("""
 ? Xvid PROPER
 : videoCodec: Xvid
   other: PROPER
-  properCount: 1
 
 ? PROPER-Xvid
 : videoCodec: Xvid
   other: PROPER
-  properCount: 1
 
 """)
 

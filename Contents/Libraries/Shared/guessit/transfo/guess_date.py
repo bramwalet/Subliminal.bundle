@@ -19,7 +19,6 @@
 #
 
 from __future__ import absolute_import, division, print_function, unicode_literals
-from guessit.containers import DefaultValidator
 
 from guessit.plugins.transformers import Transformer
 from guessit.matcher import GuessFinder
@@ -42,9 +41,10 @@ class GuessDate(Transformer):
     @staticmethod
     def guess_date(string, node=None, options=None):
         date, span = search_date(string, options.get('date_year_first') if options else False, options.get('date_day_first') if options else False)
-        if date and span and DefaultValidator.validate_string(string, span): # ensure we have a separator before and after date
+        if date:
             return {'date': date}, span
-        return None, None
+        else:
+            return None, None
 
     def process(self, mtree, options=None):
         GuessFinder(self.guess_date, 1.0, self.log, options).process_nodes(mtree.unidentified_leaves())

@@ -22,6 +22,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from collections import defaultdict
 from unittest import TestCase, TestLoader
+import shlex
 import logging
 import os
 import sys
@@ -85,6 +86,10 @@ class TestGuessit(TestCase):
 
             options = required_fields.pop('options') if 'options' in required_fields else None
 
+            if options:
+                args = shlex.split(options)
+                options = get_opts().parse_args(args)
+                options = vars(options)
             try:
                 found = guess_func(filename, options)
             except Exception as e:
