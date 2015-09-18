@@ -7,6 +7,9 @@ pannal's fork:
 - providers fixed for subliminal 1.0.1 (at least addic7ed)
 - support for addic7ed languages: French (Canadian)
 
+bugs:
+- skip existing subtitles (not in video's path - e.g. subFolder given) currently broken
+
 Subliminal.bundle
 =================
 
