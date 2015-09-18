@@ -1,6 +1,11 @@
 # coding=utf-8
 
 import logging
+import traceback
+import requests
+import socket
+from babelfish.exceptions import LanguageReverseError
+
 from pkg_resources import EntryPoint, iter_entry_points
 
 from subliminal.api import ProviderPool
@@ -35,13 +40,15 @@ class LegacyProviderManager(object):
     """
     entry_point = 'subliminal.providers'
 
-    def __init__(self):
+    def __init__(self, enabled_providers=None):
         #: Registered providers with entry point syntax
         self.registered_providers = ['addic7ed = subliminal.providers.addic7ed:Addic7edProvider',
                                      'opensubtitles = subliminal.providers.opensubtitles:OpenSubtitlesProvider',
                                      'podnapisi = subliminal.providers.podnapisi:PodnapisiProvider',
                                      'thesubdb = subliminal.providers.thesubdb:TheSubDBProvider',
                                      'tvsubtitles = subliminal.providers.tvsubtitles:TVsubtitlesProvider']
+
+	self.enabled_providers = enabled_providers or []
 
         #: Loaded providers
         self.providers = {}
@@ -57,14 +64,14 @@ class LegacyProviderManager(object):
     def __getitem__(self, name):
         """Get a provider, lazy loading it if necessary"""
 	
-        if name in self.providers:
+        if name in self.enabled_providers and name in self.providers:
             return self.providers[name]
         for ep in iter_entry_points(self.entry_point):
-            if ep.name == name:
+            if ep.name == name and name in self.enabled_providers:
                 self.providers[ep.name] = OldToNewProvider(ep.load())
                 return self.providers[ep.name]
         for ep in (EntryPoint.parse(c) for c in self.registered_providers):
-            if ep.name == name:
+            if ep.name == name and name in self.enabled_providers:
                 self.providers[ep.name] = OldToNewProvider(ep.load(require=False))
                 return self.providers[ep.name]
         raise KeyError(name)
@@ -127,6 +134,51 @@ class PatchedProviderPool(ProviderPool):
 
         #: Dedicated :data:`provider_manager` as :class:`~stevedore.enabled.EnabledExtensionManager`
         #self.manager = EnabledExtensionManager(provider_manager.namespace, lambda e: e.name in self.providers)
-	self.manager = provider_manager
+	self.manager = provider_manager if not providers else LegacyProviderManager(self.providers)
 	
+    def list_subtitles(self, video, languages):
+        """List subtitles.
+        :param video: video to list subtitles for.
+        :type video: :class:`~subliminal.video.Video`
+        :param languages: languages to search for.
+        :type languages: set of :class:`~babelfish.language.Language`
+        :return: found subtitles.
+        :rtype: list of :class:`~subliminal.subtitle.Subtitle`
+        """
+        subtitles = []
 
+        for name in self.providers:
+            # check discarded providers
+            if name in self.discarded_providers:
+                logger.debug('Skipping discarded provider %r', name)
+                continue
+
+            # check video validity
+            if not self.manager[name].plugin.check(video):
+                logger.info('Skipping provider %r: not a valid video', name)
+                continue
+
+            # check supported languages
+            provider_languages = self.manager[name].plugin.languages & languages
+            if not provider_languages:
+                logger.info('Skipping provider %r: no language to search for', name)
+                continue
+
+            # list subtitles
+            logger.info('Listing subtitles with provider %r and languages %r', name, provider_languages)
+            try:
+                provider_subtitles = self[name].list_subtitles(video, provider_languages)
+            except (requests.Timeout, socket.timeout):
+                logger.error('Provider %r timed out, discarding it', name)
+                self.discarded_providers.add(name)
+                continue
+	    except LanguageReverseError, e:
+		logger.exception("Unexpected language reverse error in %s, skipping. Error: %s", name, traceback.format_exc())
+		continue
+            except Exception, e:
+                logger.exception('Unexpected error in provider %r, discarding it, because of: %s', name, traceback.format_exc())
+                self.discarded_providers.add(name)
+                continue
+            subtitles.extend(provider_subtitles)
+
+        return subtitles

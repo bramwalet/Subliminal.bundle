@@ -17,7 +17,6 @@ logger = logging.getLogger(__name__)
 
 series_year_re = re.compile('^(?P<series>[ \w]+)(?: \((?P<year>\d{4})\))?$')
 
-
 class Addic7edSubtitle(Subtitle):
     provider_name = 'addic7ed'
 
@@ -31,13 +30,6 @@ class Addic7edSubtitle(Subtitle):
         self.year = year
         self.version = version
         self.download_link = download_link
-
-    def compute_score(self, video):
-        score = super(Addic7edSubtitle, self).compute_score(video)
-        if score > 60:
-            #logger.info("addic7ed found! %s" % score)
-            score += 2
-        return score
 
     @property
     def id(self):

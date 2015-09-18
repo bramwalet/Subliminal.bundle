@@ -1,9 +1,17 @@
 pannal's fork:
 
-- increased score of addic7ed subtitles a bit
-- support for newest Subliminal and guessit
-- plugin now also works with com.plexapp.agents.thetvdbdvdorder
-- guessit's release-group detection bug fixed (not the correct way, though. has already been fixed in guessit itself, need to merge)
+- ~~increased score of addic7ed subtitles a bit~~ (not existing currently)
+- **support for newest Subliminal (1.0.1) and guessit (0.10.1)**
+- **plugin now also works with com.plexapp.agents.thetvdbdvdorder**
+- guessit's release-group detection bug fixed (*not the correct way, though. has already been fixed in guessit itself, need to merge*)
+- providers fixed for subliminal 1.0.1 (at least addic7ed)
+- providers don't simply fail and get excluded on non-detected language
+- support for addic7ed languages: French (Canadian)
+- support for additional languages: pt-br (Portuguese (Brasil)), fa (Persian (Farsi))
+- support for three (two optional) subtitle languages
+
+bugs:
+- skip existing subtitles (not in video's path - e.g. subFolder given) currently broken
 
 Subliminal.bundle
 =================

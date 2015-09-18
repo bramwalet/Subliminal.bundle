@@ -28,6 +28,8 @@ def getLangList():
     langList = {Language.fromietf(Prefs["langPref1"])}
     if(Prefs["langPref2"] != "None"):
         langList.update({Language.fromietf(Prefs["langPref2"])})
+    if(Prefs["langPref3"] != "None"):
+        langList.update({Language.fromietf(Prefs["langPref3"])})
         
     return langList
 
@@ -42,7 +44,8 @@ def getProviders():
 
 def getProviderSettings():
     provider_settings = {'addic7ed': {'username': Prefs['provider.addic7ed.username'], 
-                                      'password': Prefs['provider.addic7ed.password']
+                                      'password': Prefs['provider.addic7ed.password'],
+				      'use_random_agents': Prefs['provider.addic7ed.use_random_agents'],
                                       },
                          }
     return provider_settings
@@ -80,10 +83,7 @@ def downloadBestSubtitles(videos):
     hearing_impaired = Prefs['subtitles.search.hearingImpaired']
     Log.Debug("Download best subtitles using settings: min_score: %s, hearing_impaired: %s" %(min_score, hearing_impaired))
     
-    # patch subliminal's ProviderPool
-    subliminal.api.ProviderPool = subliminal_patch.PatchedProviderPool
-
-    return subliminal.api.download_best_subtitles(videos, getLangList(), min_score, hearing_impaired, provider_configs=getProviderSettings())
+    return subliminal.api.download_best_subtitles(videos, getLangList(), min_score, hearing_impaired, providers=getProviders(), provider_configs=getProviderSettings())
 
 def saveSubtitles(videos, subtitles):
     if Prefs['subtitles.save.filesystem']:
