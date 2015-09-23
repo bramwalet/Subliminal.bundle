@@ -95,9 +95,11 @@ def saveSubtitles(videos, subtitles):
 
 def saveSubtitlesToFile(subtitles):
     fld_custom = Prefs["subtitles.save.subFolder.Custom"].strip() if bool(Prefs["subtitles.save.subFolder.Custom"]) else None
-    if Prefs["subtitles.save.subFolder"] != "current folder" or fld_custom:
+    
+    for video, video_subtitles in subtitles.items():
+	fld = None
+	if Prefs["subtitles.save.subFolder"] != "current folder" or fld_custom:
         # specific subFolder requested, create it if it doesn't exist
-        for video, video_subtitles in subtitles.items():
             fld_base = os.path.split(video.name)[0]
             if fld_custom:
                 if fld_custom.startswith("/"):
@@ -109,10 +111,7 @@ def saveSubtitlesToFile(subtitles):
                 fld = os.path.join(fld_base, Prefs["subtitles.save.subFolder"])
             if not os.path.exists(fld):
                 os.makedirs(fld)
-            subliminal.api.save_subtitles(video, video_subtitles, directory=fld)
-    
-    else:
-        subliminal.api.save_subtitles(subtitles)
+        subliminal.api.save_subtitles(video, video_subtitles, directory=fld)
 
 def saveSubtitlesToMetadata(videos, subtitles):
     for video, video_subtitles in subtitles.items():
