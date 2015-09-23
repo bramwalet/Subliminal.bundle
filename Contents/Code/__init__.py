@@ -28,6 +28,8 @@ def ValidatePrefs():
 # Prepare a list of languages we want subs for
 def getLangList():
     langList = {Language.fromietf(Prefs["langPref1"])}
+    if(Prefs['subtitles.only_one']):
+	return langList
     if(Prefs["langPref2"] != "None"):
         langList.update({Language.fromietf(Prefs["langPref2"])})
     if(Prefs["langPref3"] != "None"):
@@ -98,7 +100,7 @@ def downloadBestSubtitles(videos):
     hearing_impaired = Prefs['subtitles.search.hearingImpaired']
     Log.Debug("Download best subtitles using settings: min_score: %s, hearing_impaired: %s" %(min_score, hearing_impaired))
     
-    return subliminal.api.download_best_subtitles(videos, getLangList(), min_score, hearing_impaired, providers=getProviders(), provider_configs=getProviderSettings())
+    return subliminal.api.download_best_subtitles(videos, getLangList(), min_score, hearing_impaired, providers=getProviders(), provider_configs=getProviderSettings(), only_one=Prefs['subtitles.only_one'])
 
 def saveSubtitles(videos, subtitles):
     if Prefs['subtitles.save.filesystem']:
@@ -128,7 +130,7 @@ def saveSubtitlesToFile(subtitles):
                 fld = os.path.join(fld_base, Prefs["subtitles.save.subFolder"])
             if not os.path.exists(fld):
                 os.makedirs(fld)
-        subliminal.api.save_subtitles(video, video_subtitles, directory=fld)
+        subliminal.api.save_subtitles(video, video_subtitles, directory=fld, single=Prefs['subtitles.only_one'])
 
 def saveSubtitlesToMetadata(videos, subtitles):
     for video, video_subtitles in subtitles.items():

@@ -41,6 +41,12 @@
                 "default": "None"
         },
 	{
+                "id": "subtitles.only_one",
+                "label": "Restrict to one language (skips adding \".lang.\" to the subtitle filename; only uses \"Subtitle Language (1)\")",
+                "type": "bool",
+                "default": "false"
+        },
+	{
                 "id": "provider.opensubtitles.enabled",
                 "label": "Provider: Enable OpenSubtitles",
                 "type": "bool",
@@ -103,14 +109,14 @@
         },
     	{
                 "id": "subtitles.save.subFolder",
-                "label": "Subtitle Folder (\"current folder\" is the folder the current media file lives in)",
+                "label": "Subtitle Folder (\"current folder\" is the folder the current media file lives in) - needs LocalMediaExtended agent",
                 "type": "enum",
                 "values": ["current folder", "sub", "subs", "subtitle", "subtitles"],
                 "default": "current folder"
         },
 		{
                 "id": "subtitles.save.subFolder.Custom",
-                "label": "Custom Subtitle folder (overrides \"Subtitle Folder\"; computes to real paths; use for example \"bla\" as a subfolder of the current media file folder or an absolute path)",
+                "label": "Custom Subtitle folder (overrides \"Subtitle Folder\"; computes to real paths; use for example \"bla\" as a subfolder of the current media file folder or an absolute path) - needs LocalMediaExtended agent",
                 "type": "text",
                 "default": ""
         },
