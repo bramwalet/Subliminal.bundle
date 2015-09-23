@@ -19,6 +19,8 @@ def Start():
     # configured cache to be in memory as per https://github.com/Diaoul/subliminal/issues/303
     subliminal.region.configure('dogpile.cache.memory')
 
+    
+
 def ValidatePrefs():
     Log.Debug("Validate Prefs called.")
     return 
@@ -32,6 +34,18 @@ def getLangList():
         langList.update({Language.fromietf(Prefs["langPref3"])})
         
     return langList
+
+def getSubtitleDestinationFolder():
+    if not Prefs["subtitles.save.filesystem"]:
+	return
+
+    fld_custom = Prefs["subtitles.save.subFolder.Custom"].strip() if bool(Prefs["subtitles.save.subFolder.Custom"]) else None
+    return fld_custom or (Prefs["subtitles.save.subFolder"] if Prefs["subtitles.save.subFolder"] != "current folder" else None)
+
+def initSubliminalPatches():
+    # configure custom subtitle destination folders for scanning pre-existing subs
+    dest_folder = getSubtitleDestinationFolder()
+    subliminal_patch.patch_video.CUSTOM_PATHS = [dest_folder] if dest_folder else []
 
 def getProviders():
     providers = {'opensubtitles' : Prefs['provider.opensubtitles.enabled'],
@@ -48,6 +62,7 @@ def getProviderSettings():
 				      'use_random_agents': Prefs['provider.addic7ed.use_random_agents'],
                                       },
                          }
+
     return provider_settings
 
 def scanTvMedia(media):
@@ -93,9 +108,11 @@ def saveSubtitles(videos, subtitles):
         Log.Debug("Saving subtitles as metadata")
         saveSubtitlesToMetadata(videos, subtitles)
 
+
+
 def saveSubtitlesToFile(subtitles):
     fld_custom = Prefs["subtitles.save.subFolder.Custom"].strip() if bool(Prefs["subtitles.save.subFolder.Custom"]) else None
-    if Prefs["subtitles.save.subFolder"] != "current folder" or fld_custom:
+    if fld_custom or Prefs["subtitles.save.subFolder"] != "current folder":
         # specific subFolder requested, create it if it doesn't exist
         for video, video_subtitles in subtitles.items():
             fld_base = os.path.split(video.name)[0]
@@ -132,6 +149,7 @@ class SubliminalSubtitlesAgentMovies(Agent.Movies):
 
     def update(self, metadata, media, lang):
         Log.Debug("MOVIE UPDATE CALLED")
+	initSubliminalPatches()
         videos = scanMovieMedia(media)
         subtitles = downloadBestSubtitles(videos.keys())
         saveSubtitles(videos, subtitles)
@@ -149,6 +167,7 @@ class SubliminalSubtitlesAgentTvShows(Agent.TV_Shows):
 
     def update(self, metadata, media, lang):
         Log.Debug("TvUpdate. Lang %s" % lang)
+	initSubliminalPatches()
         videos = scanTvMedia(media)
         subtitles = downloadBestSubtitles(videos.keys())
         saveSubtitles(videos, subtitles)
