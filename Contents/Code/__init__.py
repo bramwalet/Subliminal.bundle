@@ -116,7 +116,7 @@ def saveSubtitlesToFile(subtitles):
     for video, video_subtitles in subtitles.items():
 	fld = None
 	if fld_custom or Prefs["subtitles.save.subFolder"] != "current folder":
-        # specific subFolder requested, create it if it doesn't exist
+    	    # specific subFolder requested, create it if it doesn't exist
             fld_base = os.path.split(video.name)[0]
             if fld_custom:
                 if fld_custom.startswith("/"):

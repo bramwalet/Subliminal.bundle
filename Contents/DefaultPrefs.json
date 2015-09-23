@@ -110,7 +110,7 @@
         },
 		{
                 "id": "subtitles.save.subFolder.Custom",
-                "label": "Custom Subtitle folder (overrides \"Subtitle Folder"; computes to real paths; use for example \"bla\" as a subfolder of the current media file folder or an absolute path)",
+                "label": "Custom Subtitle folder (overrides \"Subtitle Folder\"; computes to real paths; use for example \"bla\" as a subfolder of the current media file folder or an absolute path)",
                 "type": "text",
                 "default": ""
         },
