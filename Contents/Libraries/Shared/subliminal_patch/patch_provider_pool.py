@@ -182,3 +182,55 @@ class PatchedProviderPool(ProviderPool):
             subtitles.extend(provider_subtitles)
 
         return subtitles
+
+    def download_best_subtitles(self, subtitles, video, languages, min_score=0, hearing_impaired=False, only_one=False,
+                                scores=None):
+        """Download the best matching subtitles.
+        :param subtitles: the subtitles to use.
+        :type subtitles: list of :class:`~subliminal.subtitle.Subtitle`
+        :param video: video to download subtitles for.
+        :type video: :class:`~subliminal.video.Video`
+        :param languages: languages to download.
+        :type languages: set of :class:`~babelfish.language.Language`
+        :param int min_score: minimum score for a subtitle to be downloaded.
+        :param bool hearing_impaired: hearing impaired preference.
+        :param bool only_one: download only one subtitle, not one per language.
+        :param dict scores: scores to use, if `None`, the :attr:`~subliminal.video.Video.scores` from the video are
+            used.
+        :return: downloaded subtitles.
+        :rtype: list of :class:`~subliminal.subtitle.Subtitle`
+        """
+        # sort subtitles by score
+        scored_subtitles = sorted([(s, compute_score(s.get_matches(video, hearing_impaired=hearing_impaired), video,
+                                                     scores=scores))
+                                  for s in subtitles], key=operator.itemgetter(1), reverse=True)
+
+        # download best subtitles, falling back on the next on error
+        downloaded_subtitles = []
+        for subtitle, score in scored_subtitles:
+            # check score
+            if score < min_score:
+                logger.info('Score %d is below min_score (%d)', score, min_score)
+                break
+
+            # check downloaded languages
+            if subtitle.language in set(s.language for s in downloaded_subtitles):
+                logger.debug('Skipping subtitle: %r already downloaded', subtitle.language)
+                continue
+
+            # download
+            logger.info('Downloading subtitle %r with score %d', subtitle, score)
+            if self.download_subtitle(subtitle):
+                downloaded_subtitles.append(subtitle)
+
+            # stop when all languages are downloaded
+            if set(s.language for s in downloaded_subtitles) == languages:
+                logger.debug('All languages downloaded')
+                break
+
+            # stop if only one subtitle is requested
+            if only_one:
+                logger.debug('Only one subtitle downloaded')
+                break
+
+        return downloaded_subtitles
