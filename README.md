@@ -1,5 +1,11 @@
 pannal's fork:
 
+#### beta5
+- fix storing subtitles besides the actual video file, not subfolder (fixes #14)
+- "custom folder" setting now always used if given (properly overrides "subtitle folder" setting)
+- also scan (custom) given subtitle folders for existing subtitles instead of redownloading them on every refresh (fixes #9, #2)
+
+beta4
 - ~~increased score of addic7ed subtitles a bit~~ (not existing currently)
 - **support for newest Subliminal ([1.0.1](27a6e51cd36ffb2910cd9a7add6d797a2c6469b7)) and guessit ([0.11.0](2814f57e8999dcc31575619f076c0c1a63ce78f2))**
 - **plugin now also [works with com.plexapp.agents.thetvdbdvdorder](924470d2c0db3a71529278bce4b7247eaf2f85b8)**
@@ -9,9 +15,6 @@ pannal's fork:
 - support for additional languages: [pt-br (Portuguese (Brasil)), fa (Persian (Farsi))](131504e7eed8b3400c457fbe49beea3b115bc916)
 - support for [three (two optional) subtitle languages](e543c927cf49c264eaece36640c99d67a99c7da2)
 - optionally use [random user agent for addic7ed provider](83ace14faf75fbd75313f0ceda9b78161895fbcf) (should not be needed)
-
-bugs:
-- skip existing subtitles (not in video's path - e.g. subFolder given) currently broken
 
 Subliminal.bundle
 =================
