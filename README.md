@@ -1,6 +1,11 @@
-pannal's fork:
+## pannal's fork
 
-#### beta5
+#### RC-1
+- fix subliminal's logging error on min_score not met
+- separated tv and movies subtitle scores settings
+- add option to save only one subtitle per video (skipping the ".lang." naming scheme plex supports)
+
+beta5
 - fix storing subtitles besides the actual video file, not subfolder (fixes #14)
 - "custom folder" setting now always used if given (properly overrides "subtitle folder" setting)
 - also scan (custom) given subtitle folders for existing subtitles instead of redownloading them on every refresh (fixes #9, #2)
