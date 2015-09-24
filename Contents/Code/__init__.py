@@ -95,8 +95,7 @@ def scanVideo(part):
     except ValueError:
         Log.Warn("File could not be guessed by subliminal")
 
-def downloadBestSubtitles(videos):
-    min_score = int(Prefs['subtitles.search.minimumScore'])
+def downloadBestSubtitles(videos, min_score=0):
     hearing_impaired = Prefs['subtitles.search.hearingImpaired']
     Log.Debug("Download best subtitles using settings: min_score: %s, hearing_impaired: %s" %(min_score, hearing_impaired))
     
@@ -109,8 +108,6 @@ def saveSubtitles(videos, subtitles):
     else:
         Log.Debug("Saving subtitles as metadata")
         saveSubtitlesToMetadata(videos, subtitles)
-
-
 
 def saveSubtitlesToFile(subtitles):
     fld_custom = Prefs["subtitles.save.subFolder.Custom"].strip() if bool(Prefs["subtitles.save.subFolder.Custom"]) else None
@@ -152,7 +149,7 @@ class SubliminalSubtitlesAgentMovies(Agent.Movies):
         Log.Debug("MOVIE UPDATE CALLED")
 	initSubliminalPatches()
         videos = scanMovieMedia(media)
-        subtitles = downloadBestSubtitles(videos.keys())
+        subtitles = downloadBestSubtitles(videos.keys(), min_score=int(Prefs["subtitles.search.minimumMovieScore"]))
         saveSubtitles(videos, subtitles)
 
 class SubliminalSubtitlesAgentTvShows(Agent.TV_Shows):
@@ -170,5 +167,5 @@ class SubliminalSubtitlesAgentTvShows(Agent.TV_Shows):
         Log.Debug("TvUpdate. Lang %s" % lang)
 	initSubliminalPatches()
         videos = scanTvMedia(media)
-        subtitles = downloadBestSubtitles(videos.keys())
+        subtitles = downloadBestSubtitles(videos.keys(), min_score=int(Prefs["subtitles.search.minimumTVScore"]))
         saveSubtitles(videos, subtitles)

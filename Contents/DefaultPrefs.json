@@ -89,11 +89,18 @@
                 "default": "false"
         },
         {
-                "id": "subtitles.search.minimumScore",
-                "label": "Minimum score for subtitles to download",
+                "id": "subtitles.search.minimumTVScore",
+                "label": "Minimum score for TV subtitles to download",
                 "type": "enum",
                 "values": ["100","95","90","85","80","75","70","65","60","55","50","45","40","35","30","25","20","15","10","5","0"],
-                "default": "0"
+                "default": "40"
+        },
+        {
+                "id": "subtitles.search.minimumMovieScore",
+                "label": "Minimum score for movie subtitles to download",
+                "type": "enum",
+                "values": ["100","95","90","85","80","75","70","65","60","55","50","45","40","35","30","25","20","15","10","5","0"],
+                "default": "60"
         },
         {
                 "id": "subtitles.search.hearingImpaired",
@@ -107,14 +114,14 @@
                 "type": "bool",
                 "default": "false"
         },
-    	{
+	{
                 "id": "subtitles.save.subFolder",
                 "label": "Subtitle Folder (\"current folder\" is the folder the current media file lives in) - needs LocalMediaExtended agent",
                 "type": "enum",
                 "values": ["current folder", "sub", "subs", "subtitle", "subtitles"],
                 "default": "current folder"
         },
-		{
+	{
                 "id": "subtitles.save.subFolder.Custom",
                 "label": "Custom Subtitle folder (overrides \"Subtitle Folder\"; computes to real paths; use for example \"bla\" as a subfolder of the current media file folder or an absolute path) - needs LocalMediaExtended agent",
                 "type": "text",
