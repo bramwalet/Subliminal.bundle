@@ -1,4 +1,4 @@
-## pannal's fork
+## pannal's fork of Subliminal.bundle
 
 #### RC-1
 - fix subliminal's logging error on min_score not met
