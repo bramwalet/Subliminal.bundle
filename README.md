@@ -1,9 +1,9 @@
 ## pannal's fork of Subliminal.bundle
 
 #### RC-1
-- fix subliminal's logging error on min_score not met
-- separated tv and movies subtitle scores settings
-- add option to save only one subtitle per video (skipping the ".lang." naming scheme plex supports)
+- fix subliminal's logging error on min_score not met (fixes #15)
+- separated tv and movies subtitle scores settings (fixes #16)
+- add option to save only one subtitle per video (skipping the ".lang." naming scheme plex supports) (fixes #3)
 
 beta5
 - fix storing subtitles besides the actual video file, not subfolder (fixes #14)
