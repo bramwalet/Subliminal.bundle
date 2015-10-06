@@ -113,6 +113,9 @@ def saveSubtitlesToFile(subtitles):
     fld_custom = Prefs["subtitles.save.subFolder.Custom"].strip() if bool(Prefs["subtitles.save.subFolder.Custom"]) else None
     
     for video, video_subtitles in subtitles.items():
+	if not video_subtitles:
+	    continue
+
 	fld = None
 	if fld_custom or Prefs["subtitles.save.subFolder"] != "current folder":
     	    # specific subFolder requested, create it if it doesn't exist
