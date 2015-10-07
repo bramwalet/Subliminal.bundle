@@ -3,6 +3,7 @@
 import logging
 from random import randint
 from subliminal.providers.addic7ed import Addic7edProvider, Addic7edSubtitle, ParserBeautifulSoup, series_year_re, Language
+from subliminal..cache import SHOW_EXPIRATION_TIME, region
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +23,42 @@ class PatchedAddic7edProvider(Addic7edProvider):
         	'User-Agent': AGENT_LIST[randint(0, len(AGENT_LIST)-1)],
         	'Referer': self.server_url,
     	    }
+
+    def clean_punctuation(self, s):
+	# fixes show ids for stuff like "Mr. Petterson", as our matcher already sees it as "Mr Petterson" but addic7ed doesn't
+	return s.replace(".", "")
+
+    @region.cache_on_arguments(expiration_time=SHOW_EXPIRATION_TIME)
+    def _search_show_id(self, series, year=None):
+        """Search the show id from the `series` and `year`.
+        :param string series: series of the episode.
+        :param year: year of the series, if any.
+        :type year: int or None
+        :return: the show id, if found.
+        :rtype: int or None
+        """
+        # build the params
+        series_year = '%s (%d)' % (series, year) if year is not None else series
+        params = {'search': series_year, 'Submit': 'Search'}
+
+        # make the search
+        logger.info('Searching show ids with %r', params)
+        r = self.session.get(self.server_url + 'search.php', params=params, timeout=10)
+        r.raise_for_status()
+        soup = ParserBeautifulSoup(r.content, ['lxml', 'html.parser'])
+
+        # get the suggestion
+        suggestion = soup.select('span.titulo > a[href^="/show/"]')
+        if not suggestion:
+            logger.warning('Show id not found: no suggestion')
+            return None
+        if not clean_punctuation(suggestion[0].i.text.lower()) == series_year.lower():
+            logger.warning('Show id not found: suggestion does not match')
+            return None
+        show_id = int(suggestion[0]['href'][6:])
+        logger.debug('Found show id %d', show_id)
+
+        return show_id
     
     def query(self, series, season, year=None, country=None):
         # get the show id
