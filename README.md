@@ -1,6 +1,11 @@
 ## pannal's fork of Subliminal.bundle
 
-#### RC-1
+#### RC-2
+- fix empty custom subtitle folder creation
+- fix detection of existing embedded subtitles
+- better logging
+
+RC-1
 - fix subliminal's logging error on min_score not met (fixes #15)
 - separated tv and movies subtitle scores settings (fixes #16)
 - add option to save only one subtitle per video (skipping the ".lang." naming scheme plex supports) (fixes #3)
