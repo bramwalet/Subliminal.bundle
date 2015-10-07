@@ -2,7 +2,7 @@
 
 #### RC-2
 - fix empty custom subtitle folder creation
-- fix detection of existing embedded subtitles
+- fix detection of existing embedded subtitles (switch to https://github.com/tonswieb/enzyme)
 - better logging
 
 RC-1
