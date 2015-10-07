@@ -3,7 +3,7 @@
 import logging
 from random import randint
 from subliminal.providers.addic7ed import Addic7edProvider, Addic7edSubtitle, ParserBeautifulSoup, series_year_re, Language
-from subliminal..cache import SHOW_EXPIRATION_TIME, region
+from subliminal.cache import SHOW_EXPIRATION_TIME, region
 
 logger = logging.getLogger(__name__)
 
