@@ -1,5 +1,14 @@
 ## pannal's fork of Subliminal.bundle
 
+Please install [LocalMediaExtended.bundle](https://github.com/pannal/LocalMediaExtended.bundle) and use it **INSTEAD** of LocalMedia.
+
+Use the following agent order:
+
+1. Subliminal TV/Movie Subtitles
+2. Local Media Assets Extended
+3. anything else
+4. again, **DISABLE Local Media Assets**!
+
 #### RC-2
 - fix empty custom subtitle folder creation
 - fix detection of existing embedded subtitles (switch to https://github.com/tonswieb/enzyme)
