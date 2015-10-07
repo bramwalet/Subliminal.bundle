@@ -80,13 +80,13 @@
                 "id": "subtitles.scan.embedded",
                 "label": "Scan: include embedded subtitles (skip if existing)",
                 "type": "bool",
-                "default": "false"
+                "default": "true"
         },
         {
                 "id": "subtitles.scan.external",
                 "label": "Scan: include external subtitles (skip if existing)",
                 "type": "bool",
-                "default": "false"
+                "default": "true"
         },
         {
                 "id": "subtitles.search.minimumTVScore",
