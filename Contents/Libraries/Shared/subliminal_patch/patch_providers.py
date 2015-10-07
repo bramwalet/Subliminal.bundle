@@ -52,7 +52,7 @@ class PatchedAddic7edProvider(Addic7edProvider):
         if not suggestion:
             logger.warning('Show id not found: no suggestion')
             return None
-        if not clean_punctuation(suggestion[0].i.text.lower()) == series_year.lower():
+        if not clean_punctuation(suggestion[0].i.text.lower()) == clean_punctuation(series_year.lower()):
             logger.warning('Show id not found: suggestion does not match')
             return None
         show_id = int(suggestion[0]['href'][6:])
