@@ -1,9 +1,20 @@
-## pannal's fork of Subliminal.bundle
+# pannal's fork of Subliminal.bundle
 
+Please install [LocalMediaExtended.bundle](https://github.com/pannal/LocalMediaExtended.bundle) and use it **INSTEAD** of LocalMedia.
+
+Use the following agent order:
+
+1. Subliminal TV/Movie Subtitles
+2. Local Media Assets Extended
+3. anything else
+4. again, **DISABLE Local Media Assets**!
+
+## Changelog
 #### RC-2
 - fix empty custom subtitle folder creation
 - fix detection of existing embedded subtitles (switch to https://github.com/tonswieb/enzyme)
 - better logging
+- set default TV score to 15; movie score to 30
 
 RC-1
 - fix subliminal's logging error on min_score not met (fixes #15)
