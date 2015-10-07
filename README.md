@@ -4,6 +4,7 @@
 - fix empty custom subtitle folder creation
 - fix detection of existing embedded subtitles (switch to https://github.com/tonswieb/enzyme)
 - better logging
+- set default TV score to 15; movie score to 30
 
 RC-1
 - fix subliminal's logging error on min_score not met (fixes #15)
