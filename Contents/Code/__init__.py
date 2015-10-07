@@ -97,16 +97,30 @@ def scanVideo(part):
 
 def downloadBestSubtitles(videos, min_score=0):
     hearing_impaired = Prefs['subtitles.search.hearingImpaired']
-    Log.Debug("Download best subtitles using settings: min_score: %s, hearing_impaired: %s" %(min_score, hearing_impaired))
+    languages = getLangList()
+    if not languages: 
+	return
+
+    missing_languages = False
+    for video in videos:
+	if not (languages - video.subtitle_languages):
+    	    Log.Debug('All languages %r exist for %s', languages, video)
+	    continue
+	missing_languages = True
+	break
+
+    if missing_languages:
+	Log.Debug("Download best subtitles using settings: min_score: %s, hearing_impaired: %s" %(min_score, hearing_impaired))
     
-    return subliminal.api.download_best_subtitles(videos, getLangList(), min_score, hearing_impaired, providers=getProviders(), provider_configs=getProviderSettings(), only_one=Prefs['subtitles.only_one'])
+	return subliminal.api.download_best_subtitles(videos, languages, min_score, hearing_impaired, providers=getProviders(), provider_configs=getProviderSettings(), only_one=Prefs['subtitles.only_one'])
+    Log.Debug("All languages for all requested videos exist. Doing nothing.")
 
 def saveSubtitles(videos, subtitles):
     if Prefs['subtitles.save.filesystem']:
-        Log.Debug("Saving subtitles to filesystem")
+        Log.Debug("Using filesystem as subtitle storage")
         saveSubtitlesToFile(subtitles)
     else:
-        Log.Debug("Saving subtitles as metadata")
+        Log.Debug("Using metadata as subtitle storage")
         saveSubtitlesToMetadata(videos, subtitles)
 
 def saveSubtitlesToFile(subtitles):
@@ -153,7 +167,8 @@ class SubliminalSubtitlesAgentMovies(Agent.Movies):
 	initSubliminalPatches()
         videos = scanMovieMedia(media)
         subtitles = downloadBestSubtitles(videos.keys(), min_score=int(Prefs["subtitles.search.minimumMovieScore"]))
-        saveSubtitles(videos, subtitles)
+	if subtitles:
+    	    saveSubtitles(videos, subtitles)
 
 class SubliminalSubtitlesAgentTvShows(Agent.TV_Shows):
     
@@ -171,4 +186,5 @@ class SubliminalSubtitlesAgentTvShows(Agent.TV_Shows):
 	initSubliminalPatches()
         videos = scanTvMedia(media)
         subtitles = downloadBestSubtitles(videos.keys(), min_score=int(Prefs["subtitles.search.minimumTVScore"]))
-        saveSubtitles(videos, subtitles)
+	if subtitles:
+    	    saveSubtitles(videos, subtitles)
