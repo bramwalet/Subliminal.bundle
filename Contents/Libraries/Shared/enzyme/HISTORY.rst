@@ -3,11 +3,10 @@ Changelog
 
 0.4.1
 -----
-**release date:** 2013-11-28
+**release date:** 2013-11-05
 
 * Fix parsing nested SeekHead elements
 * Make parsing nested SeekHead elements optional
-* Fix fromelement in Chapter when there is no ChapterDisplay
 
 
 0.4.0
