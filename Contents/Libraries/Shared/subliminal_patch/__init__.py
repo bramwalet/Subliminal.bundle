@@ -18,3 +18,4 @@ babelfish.language_converters.register('tvsubtitles = subliminal.converters.tvsu
 
 # patch subliminal's external subtitles search algorithm
 subliminal.video.search_external_subtitles = patched_search_external_subtitles
+

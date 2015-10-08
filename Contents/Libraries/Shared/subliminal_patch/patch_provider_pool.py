@@ -233,9 +233,12 @@ class PatchedProviderPool(ProviderPool):
         :rtype: list of :class:`~subliminal.subtitle.Subtitle`
         """
         # sort subtitles by score
-        scored_subtitles = sorted([(s, compute_score(s.get_matches(video, hearing_impaired=hearing_impaired), video,
-                                                     scores=scores))
-                                  for s in subtitles], key=operator.itemgetter(1), reverse=True)
+	unsorted_subtitles = []
+	for s in subtitles:
+	    logger.debug("Starting score computation for %s", s)
+	    unsorted_subtitles.append((s, compute_score(s.get_matches(video, hearing_impaired=hearing_impaired), video,
+                                                     scores=scores)))
+        scored_subtitles = sorted(unsorted_subtitles, key=operator.itemgetter(1), reverse=True)
 
         # download best subtitles, falling back on the next on error
         downloaded_subtitles = []

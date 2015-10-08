@@ -18,6 +18,7 @@ class PatchedAddic7edProvider(Addic7edProvider):
 	self.USE_ADDICTED_RANDOM_AGENTS = use_random_agents
 
     def initialize(self):
+	# patch: add optional user agent randomization
 	super(PatchedAddic7edProvider, self).initialize()
 	if self.USE_ADDICTED_RANDOM_AGENTS:
 	    from .utils import FIRST_THOUSAND_OR_SO_USER_AGENTS as AGENT_LIST
@@ -32,6 +33,28 @@ class PatchedAddic7edProvider(Addic7edProvider):
 	return s.replace(".", "")
 
     @region.cache_on_arguments(expiration_time=SHOW_EXPIRATION_TIME)
+    def _get_show_ids(self):
+        """Get the ``dict`` of show ids per series by querying the `shows.php` page.
+        :return: show id per series, lower case and without quotes.
+        :rtype: dict
+
+	# patch: add punctuation cleaning
+        """
+        # get the show page
+        logger.info('Getting show ids')
+        r = self.session.get(self.server_url + 'shows.php', timeout=10)
+        r.raise_for_status()
+        soup = ParserBeautifulSoup(r.content, ['lxml', 'html.parser'])
+
+        # populate the show ids
+        show_ids = {}
+        for show in soup.select('td.version > h3 > a[href^="/show/"]'):
+            show_ids[self.clean_punctuation(show.text.lower().replace('\'', ''))] = int(show['href'][6:])
+        logger.debug('Found %d show ids', len(show_ids))
+
+        return show_ids
+
+    @region.cache_on_arguments(expiration_time=SHOW_EXPIRATION_TIME)
     def _search_show_id(self, series, year=None):
         """Search the show id from the `series` and `year`.
         :param string series: series of the episode.
@@ -39,6 +62,8 @@ class PatchedAddic7edProvider(Addic7edProvider):
         :type year: int or None
         :return: the show id, if found.
         :rtype: int or None
+
+	# patch: add punctuation cleaning
         """
         # build the params
         series_year = '%s (%d)' % (series, year) if year is not None else series
@@ -64,6 +89,7 @@ class PatchedAddic7edProvider(Addic7edProvider):
         return show_id
     
     def query(self, series, season, year=None, country=None):
+	# patch: fix logging
         # get the show id
         show_id = self.get_show_id(series, year, country)
         if show_id is None:
