@@ -1,11 +1,14 @@
 # coding=utf-8
 
 import logging
+import re
 from random import randint
-from subliminal.providers.addic7ed import Addic7edProvider, Addic7edSubtitle, ParserBeautifulSoup, series_year_re, Language
+from subliminal.providers.addic7ed import Addic7edProvider, Addic7edSubtitle, ParserBeautifulSoup, Language
 from subliminal.cache import SHOW_EXPIRATION_TIME, region
 
 logger = logging.getLogger(__name__)
+
+series_year_re = re.compile('^(?P<series>[ \w.:]+)(?: \((?P<year>\d{4})\))?$')
 
 class PatchedAddic7edProvider(Addic7edProvider):
     USE_ADDICTED_RANDOM_AGENTS = False
@@ -52,7 +55,7 @@ class PatchedAddic7edProvider(Addic7edProvider):
         if not suggestion:
             logger.warning('Show id not found: no suggestion')
             return None
-        if not clean_punctuation(suggestion[0].i.text.lower()) == clean_punctuation(series_year.lower()):
+        if not self.clean_punctuation(suggestion[0].i.text.lower()) == self.clean_punctuation(series_year.lower()):
             logger.warning('Show id not found: suggestion does not match')
             return None
         show_id = int(suggestion[0]['href'][6:])
