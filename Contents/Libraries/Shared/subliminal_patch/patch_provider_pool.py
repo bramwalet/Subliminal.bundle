@@ -184,6 +184,37 @@ class PatchedProviderPool(ProviderPool):
 
         return subtitles
 
+    def download_subtitle(self, subtitle):
+        """Download `subtitle`'s :attr:`~subliminal.subtitle.Subtitle.content`.
+        :param subtitle: subtitle to download.
+        :type subtitle: :class:`~subliminal.subtitle.Subtitle`
+        :return: `True` if the subtitle has been successfully downloaded, `False` otherwise.
+        :rtype: bool
+        """
+        # check discarded providers
+        if subtitle.provider_name in self.discarded_providers:
+            logger.warning('Provider %r is discarded', subtitle.provider_name)
+            return False
+
+        logger.info('Downloading subtitle %r', subtitle)
+        try:
+            self[subtitle.provider_name].download_subtitle(subtitle)
+        except (requests.Timeout, socket.timeout):
+            logger.error('Provider %r timed out, discarding it', subtitle.provider_name)
+            self.discarded_providers.add(subtitle.provider_name)
+            return False
+        except:
+	    logger.exception('Unexpected error in provider %r, discarding it, because of: %s', name, traceback.format_exc())
+            self.discarded_providers.add(subtitle.provider_name)
+            return False
+
+        # check subtitle validity
+        if not subtitle.is_valid():
+            logger.error('Invalid subtitle')
+            return False
+
+        return True
+
     def download_best_subtitles(self, subtitles, video, languages, min_score=0, hearing_impaired=False, only_one=False,
                                 scores=None):
         """Download the best matching subtitles.
