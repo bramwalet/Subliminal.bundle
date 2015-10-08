@@ -48,6 +48,7 @@ def initSubliminalPatches():
     # configure custom subtitle destination folders for scanning pre-existing subs
     dest_folder = getSubtitleDestinationFolder()
     subliminal_patch.patch_video.CUSTOM_PATHS = [dest_folder] if dest_folder else []
+    subliminal_patch.patch_provider_pool.DOWNLOAD_TRIES = int(Prefs['subtitles.try_downloads'])
 
 def getProviders():
     providers = {'opensubtitles' : Prefs['provider.opensubtitles.enabled'],

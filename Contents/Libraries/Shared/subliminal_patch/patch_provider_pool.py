@@ -5,6 +5,7 @@ import traceback
 import requests
 import socket
 import operator
+import time
 from babelfish.exceptions import LanguageReverseError
 
 from pkg_resources import EntryPoint, iter_entry_points
@@ -12,6 +13,10 @@ from pkg_resources import EntryPoint, iter_entry_points
 from subliminal.api import ProviderPool, compute_score
 
 logger = logging.getLogger(__name__)
+
+
+DOWNLOAD_TRIES = 0
+DOWNLOAD_RETRY_SLEEP = 2
 
 class OldToNewProvider(object):
     """
@@ -197,16 +202,28 @@ class PatchedProviderPool(ProviderPool):
             return False
 
         logger.info('Downloading subtitle %r', subtitle)
-        try:
-            self[subtitle.provider_name].download_subtitle(subtitle)
-        except (requests.Timeout, socket.timeout):
-            logger.error('Provider %r timed out, discarding it', subtitle.provider_name)
-            self.discarded_providers.add(subtitle.provider_name)
-            return False
-        except:
-	    logger.exception('Unexpected error in provider %r, discarding it, because of: %s', name, traceback.format_exc())
-            self.discarded_providers.add(subtitle.provider_name)
-            return False
+	tries = 0
+	
+	# retry downloading on failure until settings' download retry limit hit
+	while True:
+	    tries += 1
+    	    try:
+        	self[subtitle.provider_name].download_subtitle(subtitle)
+    	    except (requests.Timeout, socket.timeout):
+        	logger.error('Provider %r timed out', subtitle.provider_name)
+    	    except:
+		logger.exception('Unexpected error in provider %r, Traceback: %s', subtitle.provider_name, traceback.format_exc())
+	    else:
+		break
+
+	    if tries == DOWNLOAD_TRIES:
+		self.discarded_providers.add(subtitle.provider_name)
+		logger.error('Maximum retries reached for provider %r, discarding it', subtitle.provider_name)
+    		return False
+
+	    # don't hammer the provider
+	    logger.debug('Errors while downloading subtitle, retrying provider %r in %s seconds', subtitle.provider_name, DOWNLOAD_RETRY_SLEEP)
+	    time.sleep(DOWNLOAD_RETRY_SLEEP)
 
         # check subtitle validity
         if not subtitle.is_valid():
