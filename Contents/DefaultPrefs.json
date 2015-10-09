@@ -1,5 +1,11 @@
 [
-		{
+	{	"id": "subtitles.try_downloads",
+		"label": "How many download tries per subtitle (on timeout or error)",
+		"type": "enum",
+		"values": ["1", "2", "3", "4"],
+		"default": "2"
+	},
+	{
                 "id": "provider.addic7ed.username",
                 "label": "Addic7ed Username",
                 "type": "text",
@@ -8,6 +14,20 @@
         {
                 "id": "provider.addic7ed.password",
                 "label": "Addic7ed Password",
+                "type": "text",
+                "option": "hidden",
+                "default": "",
+                "secure": "true" 
+        },
+	{
+                "id": "provider.opensubtitles.username",
+                "label": "Opensubtitles Username (VIP)",
+                "type": "text",
+                "default": ""
+        },
+        {
+                "id": "provider.opensubtitles.password",
+                "label": "Opensubtitles Password",
                 "type": "text",
                 "option": "hidden",
                 "default": "",
@@ -40,12 +60,7 @@
                 "values": ["None", "sq","ar","be","bs","bg","ca","zh","cs","da","nl","en","et","fi","fr","de","el","he","hi","hu","is","id","it","ja","ko","lv","lt","mk","ms","no","fa","pl","pt","pt-br","ro","ru","sr","sk","sl","es","sv","th","tr","uk","vi","hr"],
                 "default": "None"
         },
-	{
-                "id": "subtitles.only_one",
-                "label": "Restrict to one language (skips adding \".lang.\" to the subtitle filename; only uses \"Subtitle Language (1)\")",
-                "type": "bool",
-                "default": "false"
-        },
+	
 	{
                 "id": "provider.opensubtitles.enabled",
                 "label": "Provider: Enable OpenSubtitles",
@@ -127,4 +142,10 @@
                 "type": "text",
                 "default": ""
         },
+	{
+                "id": "subtitles.only_one",
+                "label": "Restrict to one language (skips adding \".lang.\" to the subtitle filename; only uses \"Subtitle Language (1)\")",
+                "type": "bool",
+                "default": "false"
+        }
 ]
