@@ -9,6 +9,13 @@ Use the following agent order:
 3. anything else
 4. again, **DISABLE Local Media Assets**!
 
+### Quick installation
+* go to ```Library/Application Support/Plex Media Server/Plug-ins/```
+* ```rm -r Subliminal.bundle```
+* ```wget https://github.com/pannal/Subliminal.bundle/releases/download/1.1-rc3/Subliminal.bundle-1.1-rc3.zip```
+* ```unzip Subliminal.bundle-1.1-rc3.zip```
+* more indepth: look below on ```Installation```
+
 ### Encountered a bug?
 * be sure to post your logs: ```Library/Application Support/Plex Media Server/Logs/PMS Plugin Logs/com.plexapp.agents.subliminal.log```; there may be multiple logs (com.plexapp.agents.subliminal.log.*) depending on the amount of Videos you're refreshing
 * **Remember: before you open a bug-ticket please double-check, that you've deleted the Subliminal.bundle folder BEFORE every update** (to avoid .pyc leftovers)
