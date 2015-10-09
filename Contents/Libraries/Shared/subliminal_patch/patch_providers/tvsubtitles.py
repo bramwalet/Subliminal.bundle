@@ -5,14 +5,12 @@ from subliminal.providers import ParserBeautifulSoup
 from subliminal.cache import SHOW_EXPIRATION_TIME, region
 from subliminal.providers.tvsubtitles import TVsubtitlesProvider, link_re
 
+from .mixins import PunctuationMixin
+
 logger = logging.getLogger(__name__)
 
 
-class PatchedTVsubtitlesProvider(TVsubtitlesProvider):
-    def clean_punctuation(self, s):
-        # fixes show ids for stuff like "Mr. Petterson", as our matcher already sees it as "Mr Petterson" but addic7ed doesn't
-        return s.replace(".", "")
-
+class PatchedTVsubtitlesProvider(PunctuationMixin, TVsubtitlesProvider):
     @region.cache_on_arguments(expiration_time=SHOW_EXPIRATION_TIME)
     def search_show_id(self, series, year=None):
         """Search the show id from the `series` and `year`.

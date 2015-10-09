@@ -6,11 +6,13 @@ from random import randint
 from subliminal.providers.addic7ed import Addic7edProvider, Addic7edSubtitle, ParserBeautifulSoup, Language
 from subliminal.cache import SHOW_EXPIRATION_TIME, region
 
+from .mixins import PunctuationMixin
+
 logger = logging.getLogger(__name__)
 
 series_year_re = re.compile('^(?P<series>[ \w.:]+)(?: \((?P<year>\d{4})\))?$')
 
-class PatchedAddic7edProvider(Addic7edProvider):
+class PatchedAddic7edProvider(PunctuationMixin, Addic7edProvider):
     USE_ADDICTED_RANDOM_AGENTS = False
 
     def __init__(self, username=None, password=None, use_random_agents=False):
@@ -27,10 +29,6 @@ class PatchedAddic7edProvider(Addic7edProvider):
         	'User-Agent': AGENT_LIST[randint(0, len(AGENT_LIST)-1)],
         	'Referer': self.server_url,
     	    }
-
-    def clean_punctuation(self, s):
-	# fixes show ids for stuff like "Mr. Petterson", as our matcher already sees it as "Mr Petterson" but addic7ed doesn't
-	return s.replace(".", "")
 
     @region.cache_on_arguments(expiration_time=SHOW_EXPIRATION_TIME)
     def _get_show_ids(self):
