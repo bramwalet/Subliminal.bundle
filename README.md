@@ -10,7 +10,16 @@ Use the following agent order:
 4. again, **DISABLE Local Media Assets**!
 
 ## Changelog
-#### RC-2
+#### RC-3
+- addic7ed/tvsubtitles: punctuation fixes (correctly get show ids for series like "Mr. Poopster" now)
+- podnapisi: fix logging
+- opensubtitles: add login credentials (for VIPs)
+- add retry functionality to retry failed subtitle downloads, including configurable amount of retries until discarding of provider
+- move possibly not needed setting "Restrict to one language" to the bottom
+- more detailed logging
+- some cleanup
+
+RC-2
 - fix empty custom subtitle folder creation
 - fix detection of existing embedded subtitles (switch to https://github.com/tonswieb/enzyme)
 - better logging
