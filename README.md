@@ -1,5 +1,13 @@
 # pannal's fork of Subliminal.bundle
 
+### Quick installation
+* go to ```Library/Application Support/Plex Media Server/Plug-ins/```
+* ```rm -r Subliminal.bundle```
+* ```wget https://github.com/pannal/Subliminal.bundle/releases/download/1.1-rc3/Subliminal.bundle-1.1-rc3.zip```
+* ```unzip Subliminal.bundle-1.1-rc3.zip```
+* more indepth: look below on ```Installation```
+
+### Usage
 Please install [LocalMediaExtended.bundle](https://github.com/pannal/LocalMediaExtended.bundle) and use it **INSTEAD** of LocalMedia.
 
 Use the following agent order:
@@ -8,13 +16,6 @@ Use the following agent order:
 2. Local Media Assets Extended
 3. anything else
 4. again, **DISABLE Local Media Assets**!
-
-### Quick installation
-* go to ```Library/Application Support/Plex Media Server/Plug-ins/```
-* ```rm -r Subliminal.bundle```
-* ```wget https://github.com/pannal/Subliminal.bundle/releases/download/1.1-rc3/Subliminal.bundle-1.1-rc3.zip```
-* ```unzip Subliminal.bundle-1.1-rc3.zip```
-* more indepth: look below on ```Installation```
 
 ### Encountered a bug?
 * be sure to post your logs: ```Library/Application Support/Plex Media Server/Logs/PMS Plugin Logs/com.plexapp.agents.subliminal.log```; there may be multiple logs (com.plexapp.agents.subliminal.log.*) depending on the amount of Videos you're refreshing
