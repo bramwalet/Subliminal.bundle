@@ -9,6 +9,8 @@ Use the following agent order:
 3. anything else
 4. again, **DISABLE Local Media Assets**!
 
+**Remember: before you open a bug-ticket please double-check, that you've deleted the Subliminal.bundle folder BEFORE every update** (to avoid .pyc leftovers)
+
 ## Changelog
 #### RC-3
 - addic7ed/tvsubtitles: punctuation fixes (correctly get show ids for series like "Mr. Poopster" now)
