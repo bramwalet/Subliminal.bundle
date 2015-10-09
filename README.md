@@ -9,7 +9,9 @@ Use the following agent order:
 3. anything else
 4. again, **DISABLE Local Media Assets**!
 
-**Remember: before you open a bug-ticket please double-check, that you've deleted the Subliminal.bundle folder BEFORE every update** (to avoid .pyc leftovers)
+### Encountered a bug?
+* be sure to post your logs: ```Library/Application Support/Plex Media Server/Logs/PMS Plugin Logs/com.plexapp.agents.subliminal.log```; there may be multiple logs (com.plexapp.agents.subliminal.log.*) depending on the amount of Videos you're refreshing
+* **Remember: before you open a bug-ticket please double-check, that you've deleted the Subliminal.bundle folder BEFORE every update** (to avoid .pyc leftovers)
 
 ## Changelog
 #### RC-3
