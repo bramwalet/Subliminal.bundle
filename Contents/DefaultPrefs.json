@@ -20,6 +20,20 @@
                 "secure": "true" 
         },
 	{
+                "id": "provider.opensubtitles.username",
+                "label": "Opensubtitles Username (VIP)",
+                "type": "text",
+                "default": ""
+        },
+        {
+                "id": "provider.opensubtitles.password",
+                "label": "Opensubtitles Password",
+                "type": "text",
+                "option": "hidden",
+                "default": "",
+                "secure": "true" 
+        },
+	{
                 "id": "provider.addic7ed.use_random_agents",
                 "label": "Addic7ed: Use random user agents (should not be necessary)",
                 "type": "bool",

@@ -5,7 +5,7 @@ import babelfish
 
 from .patch_provider_pool import PatchedProviderPool
 from .patch_video import patched_search_external_subtitles
-from .patch_providers import addic7ed, podnapisi, tvsubtitles
+from .patch_providers import addic7ed, podnapisi, tvsubtitles, opensubtitles
 
 
 # patch subliminal's ProviderPool 
@@ -15,6 +15,7 @@ subliminal.api.ProviderPool = PatchedProviderPool
 subliminal.providers.addic7ed.Addic7edProvider = addic7ed.PatchedAddic7edProvider
 subliminal.providers.podnapisi.PodnapisiProvider = podnapisi.PatchedPodnapisiProvider
 subliminal.providers.tvsubtitles.TVsubtitlesProvider = tvsubtitles.PatchedTVsubtitlesProvider
+subliminal.providers.opensubtitles.OpenSubtitlesProvider = opensubtitles.PatchedOpenSubtitlesProvider
 
 # add language converters
 babelfish.language_converters.register('addic7ed = subliminal_patch.patch_language:PatchedAddic7edConverter')

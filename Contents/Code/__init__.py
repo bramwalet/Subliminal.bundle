@@ -64,7 +64,10 @@ def getProviderSettings():
                                       'password': Prefs['provider.addic7ed.password'],
 				      'use_random_agents': Prefs['provider.addic7ed.use_random_agents'],
                                       },
-                         }
+			 'opensubtitles': {'username': Prefs['provider.opensubtitles.username'], 
+                                      'password': Prefs['provider.opensubtitles.password'],
+				      },
+                        }
 
     return provider_settings
 
