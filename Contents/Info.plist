@@ -7,7 +7,7 @@
         <key>CFBundleExecutable</key>
         <string>Test Plug-in</string>
         <key>CFBundleIdentifier</key>
-        <string>com.plexapp.agents.subliminal</string>
+        <string>com.plexapp.agents.subzero</string>
         <key>CFBundleInfoDictionaryVersion</key>
         <string>6.0</string>
         <key>CFBundleShortVersionString</key>
