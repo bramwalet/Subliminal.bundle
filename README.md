@@ -1,4 +1,5 @@
-# pannal's fork of Subliminal.bundle
+# Sub-Zero
+#### based on [Subliminal.bundle](https://github.com/bramwalet/Subliminal.bundle)
 
 ### Quick installation
 * go to ```Library/Application Support/Plex Media Server/Plug-ins/```
@@ -8,8 +9,6 @@
 * more indepth: look below on ```Installation```
 
 ### Usage
-Please install [LocalMediaExtended.bundle](https://github.com/pannal/LocalMediaExtended.bundle) and use it **INSTEAD** of LocalMedia.
-
 Use the following agent order:
 
 1. Subliminal TV/Movie Subtitles
