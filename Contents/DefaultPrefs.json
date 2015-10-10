@@ -127,14 +127,14 @@
                 "id": "subtitles.save.filesystem",
                 "label": "Store subtitles next to media files (instead of metadata)",
                 "type": "bool",
-                "default": "false"
+                "default": "true"
         },
 	{
                 "id": "subtitles.save.subFolder",
                 "label": "Subtitle Folder (\"current folder\" is the folder the current media file lives in) - needs LocalMediaExtended agent",
                 "type": "enum",
                 "values": ["current folder", "sub", "subs", "subtitle", "subtitles"],
-                "default": "current folder"
+                "default": "subs"
         },
 	{
                 "id": "subtitles.save.subFolder.Custom",
