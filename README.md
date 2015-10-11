@@ -1,5 +1,7 @@
-# Sub-Zero
-#### based on [Subliminal.bundle](https://github.com/bramwalet/Subliminal.bundle)
+Sub-Zero for Plex
+=================
+##### Chilly subtitles for your everyday Plex needs.
+Originally based on @bramwalet's awesome [Subliminal.bundle](https://github.com/bramwalet/Subliminal.bundle)
 
 ### Quick installation
 * go to ```Library/Application Support/Plex Media Server/Plug-ins/```
@@ -63,8 +65,8 @@ beta4
 - support for [three (two optional) subtitle languages](e543c927cf49c264eaece36640c99d67a99c7da2)
 - optionally use [random user agent for addic7ed provider](83ace14faf75fbd75313f0ceda9b78161895fbcf) (should not be needed)
 
-Subliminal.bundle
-=================
+Description
+------------
 
 Plex Metadata agent plugin based on Subliminal. This agent will search on the following sites for the best matching subtitles:
 - OpenSubtitles
@@ -81,6 +83,7 @@ See [article](https://support.plex.tv/hc/en-us/articles/201187656-How-do-I-manua
 
 Configuration 
 -------------
+**outdated
 Several options are provided in the preferences of this agent. 
 * Addic7ed username/password: Provide your addic7ed username here, otherwise the provider won't work. Please make sure your account is activated, before using the agent.
 * Subtitle language (1)/(2): Your preferred languages to download subtitles for. 
