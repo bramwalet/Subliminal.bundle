@@ -4,8 +4,6 @@
     <dict>
         <key>CFBundleDevelopmentRegion</key>
         <string>English</string>
-        <key>CFBundleExecutable</key>
-        <string>Test Plug-in</string>
         <key>CFBundleIdentifier</key>
         <string>com.plexapp.agents.subzero</string>
         <key>CFBundleInfoDictionaryVersion</key>
@@ -15,7 +13,7 @@
         <key>CFBundleSignature</key>
         <string>????</string>
         <key>CFBundleVersion</key>
-        <string>1.0</string>
+        <string>1.1</string>
         <key>PlexFrameworkVersion</key>
         <string>2</string>
         <key>PlexPluginClass</key>
@@ -29,5 +27,16 @@
          <key>PlexPluginCodePolicy</key>
             <!-- this allows channels to access some python methods which are otherwise blocked, as well as import external code libraries, and interact with the PMS HTTP API -->     
             <string>Elevated</string>
+	<key>PlexAgentAttributionText</key>
+	<string><h1>Sub-Zero for Plex</h1> version 1.1-rc4
+		<i>Subtitles done right</i>
+		Originally based on @bramwalet's awesome <a href="https://github.com/bramwalet/Subliminal.bundle">Subliminal.bundle</a>
+		
+		Need help?
+		Plex thread: <a href="https://forums.plex.tv/discussion/186575">https://forums.plex.tv/discussion/186575</a>
+		Github: https://github.com/pannal/Sub-Zero
+
+		panni, 2015
+	</string>
     </dict>
 </plist>
