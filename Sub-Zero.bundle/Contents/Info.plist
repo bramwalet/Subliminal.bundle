@@ -28,15 +28,20 @@
             <!-- this allows channels to access some python methods which are otherwise blocked, as well as import external code libraries, and interact with the PMS HTTP API -->     
             <string>Elevated</string>
 	<key>PlexAgentAttributionText</key>
-	<string><h1>Sub-Zero for Plex</h1> version 1.1-rc4
-		<i>Subtitles done right</i>
-		Originally based on @bramwalet's awesome <a href="https://github.com/bramwalet/Subliminal.bundle">Subliminal.bundle</a>
-		
-		Need help?
-		Plex thread: <a href="https://forums.plex.tv/discussion/186575">https://forums.plex.tv/discussion/186575</a>
-		Github: https://github.com/pannal/Sub-Zero
+	<string>&lt;div style=&quot;white-space: pre;&quot;&gt;&lt;img src=&quot;https://raw.githubusercontent.com/pannal/Sub-Zero/master/Sub-Zero.bundle/Contents/Resources/icon-default.png&quot; /&gt;
 
-		panni, 2015
+&lt;h1&gt;Sub-Zero for Plex&lt;/h1&gt;&lt;i&gt;Subtitles done right&lt;/i&gt;
+
+Version 1.1-rc4
+
+Originally based on @bramwalet's awesome &lt;a href=&quot;https://github.com/bramwalet/Subliminal.bundle&quot;&gt;Subliminal.bundle&lt;/a&gt;
+
+&lt;strong&gt;Need help?&lt;/strong&gt;
+Plex thread: &lt;a href=&quot;https://forums.plex.tv/discussion/186575&quot;>https://forums.plex.tv/discussion/186575&lt;/a&gt;
+Github: &lt;a href=&quot;https://github.com/pannal/Sub-Zero&quot;&gt;https://github.com/pannal/Sub-Zero&lt;/a&gt;
+
+panni, 2015
+&lt;/div&gt;
 	</string>
     </dict>
 </plist>
