@@ -3,25 +3,31 @@
 
 ### Quick installation
 * go to ```Library/Application Support/Plex Media Server/Plug-ins/```
-* ```rm -r Subliminal.bundle```
-* ```wget https://github.com/pannal/Subliminal.bundle/releases/download/1.1-rc3/Subliminal.bundle-1.1-rc3.zip```
-* ```unzip Subliminal.bundle-1.1-rc3.zip```
+* ```rm -r Sub-Zero.bundle LocalMediaExtended.bundle```
+* ```wget https://github.com/pannal/Sub-Zero/releases/download/1.1-rc4/Sub-Zero-1.1-rc4.zip```
+* ```unzip Sub-Zero-1.1-rc4.zip```
 * more indepth: look below on ```Installation```
 
 ### Usage
 Use the following agent order:
 
-1. Subliminal TV/Movie Subtitles
+1. Sub-Zero TV/Movie Subtitles
 2. Local Media Assets Extended
 3. anything else
 4. again, **DISABLE Local Media Assets**!
 
 ### Encountered a bug?
-* be sure to post your logs: ```Library/Application Support/Plex Media Server/Logs/PMS Plugin Logs/com.plexapp.agents.subliminal.log```; there may be multiple logs (com.plexapp.agents.subliminal.log.*) depending on the amount of Videos you're refreshing
-* **Remember: before you open a bug-ticket please double-check, that you've deleted the Subliminal.bundle folder BEFORE every update** (to avoid .pyc leftovers)
+* be sure to post your logs: ```Library/Application Support/Plex Media Server/Logs/PMS Plugin Logs/com.plexapp.agents.subzero.log```; there may be multiple logs (com.plexapp.agents.subzero.log.*) depending on the amount of Videos you're refreshing
+* **Remember: before you open a bug-ticket please double-check, that you've deleted the Sub-Zero.bundle folder BEFORE every update** (to avoid .pyc leftovers)
 
 ## Changelog
-#### RC-3
+#### RC-4
+- rename project to Sub-Zero
+- incorporate LocalMediaExtended.bundle
+- making this a multi-bundle plugin
+- update default scores
+
+RC-3
 - addic7ed/tvsubtitles: punctuation fixes (correctly get show ids for series like "Mr. Poopster" now)
 - podnapisi: fix logging
 - opensubtitles: add login credentials (for VIPs)

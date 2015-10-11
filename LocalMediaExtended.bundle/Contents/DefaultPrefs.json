@@ -1,0 +1,21 @@
+[
+	{
+                "id": "scanAll",
+                "label": "Scan for subtitles in all default folders (sub, subs, subtitle, subtitles) + custom if specified",
+                "type": "bool",
+                "default": "true"
+        },
+	{
+                "id": "subFolder",
+                "label": "Subtitle Folder (\"current folder\" is the folder the current media file lives in)",
+                "type": "enum",
+                "values": ["current folder", "sub", "subs", "subtitle", "subtitles"],
+                "default": "current folder"
+        },
+        {
+                "id": "subFolderCustom",
+                "label": "Custom Subtitle folder (computes to real paths; use for example \"bla\" as a subfolder of the current media file folder - can use real paths aswell)",
+                "type": "text",
+                "default": ""
+        },
+]
