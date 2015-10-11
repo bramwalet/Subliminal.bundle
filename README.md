@@ -5,6 +5,7 @@ Sub-Zero for Plex
 
 ##### Subtitles done right
 Originally based on @bramwalet's awesome [Subliminal.bundle](https://github.com/bramwalet/Subliminal.bundle)
+
 Plex forum thread: https://forums.plex.tv/discussion/186575
 
 ### Quick installation
