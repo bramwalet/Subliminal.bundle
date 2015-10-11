@@ -1,6 +1,6 @@
 Sub-Zero for Plex
 =================
-##### Chilly subtitles for your everyday Plex needs.
+##### Subtitles done right
 Originally based on @bramwalet's awesome [Subliminal.bundle](https://github.com/bramwalet/Subliminal.bundle)
 
 ### Quick installation
