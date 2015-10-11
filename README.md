@@ -31,6 +31,7 @@ Use the following agent order:
 - incorporate LocalMediaExtended.bundle
 - making this a multi-bundle plugin
 - update default scores
+- add icon
 
 RC-3
 - addic7ed/tvsubtitles: punctuation fixes (correctly get show ids for series like "Mr. Poopster" now)
