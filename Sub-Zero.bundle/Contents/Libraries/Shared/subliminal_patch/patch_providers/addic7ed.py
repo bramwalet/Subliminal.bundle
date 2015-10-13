@@ -10,7 +10,7 @@ from .mixins import PunctuationMixin
 
 logger = logging.getLogger(__name__)
 
-series_year_re = re.compile('^(?P<series>[ \w.:]+)(?: \((?P<year>\d{4})\))?$')
+series_year_re = re.compile('^(?P<series>[ \w.:\']+)(?: \((?P<year>\d{4})\))?$')
 
 class PatchedAddic7edProvider(PunctuationMixin, Addic7edProvider):
     USE_ADDICTED_RANDOM_AGENTS = False
