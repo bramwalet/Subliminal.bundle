@@ -100,7 +100,6 @@ See [article](https://support.plex.tv/hc/en-us/articles/201187656-How-do-I-manua
 
 Configuration 
 -------------
-**outdated
 Several options are provided in the preferences of this agent. 
 * Addic7ed username/password: Provide your addic7ed username here, otherwise the provider won't work. Please make sure your account is activated, before using the agent.
 * Subtitle language (1)/(2)/(3): Your preferred languages to download subtitles for. 
