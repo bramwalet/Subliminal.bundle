@@ -1,7 +1,12 @@
 Sub-Zero for Plex
 =================
+
+![logo](https://raw.githubusercontent.com/pannal/Sub-Zero/master/Sub-Zero.bundle/Contents/Resources/subzero.gif)
+
 ##### Subtitles done right
 Originally based on @bramwalet's awesome [Subliminal.bundle](https://github.com/bramwalet/Subliminal.bundle)
+
+Plex forum thread: https://forums.plex.tv/discussion/186575
 
 ### Quick installation
 * go to ```Library/Application Support/Plex Media Server/Plug-ins/```
@@ -28,6 +33,7 @@ Use the following agent order:
 - incorporate LocalMediaExtended.bundle
 - making this a multi-bundle plugin
 - update default scores
+- add icon
 
 RC-3
 - addic7ed/tvsubtitles: punctuation fixes (correctly get show ids for series like "Mr. Poopster" now)
