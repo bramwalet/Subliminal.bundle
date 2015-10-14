@@ -131,8 +131,9 @@
         {
                 "id": "subtitles.search.hearingImpaired",
                 "label": "Download hearing impaired subtitles.",
-                "type": "bool",
-                "default": "false"
+                "type": "enum",
+		"values": ["prefer", "don't prefer", "force HI", "force non-HI"],
+                "default": "don't prefer"
         },
         {
                 "id": "subtitles.save.filesystem",
