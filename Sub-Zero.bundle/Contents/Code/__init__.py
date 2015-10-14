@@ -28,12 +28,28 @@ def ValidatePrefs():
 # Prepare a list of languages we want subs for
 def getLangList():
     langList = {Language.fromietf(Prefs["langPref1"])}
-    if(Prefs['subtitles.only_one']):
+    langCustom = Prefs["langPrefCustom"].strip()
+
+    if Prefs['subtitles.only_one']:
 	return langList
-    if(Prefs["langPref2"] != "None"):
+
+    if Prefs["langPref2"] != "None":
         langList.update({Language.fromietf(Prefs["langPref2"])})
-    if(Prefs["langPref3"] != "None"):
+
+    if Prefs["langPref3"] != "None":
         langList.update({Language.fromietf(Prefs["langPref3"])})
+
+    if len(langCustom) and langCustom != "None":
+	for lang in langCustom.split(u","):
+	    lang = lang.strip()
+	    try:
+		real_lang = Language.fromietf(lang)
+	    except:
+		try:
+		    real_lang = Language.fromname(lang)
+		except:
+		    continue
+	    langList.update({real_lang})
         
     return langList
 
