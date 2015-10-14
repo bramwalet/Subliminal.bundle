@@ -59,7 +59,7 @@ def patched_search_external_subtitles(path):
     logger.debug("external subs: found %s", subtitles)
     return subtitles
 
-def scan_video(path, subtitles=True, embedded_subtitles=True):
+def scan_video(path, subtitles=True, embedded_subtitles=True, video_type=None):
     """Scan a video and its subtitle languages from a video `path`.
     :param str path: existing path to the video.
     :param bool subtitles: scan for subtitles with the same name.
@@ -67,7 +67,7 @@ def scan_video(path, subtitles=True, embedded_subtitles=True):
     :return: the scanned video.
     :rtype: :class:`Video`
 
-    # patch: don't use the full path for guessit as it'll mess things up (e.g. episode = movie if /Movies/ in path name)
+    # patch: suggest video type to guessit beforehand
     """
     # check for non-existing path
     if not os.path.exists(path):
@@ -78,14 +78,10 @@ def scan_video(path, subtitles=True, embedded_subtitles=True):
         raise ValueError('%s is not a valid video extension' % os.path.splitext(path)[1])
 
     dirpath, filename = os.path.split(path)
-    logger.info('Scanning video %r in %r', filename, dirpath)
-
-    # only use the file name and 3 possible parent directories in guess_file_info
-    rel_path = os.path.join(*os.path.normpath(path).split(os.path.sep)[-4:])
-    logger.info('Passing %r to guessit', rel_path)
+    logger.info('Scanning video (type: %s) %r in %r', video_type, filename, dirpath)
 
     # guess
-    video = Video.fromguess(path, guess_file_info(rel_path))
+    video = Video.fromguess(path, guess_file_info(path, options={"type": video_type}))
 
     # size and hashes
     video.size = os.path.getsize(path)

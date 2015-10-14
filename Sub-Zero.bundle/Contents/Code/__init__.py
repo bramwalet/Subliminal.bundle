@@ -77,7 +77,7 @@ def scanTvMedia(media):
         for episode in media.seasons[season].episodes:
             for item in media.seasons[season].episodes[episode].items:
                 for part in item.parts:
-                    scannedVideo = scanVideo(part)
+                    scannedVideo = scanVideo(part, "episode")
                     videos[scannedVideo] = part
     return videos
 
@@ -85,17 +85,17 @@ def scanMovieMedia(media):
     videos = {}
     for item in media.items:
         for part in item.parts:
-            scannedVideo = scanVideo(part)
+            scannedVideo = scanVideo(part, "movie")
             videos[scannedVideo] = part 
     return videos
 
-def scanVideo(part):
+def scanVideo(part, video_type):
     embedded_subtitles = Prefs['subtitles.scan.embedded']
     external_subtitles = Prefs['subtitles.scan.external']
     
     Log.Debug("Scanning video: %s, subtitles=%s, embedded_subtitles=%s" % (part.file, external_subtitles, embedded_subtitles))
     try:
-        return subliminal.video.scan_video(part.file, subtitles=external_subtitles, embedded_subtitles=embedded_subtitles)
+        return subliminal.video.scan_video(part.file, subtitles=external_subtitles, embedded_subtitles=embedded_subtitles, video_type=video_type)
     except ValueError:
         Log.Warn("File could not be guessed by subliminal")
 
