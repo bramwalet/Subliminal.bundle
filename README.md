@@ -1,4 +1,4 @@
-Sub-Zero for Plex, 1.1-RC5
+Sub-Zero for Plex, 1.1-RC5.1
 =================
 
 ![logo](https://raw.githubusercontent.com/pannal/Sub-Zero/master/Sub-Zero.bundle/Contents/Resources/subzero.gif)
