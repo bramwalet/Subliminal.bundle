@@ -1,6 +1,7 @@
 import os
 import helpers
 
+from mutagen import File
 from mutagen.mp4 import MP4
 
 class VideoHelper(object):
@@ -32,9 +33,13 @@ class MP4VideoHelper(VideoHelper):
       item = episode
 
     Log('Reading MP4 tags')
-    try: tags = MP4(self.filename)
-    except: 
+    try: tags = File(self.filename, options=[MP4])
+    except Exception, e:
       Log('An error occurred while attempting to parse the MP4 file: ' + self.filename)
+      Log(str(e))
+      return
+    if tags == None:
+      Log('Not reading tags from %s because it doesn\'t look like an MP4 file.' % self.filename)
       return
 
     # Coverart
@@ -112,26 +117,47 @@ class MP4VideoHelper(VideoHelper):
     # Directors
     try:
       if pl and 'directors' in pl and pl['directors']:
-        item.directors.clear()
+        pl_directors = []
         for director in pl['directors']:
-          item.directors.add(director['name'])
+          director_name = director['name']
+          if director_name:
+            pl_directors.add(director_name)
+        # if there are none-empty director names present use them
+        if pl_directors:
+          item.directors.clear()
+          for director_name in pl_directors:
+            item.directors.add(director_name)
     except: pass
 
     # Writers
     try:
       if pl and 'screenwriters' in pl and pl['screenwriters']:
-        item.writers.clear()
+        pl_screenwriters = []
         for writer in pl['screenwriters']:
-          item.writers.add(writer['name'])
+          writer_name = writer['name']
+          if writer_name:
+            pl_screenwriters.add(writer_name)
+        # if there are none-empty writer names present use them
+        if pl_screenwriters:
+          item.writers.clear()
+          for writer_name in pl_screenwriters:
+            item.writers.add(writer_name)
     except: pass
 
     # Cast
     try:
+      pl_actors = []
       if pl and 'cast' in pl and pl['cast']:
-        item.roles.clear()
         for actor in pl['cast']:
+          actor_name = actor['name']
+          if actor_name:
+            pl_actors.add(actor_name)
+
+      if pl_actors:
+        item.roles.clear()
+        for actor_name in pl_actors:
           role = item.roles.new()
-          role.actor = actor['name']
+          role.actor = actor_name
       else:
         artists = tags["\xa9ART"][0]
         if len(artists) > 0:
