@@ -4,7 +4,7 @@ import subliminal
 import babelfish
 
 from .patch_provider_pool import PatchedProviderPool
-from .patch_video import patched_search_external_subtitles
+from .patch_video import patched_search_external_subtitles, scan_video
 from .patch_providers import addic7ed, podnapisi, tvsubtitles, opensubtitles
 
 
@@ -24,3 +24,5 @@ babelfish.language_converters.register('tvsubtitles = subliminal.converters.tvsu
 # patch subliminal's external subtitles search algorithm
 subliminal.video.search_external_subtitles = patched_search_external_subtitles
 
+# patch subliminal's scan_video function
+subliminal.video.scan_video = scan_video
