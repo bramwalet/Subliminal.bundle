@@ -15,8 +15,6 @@ from mutagen.oggvorbis import OggVorbis
 
 PERSONAL_MEDIA_IDENTIFIER = "com.plexapp.agents.none"
 
-GENERIC_ARTIST_NAMES = ['various artists', '[unknown artist]', 'soundtrack', 'ost', 'original sound track', 'original soundtrack', 'original broadway cast']
-
 #####################################################################################################################
 
 @expose
@@ -159,77 +157,34 @@ class localMediaArtistCommon(object):
     
     # Clear out the title to ensure stale data doesn't clobber other agents' contributions.
     metadata.title = None
+   
     if shouldFindExtras():
       extra_type_map = getExtraTypeMap()
 
       artist_file_dirs = []
       artist_extras = {}
 
-      metadata.genres.clear()
-      album_genres = []
       # First look for track extras.
       checked_tag = False
+      
       for album in media.children:
         for track in album.children:
           part = helpers.unicodize(track.items[0].parts[0].file)
           findTrackExtra(part, extra_type_map, artist_extras)
           artist_file_dirs.append(os.path.dirname(part))
           
-          audio_helper = audiohelpers.AudioHelpers(part)
-          if media.title.lower() not in GENERIC_ARTIST_NAMES:
-            if audio_helper and hasattr(audio_helper, 'get_track_genres'):
-              genres = audio_helper.get_track_genres()
-              for genre in genres:
-                if genre not in album_genres:
-                  album_genres.append(genre)
-
-          # Look for artist sort field from first track.
-          # TODO maybe analyse all tracks and only add title_sort if they are the same.
+          # Look for artist sort field.
           if checked_tag == False:
             checked_tag = True
+            audio_helper = audiohelpers.AudioHelpers(part)
             if audio_helper and hasattr(audio_helper, 'get_artist_sort_title'):
               artist_sort_title = audio_helper.get_artist_sort_title()
               if artist_sort_title and hasattr(metadata, 'title_sort'):
                 metadata.title_sort = artist_sort_title
 
-      for genre in album_genres:
-        metadata.genres.add(genre)
-
-      # Now go through this artist's directories looking for additional extras and local art.
-      checked_artist_path = False
+      # Now go through this artist's directories looking for additional extras.
       for artist_file_dir in set(artist_file_dirs):
-        path = helpers.unicodize(artist_file_dir)
-        findArtistExtras(path, extra_type_map, artist_extras, media.title)
-
-        # if name of parent dir is same as artist name, look for art there
-        parentdir = os.path.split(os.path.abspath(path[:-1]))[0]
-        name_parentdir = os.path.basename(parentdir)
-        if normalizeArtist(name_parentdir) == normalizeArtist(media.title) and checked_artist_path is False:
-          checked_artist_path = True
-          path_files = {}
-          for p in os.listdir(parentdir):
-            path_files[p.lower()] = p
-
-          # Look for posters and art
-          valid_posters = []
-          valid_art = []
-          for ext in config.ART_EXTS:
-            for name in config.POSTER_FILES:
-              file = (name + '.' + ext).lower()
-              if file in path_files.keys():
-                data = Core.storage.load(os.path.join(parentdir, path_files[file]))
-                poster_name = hashlib.md5(data).hexdigest()
-                valid_posters.append(poster_name)
-                if poster_name not in metadata.posters:
-                  metadata.posters[poster_name] = Proxy.Media(data)
-            for name in config.ART_FILES:
-              file = (name + '.' + ext).lower()
-              if file in path_files.keys():
-                data = Core.storage.load(os.path.join(parentdir, path_files[file]))
-                art_name = hashlib.md5(data).hexdigest()
-                valid_art.append(art_name)
-                if art_name not in metadata.art:
-                  metadata.art[art_name] = Proxy.Media(data)
+        findArtistExtras(helpers.unicodize(artist_file_dir), extra_type_map, artist_extras, media.title)
 
       for extra in sorted(artist_extras.values(), key = lambda v: (getExtraSortOrder()[type(v)], v.title)):
         metadata.extras.add(extra)
@@ -275,9 +230,6 @@ def updateAlbum(metadata, media, lang, find_extras=False, artist_extras={}, extr
   # Clear out the title to ensure stale data doesn't clobber other agents' contributions.
   metadata.title = None
 
-  # clear out genres for this album so we will get genres for all tracks in audio_helper.process_metadata(metadata)
-  metadata.genres.clear()
-
   valid_posters = []
   path = None
   for track in media.tracks:
@@ -303,19 +255,9 @@ def updateAlbum(metadata, media, lang, find_extras=False, artist_extras={}, extr
 
               if poster_name not in metadata.posters:
                 metadata.posters[poster_name] = Proxy.Media(data)
-                Log('Local asset image added (poster): ' + file + ', for file: ' + filename)
+                Log('Local asset image added: ' + file + ', for file: ' + filename)
               else:
                 Log('Skipping local poster since its already added')
-          for name in config.ART_FILES:
-            file = (name + '.' + ext).lower()
-            if file in path_files.keys():
-              data = Core.storage.load(os.path.join(path, path_files[file]))
-              art_name = hashlib.md5(data).hexdigest()
-              if art_name not in metadata.art:
-                metadata.art[art_name] = Proxy.Media(data)
-                Log('Local asset image added (art): ' + file + ', for file: ' + filename)
-              else:
-                Log('Skipping local art since its already added')
 
         # If there is an appropriate AudioHelper, use it.
         audio_helper = audiohelpers.AudioHelpers(part.file)

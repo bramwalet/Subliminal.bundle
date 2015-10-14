@@ -44,20 +44,7 @@ class ID3AudioHelper(AudioHelper):
     
   def get_track_sort_title(self):
     return self.tags.get('TSOT')
-
-  def get_track_genres(self):
-    genre_list = []
-    try:
-      self.tags = tags = MFile(self.filename)
-      genres = self.tags.get('TCON')
-      if genres is not None and len(genres.text) > 0:
-        for genre in genres.text:
-          for sub_genre in parse_genres(genre):
-            genre_list.append(sub_genre.strip())
-    except Exception, e:
-      Log('Exception reading TCON (genre): ' + str(e))
-    return genre_list
-
+    
   def get_artist_sort_title(self):
     try:
       self.tags = tags = MFile(self.filename)
@@ -81,40 +68,22 @@ class ID3AudioHelper(AudioHelper):
       Log('An error occurred while attempting to read ID3 tags from ' + self.filename)
       return
 
-    # Release Date (original_available_at)
+    # Release Date
     try:
       year = tags.get('TDRC')
       if year is not None and len(year.text) > 0:
-        available = Datetime.ParseDate('01-01-' + str(year.text[0])).date()
-        if metadata.originally_available_at is None:
-          metadata.originally_available_at = available
-        elif (available > metadata.originally_available_at):
-          # more then one date: use highest one
-          metadata.originally_available_at = available
+        metadata.originally_available_at = Datetime.ParseDate('01-01-' + str(year.text[0])).date()
     except Exception, e:
       Log('Exception reading TDRC (year): ' + str(e))
-
-    # Release Date (available_at)
-    try:
-      year = tags.get('TDRL')
-      if year is not None and len(year.text) > 0:
-        available = Datetime.ParseDate('01-01-' + str(year.text[0])).date()
-        if metadata.available_at is None:
-          metadata.available_at = available
-        elif (available > metadata.available_at):
-          # more then one date: use highest one
-          metadata.available_at = available
-    except Exception, e:
-      Log('Exception reading TDRL (year): ' + str(e))
 
     # Genres
     try:
       genres = tags.get('TCON')
       if genres is not None and len(genres.text) > 0:
+        metadata.genres.clear()
         for genre in genres.text:
           for sub_genre in parse_genres(genre):
-            if sub_genre.strip() not in metadata.genres:
-              metadata.genres.add(sub_genre.strip())
+            metadata.genres.add(sub_genre.strip())
     except Exception, e:
       Log('Exception reading TCON (genre): ' + str(e))
 
@@ -127,6 +96,7 @@ class ID3AudioHelper(AudioHelper):
         elif tags[frame].mime == 'image/png': ext = 'png'
         elif tags[frame].mime == 'image/gif': ext = 'gif'
         else: ext = ''
+
         poster_name = hashlib.md5(tags[frame].data).hexdigest()
         valid_posters.append(poster_name)
         if poster_name not in metadata.posters:
@@ -161,26 +131,9 @@ class MP4AudioHelper(AudioHelper):
   def get_artist_sort_title(self):
     try:
       tags = MFile(self.filename, easy=True)
-      tag = tags.get('albumartistsort')  # 'soaa'
-      if tag:
-        return tag[0]
       return tags.get('artistsort')[0]  # 'soar'
     except:      
       return None
-
-  def get_track_genres(self):
-    genre_list = []
-    try:
-      tags = MFile(self.filename)
-      genres = tags.get('\xa9gen')
-      if genres is not None and len(genres) > 0:
-        for genre in genres:
-          for sub_genre in parse_genres(genre):
-            genre_list.append(sub_genre.strip())
-    except Exception, e:
-      Log('Exception reading (genre): ' + str(e))
-    return genre_list
-
 
   def process_metadata(self, metadata):
 
@@ -196,10 +149,10 @@ class MP4AudioHelper(AudioHelper):
     try:
       genres = tags.get('\xa9gen')
       if genres is not None and len(genres) > 0:
+        metadata.genres.clear()
         for genre in genres:
           for sub_genre in parse_genres(genre):
-            if sub_genre.strip() not in metadata.genres:
-              metadata.genres.add(sub_genre.strip())
+            metadata.genres.add(sub_genre.strip())
     except Exception, e:
       Log('Exception reading \xa9gen (genre): ' + str(e))
 
@@ -207,12 +160,7 @@ class MP4AudioHelper(AudioHelper):
     try:
       release_date = tags.get('\xa9day')
       if release_date is not None and len(release_date) > 0:
-        available = Datetime.ParseDate(release_date[0].split('T')[0]).date()
-        if metadata.originally_available_at is None:
-          metadata.originally_available_at = available
-        elif (available > metadata.originally_available_at):
-          # more then one date: use highest one
-          metadata.originally_available_at = available
+        metadata.originally_available_at = Datetime.ParseDate(release_date[0].split('T')[0])
     except Exception, e:
       Log('Exception reading \xa9day (release date)' + str(e))
 
