@@ -29,9 +29,7 @@ def findAssets(metadata, media_title, paths, type, parts=[]):
                 'deleted' : DeletedSceneObject,
                 'behindthescenes' : BehindTheScenesObject,
                 'interview' : InterviewObject,
-                'scene' : SceneOrSampleObject,
-                'featurette' : FeaturetteObject,
-                'short' : ShortObject}
+                'scene' : SceneOrSampleObject}
 
   # We start by building a dictionary of files to their absolute paths. We also need to know
   # the number of media files that are actually present, in case the found local media asset 
@@ -83,13 +81,6 @@ def findAssets(metadata, media_title, paths, type, parts=[]):
           Log('%s won\'t contribute to total media file count.' % file_path)
           should_count = False
 
-      # Don't count things that follow the "-extra" naming convention.
-      if should_count and find_extras:
-        for key in extra_type_map.keys():
-          if root.endswith('-' + key):
-            Log('%s looks like a %s extra, won\'t contribute to total media file count.' % (file_path, key))
-            should_count = False
-
       # Don't count multi-part files (stack everything up to and including the year).
       if should_count:
         year = re.search(r'([\(\[\.\-])([1-2][0-9]{3})([\.\-\)\]_,+])', file_path)
@@ -106,6 +97,13 @@ def findAssets(metadata, media_title, paths, type, parts=[]):
         if full_path in [p.file for p in parts[1:]]:
           should_count = False
           Log('%s looks like a stacked part, won\'t contribute to total media file count.' % file_path)
+
+      # Don't count things that follow the "-extra" naming convention.
+      if should_count and find_extras:
+        for key in extra_type_map.keys():
+          if root.endswith('-' + key):
+            Log('%s looks like a %s extra, won\'t contribute to total media file count.' % (file_path, key))
+            should_count = False
 
       # Don't count things that follow specific trailer naming conventions.
       if should_count:
@@ -163,7 +161,7 @@ def findAssets(metadata, media_title, paths, type, parts=[]):
                 extras.append({'type' : key, 'title' : helpers.unicodize(title), 'file' : os.path.join(path, f)})
     
         # Make sure extras are sorted alphabetically and by type.
-        type_order = ['trailer', 'behindthescenes', 'interview', 'deleted', 'scene', 'sample', 'featurette', 'short']
+        type_order = ['trailer', 'behindthescenes', 'interview', 'deleted', 'scene', 'sample']
         extras.sort(key=lambda e: e['title'])
         extras.sort(key=lambda e: type_order.index(e['type']))
 
@@ -303,10 +301,9 @@ def findSubtitles(part):
 
   for file_path in file_paths.values():
 
-    local_basename = helpers.unicodize(os.path.splitext(os.path.basename(file_path))[0]) # no language, no flag
-    local_basename2 = local_basename.rsplit('.', 1)[0] # includes language, no flag
-    local_basename3 = local_basename2.rsplit('.', 1)[0] # includes language and flag
-    filename_matches_part = local_basename == part_basename or local_basename2 == part_basename or local_basename3 == part_basename
+    local_basename = helpers.unicodize(os.path.splitext(os.path.basename(file_path))[0])
+    local_basename2 = local_basename.rsplit('.', 1)[0]
+    filename_matches_part = local_basename == part_basename or local_basename2 == part_basename
 
     # If the file is located within the global subtitle folder and it's name doesn't match exactly
     # then we should simply ignore it.

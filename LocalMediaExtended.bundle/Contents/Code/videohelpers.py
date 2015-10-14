@@ -117,47 +117,26 @@ class MP4VideoHelper(VideoHelper):
     # Directors
     try:
       if pl and 'directors' in pl and pl['directors']:
-        pl_directors = []
+        item.directors.clear()
         for director in pl['directors']:
-          director_name = director['name']
-          if director_name:
-            pl_directors.add(director_name)
-        # if there are none-empty director names present use them
-        if pl_directors:
-          item.directors.clear()
-          for director_name in pl_directors:
-            item.directors.add(director_name)
+          item.directors.add(director['name'])
     except: pass
 
     # Writers
     try:
       if pl and 'screenwriters' in pl and pl['screenwriters']:
-        pl_screenwriters = []
+        item.writers.clear()
         for writer in pl['screenwriters']:
-          writer_name = writer['name']
-          if writer_name:
-            pl_screenwriters.add(writer_name)
-        # if there are none-empty writer names present use them
-        if pl_screenwriters:
-          item.writers.clear()
-          for writer_name in pl_screenwriters:
-            item.writers.add(writer_name)
+          item.writers.add(writer['name'])
     except: pass
 
     # Cast
     try:
-      pl_actors = []
       if pl and 'cast' in pl and pl['cast']:
-        for actor in pl['cast']:
-          actor_name = actor['name']
-          if actor_name:
-            pl_actors.add(actor_name)
-
-      if pl_actors:
         item.roles.clear()
-        for actor_name in pl_actors:
+        for actor in pl['cast']:
           role = item.roles.new()
-          role.actor = actor_name
+          role.actor = actor['name']
       else:
         artists = tags["\xa9ART"][0]
         if len(artists) > 0:
