@@ -1,4 +1,4 @@
-Sub-Zero for Plex
+Sub-Zero for Plex, 1.1-RC5
 =================
 
 ![logo](https://raw.githubusercontent.com/pannal/Sub-Zero/master/Sub-Zero.bundle/Contents/Resources/subzero.gif)
@@ -28,7 +28,15 @@ Use the following agent order:
 * **Remember: before you open a bug-ticket please double-check, that you've deleted the Sub-Zero.bundle folder BEFORE every update** (to avoid .pyc leftovers)
 
 ## Changelog
-#### RC-4
+RC-5
+- fix wrong video type matching by hinting video type to guessit
+- update to newest LocalMediaExtended.bundle (incorporated plex-inc's changes)
+- show page links for subtitles in log file instead of subtitle ID
+- add custom language setting in addition to the three hardcoded ones
+- if a subtitle doesn't match our hearing_impaired setting, ignore it
+- add an optional boost for addic7ed subtitles, if their series, season, episode, year, and format (e.g. WEB-DL) matches
+
+RC-4
 - rename project to Sub-Zero
 - incorporate LocalMediaExtended.bundle
 - making this a multi-bundle plugin
@@ -92,8 +100,10 @@ Configuration
 **outdated
 Several options are provided in the preferences of this agent. 
 * Addic7ed username/password: Provide your addic7ed username here, otherwise the provider won't work. Please make sure your account is activated, before using the agent.
-* Subtitle language (1)/(2): Your preferred languages to download subtitles for. 
+* Subtitle language (1)/(2)/(3): Your preferred languages to download subtitles for. 
+* Additional Subtitle Languages: Additional languages to download; comma-separated; use ISO-639-1 codes)
 * Provider: Enable ...: Enable/disable this provider. Affects both movies and series. 
+* Addic7ed: boost over hash score if requirements met: if an Addic7ed subtitle matches the video's series, season, episode, year, and format (e.g. WEB-DL), boost its score, possibly over OpenSubtitles/TheSubDB direct hash match
 * Scan: Include embedded subtitles: When enabled, subliminal finds embedded subtitles that are already present within the media file. 
 * Scan: Include external subtitles: When enabled, subliminal finds subtitles located near the media file on the filesystem.
 * Minimum score for download: When configured, what is the minimum score for subtitles to download them? Lower scored subtitles are not downloaded.
