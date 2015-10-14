@@ -11,8 +11,8 @@ Plex forum thread: https://forums.plex.tv/discussion/186575
 ### Quick installation
 * go to ```Library/Application Support/Plex Media Server/Plug-ins/```
 * ```rm -r Sub-Zero.bundle LocalMediaExtended.bundle```
-* ```wget https://github.com/pannal/Sub-Zero/releases/download/1.1-rc4/Sub-Zero-1.1-rc4.zip```
-* ```unzip Sub-Zero-1.1-rc4.zip```
+* ```wget https://github.com/pannal/Sub-Zero/releases/download/1.1-rc5/Sub-Zero-1.1-rc5.zip```
+* ```unzip Sub-Zero-1.1-rc5.zip```
 * more indepth: look below on ```Installation```
 
 ### Usage
