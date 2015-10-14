@@ -11,8 +11,8 @@ Plex forum thread: https://forums.plex.tv/discussion/186575
 ### Quick installation
 * go to ```Library/Application Support/Plex Media Server/Plug-ins/```
 * ```rm -r Sub-Zero.bundle LocalMediaExtended.bundle```
-* ```wget https://github.com/pannal/Sub-Zero/releases/download/1.1-rc5/Sub-Zero-1.1-rc5.zip```
-* ```unzip Sub-Zero-1.1-rc5.zip```
+* ```wget https://github.com/pannal/Sub-Zero/releases/download/1.1-rc5.1/Sub-Zero-1.1-rc5.1.zip```
+* ```unzip Sub-Zero-1.1-rc5.1.zip```
 * more indepth: look below on ```Installation```
 
 ### Usage
@@ -28,6 +28,9 @@ Use the following agent order:
 * **Remember: before you open a bug-ticket please double-check, that you've deleted the Sub-Zero.bundle folder BEFORE every update** (to avoid .pyc leftovers)
 
 ## Changelog
+RC-5.1
+- make hearing_impaired option more configurable and clear (see #configuration-)
+
 RC-5
 - fix wrong video type matching by hinting video type to guessit
 - update to newest LocalMediaExtended.bundle (incorporated plex-inc's changes)
@@ -107,7 +110,11 @@ Several options are provided in the preferences of this agent.
 * Scan: Include embedded subtitles: When enabled, subliminal finds embedded subtitles that are already present within the media file. 
 * Scan: Include external subtitles: When enabled, subliminal finds subtitles located near the media file on the filesystem.
 * Minimum score for download: When configured, what is the minimum score for subtitles to download them? Lower scored subtitles are not downloaded.
-* Download hearing impaired subtitles: When configured, hearing impaired subtitles will be downloaded. 
+* Download hearing impaired subtitles: 
+  * "prefer": score subtitles for hearing impaired higher
+  * "don't prefer": score subtitles for hearing impaired lower
+  * "force HI": skip subtitles if the hearing impaired flag isn't set
+  * "force non-HI": skip subtitles if the hearing impaired flag is set
 * Store subtitles next to media files (instead of metadata): See Store as metadata or on filesystem
 * Subtitle folder: See Store as metadata or on filesystem
 * Custom Subtitle folder: See Store as metadata or on filesystem 
