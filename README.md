@@ -1,4 +1,4 @@
-Sub-Zero for Plex, 1.1-RC5.1
+Sub-Zero for Plex, 1.1-RC5.2
 =================
 
 ![logo](https://raw.githubusercontent.com/pannal/Sub-Zero/master/Sub-Zero.bundle/Contents/Resources/subzero.gif)
@@ -11,8 +11,8 @@ Plex forum thread: https://forums.plex.tv/discussion/186575
 ### Quick installation
 * go to ```Library/Application Support/Plex Media Server/Plug-ins/```
 * ```rm -r Sub-Zero.bundle LocalMediaExtended.bundle```
-* ```wget https://github.com/pannal/Sub-Zero/releases/download/1.1-rc5.1/Sub-Zero-1.1-rc5.1.zip```
-* ```unzip Sub-Zero-1.1-rc5.1.zip```
+* ```wget https://github.com/pannal/Sub-Zero/releases/download/1.1-rc5.2/Sub-Zero-1.1-rc5.2.zip```
+* ```unzip Sub-Zero-1.1-rc5.2.zip```
 * more indepth: look below on ```Installation```
 
 ### Usage
@@ -28,6 +28,9 @@ Use the following agent order:
 * **Remember: before you open a bug-ticket please double-check, that you've deleted the Sub-Zero.bundle folder BEFORE every update** (to avoid .pyc leftovers)
 
 ## Changelog
+RC-5.2
+- revert back to /plexinc-agents/LocalMedia.bundle/tree/dist instead of /plexinc-agents/LocalMedia.bundle/tree/master, as the current public PMS version is too old for that
+
 RC-5.1
 - make hearing_impaired option more configurable and clear (see #configuration-)
 
