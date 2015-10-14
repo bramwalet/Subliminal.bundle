@@ -10,7 +10,8 @@ from babelfish.exceptions import LanguageReverseError
 
 from pkg_resources import EntryPoint, iter_entry_points
 
-from subliminal.api import ProviderPool, compute_score
+from subliminal.api import ProviderPool
+from subliminal_patch.patch_subtitle import compute_score
 
 logger = logging.getLogger(__name__)
 
@@ -253,13 +254,13 @@ class PatchedProviderPool(ProviderPool):
 	unsorted_subtitles = []
 	for s in subtitles:
 	    logger.debug("Starting score computation for %s", s)
-	    unsorted_subtitles.append((s, compute_score(s.get_matches(video, hearing_impaired=hearing_impaired), video,
-                                                     scores=scores)))
+	    matches = s.get_matches(video, hearing_impaired=hearing_impaired)
+	    unsorted_subtitles.append((s, compute_score(matches, video, scores=scores), matches))
         scored_subtitles = sorted(unsorted_subtitles, key=operator.itemgetter(1), reverse=True)
 
         # download best subtitles, falling back on the next on error
         downloaded_subtitles = []
-        for subtitle, score in scored_subtitles:
+        for subtitle, score, matches in scored_subtitles:
             # check score
             if score < min_score:
                 logger.info('Score %d is below min_score (%d)', score, min_score)
@@ -269,6 +270,11 @@ class PatchedProviderPool(ProviderPool):
             if subtitle.language in set(s.language for s in downloaded_subtitles):
                 logger.debug('Skipping subtitle: %r already downloaded', subtitle.language)
                 continue
+
+	    # bail out if hearing_impaired was wrong
+	    if not "hearing_impaired" in matches:
+		logger.debug('Skipping subtitle: %r with score %d because hearing-impaired was %s', subtitle, score, not hearing_impaired)
+		continue
 
             # download
             logger.info('Downloading subtitle %r with score %d', subtitle, score)

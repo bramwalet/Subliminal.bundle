@@ -9,17 +9,17 @@
         <key>CFBundleInfoDictionaryVersion</key>
         <string>6.0</string>
         <key>CFBundleShortVersionString</key>
-        <string>1.0</string>
+        <string>1.0.9</string>
         <key>CFBundleSignature</key>
         <string>????</string>
         <key>CFBundleVersion</key>
-        <string>1.1</string>
+        <string>1.0.9.5</string>
         <key>PlexFrameworkVersion</key>
         <string>2</string>
         <key>PlexPluginClass</key>
         <string>Agent</string>
         <key>PlexPluginMode</key>
-        <string>AlwaysOn</string>
+        <string>Daemon</string>
         <key>PlexPluginConsoleLogging</key>
         <string>1</string>
         <key>PlexPluginDevMode</key>

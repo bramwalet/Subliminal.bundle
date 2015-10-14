@@ -28,12 +28,28 @@ def ValidatePrefs():
 # Prepare a list of languages we want subs for
 def getLangList():
     langList = {Language.fromietf(Prefs["langPref1"])}
-    if(Prefs['subtitles.only_one']):
+    langCustom = Prefs["langPrefCustom"].strip()
+
+    if Prefs['subtitles.only_one']:
 	return langList
-    if(Prefs["langPref2"] != "None"):
+
+    if Prefs["langPref2"] != "None":
         langList.update({Language.fromietf(Prefs["langPref2"])})
-    if(Prefs["langPref3"] != "None"):
+
+    if Prefs["langPref3"] != "None":
         langList.update({Language.fromietf(Prefs["langPref3"])})
+
+    if len(langCustom) and langCustom != "None":
+	for lang in langCustom.split(u","):
+	    lang = lang.strip()
+	    try:
+		real_lang = Language.fromietf(lang)
+	    except:
+		try:
+		    real_lang = Language.fromname(lang)
+		except:
+		    continue
+	    langList.update({real_lang})
         
     return langList
 
@@ -49,6 +65,7 @@ def initSubliminalPatches():
     dest_folder = getSubtitleDestinationFolder()
     subliminal_patch.patch_video.CUSTOM_PATHS = [dest_folder] if dest_folder else []
     subliminal_patch.patch_provider_pool.DOWNLOAD_TRIES = int(Prefs['subtitles.try_downloads'])
+    subliminal_patch.patch_providers.addic7ed.USE_BOOST = bool(Prefs['provider.addic7ed.boost'])
 
 def getProviders():
     providers = {'opensubtitles' : Prefs['provider.opensubtitles.enabled'],
@@ -77,7 +94,7 @@ def scanTvMedia(media):
         for episode in media.seasons[season].episodes:
             for item in media.seasons[season].episodes[episode].items:
                 for part in item.parts:
-                    scannedVideo = scanVideo(part)
+                    scannedVideo = scanVideo(part, "episode")
                     videos[scannedVideo] = part
     return videos
 
@@ -85,17 +102,17 @@ def scanMovieMedia(media):
     videos = {}
     for item in media.items:
         for part in item.parts:
-            scannedVideo = scanVideo(part)
+            scannedVideo = scanVideo(part, "movie")
             videos[scannedVideo] = part 
     return videos
 
-def scanVideo(part):
+def scanVideo(part, video_type):
     embedded_subtitles = Prefs['subtitles.scan.embedded']
     external_subtitles = Prefs['subtitles.scan.external']
     
     Log.Debug("Scanning video: %s, subtitles=%s, embedded_subtitles=%s" % (part.file, external_subtitles, embedded_subtitles))
     try:
-        return subliminal.video.scan_video(part.file, subtitles=external_subtitles, embedded_subtitles=embedded_subtitles)
+        return subliminal.video.scan_video(part.file, subtitles=external_subtitles, embedded_subtitles=embedded_subtitles, video_type=video_type)
     except ValueError:
         Log.Warn("File could not be guessed by subliminal")
 

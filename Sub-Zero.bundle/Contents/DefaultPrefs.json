@@ -60,7 +60,12 @@
                 "values": ["None", "sq","ar","be","bs","bg","ca","zh","cs","da","nl","en","et","fi","fr","de","el","he","hi","hu","is","id","it","ja","ko","lv","lt","mk","ms","no","fa","pl","pt","pt-br","ro","ru","sr","sk","sl","es","sv","th","tr","uk","vi","hr"],
                 "default": "None"
         },
-	
+	{
+                "id": "langPrefCustom",
+                "label": "Additional Subtitle Languages (use ISO-639-1 codes; comma-separated)",
+                "type": "text",
+                "default": "None"
+        },
 	{
                 "id": "provider.opensubtitles.enabled",
                 "label": "Provider: Enable OpenSubtitles",
@@ -84,6 +89,12 @@
                 "label": "Provider: Enable Addic7ed",
                 "type": "bool",
                 "default": "true"
+        },
+		{
+                "id": "provider.addic7ed.boost",
+                "label": "Addic7ed: boost over hash score if requirements met (prefer over other providers)",
+                "type": "bool",
+                "default": "false"
         },
 		{
                 "id": "provider.tvsubtitles.enabled",

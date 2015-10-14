@@ -5,8 +5,6 @@
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 2 as
 # published by the Free Software Foundation.
-#
-# $Id: oggflac.py 3976 2007-01-13 22:00:14Z piman $
 
 """Read and write Ogg FLAC comments.
 
@@ -21,35 +19,47 @@ __all__ = ["OggFLAC", "Open", "delete"]
 
 import struct
 
-from cStringIO import StringIO
+from ._compat import cBytesIO
 
-from mutagen.flac import StreamInfo, VCFLACDict
+from mutagen import flac
+from mutagen.flac import VCFLACDict, StrictFileObject
 from mutagen.ogg import OggPage, OggFileType, error as OggError
 
-class error(OggError): pass
-class OggFLACHeaderError(error): pass
 
-class OggFLACStreamInfo(StreamInfo):
+class error(OggError):
+    pass
+
+
+class OggFLACHeaderError(error):
+    pass
+
+
+class OggFLACStreamInfo(flac.StreamInfo):
     """Ogg FLAC general header and stream info.
 
     This encompasses the Ogg wrapper for the FLAC STREAMINFO metadata
     block, as well as the Ogg codec setup that precedes it.
 
     Attributes (in addition to StreamInfo's):
-    packets -- number of metadata packets
-    serial -- Ogg logical stream serial number
+
+    * packets -- number of metadata packets
+    * serial -- Ogg logical stream serial number
     """
 
     packets = 0
     serial = 0
 
     def load(self, data):
+        # Ogg expects file objects that don't raise on read
+        if isinstance(data, StrictFileObject):
+            data = data._fileobj
+
         page = OggPage(data)
-        while not page.packets[0].startswith("\x7FFLAC"):
+        while not page.packets[0].startswith(b"\x7FFLAC"):
             page = OggPage(data)
         major, minor, self.packets, flac = struct.unpack(
             ">BBH4s", page.packets[0][5:13])
-        if flac != "fLaC":
+        if flac != b"fLaC":
             raise OggFLACHeaderError("invalid FLAC marker (%r)" % flac)
         elif (major, minor) != (1, 0):
             raise OggFLACHeaderError(
@@ -57,11 +67,18 @@ class OggFLACStreamInfo(StreamInfo):
         self.serial = page.serial
 
         # Skip over the block header.
-        stringobj = StringIO(page.packets[0][17:])
-        super(OggFLACStreamInfo, self).load(StringIO(page.packets[0][17:]))
+        stringobj = StrictFileObject(cBytesIO(page.packets[0][17:]))
+        super(OggFLACStreamInfo, self).load(stringobj)
+
+    def _post_tags(self, fileobj):
+        if self.length:
+            return
+        page = OggPage.find_last(fileobj, self.serial)
+        self.length = page.position / float(self.sample_rate)
 
     def pprint(self):
-        return "Ogg " + super(OggFLACStreamInfo, self).pprint()
+        return u"Ogg " + super(OggFLACStreamInfo, self).pprint()
+
 
 class OggFLACVComment(VCFLACDict):
     def load(self, data, info, errors='replace'):
@@ -74,7 +91,7 @@ class OggFLACVComment(VCFLACDict):
             if page.serial == info.serial:
                 pages.append(page)
                 complete = page.complete or (len(page.packets) > 1)
-        comment = StringIO(OggPage.to_packets(pages)[0][4:])
+        comment = cBytesIO(OggPage.to_packets(pages)[0][4:])
         super(OggFLACVComment, self).load(comment, errors=errors)
 
     def _inject(self, fileobj):
@@ -84,7 +101,7 @@ class OggFLACVComment(VCFLACDict):
         # second packet - and second page - must be the comment data.
         fileobj.seek(0)
         page = OggPage(fileobj)
-        while not page.packets[0].startswith("\x7FFLAC"):
+        while not page.packets[0].startswith(b"\x7FFLAC"):
             page = OggPage(fileobj)
 
         first_page = page
@@ -101,11 +118,12 @@ class OggFLACVComment(VCFLACDict):
 
         # Set the new comment block.
         data = self.write()
-        data = packets[0][0] + struct.pack(">I", len(data))[-3:] + data
+        data = packets[0][:1] + struct.pack(">I", len(data))[-3:] + data
         packets[0] = data
 
         new_pages = OggPage.from_packets(packets, old_pages[0].sequence)
         OggPage.replace(fileobj, old_pages, new_pages)
+
 
 class OggFLAC(OggFileType):
     """An Ogg FLAC file."""
@@ -115,13 +133,16 @@ class OggFLAC(OggFileType):
     _Error = OggFLACHeaderError
     _mimes = ["audio/x-oggflac"]
 
+    @staticmethod
     def score(filename, fileobj, header):
-        return (header.startswith("OggS") * (
-            ("FLAC" in header) + ("fLaC" in header)))
-    score = staticmethod(score)
+        return (header.startswith(b"OggS") * (
+            (b"FLAC" in header) + (b"fLaC" in header)))
+
 
 Open = OggFLAC
 
+
 def delete(filename):
     """Remove tags from a file."""
+
     OggFLAC(filename).delete()

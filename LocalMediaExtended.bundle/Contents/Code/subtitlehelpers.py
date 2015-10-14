@@ -87,6 +87,17 @@ class DefaultSubtitleHelper(SubtitleHelper):
     # Remove the initial '.' from the extension
     ext = ext[1:]
 
+    forced = ''
+    default = ''
+    split_tag = file.rsplit('.', 1)
+    if len(split_tag) > 1 and split_tag[1].lower() in ['forced', 'normal', 'default'] :
+      file = split_tag[0]
+      # don't do anything with 'normal', we don't need it
+      if 'forced' == split_tag[1].lower():
+        forced = '1'
+      if 'default' == split_tag[1].lower():
+        default = '1'
+
     # Attempt to extract the language from the filename (e.g. Avatar (2009).eng)
     language = ""
     language_match = re.match(".+\.([^\.]+)$", file)
@@ -120,8 +131,8 @@ class DefaultSubtitleHelper(SubtitleHelper):
     if format is None:
       format = codec
 
-    Log('Found subtitle file: ' + self.filename + ' language: ' + language + ' codec: ' + str(codec) + ' format: ' + str(format))
-    part.subtitles[language][basename] = Proxy.LocalFile(self.filename, codec = codec, format = format)
+    Log('Found subtitle file: ' + self.filename + ' language: ' + language + ' codec: ' + str(codec) + ' format: ' + str(format) + ' default: ' + default + ' forced: ' + forced)
+    part.subtitles[language][basename] = Proxy.LocalFile(self.filename, codec = codec, format = format, default = default, forced = forced)
 
     lang_sub_map[language] = [ basename ]
     return lang_sub_map
