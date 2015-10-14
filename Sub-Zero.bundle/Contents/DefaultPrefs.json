@@ -91,6 +91,12 @@
                 "default": "true"
         },
 		{
+                "id": "provider.addic7ed.boost",
+                "label": "Addic7ed: boost over hash score if requirements met (prefer over other providers)",
+                "type": "bool",
+                "default": "false"
+        },
+		{
                 "id": "provider.tvsubtitles.enabled",
                 "label": "Provider: Enable TVsubtitles.net",
                 "type": "bool",

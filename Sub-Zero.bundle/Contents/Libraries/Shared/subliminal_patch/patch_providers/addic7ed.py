@@ -12,6 +12,23 @@ logger = logging.getLogger(__name__)
 
 series_year_re = re.compile('^(?P<series>[ \w.:\']+)(?: \((?P<year>\d{4})\))?$')
 
+
+USE_BOOST = False
+class PatchedAddic7edSubtitle(Addic7edSubtitle):
+    def __init__(self, *args, **kwargs):
+	super(PatchedAddic7edSubtitle, self).__init__(*args, **kwargs)
+
+    def get_matches(self, video, hearing_impaired=False):
+	matches = super(PatchedAddic7edSubtitle, self).get_matches(video, hearing_impaired=hearing_impaired)
+	if not USE_BOOST:
+	    return matches
+
+	if {"series", "season", "episode", "year"}.issubset(matches) and "format" in matches:
+	    matches.add("boost")
+	    logger.info("Boosting Addic7ed subtitle")
+	return matches
+
+
 class PatchedAddic7edProvider(PunctuationMixin, Addic7edProvider):
     USE_ADDICTED_RANDOM_AGENTS = False
 
@@ -127,7 +144,7 @@ class PatchedAddic7edProvider(PunctuationMixin, Addic7edProvider):
             version = cells[4].text
             download_link = cells[9].a['href'][1:]
 
-            subtitle = Addic7edSubtitle(language, hearing_impaired, page_link, series, season, episode, title, year,
+            subtitle = PatchedAddic7edSubtitle(language, hearing_impaired, page_link, series, season, episode, title, year,
                                         version, download_link)
             logger.debug('Found subtitle %r', subtitle)
             subtitles.append(subtitle)
