@@ -250,11 +250,14 @@ class PatchedProviderPool(ProviderPool):
         :return: downloaded subtitles.
         :rtype: list of :class:`~subliminal.subtitle.Subtitle`
         """
+
+	use_hearing_impaired = hearing_impaired in ("prefer", "force HI")
+
         # sort subtitles by score
 	unsorted_subtitles = []
 	for s in subtitles:
 	    logger.debug("Starting score computation for %s", s)
-	    matches = s.get_matches(video, hearing_impaired=hearing_impaired)
+	    matches = s.get_matches(video, hearing_impaired=use_hearing_impaired)
 	    unsorted_subtitles.append((s, compute_score(matches, video, scores=scores), matches))
         scored_subtitles = sorted(unsorted_subtitles, key=operator.itemgetter(1), reverse=True)
 
@@ -272,8 +275,8 @@ class PatchedProviderPool(ProviderPool):
                 continue
 
 	    # bail out if hearing_impaired was wrong
-	    if not "hearing_impaired" in matches:
-		logger.debug('Skipping subtitle: %r with score %d because hearing-impaired was %s', subtitle, score, not hearing_impaired)
+	    if not "hearing_impaired" in matches and hearing_impaired in ("force HI", "force non-HI"):
+		logger.debug('Skipping subtitle: %r with score %d because hearing-impaired set to %s', subtitle, score, hearing_impaired)
 		continue
 
             # download
