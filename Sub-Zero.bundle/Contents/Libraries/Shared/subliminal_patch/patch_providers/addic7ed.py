@@ -64,10 +64,49 @@ class PatchedAddic7edProvider(PunctuationMixin, Addic7edProvider):
         # populate the show ids
         show_ids = {}
         for show in soup.select('td.version > h3 > a[href^="/show/"]'):
-            show_ids[self.clean_punctuation(show.text.lower().replace('\'', ''))] = int(show['href'][6:])
+            show_ids[self.clean_punctuation(show.text.lower())] = int(show['href'][6:])
         logger.debug('Found %d show ids', len(show_ids))
 
         return show_ids
+
+    def get_show_id(self, series, year=None, country_code=None):
+        """Get the best matching show id for `series`, `year` and `country_code`.
+        First search in the result of :meth:`_get_show_ids` and fallback on a search with :meth:`_search_show_id`
+        :param str series: series of the episode.
+        :param year: year of the series, if any.
+        :type year: int or None
+        :param country_code: country code of the series, if any.
+        :type country_code: str or None
+        :return: the show id, if found.
+        :rtype: int or None
+        """
+        series_clean = self.clean_punctuation(series.lower())
+        show_ids = self._get_show_ids()
+        show_id = None
+
+        # attempt with country
+        if not show_id and country_code:
+            logger.debug('Getting show id with country')
+            show_id = show_ids.get('%s (%s)' % (series_clean, country_code.lower()))
+
+        # attempt with year
+        if not show_id and year:
+            logger.debug('Getting show id with year')
+            show_id = show_ids.get('%s (%d)' % (series_clean, year))
+
+        # attempt clean
+        if not show_id:
+            logger.debug('Getting show id')
+            show_id = show_ids.get(series_clean)
+
+        # search as last resort
+        if not show_id:
+            logger.warning('Series not found in show ids, attempting search')
+            show_id = self._search_show_id(series_clean)
+	    if not show_id:
+		show_id = self.search_show_id(series.lower().replace("'", ""))
+
+        return show_id
 
     @region.cache_on_arguments(expiration_time=SHOW_EXPIRATION_TIME)
     def _search_show_id(self, series, year=None):
