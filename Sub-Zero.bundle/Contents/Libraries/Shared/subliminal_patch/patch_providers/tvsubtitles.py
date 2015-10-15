@@ -21,8 +21,9 @@ class PatchedTVsubtitlesProvider(PunctuationMixin, TVsubtitlesProvider):
         :rtype: int or None
         """
         # make the search
-        logger.info('Searching show id for %r', series)
-        r = self.session.post(self.server_url + 'search.php', data={'q': series}, timeout=10)
+        series_clean = self.clean_punctuation(series).lower()
+        logger.info('Searching show id for %r', series_clean)
+        r = self.session.post(self.server_url + 'search.php', data={'q': series_clean}, timeout=10)
         r.raise_for_status()
 
         # get the series out of the suggestions
@@ -34,7 +35,7 @@ class PatchedTVsubtitlesProvider(PunctuationMixin, TVsubtitlesProvider):
                 logger.error('Failed to match %s', suggestion.text)
                 continue
 
-            if match.group('series').lower() == series.lower():
+            if self.clean_punctuation(match.group('series')).lower() == series_clean:
                 if year is not None and int(match.group('first_year')) != year:
                     logger.debug('Year does not match')
                     continue
