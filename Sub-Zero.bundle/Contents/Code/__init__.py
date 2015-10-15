@@ -174,7 +174,7 @@ def saveSubtitlesToMetadata(videos, subtitles):
             mediaPart.subtitles[Locale.Language.Match(subtitle.language.alpha2)][subtitle.page_link] = Proxy.Media(subtitle.content, ext="srt")
 
 class SubZeroSubtitlesAgentMovies(Agent.Movies):
-    name = 'Sub-Zero Movie Subtitles'
+    name = 'Sub-Zero Subtitles (Movies)'
     languages = [Locale.Language.English]
     primary_provider = False
     contributes_to = ['com.plexapp.agents.imdb']
@@ -193,7 +193,7 @@ class SubZeroSubtitlesAgentMovies(Agent.Movies):
 
 class SubZeroSubtitlesAgentTvShows(Agent.TV_Shows):
     
-    name = 'Sub-Zero TV Subtitles'
+    name = 'Sub-Zero Subtitles (TV)'
     languages = [Locale.Language.English]
     primary_provider = False
     contributes_to = ['com.plexapp.agents.thetvdb', 'com.plexapp.agents.thetvdbdvdorder']
