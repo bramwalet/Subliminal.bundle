@@ -10,7 +10,7 @@ Plex forum thread: https://forums.plex.tv/discussion/186575
 
 ### Quick installation
 * go to ```Library/Application Support/Plex Media Server/Plug-ins/```
-* ```rm -r Sub-Zero.bundle LocalMediaExtended.bundle```
+* ```rm -r Sub-Zero.bundle```
 * ```wget https://github.com/pannal/Sub-Zero/releases/download/1.1-rc5.2/Sub-Zero-1.1-rc5.2.zip```
 * ```unzip Sub-Zero-1.1-rc5.2.zip```
 * more indepth: look below on ```Installation```
@@ -19,15 +19,17 @@ Plex forum thread: https://forums.plex.tv/discussion/186575
 Use the following agent order:
 
 1. Sub-Zero TV/Movie Subtitles
-2. Local Media Assets Extended
+2. Local Media Assets
 3. anything else
-4. again, **DISABLE Local Media Assets**!
 
 ### Encountered a bug?
 * be sure to post your logs: ```Library/Application Support/Plex Media Server/Logs/PMS Plugin Logs/com.plexapp.agents.subzero.log```; there may be multiple logs (com.plexapp.agents.subzero.log.*) depending on the amount of Videos you're refreshing
 * **Remember: before you open a bug-ticket please double-check, that you've deleted the Sub-Zero.bundle folder BEFORE every update** (to avoid .pyc leftovers)
 
 ## Changelog
+1.1.0.1
+- in progress
+
 RC-5.2
 - revert back to /plexinc-agents/LocalMedia.bundle/tree/dist instead of /plexinc-agents/LocalMedia.bundle/tree/master, as the current public PMS version is too old for that
 
