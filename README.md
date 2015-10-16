@@ -1,4 +1,4 @@
-Sub-Zero for Plex, 1.1-RC5.2
+Sub-Zero for Plex, 1.1.0.1
 =================
 
 ![logo](https://raw.githubusercontent.com/pannal/Sub-Zero/master/Sub-Zero.bundle/Contents/Resources/subzero.gif)
@@ -11,8 +11,8 @@ Plex forum thread: https://forums.plex.tv/discussion/186575
 ### Quick installation
 * go to ```Library/Application Support/Plex Media Server/Plug-ins/```
 * ```rm -r Sub-Zero.bundle```
-* ```wget https://github.com/pannal/Sub-Zero/releases/download/1.1-rc5.2/Sub-Zero-1.1-rc5.2.zip```
-* ```unzip Sub-Zero-1.1-rc5.2.zip```
+* get the release you want from *https://github.com/pannal/Sub-Zero/releases/*
+* unzip the release
 * more indepth: look below on ```Installation```
 
 ### Usage
@@ -28,7 +28,10 @@ Use the following agent order:
 
 ## Changelog
 1.1.0.1
-- in progress
+- addic7ed/tvsubtitles: be way smarter about punctuation in series names (A.G.E.N.T.S. ...)
+- ditch LocalMediaExtended and incorporate the functionality in Sub-Zero (_RC-users: delete LocalMediaExtended.bundle and re-enable LocalMedia!_)
+- remove (unused) setting "Restrict to one language"
+- add "Treat IETF language tags as ISO 639-1 (e.g. pt-BR = pt)" setting
 
 [all/older changes](CHANGES.md)
 
@@ -68,12 +71,13 @@ Several options are provided in the preferences of this agent.
 * Store subtitles next to media files (instead of metadata): See Store as metadata or on filesystem
 * Subtitle folder: See Store as metadata or on filesystem
 * Custom Subtitle folder: See Store as metadata or on filesystem 
+* Treat IETF language tags as ISO 639-1 (e.g. pt-BR = pt): Treats subtitle files with IETF language identifiers, such as pt-BR, as their ISO 639-1 counterpart. Thus "pt-BR" will be shown as "Portuguese" instead of "Unknown"
 
 Store as metadata or on filesystem
 ----------------------------------
 By default, Plex stores posters, fan art and subtitles as metadata in a separate folder which is not managed by the user. This is the default behaviour of this agent. However, expert users can enable 'Store subtitles next to media files'. The agent will write the subtitle files in the media folder. The setting 'Subtitle folder' configures in which folder (current folder or other subfolder) the subtitles are stored. The expert user can also supply 'Custom Subtitle folder' which can also be an absolute path.
 
-Please note that you need a way to pick up external subtitles to show up in the Plex Media server. When the subtitles are stored next to your media folders, it is sufficient to enable Local Media agent and place it below the Subliminal agent in the agent priorities. When a subfolder (either custom or predefined) is used, you need [LocalMediaExtended](https://github.com/pannal/LocalMediaExtended.bundle).
+Please note that you need a way to pick up external subtitles to show up in the Plex Media server. When the subtitles are stored next to your media folders, it is sufficient to enable Local Media agent and place it below the Sub-Zero agent in the agent priorities. _When a subfolder (either custom or predefined) is used, the automatic scheduled refresh of Plex won't pick up your subtitles, only a manual refresh will!_
 
 License
 -------
