@@ -134,7 +134,7 @@ def downloadBestSubtitles(videos, min_score=0):
     if missing_languages:
 	Log.Debug("Download best subtitles using settings: min_score: %s, hearing_impaired: %s" %(min_score, hearing_impaired))
     
-	return subliminal.api.download_best_subtitles(videos, languages, min_score, hearing_impaired, providers=getProviders(), provider_configs=getProviderSettings(), only_one=Prefs['subtitles.only_one'])
+	return subliminal.api.download_best_subtitles(videos, languages, min_score, hearing_impaired, providers=getProviders(), provider_configs=getProviderSettings())
     Log.Debug("All languages for all requested videos exist. Doing nothing.")
 
 def saveSubtitles(videos, subtitles):
