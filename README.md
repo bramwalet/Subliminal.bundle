@@ -8,12 +8,12 @@ Originally based on @bramwalet's awesome [Subliminal.bundle](https://github.com/
 
 Plex forum thread: https://forums.plex.tv/discussion/186575
 
-### Quick installation
+### Installation
 * go to ```Library/Application Support/Plex Media Server/Plug-ins/```
 * ```rm -r Sub-Zero.bundle```
 * get the release you want from *https://github.com/pannal/Sub-Zero/releases/*
 * unzip the release
-* more indepth: look below on ```Installation```
+* more indepth: see [article](https://support.plex.tv/hc/en-us/articles/201187656-How-do-I-manually-install-a-channel-) on Plex website. 
 
 ### Usage
 Use the following agent order:
@@ -28,12 +28,12 @@ Use the following agent order:
 
 ## Changelog
 1.1.0.1
-- addic7ed/tvsubtitles: be way smarter about punctuation in series names (A.G.E.N.T.S. ...)
-- ditch LocalMediaExtended and incorporate the functionality in Sub-Zero (_RC-users: delete LocalMediaExtended.bundle and re-enable LocalMedia!_)
+- addic7ed/tvsubtitles: be way smarter about punctuation in series names (*A.G.E.N.T.S. ...*)
+- ditch LocalMediaExtended and incorporate the functionality in Sub-Zero (**RC-users: delete LocalMediaExtended.bundle and re-enable LocalMedia!**)
 - remove (unused) setting "Restrict to one language"
 - add "Treat IETF language tags as ISO 639-1 (e.g. pt-BR = pt)" setting
 
-[all/older changes](CHANGES.md)
+[older changes](CHANGES.md)
 
 
 Description
@@ -48,16 +48,13 @@ Plex Metadata agent plugin based on Subliminal. This agent will search on the fo
 
 All providers can be disabled or enabled on a per provider setting. Certain preferences change the behaviour of subliminal, for instance the minimum score of subtitles to download, or whether to download hearing impaired subtitles or not. The agent stores the subtitles as metadata, but can be configured (See Configuration) to store it next to the media files. 
 
-Installation
-------------
-See [article](https://support.plex.tv/hc/en-us/articles/201187656-How-do-I-manually-install-a-channel-) on Plex website. 
 
 Configuration 
 -------------
 Several options are provided in the preferences of this agent. 
 * Addic7ed username/password: Provide your addic7ed username here, otherwise the provider won't work. Please make sure your account is activated, before using the agent.
 * Subtitle language (1)/(2)/(3): Your preferred languages to download subtitles for. 
-* Additional Subtitle Languages: Additional languages to download; comma-separated; use ISO-639-1 codes)
+* Additional Subtitle Languages: Additional languages to download; comma-separated; use [ISO-639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes))
 * Provider: Enable ...: Enable/disable this provider. Affects both movies and series. 
 * Addic7ed: boost over hash score if requirements met: if an Addic7ed subtitle matches the video's series, season, episode, year, and format (e.g. WEB-DL), boost its score, possibly over OpenSubtitles/TheSubDB direct hash match
 * Scan: Include embedded subtitles: When enabled, subliminal finds embedded subtitles that are already present within the media file. 
@@ -71,13 +68,13 @@ Several options are provided in the preferences of this agent.
 * Store subtitles next to media files (instead of metadata): See Store as metadata or on filesystem
 * Subtitle folder: See Store as metadata or on filesystem
 * Custom Subtitle folder: See Store as metadata or on filesystem 
-* Treat IETF language tags as ISO 639-1 (e.g. pt-BR = pt): Treats subtitle files with IETF language identifiers, such as pt-BR, as their ISO 639-1 counterpart. Thus "pt-BR" will be shown as "Portuguese" instead of "Unknown"
+* Treat IETF language tags as ISO 639-1: Treats subtitle files with IETF language identifiers, such as pt-BR, as their ISO 639-1 counterpart. Thus "pt-BR" will be shown as "Portuguese" instead of "Unknown"
 
 Store as metadata or on filesystem
 ----------------------------------
 By default, Plex stores posters, fan art and subtitles as metadata in a separate folder which is not managed by the user. This is the default behaviour of this agent. However, expert users can enable 'Store subtitles next to media files'. The agent will write the subtitle files in the media folder. The setting 'Subtitle folder' configures in which folder (current folder or other subfolder) the subtitles are stored. The expert user can also supply 'Custom Subtitle folder' which can also be an absolute path.
 
-Please note that you need a way to pick up external subtitles to show up in the Plex Media server. When the subtitles are stored next to your media folders, it is sufficient to enable Local Media agent and place it below the Sub-Zero agent in the agent priorities. _When a subfolder (either custom or predefined) is used, the automatic scheduled refresh of Plex won't pick up your subtitles, only a manual refresh will!_
+**When a subfolder (either custom or predefined) is used, the automatic scheduled refresh of Plex won't pick up your subtitles, only a manual refresh will!**
 
 License
 -------
