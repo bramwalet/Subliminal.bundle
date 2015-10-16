@@ -2,8 +2,6 @@
 
 import unicodedata
 
-Log = lambda x: x
-
 # Unicode control characters can appear in ID3v2 tags but are not legal in XML.
 RE_UNICODE_CONTROL =  u'([\u0000-\u0008\u000b-\u000c\u000e-\u001f\ufffe-\uffff])' + \
                       u'|' + \
