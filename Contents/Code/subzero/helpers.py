@@ -1,3 +1,5 @@
+# coding=utf-8
+
 import unicodedata
 
 # Unicode control characters can appear in ID3v2 tags but are not legal in XML.
