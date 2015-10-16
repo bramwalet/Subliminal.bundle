@@ -1,11 +1,17 @@
-# hdbits.org
-
-import string, os, urllib, zipfile, re, copy
-from babelfish import Language
-from datetime import timedelta
+# coding=utf-8
+import string
+import os
+import urllib
+import zipfile
+import re
+import copy
 import subliminal
 import subliminal_patch
+import subzero
 import logger
+
+from babelfish import Language
+from datetime import timedelta
 
 OS_PLEX_USERAGENT = 'plexapp.com v9.0'
 
@@ -18,8 +24,6 @@ def Start():
     logger.registerLoggingHander(DEPENDENCY_MODULE_NAMES)
     # configured cache to be in memory as per https://github.com/Diaoul/subliminal/issues/303
     subliminal.region.configure('dogpile.cache.memory')
-
-    
 
 def ValidatePrefs():
     Log.Debug("Validate Prefs called.")
@@ -173,6 +177,12 @@ def saveSubtitlesToMetadata(videos, subtitles):
         for subtitle in video_subtitles: 
             mediaPart.subtitles[Locale.Language.Match(subtitle.language.alpha2)][subtitle.page_link] = Proxy.Media(subtitle.content, ext="srt")
 
+def updateLocalMedia(media):
+    # Look for subtitles
+    for item in media.items:
+        for part in item.parts:
+	    subzero.localmedia.findSubtitles(part)
+
 class SubZeroSubtitlesAgentMovies(Agent.Movies):
     name = 'Sub-Zero Movie Subtitles'
     languages = [Locale.Language.English]
@@ -190,6 +200,8 @@ class SubZeroSubtitlesAgentMovies(Agent.Movies):
         subtitles = downloadBestSubtitles(videos.keys(), min_score=int(Prefs["subtitles.search.minimumMovieScore"]))
 	if subtitles:
     	    saveSubtitles(videos, subtitles)
+
+	updateLocalMedia(media)
 
 class SubZeroSubtitlesAgentTvShows(Agent.TV_Shows):
     
@@ -209,3 +221,5 @@ class SubZeroSubtitlesAgentTvShows(Agent.TV_Shows):
         subtitles = downloadBestSubtitles(videos.keys(), min_score=int(Prefs["subtitles.search.minimumTVScore"]))
 	if subtitles:
     	    saveSubtitles(videos, subtitles)
+
+	updateLocalMedia(media)
