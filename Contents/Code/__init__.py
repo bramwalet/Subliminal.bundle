@@ -174,11 +174,27 @@ def saveSubtitlesToMetadata(videos, subtitles):
         for subtitle in video_subtitles: 
             mediaPart.subtitles[Locale.Language.Match(subtitle.language.alpha2)][subtitle.page_link] = Proxy.Media(subtitle.content, ext="srt")
 
-def updateLocalMedia(media):
+def updateLocalMedia(media, media_type="movies"):
     # Look for subtitles
-    for item in media.items:
-        for part in item.parts:
-	    subzero.localmedia.findSubtitles(part)
+    if media_type == "movies":
+	for item in media.items:
+    	    for part in item.parts:
+		subzero.localmedia.findSubtitles(part)
+	return
+
+    # Look for subtitles for each episode.
+    for s in media.seasons:
+      # If we've got a date based season, ignore it for now, otherwise it'll collide with S/E folders/XML and PMS
+      # prefers date-based (why?)
+      if int(s) < 1900 or metadata.guid.startswith(PERSONAL_MEDIA_IDENTIFIER):
+        for e in media.seasons[s].episodes:
+          for i in media.seasons[s].episodes[e].items:
+
+            # Look for subtitles.
+            for part in i.parts:
+              subzero.localmedia.findSubtitles(part)
+      else:
+        pass
 
 class SubZeroSubtitlesAgentMovies(Agent.Movies):
     name = 'Sub-Zero Subtitles (Movies)'
@@ -198,7 +214,7 @@ class SubZeroSubtitlesAgentMovies(Agent.Movies):
 	if subtitles:
     	    saveSubtitles(videos, subtitles)
 
-	updateLocalMedia(media)
+	updateLocalMedia(media, media_type="movies")
 
 class SubZeroSubtitlesAgentTvShows(Agent.TV_Shows):
     
@@ -219,4 +235,4 @@ class SubZeroSubtitlesAgentTvShows(Agent.TV_Shows):
 	if subtitles:
     	    saveSubtitles(videos, subtitles)
 
-	updateLocalMedia(media)
+	updateLocalMedia(media, media_type="series")
