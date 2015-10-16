@@ -32,6 +32,7 @@ Use the following agent order:
 - ditch LocalMediaExtended and incorporate the functionality in Sub-Zero (**RC-users: delete LocalMediaExtended.bundle and re-enable LocalMedia!**)
 - remove (unused) setting "Restrict to one language"
 - add "Treat IETF language tags as ISO 639-1 (e.g. pt-BR = pt)" setting (default: true)
+- change default external storage to "current folder" instead of "/subs"
 
 [older changes](CHANGES.md)
 
