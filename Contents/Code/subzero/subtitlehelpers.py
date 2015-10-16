@@ -1,6 +1,9 @@
-import re, unicodedata
+# coding=utf-8
+
+import re, unicodedata, os
 import config
 import helpers
+
 
 class SubtitleHelper(object):
   def __init__(self, filename):
@@ -89,7 +92,9 @@ class DefaultSubtitleHelper(SubtitleHelper):
 
     # Attempt to extract the language from the filename (e.g. Avatar (2009).eng)
     language = ""
-    language_match = re.match(".+\.([^\.]+)$", file)
+    
+    # IETF support thanks to https://github.com/hpsbranco/LocalMedia.bundle/commit/4fad9aefedece78a1fa96401304351347f644369
+    language_match = re.match(".+\.([^\.]+)$" if not Prefs["subtitles.language.ietf"] else ".+\.([^-.]+)(?:-[A-Za-z]+)?$", file)
     if language_match and len(language_match.groups()) == 1:
       language = language_match.groups()[0]
     language = Locale.Language.Match(language)

@@ -1,11 +1,17 @@
-# hdbits.org
-
-import string, os, urllib, zipfile, re, copy
-from babelfish import Language
-from datetime import timedelta
+# coding=utf-8
+import string
+import os
+import urllib
+import zipfile
+import re
+import copy
 import subliminal
 import subliminal_patch
+import subzero
 import logger
+
+from babelfish import Language
+from datetime import timedelta
 
 OS_PLEX_USERAGENT = 'plexapp.com v9.0'
 
@@ -19,8 +25,6 @@ def Start():
     # configured cache to be in memory as per https://github.com/Diaoul/subliminal/issues/303
     subliminal.region.configure('dogpile.cache.memory')
 
-    
-
 def ValidatePrefs():
     Log.Debug("Validate Prefs called.")
     return 
@@ -29,9 +33,6 @@ def ValidatePrefs():
 def getLangList():
     langList = {Language.fromietf(Prefs["langPref1"])}
     langCustom = Prefs["langPrefCustom"].strip()
-
-    if Prefs['subtitles.only_one']:
-	return langList
 
     if Prefs["langPref2"] != "None":
         langList.update({Language.fromietf(Prefs["langPref2"])})
@@ -133,7 +134,7 @@ def downloadBestSubtitles(videos, min_score=0):
     if missing_languages:
 	Log.Debug("Download best subtitles using settings: min_score: %s, hearing_impaired: %s" %(min_score, hearing_impaired))
     
-	return subliminal.api.download_best_subtitles(videos, languages, min_score, hearing_impaired, providers=getProviders(), provider_configs=getProviderSettings(), only_one=Prefs['subtitles.only_one'])
+	return subliminal.api.download_best_subtitles(videos, languages, min_score, hearing_impaired, providers=getProviders(), provider_configs=getProviderSettings())
     Log.Debug("All languages for all requested videos exist. Doing nothing.")
 
 def saveSubtitles(videos, subtitles):
@@ -165,7 +166,7 @@ def saveSubtitlesToFile(subtitles):
                 fld = os.path.join(fld_base, Prefs["subtitles.save.subFolder"])
             if not os.path.exists(fld):
                 os.makedirs(fld)
-        subliminal.api.save_subtitles(video, video_subtitles, directory=fld, single=Prefs['subtitles.only_one'])
+        subliminal.api.save_subtitles(video, video_subtitles, directory=fld)
 
 def saveSubtitlesToMetadata(videos, subtitles):
     for video, video_subtitles in subtitles.items():
@@ -173,8 +174,14 @@ def saveSubtitlesToMetadata(videos, subtitles):
         for subtitle in video_subtitles: 
             mediaPart.subtitles[Locale.Language.Match(subtitle.language.alpha2)][subtitle.page_link] = Proxy.Media(subtitle.content, ext="srt")
 
+def updateLocalMedia(media):
+    # Look for subtitles
+    for item in media.items:
+        for part in item.parts:
+	    subzero.localmedia.findSubtitles(part)
+
 class SubZeroSubtitlesAgentMovies(Agent.Movies):
-    name = 'Sub-Zero Movie Subtitles'
+    name = 'Sub-Zero Subtitles (Movies)'
     languages = [Locale.Language.English]
     primary_provider = False
     contributes_to = ['com.plexapp.agents.imdb']
@@ -191,9 +198,11 @@ class SubZeroSubtitlesAgentMovies(Agent.Movies):
 	if subtitles:
     	    saveSubtitles(videos, subtitles)
 
+	updateLocalMedia(media)
+
 class SubZeroSubtitlesAgentTvShows(Agent.TV_Shows):
     
-    name = 'Sub-Zero TV Subtitles'
+    name = 'Sub-Zero Subtitles (TV)'
     languages = [Locale.Language.English]
     primary_provider = False
     contributes_to = ['com.plexapp.agents.thetvdb', 'com.plexapp.agents.thetvdbdvdorder']
@@ -209,3 +218,5 @@ class SubZeroSubtitlesAgentTvShows(Agent.TV_Shows):
         subtitles = downloadBestSubtitles(videos.keys(), min_score=int(Prefs["subtitles.search.minimumTVScore"]))
 	if subtitles:
     	    saveSubtitles(videos, subtitles)
+
+	updateLocalMedia(media)
