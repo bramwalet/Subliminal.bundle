@@ -31,7 +31,7 @@ Use the following agent order:
 - addic7ed/tvsubtitles: be way smarter about punctuation in series names (*A.G.E.N.T.S. ...*)
 - ditch LocalMediaExtended and incorporate the functionality in Sub-Zero (**RC-users: delete LocalMediaExtended.bundle and re-enable LocalMedia!**)
 - remove (unused) setting "Restrict to one language"
-- add "Treat IETF language tags as ISO 639-1 (e.g. pt-BR = pt)" setting
+- add "Treat IETF language tags as ISO 639-1 (e.g. pt-BR = pt)" setting (default: true)
 
 [older changes](CHANGES.md)
 
@@ -66,13 +66,16 @@ Several options are provided in the preferences of this agent.
   * "force HI": skip subtitles if the hearing impaired flag isn't set
   * "force non-HI": skip subtitles if the hearing impaired flag is set
 * Store subtitles next to media files (instead of metadata): See Store as metadata or on filesystem
-* Subtitle folder: See Store as metadata or on filesystem
+* Subtitle folder: (default: current media file's folder) See Store as metadata or on filesystem
 * Custom Subtitle folder: See Store as metadata or on filesystem 
 * Treat IETF language tags as ISO 639-1: Treats subtitle files with IETF language identifiers, such as pt-BR, as their ISO 639-1 counterpart. Thus "pt-BR" will be shown as "Portuguese" instead of "Unknown"
 
 Store as metadata or on filesystem
 ----------------------------------
-By default, Plex stores posters, fan art and subtitles as metadata in a separate folder which is not managed by the user. This is the default behaviour of this agent. However, expert users can enable 'Store subtitles next to media files'. The agent will write the subtitle files in the media folder. The setting 'Subtitle folder' configures in which folder (current folder or other subfolder) the subtitles are stored. The expert user can also supply 'Custom Subtitle folder' which can also be an absolute path.
+By default, Plex stores posters, fan art and subtitles as metadata in a separate folder which is not managed by the user. 
+In Sub-Zero, though, 'Store subtitles next to media files' is enabled by default.
+The agent will write the subtitle files in the media folder next to the media file itself. 
+The setting 'Subtitle folder' configures in which folder (current folder or other subfolder) the subtitles are stored. The expert user can also supply 'Custom Subtitle folder' which can also be an absolute path.
 
 **When a subfolder (either custom or predefined) is used, the automatic scheduled refresh of Plex won't pick up your subtitles, only a manual refresh will!**
 
@@ -97,3 +100,4 @@ Uses the following libraries and their LICENSE:
 - [subliminal](https://pypi.python.org/pypi/subliminal/) (MIT)
 - [xdg](https://pypi.python.org/pypi/pyxdg/) (LGPLv2)
 - [setuptools](https://pypi.python.org/pypi/setuptools/) (PSF ZPL)
+- [plexinc-agents/LocalMedia.bundle](https://github.com/plexinc-agents/LocalMedia.bundle) (Plex)
