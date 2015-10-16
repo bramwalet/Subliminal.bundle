@@ -34,7 +34,7 @@ Use the following agent order:
 - add "Treat IETF language tags as ISO 639-1 (e.g. pt-BR = pt)" setting (default: true)
 - change default external storage to "current folder" instead of "/subs"
 
-[older changes](CHANGES.md)
+[older changes](CHANGELOG.md)
 
 
 Description
