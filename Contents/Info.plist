@@ -28,7 +28,7 @@
             <!-- this allows channels to access some python methods which are otherwise blocked, as well as import external code libraries, and interact with the PMS HTTP API -->     
             <string>Elevated</string>
 	<key>PlexAgentAttributionText</key>
-	<string>&lt;div style=&quot;white-space: pre;&quot;&gt;&lt;img src=&quot;https://raw.githubusercontent.com/pannal/Sub-Zero/master/Sub-Zero.bundle/Contents/Resources/subzero.gif&quot; /&gt;
+	<string>&lt;div style=&quot;white-space: pre;&quot;&gt;&lt;img src=&quot;https://raw.githubusercontent.com/pannal/Sub-Zero/master/Contents/Resources/subzero.gif&quot; /&gt;
 
 &lt;h1&gt;Sub-Zero for Plex&lt;/h1&gt;&lt;i&gt;Subtitles done right&lt;/i&gt;
 
