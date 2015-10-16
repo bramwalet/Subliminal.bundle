@@ -155,9 +155,9 @@
                 "default": ""
         },
 	{
-                "id": "subtitles.only_one",
-                "label": "Restrict to one language (skips adding \".lang.\" to the subtitle filename; only uses \"Subtitle Language (1)\")",
+                "id": "subtitles.language.ietf",
+                "label": "Treat IETF language tags as ISO 639-1 (e.g. pt-BR = pt)",
                 "type": "bool",
-                "default": "false"
+                "default": "true"
         }
 ]

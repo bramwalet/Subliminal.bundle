@@ -34,9 +34,6 @@ def getLangList():
     langList = {Language.fromietf(Prefs["langPref1"])}
     langCustom = Prefs["langPrefCustom"].strip()
 
-    if Prefs['subtitles.only_one']:
-	return langList
-
     if Prefs["langPref2"] != "None":
         langList.update({Language.fromietf(Prefs["langPref2"])})
 
@@ -169,7 +166,7 @@ def saveSubtitlesToFile(subtitles):
                 fld = os.path.join(fld_base, Prefs["subtitles.save.subFolder"])
             if not os.path.exists(fld):
                 os.makedirs(fld)
-        subliminal.api.save_subtitles(video, video_subtitles, directory=fld, single=Prefs['subtitles.only_one'])
+        subliminal.api.save_subtitles(video, video_subtitles, directory=fld)
 
 def saveSubtitlesToMetadata(videos, subtitles):
     for video, video_subtitles in subtitles.items():
@@ -184,7 +181,7 @@ def updateLocalMedia(media):
 	    subzero.localmedia.findSubtitles(part)
 
 class SubZeroSubtitlesAgentMovies(Agent.Movies):
-    name = 'Sub-Zero Movie Subtitles'
+    name = 'Sub-Zero Subtitles (Movies)'
     languages = [Locale.Language.English]
     primary_provider = False
     contributes_to = ['com.plexapp.agents.imdb']
@@ -205,7 +202,7 @@ class SubZeroSubtitlesAgentMovies(Agent.Movies):
 
 class SubZeroSubtitlesAgentTvShows(Agent.TV_Shows):
     
-    name = 'Sub-Zero TV Subtitles'
+    name = 'Sub-Zero Subtitles (TV)'
     languages = [Locale.Language.English]
     primary_provider = False
     contributes_to = ['com.plexapp.agents.thetvdb', 'com.plexapp.agents.thetvdbdvdorder']
