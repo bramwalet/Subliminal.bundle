@@ -104,7 +104,7 @@ class PatchedAddic7edProvider(PunctuationMixin, Addic7edProvider):
             logger.warning('Series not found in show ids, attempting search')
             show_id = self._search_show_id(series_clean)
 	    if not show_id:
-		show_id = self.search_show_id(series.lower().replace("'", ""))
+		show_id = self._search_show_id(series.lower().replace("'", ""))
 
         return show_id
 
