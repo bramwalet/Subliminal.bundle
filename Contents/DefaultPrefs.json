@@ -119,14 +119,14 @@
                 "label": "Minimum score for TV subtitles to download",
                 "type": "enum",
                 "values": ["100","95","90","85","80","75","70","65","60","55","50","45","40","35","30","25","20","15","10","5","0"],
-                "default": "80"
+                "default": "85"
         },
         {
                 "id": "subtitles.search.minimumMovieScore",
                 "label": "Minimum score for movie subtitles to download",
                 "type": "enum",
-                "values": ["100","95","90","85","80","75","70","65","60","55","50","45","40","35","30","25","20","15","10","5","0"],
-                "default": "35"
+                "values": ["100","95","90","85","80","75","70","65","60","55","50","45","40","35","30","25","23","20","15","10","5","0"],
+                "default": "23"
         },
         {
                 "id": "subtitles.search.hearingImpaired",
