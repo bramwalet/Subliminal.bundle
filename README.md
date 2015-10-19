@@ -1,4 +1,4 @@
-Sub-Zero for Plex, 1.1.0.3
+Sub-Zero for Plex, 1.1.0.5
 =================
 
 ![logo](https://raw.githubusercontent.com/pannal/Sub-Zero/master/Contents/Resources/subzero.gif)
@@ -27,6 +27,12 @@ Use the following agent order:
 * **Remember: before you open a bug-ticket please double-check, that you've deleted the Sub-Zero.bundle folder BEFORE every update** (to avoid .pyc leftovers)
 
 ## Changelog
+1.1.0.5
+- addic7ed: fixed error in show id search 
+- addic7ed: even better show matching
+- adjusted default scores: TV: 85, movies: 23
+- add support for com.plexapp.agents.xbmcnfo/xbmcnfotv (proposed to the author [here](https://github.com/gboudreau/XBMCnfoMoviesImporter.bundle/pull/63) and [here](https://github.com/gboudreau/XBMCnfoTVImporter.bundle/pull/70))
+
 1.1.0.3
 - addic7ed/tvsubtitles: be way smarter about punctuation in series names (*A.G.E.N.T.S. ...*)
 - ditch LocalMediaExtended and incorporate the functionality in Sub-Zero (**RC-users: delete LocalMediaExtended.bundle and re-enable LocalMedia!**)
