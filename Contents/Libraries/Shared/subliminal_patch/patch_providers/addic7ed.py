@@ -10,8 +10,6 @@ from .mixins import PunctuationMixin
 
 logger = logging.getLogger(__name__)
 
-series_year_re = re.compile('^(?P<series>[ \w.:\']+)(?: \((?P<year>\d{4})\))?$')
-
 
 USE_BOOST = False
 class PatchedAddic7edSubtitle(Addic7edSubtitle):
@@ -157,12 +155,6 @@ class PatchedAddic7edProvider(PunctuationMixin, Addic7edProvider):
         soup = ParserBeautifulSoup(r.content, ['lxml', 'html.parser'])
 
         # loop over subtitle rows
-        header = soup.select('#header font')
-        if header:
-            match = series_year_re.match(header[0].text.strip()[:-10])
-            series = match.group('series')
-            year = int(match.group('year')) if match.group('year') else None
-
         subtitles = []
         for row in soup.select('tr.epeven'):
             cells = row('td')
