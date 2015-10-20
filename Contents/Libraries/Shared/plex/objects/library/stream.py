@@ -31,6 +31,9 @@ class Stream(Descriptor):
     profile = Property
     scan_type = Property('scanType')
 
+    language = Property('language')
+    language_code = Property('languageCode')
+
     bvop = Property(type=int)
     gmc = Property(type=int)
     level = Property(type=int)
