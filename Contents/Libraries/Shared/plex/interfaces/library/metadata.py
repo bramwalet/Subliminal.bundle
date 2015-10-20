@@ -5,6 +5,9 @@ from plex.interfaces.core.base import Interface
 class LibraryMetadataInterface(Interface):
     path = 'library/metadata'
 
+    def refresh(self, key):
+	response = self.http.put(str(key) + "/refresh")
+
     def all_leaves(self, key):
         response = self.http.get(key, 'allLeaves')
 
