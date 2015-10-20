@@ -1,3 +1,11 @@
+1.1.0.3
+- addic7ed/tvsubtitles: be way smarter about punctuation in series names (*A.G.E.N.T.S. ...*)
+- ditch LocalMediaExtended and incorporate the functionality in Sub-Zero (**RC-users: delete LocalMediaExtended.bundle and re-enable LocalMedia!**)
+- remove (unused) setting "Restrict to one language"
+- add "Treat IETF language tags as ISO 639-1 (e.g. pt-BR = pt)" setting (default: true)
+- change default external storage to "current folder" instead of "/subs"
+- adjust default scores
+
 RC-5.2
 - revert back to /plexinc-agents/LocalMedia.bundle/tree/dist instead of /plexinc-agents/LocalMedia.bundle/tree/master, as the current public PMS version is too old for that
 
