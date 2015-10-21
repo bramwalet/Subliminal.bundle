@@ -12,6 +12,8 @@ import logger
 
 from babelfish import Language
 from datetime import timedelta
+from subzero.recent_items import getRecentItems
+from subzero.background import DefaultScheduler
 
 OS_PLEX_USERAGENT = 'plexapp.com v9.0'
 
@@ -25,6 +27,12 @@ def Start():
     logger.registerLoggingHander(DEPENDENCY_MODULE_NAMES)
     # configured cache to be in memory as per https://github.com/Diaoul/subliminal/issues/303
     subliminal.region.configure('dogpile.cache.memory')
+
+    #recent_items = getRecentItems()
+    #print recent_items
+    scheduler = DefaultScheduler()
+    scheduler.run()
+    scheduler.stop()
 
 def ValidatePrefs():
     Log.Debug("Validate Prefs called.")

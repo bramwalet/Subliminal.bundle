@@ -14,3 +14,11 @@ sys.modules["subzero.localmedia"] = localmedia
 import subtitlehelpers
 sys.modules["subzero.subtitlehelpers"] = subtitlehelpers
 
+import recent_items
+sys.modules["subzero.recent_items"] = recent_items
+
+import missing_subtitles
+sys.modules["subzero.missing_subtitles"] = missing_subtitles
+
+import background
+sys.modules["subzero.background"] = background

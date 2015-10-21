@@ -1,6 +1,7 @@
 # coding=utf-8
 
 import unicodedata
+import datetime
 
 # Unicode control characters can appear in ID3v2 tags but are not legal in XML.
 RE_UNICODE_CONTROL =  u'([\u0000-\u0008\u000b-\u000c\u000e-\u001f\ufffe-\uffff])' + \
@@ -34,3 +35,10 @@ def unicodize(s):
 def cleanFilename(filename):
   #this will remove any whitespace and punctuation chars and replace them with spaces, strip and return as lowercase
   return string.translate(filename.encode('utf-8'), string.maketrans(string.punctuation + string.whitespace, ' ' * len (string.punctuation + string.whitespace))).strip().lower()
+
+now = datetime.datetime.now()
+def is_recent(item):
+    addedAt =  datetime.datetime.fromtimestamp(item.added_at)
+    if now - datetime.timedelta(weeks=2) > addedAt:
+        return False
+    return True
