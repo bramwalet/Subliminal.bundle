@@ -201,7 +201,7 @@ class SubZeroSubtitlesAgentMovies(Agent.Movies):
     name = 'Sub-Zero Subtitles (Movies)'
     languages = [Locale.Language.English]
     primary_provider = False
-    contributes_to = ['com.plexapp.agents.imdb', 'com.plexapp.agents.xbmcnfo']
+    contributes_to = ['com.plexapp.agents.imdb', 'com.plexapp.agents.xbmcnfo', 'com.plexapp.agents.themoviedb']
 
     def search(self, results, media, lang):
         Log.Debug("MOVIE SEARCH CALLED")
@@ -237,3 +237,4 @@ class SubZeroSubtitlesAgentTvShows(Agent.TV_Shows):
     	    saveSubtitles(videos, subtitles)
 
 	updateLocalMedia(media, media_type="series")
+
