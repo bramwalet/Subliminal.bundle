@@ -13,6 +13,8 @@ import logger
 from babelfish import Language
 from datetime import timedelta
 
+from subzero.subtitlehelpers import getSubtitlesFromMetadata
+
 OS_PLEX_USERAGENT = 'plexapp.com v9.0'
 
 DEPENDENCY_MODULE_NAMES = ['subliminal', 'subliminal_patch', 'enzyme', 'guessit', 'requests']
@@ -118,14 +120,22 @@ def scanVideo(part, video_type):
     except ValueError:
         Log.Warn("File could not be guessed by subliminal")
 
-def downloadBestSubtitles(videos, min_score=0):
+def downloadBestSubtitles(video_part_map, min_score=0):
     hearing_impaired = Prefs['subtitles.search.hearingImpaired']
     languages = getLangList()
     if not languages: 
 	return
 
     missing_languages = False
-    for video in videos:
+    for video, part in video_part_map.iteritems():
+	if not Prefs['subtitles.save.filesystem']:
+	    # scan for existing metadata subtitles
+	    meta_subs = getSubtitlesFromMetadata(part)
+	    for language, subList in meta_subs.iteritems():
+		if subList:
+		    video.subtitle_languages.add(language)
+		    Log.Debug("Found metadata subtitle %s for %s", language, video)
+
 	if not (languages - video.subtitle_languages):
     	    Log.Debug('All languages %r exist for %s', languages, video)
 	    continue
@@ -135,7 +145,7 @@ def downloadBestSubtitles(videos, min_score=0):
     if missing_languages:
 	Log.Debug("Download best subtitles using settings: min_score: %s, hearing_impaired: %s" %(min_score, hearing_impaired))
     
-	return subliminal.api.download_best_subtitles(videos, languages, min_score, hearing_impaired, providers=getProviders(), provider_configs=getProviderSettings())
+	return subliminal.api.download_best_subtitles(video_part_map.keys(), languages, min_score, hearing_impaired, providers=getProviders(), provider_configs=getProviderSettings())
     Log.Debug("All languages for all requested videos exist. Doing nothing.")
 
 def saveSubtitles(videos, subtitles):
@@ -211,12 +221,11 @@ class SubZeroSubtitlesAgentMovies(Agent.Movies):
         Log.Debug("MOVIE UPDATE CALLED")
 	initSubliminalPatches()
         videos = scanMovieMedia(media)
-        subtitles = downloadBestSubtitles(videos.keys(), min_score=int(Prefs["subtitles.search.minimumMovieScore"]))
+        subtitles = downloadBestSubtitles(videos, min_score=int(Prefs["subtitles.search.minimumMovieScore"]))
 	if subtitles:
     	    saveSubtitles(videos, subtitles)
 	
-	if Prefs["subtitles.save.filesystem"]:
-	    updateLocalMedia(media, media_type="movies")
+	updateLocalMedia(media, media_type="movies")
 
 class SubZeroSubtitlesAgentTvShows(Agent.TV_Shows):
     
@@ -233,9 +242,8 @@ class SubZeroSubtitlesAgentTvShows(Agent.TV_Shows):
         Log.Debug("TvUpdate. Lang %s" % lang)
 	initSubliminalPatches()
         videos = scanTvMedia(media)
-        subtitles = downloadBestSubtitles(videos.keys(), min_score=int(Prefs["subtitles.search.minimumTVScore"]))
+        subtitles = downloadBestSubtitles(videos, min_score=int(Prefs["subtitles.search.minimumTVScore"]))
 	if subtitles:
     	    saveSubtitles(videos, subtitles)
 
-	if Prefs["subtitles.save.filesystem"]:
-	    updateLocalMedia(media, media_type="series")
+	updateLocalMedia(media, media_type="series")

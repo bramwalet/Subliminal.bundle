@@ -98,6 +98,14 @@ def findSubtitles(part):
           lang_sub_map[new_language] = []
         lang_sub_map[new_language] = lang_sub_map[new_language] + subtitles
 
+  # add known metadata subs to our sub list
+  if not Prefs['subtitles.save.filesystem']:
+    for language, sub_list in subtitlehelpers.getSubtitlesFromMetadata(part).iteritems():
+      if sub_list:
+        if not language in lang_sub_map:
+          lang_sub_map[language] = []
+        lang_sub_map[language] = lang_sub_map[language] + sub_list
+
   # Now whack subtitles that don't exist anymore.
   for language in lang_sub_map.keys():
     part.subtitles[language].validate_keys(lang_sub_map[language])
@@ -105,3 +113,4 @@ def findSubtitles(part):
   # Now whack the languages that don't exist anymore.
   for language in list(set(part.subtitles.keys()) - set(lang_sub_map.keys())):
     part.subtitles[language].validate_keys({})
+

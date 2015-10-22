@@ -130,3 +130,14 @@ class DefaultSubtitleHelper(SubtitleHelper):
 
     lang_sub_map[language] = [ basename ]
     return lang_sub_map
+
+def getSubtitlesFromMetadata(part):
+    subs = {}
+    for language in part.subtitles:
+	subs[language] = []
+	for key, proxy in getattr(part.subtitles[language], "_proxies").iteritems():
+	    p_type, p_value, p_sort, p_index, p_codec, p_format = proxy
+	    if p_type == "Media":
+		# metadata subtitle
+    		subs[language].append(key)
+    return subs
