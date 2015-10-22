@@ -111,7 +111,7 @@ def scanMovieMedia(media):
 def scanVideo(part, video_type):
     embedded_subtitles = Prefs['subtitles.scan.embedded']
     external_subtitles = Prefs['subtitles.scan.external']
-    
+
     Log.Debug("Scanning video: %s, subtitles=%s, embedded_subtitles=%s" % (part.file, external_subtitles, embedded_subtitles))
     try:
         return subliminal.video.scan_video(part.file, subtitles=external_subtitles, embedded_subtitles=embedded_subtitles, video_type=video_type)
@@ -214,8 +214,9 @@ class SubZeroSubtitlesAgentMovies(Agent.Movies):
         subtitles = downloadBestSubtitles(videos.keys(), min_score=int(Prefs["subtitles.search.minimumMovieScore"]))
 	if subtitles:
     	    saveSubtitles(videos, subtitles)
-
-	updateLocalMedia(media, media_type="movies")
+	
+	if Prefs["subtitles.save.filesystem"]:
+	    updateLocalMedia(media, media_type="movies")
 
 class SubZeroSubtitlesAgentTvShows(Agent.TV_Shows):
     
@@ -236,4 +237,5 @@ class SubZeroSubtitlesAgentTvShows(Agent.TV_Shows):
 	if subtitles:
     	    saveSubtitles(videos, subtitles)
 
-	updateLocalMedia(media, media_type="series")
+	if Prefs["subtitles.save.filesystem"]:
+	    updateLocalMedia(media, media_type="series")
