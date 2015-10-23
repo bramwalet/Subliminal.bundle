@@ -101,8 +101,6 @@ class PatchedAddic7edProvider(PunctuationMixin, Addic7edProvider):
         if not show_id:
             logger.warning('Series not found in show ids, attempting search')
             show_id = self._search_show_id(series_clean)
-	    if not show_id:
-		show_id = self._search_show_id(series.lower().replace("'", ""))
 
         return show_id
 
@@ -132,7 +130,7 @@ class PatchedAddic7edProvider(PunctuationMixin, Addic7edProvider):
         if not suggestion:
             logger.warning('Show id not found: no suggestion')
             return None
-        if not self.clean_punctuation(suggestion[0].i.text.lower()) == self.clean_punctuation(series_year.lower()):
+        if not self.full_clean(suggestion[0].i.text.lower()) == self.full_clean(series_year.lower()):
             logger.warning('Show id not found: suggestion does not match')
             return None
         show_id = int(suggestion[0]['href'][6:])
