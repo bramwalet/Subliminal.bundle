@@ -58,6 +58,7 @@ def scanTvMedia(media):
             for item in media.seasons[season].episodes[episode].items:
                 for part in item.parts:
                     scannedVideo = scanVideo(part, "episode")
+		    scannedVideo.id = media.seasons[season].episodes[episode].id
                     videos[scannedVideo] = part
     return videos
 
@@ -66,6 +67,7 @@ def scanMovieMedia(media):
     for item in media.items:
         for part in item.parts:
             scannedVideo = scanVideo(part, "movie")
+	    scannedVideo.id = media.id
             videos[scannedVideo] = part 
     return videos
 
@@ -166,44 +168,46 @@ def updateLocalMedia(media, media_type="movies"):
       else:
         pass
 
-class SubZeroSubtitlesAgentMovies(Agent.Movies):
-    name = 'Sub-Zero Subtitles (Movies)'
+
+class SubZeroAgent(object):
+    agent_type = None
     languages = [Locale.Language.English]
     primary_provider = False
-    contributes_to = ['com.plexapp.agents.imdb', 'com.plexapp.agents.xbmcnfo', 'com.plexapp.agents.themoviedb']
+
+    def __init__(self, *args, **kwargs):
+	super(SubZeroAgent, self).__init__(*args, **kwargs)
+	self.name = "Sub-Zero Subtitles (%s, %s)" % ("Movies" if self.agent_type == "movies" else "TV", config.getVersion())
+	self.agent_type = "movies" if isinstance(self, Agent.Movies) else "series"
 
     def search(self, results, media, lang):
-        Log.Debug("MOVIE SEARCH CALLED")
+        Log.Debug("Sub-Zero %s, %s search" % (config.version, self.agent_type))
         results.Append(MetadataSearchResult(id='null', score=100))
 
     def update(self, metadata, media, lang):
-        Log.Debug("MOVIE UPDATE CALLED")
+	Log.Debug("Sub-Zero %s, %s update called" % (config.version, self.agent_type))
 	initSubliminalPatches()
+	videos, subtitles = getattr(self, "update_%s" % self.agent_type)(metadata, media, lang)
+
+	if subtitles:
+	    saveSubtitles(videos, subtitles)
+
+	updateLocalMedia(media, media_type=self.agent_type)
+
+    def update_movies(self, metadata, media, lang):
         videos = scanMovieMedia(media)
         subtitles = downloadBestSubtitles(videos, min_score=int(Prefs["subtitles.search.minimumMovieScore"]))
-	if subtitles:
-    	    saveSubtitles(videos, subtitles)
-	
-	updateLocalMedia(media, media_type="movies")
+	return videos, subtitles
 
-class SubZeroSubtitlesAgentTvShows(Agent.TV_Shows):
-    
-    name = 'Sub-Zero Subtitles (TV)'
-    languages = [Locale.Language.English]
-    primary_provider = False
-    contributes_to = ['com.plexapp.agents.thetvdb', 'com.plexapp.agents.thetvdbdvdorder', 'com.plexapp.agents.xbmcnfotv']
-
-    def search(self, results, media, lang):
-        Log.Debug("TV SEARCH CALLED")
-        results.Append(MetadataSearchResult(id='null', score=100))
-
-    def update(self, metadata, media, lang):
-        Log.Debug("TvUpdate. Lang %s" % lang)
-	initSubliminalPatches()
-        videos = scanTvMedia(media)
+    def update_series(self, metadata, media, lang):
+	videos = scanTvMedia(media)
         subtitles = downloadBestSubtitles(videos, min_score=int(Prefs["subtitles.search.minimumTVScore"]))
-	if subtitles:
-    	    saveSubtitles(videos, subtitles)
+	return videos, subtitles
 
-	updateLocalMedia(media, media_type="series")
+
+class SubZeroSubtitlesAgentMovies(SubZeroAgent, Agent.Movies):
+    contributes_to = ['com.plexapp.agents.imdb', 'com.plexapp.agents.xbmcnfo', 'com.plexapp.agents.themoviedb']
+
+
+class SubZeroSubtitlesAgentTvShows(SubZeroAgent, Agent.TV_Shows):
+    contributes_to = ['com.plexapp.agents.thetvdb', 'com.plexapp.agents.thetvdbdvdorder', 'com.plexapp.agents.xbmcnfotv']
 

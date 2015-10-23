@@ -1,23 +1,39 @@
 # coding=utf-8
 
+import os
+import re
+import inspect
 from babelfish import Language
+from subzero.lib.io import FileIO
 
 SUBTITLE_EXTS     = ['utf','utf8','utf-8','srt','smi','rt','ssa','aqt','jss','ass','idx','sub','txt', 'psb']
 VIDEO_EXTS        = ['3g2', '3gp', 'asf', 'asx', 'avc', 'avi', 'avs', 'bivx', 'bup', 'divx', 'dv', 'dvr-ms', 'evo', 'fli', 'flv',
             	 'm2t', 'm2ts', 'm2v', 'm4v', 'mkv', 'mov', 'mp4', 'mpeg', 'mpg', 'mts', 'nsv', 'nuv', 'ogm', 'ogv', 'tp',
             	 'pva', 'qt', 'rm', 'rmvb', 'sdp', 'svq3', 'strm', 'ts', 'ty', 'vdr', 'viv', 'vob', 'vp3', 'wmv', 'wpl', 'wtv', 'xsp', 'xvid', 'webm']
 
+VERSION_RE = re.compile(ur'CFBundleVersion.+?<string>([0-9\.]+)</string>', re.DOTALL)
+
 class Config(object):
+    version = None
     langList = None
     subtitleDestinationFolder = None
     providers = None
     providerSettings = None
 
     def initialize(self):
+	self.version = self.getVersion()
 	self.langList = self.getLangList()
 	self.subtitleDestinationFolder = self.getSubtitleDestinationFolder()
 	self.providers = self.getProviders()
 	self.providerSettings = self.getProviderSettings()
+
+    def getVersion(self):
+	curDir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+	info_file_path = os.path.abspath(os.path.join(curDir, "..", "..", "Info.plist"))
+	data = FileIO.read(info_file_path)
+	result = VERSION_RE.search(data)
+	if result:
+	    return result.group(1)
 
     # Prepare a list of languages we want subs for
     def getLangList(self):
