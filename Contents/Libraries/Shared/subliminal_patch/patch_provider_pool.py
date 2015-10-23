@@ -287,6 +287,7 @@ class PatchedProviderPool(ProviderPool):
             # download
             logger.info('Downloading subtitle %r with score %d', subtitle, score)
             if self.download_subtitle(subtitle):
+		subtitle.score = score
                 downloaded_subtitles.append(subtitle)
 
             # stop if only one subtitle is requested
