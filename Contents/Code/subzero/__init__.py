@@ -22,3 +22,6 @@ sys.modules["subzero.missing_subtitles"] = missing_subtitles
 
 import background
 sys.modules["subzero.background"] = background
+
+import storage
+sys.modules["subzero.storage"] = storage

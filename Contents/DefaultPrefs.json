@@ -159,5 +159,11 @@
                 "label": "Treat IETF language tags as ISO 639-1 (e.g. pt-BR = pt)",
                 "type": "bool",
                 "default": "true"
+        },
+	{
+                "id": "reset_storage",
+                "label": "Reset the plugin's information storage (once)",
+                "type": "bool",
+                "default": "false"
         }
 ]

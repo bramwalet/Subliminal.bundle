@@ -15,12 +15,14 @@ from subzero.recent_items import getRecentItems
 from subzero.background import DefaultScheduler
 
 from subzero.subtitlehelpers import getSubtitlesFromMetadata
+from subzero.storage import storeSubtitleInfo, resetStorage
 from subzero.config import config
 
 OS_PLEX_USERAGENT = 'plexapp.com v9.0'
 
 DEPENDENCY_MODULE_NAMES = ['subliminal', 'subliminal_patch', 'enzyme', 'guessit', 'requests']
 PERSONAL_MEDIA_IDENTIFIER = "com.plexapp.agents.none"
+PREFIX = "/subzero"
 
 def Start():
     HTTP.CacheTime = 0
@@ -39,9 +41,12 @@ def Start():
     scheduler.run()
     scheduler.stop()
 
+@route(PREFIX + '/ValidatePrefs')
 def ValidatePrefs():
     Log.Debug("Validate Prefs called.")
     config.initialize()
+    if bool(Prefs['reset_storage']):
+	resetStorage()
     return 
 
 def initSubliminalPatches():
@@ -113,9 +118,13 @@ def saveSubtitles(videos, subtitles):
     if Prefs['subtitles.save.filesystem']:
         Log.Debug("Using filesystem as subtitle storage")
         saveSubtitlesToFile(subtitles)
+	storage = "filesystem"
     else:
         Log.Debug("Using metadata as subtitle storage")
         saveSubtitlesToMetadata(videos, subtitles)
+	storage = "metadata"
+
+    storeSubtitleInfo(videos, subtitles, storage)
 
 def saveSubtitlesToFile(subtitles):
     fld_custom = Prefs["subtitles.save.subFolder.Custom"].strip() if bool(Prefs["subtitles.save.subFolder.Custom"]) else None
@@ -143,7 +152,7 @@ def saveSubtitlesToFile(subtitles):
 def saveSubtitlesToMetadata(videos, subtitles):
     for video, video_subtitles in subtitles.items():
         mediaPart = videos[video]
-        for subtitle in video_subtitles: 
+        for subtitle in video_subtitles:
             mediaPart.subtitles[Locale.Language.Match(subtitle.language.alpha2)][subtitle.page_link] = Proxy.Media(subtitle.content, ext="srt")
 
 def updateLocalMedia(media, media_type="movies"):
