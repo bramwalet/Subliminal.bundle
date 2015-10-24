@@ -1,4 +1,4 @@
-Sub-Zero for Plex, 1.2.11.180
+Sub-Zero for Plex, 1.3.0.x
 =================
 
 ![logo](https://raw.githubusercontent.com/pannal/Sub-Zero/master/Contents/Resources/subzero.gif)
@@ -82,7 +82,7 @@ The setting 'Subtitle folder' configures in which folder (current folder or othe
 
 License
 -------
-MIT
+The Unlicense
 
 Libraries
 ---------
