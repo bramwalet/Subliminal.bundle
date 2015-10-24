@@ -5,6 +5,7 @@ import re
 import inspect
 from babelfish import Language
 from subzero.lib.io import FileIO
+from subzero.constants import PLUGIN_NAME
 
 SUBTITLE_EXTS     = ['utf','utf8','utf-8','srt','smi','rt','ssa','aqt','jss','ass','idx','sub','txt', 'psb']
 VIDEO_EXTS        = ['3g2', '3gp', 'asf', 'asx', 'avc', 'avi', 'avs', 'bivx', 'bup', 'divx', 'dv', 'dvr-ms', 'evo', 'fli', 'flv',
@@ -20,12 +21,16 @@ class Config(object):
     providers = None
     providerSettings = None
 
+    initialized = False
+
     def initialize(self):
 	self.version = self.getVersion()
+	self.full_version = u"%s %s" % (PLUGIN_NAME, self.version)
 	self.langList = self.getLangList()
 	self.subtitleDestinationFolder = self.getSubtitleDestinationFolder()
 	self.providers = self.getProviders()
 	self.providerSettings = self.getProviderSettings()
+	self.initialized = True
 
     def getVersion(self):
 	curDir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))

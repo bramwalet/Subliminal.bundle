@@ -7,27 +7,30 @@ import re
 import copy
 import subliminal
 import subliminal_patch
-import subzero
+import support
 import logger
+import datetime
 
 from datetime import timedelta
-from subzero.recent_items import getRecentItems
-from subzero.background import DefaultScheduler
+from subzero.constants import OS_PLEX_USERAGENT, DEPENDENCY_MODULE_NAMES, PERSONAL_MEDIA_IDENTIFIER, PLUGIN_IDENTIFIER_SHORT,\
+     PLUGIN_IDENTIFIER, PLUGIN_NAME, PREFIX
+from support.recent_items import getRecentItems
+from support.background import DefaultScheduler
 
-from subzero.subtitlehelpers import getSubtitlesFromMetadata
-from subzero.storage import storeSubtitleInfo, resetStorage
-from subzero.config import config
+from support.subtitlehelpers import getSubtitlesFromMetadata
+from support.storage import storeSubtitleInfo, resetStorage
+from support.config import config
 
-OS_PLEX_USERAGENT = 'plexapp.com v9.0'
-
-DEPENDENCY_MODULE_NAMES = ['subliminal', 'subliminal_patch', 'enzyme', 'guessit', 'requests']
-PERSONAL_MEDIA_IDENTIFIER = "com.plexapp.agents.none"
-PREFIX = "/subzero"
+@handler(PREFIX, "%s Base" % PLUGIN_NAME)
+def fatality():
+    """
+    subzero
+    """
+    return config.version
 
 def Start():
     HTTP.CacheTime = 0
     HTTP.Headers['User-agent'] = OS_PLEX_USERAGENT
-    Log.Debug("START CALLED")
     logger.registerLoggingHander(DEPENDENCY_MODULE_NAMES)
     # configured cache to be in memory as per https://github.com/Diaoul/subliminal/issues/303
     subliminal.region.configure('dogpile.cache.memory')
@@ -35,8 +38,6 @@ def Start():
     # init defaults; perhaps not the best idea to use ValidatePrefs here, but we'll see
     ValidatePrefs()
 
-    #recent_items = getRecentItems()
-    #print recent_items
     scheduler = DefaultScheduler()
     scheduler.run()
     scheduler.stop()
@@ -160,7 +161,7 @@ def updateLocalMedia(media, media_type="movies"):
     if media_type == "movies":
 	for item in media.items:
     	    for part in item.parts:
-		subzero.localmedia.findSubtitles(part)
+		support.localmedia.findSubtitles(part)
 	return
 
     # Look for subtitles for each episode.
@@ -173,7 +174,7 @@ def updateLocalMedia(media, media_type="movies"):
 
             # Look for subtitles.
             for part in i.parts:
-              subzero.localmedia.findSubtitles(part)
+              support.localmedia.findSubtitles(part)
       else:
         pass
 
