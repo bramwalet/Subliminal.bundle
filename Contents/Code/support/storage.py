@@ -34,14 +34,13 @@ def storeSubtitleInfo(videos, subtitles, storage_type):
 
     Dict.Save()
 
-def resetStorage():
+def resetStorage(key):
     """
-    resets the Dict["subs"] storage, thanks to https://docs.google.com/document/d/1hhLjV1pI-TA5y91TiJq64BdgKwdLnFt4hWgeOqpz1NA/edit#
+    resets the Dict[key] storage, thanks to https://docs.google.com/document/d/1hhLjV1pI-TA5y91TiJq64BdgKwdLnFt4hWgeOqpz1NA/edit#
     We can't use the nice Plex interface for this, as it calls get multiple times before set
 	#Plex[":/plugins/*/prefs"].set("com.plexapp.agents.subzero", "reset_storage", False)
     """
 
-    set_noreset_url = Plex.base_url + '/:/plugins/com.plexapp.agents.subzero/prefs/set?reset_storage=0'
     Log.Debug("resetting storage")
-    HTTP.Request(set_noreset_url, immediate=True)
-    Dict["subs"] = {}
+    Dict[key] = {}
+    Dict.Save()

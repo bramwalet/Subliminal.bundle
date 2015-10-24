@@ -12,16 +12,18 @@ import datetime
 import subliminal
 import subliminal_patch
 import support
+import interface
 
-from subzero import restart
 from subzero.constants import OS_PLEX_USERAGENT, DEPENDENCY_MODULE_NAMES, PERSONAL_MEDIA_IDENTIFIER, PLUGIN_IDENTIFIER_SHORT,\
      PLUGIN_IDENTIFIER, PLUGIN_NAME, PREFIX
 from support.recent_items import getRecentItems
 from support.background import DefaultScheduler
 
+from interface.menu import fatality as MainMenu, ValidatePrefs
 from support.subtitlehelpers import getSubtitlesFromMetadata
-from support.storage import storeSubtitleInfo, resetStorage
+from support.storage import storeSubtitleInfo
 from support.config import config
+
 
 def Start():
     HTTP.CacheTime = 0
@@ -38,24 +40,6 @@ def Start():
     scheduler.run()
     scheduler.stop()
 
-@handler(PREFIX, "%s Base" % PLUGIN_NAME)
-def fatality():
-    """
-    subzero
-    """
-    return config.version
-
-@route(PREFIX + '/ValidatePrefs')
-def ValidatePrefs():
-    Log.Debug("Validate Prefs called.")
-    config.initialize()
-    if bool(Prefs['reset_storage']):
-	resetStorage()
-    return 
-
-@route(PREFIX + '/restart')
-def Restart():
-    restart(PLUGIN_IDENTIFIER)
 
 def initSubliminalPatches():
     # configure custom subtitle destination folders for scanning pre-existing subs

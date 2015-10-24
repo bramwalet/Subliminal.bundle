@@ -42,3 +42,33 @@ def is_recent(item):
     if now - datetime.timedelta(weeks=2) > addedAt:
         return False
     return True
+
+# thanks, Plex-Trakt-Scrobbler
+def str_pad(s, length, align='left', pad_char=' ', trim=False):
+    if not s:
+        return s
+
+    if not isinstance(s, (str, unicode)):
+        s = str(s)
+
+    if len(s) == length:
+        return s
+    elif len(s) > length and not trim:
+        return s
+
+    if align == 'left':
+        if len(s) > length:
+            return s[:length]
+        else:
+            return s + (pad_char * (length - len(s)))
+    elif align == 'right':
+        if len(s) > length:
+            return s[len(s) - length:]
+        else:
+            return (pad_char * (length - len(s))) + s
+    else:
+        raise ValueError("Unknown align type, expected either 'left' or 'right'")
+
+def pad_title(value):
+    """Pad a title to 30 characters to force the 'details' view."""
+    return str_pad(value, 30, pad_char=' ')

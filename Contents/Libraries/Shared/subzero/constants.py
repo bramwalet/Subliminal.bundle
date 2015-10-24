@@ -8,3 +8,7 @@ PLUGIN_IDENTIFIER_SHORT = "subzero"
 PLUGIN_IDENTIFIER = "com.plexapp.agents.%s" % PLUGIN_IDENTIFIER_SHORT
 PLUGIN_NAME = "Sub-Zero"
 PREFIX = "/video/%s" % PLUGIN_IDENTIFIER_SHORT
+
+TITLE = "%s Subtitles" % PLUGIN_NAME
+ART      = 'art-default.jpg'
+ICON     = 'icon-default.png'
