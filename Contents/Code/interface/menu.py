@@ -45,8 +45,16 @@ def TriggerRestart():
 def Restart():
     restart(PLUGIN_IDENTIFIER)
 
-@route(PREFIX + '/storage/reset')
-def ResetStorage(key):
+@route(PREFIX + '/storage/reset', sure=bool)
+def ResetStorage(key, sure=False):
+    if not sure:
+	oc = ObjectContainer(no_history=True, no_cache=True, title1="Reset subtitle storage", title2="Are you sure?")
+	oc.add(DirectoryObject(
+	    key=Callback(ResetStorage, key=key, sure=True),
+	    title=pad_title("Are you really sure? The internal subtitle storage is very useful!")
+	))
+	return oc
+
     resetStorage(key)
     return MessageContainer(
         'Success',
