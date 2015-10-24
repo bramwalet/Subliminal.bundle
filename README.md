@@ -102,3 +102,4 @@ Uses the following libraries and their LICENSE:
 - [xdg](https://pypi.python.org/pypi/pyxdg/) (LGPLv2)
 - [setuptools](https://pypi.python.org/pypi/setuptools/) (PSF ZPL)
 - [plexinc-agents/LocalMedia.bundle](https://github.com/plexinc-agents/LocalMedia.bundle) (Plex)
+- [fuzeman/plex.py](https://github.com/fuzeman/plex.py) (plex.py)
