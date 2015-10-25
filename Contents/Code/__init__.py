@@ -16,7 +16,7 @@ import interface
 
 from subzero.constants import OS_PLEX_USERAGENT, DEPENDENCY_MODULE_NAMES, PERSONAL_MEDIA_IDENTIFIER, PLUGIN_IDENTIFIER_SHORT,\
      PLUGIN_IDENTIFIER, PLUGIN_NAME, PREFIX
-from subzero import temp
+from subzero import intent
 from support.background import DefaultScheduler
 
 from interface.menu import fatality as MainMenu, ValidatePrefs
@@ -52,25 +52,32 @@ def scanTvMedia(media):
     videos = {}
     for season in media.seasons:
         for episode in media.seasons[season].episodes:
+	    ep = media.seasons[season].episodes[episode]
+	    forceRefresh = intent.get("force", ep.id)
             for item in media.seasons[season].episodes[episode].items:
                 for part in item.parts:
-                    scannedVideo = scanVideo(part, "episode")
+                    scannedVideo = scanVideo(part, "episode", ignore_all=forceRefresh)
 		    scannedVideo.id = media.seasons[season].episodes[episode].id
                     videos[scannedVideo] = part
     return videos
 
 def scanMovieMedia(media):
     videos = {}
+    forceRefresh = intent.get("force", media.id)
     for item in media.items:
         for part in item.parts:
-            scannedVideo = scanVideo(part, "movie")
+            scannedVideo = scanVideo(part, "movie", ignore_all=forceRefresh)
 	    scannedVideo.id = media.id
             videos[scannedVideo] = part 
     return videos
 
-def scanVideo(part, video_type):
-    embedded_subtitles = Prefs['subtitles.scan.embedded']
-    external_subtitles = Prefs['subtitles.scan.external']
+def scanVideo(part, video_type, ignore_all=False):
+    
+    embedded_subtitles = not ignore_all and Prefs['subtitles.scan.embedded']
+    external_subtitles = not ignore_all and Prefs['subtitles.scan.external']
+
+    if ignore_all:
+	Log.Debug("Force refresh intended.")
 
     Log.Debug("Scanning video: %s, subtitles=%s, embedded_subtitles=%s" % (part.file, external_subtitles, embedded_subtitles))
     try:

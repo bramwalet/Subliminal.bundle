@@ -3,6 +3,7 @@
 import logging
 from plex import Plex
 from helpers import is_recent, format_video
+from subzero import intent
 logger = logging.getLogger(__name__)
 
 MI_KIND, MI_TITLE, MI_ITEM = 0, 1, 2
@@ -32,3 +33,9 @@ def getRecentlyAddedItems():
 def getOnDeckItems():
     return getMergedItems(key="on_deck")
     
+
+def refreshItem(rating_key, force=False):
+    if force:
+	intent.set("force", rating_key, timeout=8000)
+    Log.Info("%s item %s", "Refreshing" if not force else "Forced-refreshing", rating_key)
+    Plex["library/metadata"].refresh(rating_key)
