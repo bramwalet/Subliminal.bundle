@@ -75,6 +75,7 @@ Several options are provided in the preferences of this agent.
 * Subtitle folder: (default: current media file's folder) See Store as metadata or on filesystem
 * Custom Subtitle folder: See Store as metadata or on filesystem 
 * Treat IETF language tags as ISO 639-1: Treats subtitle files with IETF language identifiers, such as pt-BR, as their ISO 639-1 counterpart. Thus "pt-BR" will be shown as "Portuguese" instead of "Unknown"
+* Scheduler: documentation coming
 
 Store as metadata or on filesystem
 ----------------------------------
