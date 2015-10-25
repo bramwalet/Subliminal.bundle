@@ -1,7 +1,6 @@
 # coding=utf-8
 
 import logging
-from recent_items import getRecentItems
 
 logger = logging.getLogger(__name__)
 

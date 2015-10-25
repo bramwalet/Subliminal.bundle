@@ -16,7 +16,6 @@ import interface
 
 from subzero.constants import OS_PLEX_USERAGENT, DEPENDENCY_MODULE_NAMES, PERSONAL_MEDIA_IDENTIFIER, PLUGIN_IDENTIFIER_SHORT,\
      PLUGIN_IDENTIFIER, PLUGIN_NAME, PREFIX
-from support.recent_items import getRecentItems
 from support.background import DefaultScheduler
 
 from interface.menu import fatality as MainMenu, ValidatePrefs

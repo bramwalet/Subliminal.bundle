@@ -14,8 +14,8 @@ sys.modules["subzero.localmedia"] = localmedia
 import subtitlehelpers
 sys.modules["support.subtitlehelpers"] = subtitlehelpers
 
-import recent_items
-sys.modules["support.recent_items"] = recent_items
+import items
+sys.modules["support.items"] = items
 
 import missing_subtitles
 sys.modules["support.missing_subtitles"] = missing_subtitles

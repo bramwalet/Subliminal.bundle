@@ -32,12 +32,9 @@ class LibraryInterface(Interface):
 
         return self.parse(response, idict({
             'MediaContainer': ('MediaContainer', idict({
-                'Directory': {
-                    'album':    'Album',
-                    'season':   'Season'
-                },
                 'Video': {
-                    'movie':    'Movie'
+                    'movie':    'Movie',
+		    'episode': 	'Episode'
                 }
             }))
         }))

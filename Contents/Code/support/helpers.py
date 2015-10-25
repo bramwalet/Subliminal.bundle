@@ -2,6 +2,7 @@
 
 import unicodedata
 import datetime
+import urllib
 
 # Unicode control characters can appear in ID3v2 tags but are not legal in XML.
 RE_UNICODE_CONTROL =  u'([\u0000-\u0008\u000b-\u000c\u000e-\u001f\ufffe-\uffff])' + \
@@ -72,3 +73,14 @@ def str_pad(s, length, align='left', pad_char=' ', trim=False):
 def pad_title(value):
     """Pad a title to 30 characters to force the 'details' view."""
     return str_pad(value, 30, pad_char=' ')
+
+def format_video(item, kind, parent=None, parentTitle=None):
+    if kind == "episode" and parent:
+	return u'Series \"%s\": S%02dE%02d' % (parentTitle or parent.show.title, parent.index, item.index)
+    return u'Movie: %s' % item.title
+
+def encode_message(base, s):
+    return "%s?message=%s" % (base, urllib.quote_plus(s))
+
+def decode_message(s):
+    return urllib.unquote_plus(s)
