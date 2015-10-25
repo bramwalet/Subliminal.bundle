@@ -1,4 +1,4 @@
-Sub-Zero for Plex, 1.3.0.x
+Sub-Zero for Plex, 1.3.0.216
 =================
 
 ![logo](https://raw.githubusercontent.com/pannal/Sub-Zero/master/Contents/Resources/subzero.gif)
@@ -27,12 +27,17 @@ Use the following agent order:
 * **Remember: before you open a bug-ticket please double-check, that you've deleted the Sub-Zero.bundle folder BEFORE every update** (to avoid .pyc leftovers)
 
 ## Changelog
+1.3.0.216
+- add channel menu
+- add generic task scheduler
+- add functionality to search for missing subtitles (via recently added items)
+- add artwork
+- change license to The Unlicense
+- ...
+
 1.2.11.180
 - fix #49 (metadata storage didn't work)
 - add better detection for existing subtitles stored in metadata
-
-1.2.11.177
-- updated naming scheme to reflect rewrite.major.minor.build (this release is the same as 1.1.0.5)
 
 [older changes](CHANGELOG.md)
 
