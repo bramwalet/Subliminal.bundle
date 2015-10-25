@@ -28,7 +28,19 @@ class LibraryInterface(Interface):
         }))
 
     def on_deck(self):
-        raise NotImplementedError()
+        response = self.http.get('onDeck')
+
+        return self.parse(response, idict({
+            'MediaContainer': ('MediaContainer', idict({
+                'Directory': {
+                    'album':    'Album',
+                    'season':   'Season'
+                },
+                'Video': {
+                    'movie':    'Movie'
+                }
+            }))
+        }))
 
     def recently_added(self):
         response = self.http.get('recentlyAdded')
