@@ -1,3 +1,6 @@
+1.2.11.177
+- updated naming scheme to reflect rewrite.major.minor.build (this release is the same as 1.1.0.5)
+
 1.1.0.5
 - addic7ed: fixed error in show id search
 - addic7ed: even better show matching
