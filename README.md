@@ -1,4 +1,4 @@
-Sub-Zero for Plex, 1.3.0.216
+Sub-Zero for Plex, 1.3.0.222
 =================
 
 ![logo](https://raw.githubusercontent.com/pannal/Sub-Zero/master/Contents/Resources/subzero.gif)
@@ -27,6 +27,10 @@ Use the following agent order:
 * **Remember: before you open a bug-ticket please double-check, that you've deleted the Sub-Zero.bundle folder BEFORE every update** (to avoid .pyc leftovers)
 
 ## Changelog
+1.3.0.222
+- bugfix for search missing subtitles
+- schedduler: honor "never" 
+
 1.3.0.216
 - add channel menu
 - add generic task scheduler
