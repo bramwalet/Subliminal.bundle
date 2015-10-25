@@ -34,8 +34,9 @@ def getOnDeckItems():
     return getMergedItems(key="on_deck")
     
 
-def refreshItem(rating_key, force=False):
+def refreshItem(rating_key, force=False, timeout=8000):
+    # timeout actually is the time for which the intent will be valid
     if force:
-	intent.set("force", rating_key, timeout=8000)
+	intent.set("force", rating_key, timeout=timeout)
     Log.Info("%s item %s", "Refreshing" if not force else "Forced-refreshing", rating_key)
     Plex["library/metadata"].refresh(rating_key)

@@ -20,6 +20,9 @@ class Config(object):
     subtitleDestinationFolder = None
     providers = None
     providerSettings = None
+    scheduler_section_blacklist = None
+    scheduler_season_blacklist = None
+    scheduler_item_blacklist = None
 
     initialized = False
 
@@ -30,6 +33,9 @@ class Config(object):
 	self.subtitleDestinationFolder = self.getSubtitleDestinationFolder()
 	self.providers = self.getProviders()
 	self.providerSettings = self.getProviderSettings()
+	self.scheduler_section_blacklist = self.getBlacklist("scheduler.section_blacklist")
+	self.scheduler_series_blacklist = self.getBlacklist("scheduler.series_blacklist")
+	self.scheduler_item_blacklist = self.getBlacklist("scheduler.item_blacklist")
 	self.initialized = True
 
     def getVersion(self):
@@ -39,6 +45,10 @@ class Config(object):
 	result = VERSION_RE.search(data)
 	if result:
 	    return result.group(1)
+
+    def getBlacklist(self, key):
+	return map(lambda id: id.strip(), (Prefs[key] or "").split(","))
+	
 
     # Prepare a list of languages we want subs for
     def getLangList(self):

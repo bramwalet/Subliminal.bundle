@@ -159,5 +159,37 @@
                 "label": "Treat IETF language tags as ISO 639-1 (e.g. pt-BR = pt)",
                 "type": "bool",
                 "default": "true"
+        },
+	{
+                "id": "scheduler.tasks.searchAllRecentlyAddedMissing",
+                "label": "Scheduler: Periodically search for recent items with missing subtitles",
+                "type": "enum",
+		"values": ["never", "every 1 hours", "every 3 hours", "every 6 hours", "every 12 hours", "every 24 hours"],
+                "default": "every 6 hours"
+        },
+	{
+                "id": "scheduler.item_is_recent_age",
+                "label": "Scheduler: Item age to be considered recent",
+                "type": "enum",
+		"values": ["1 days", "2 days", "3 days", "4 days", "1 weeks", "2 weeks", "3 weeks", "4 weeks"],
+                "default": "2 weeks"
+        },
+	{
+                "id": "scheduler.section_blacklist",
+                "label": "Scheduler: Sections to ignore (IDs, comma-separated)",
+                "type": "text",
+                "default": ""
+        },
+	{
+                "id": "scheduler.series_blacklist",
+                "label": "Scheduler: Series to ignore (IDs, comma-separated)",
+                "type": "text",
+                "default": ""
+        },
+	{
+                "id": "scheduler.item_blacklist",
+                "label": "Scheduler: Items to ignore (IDs, comma-separated)",
+                "type": "text",
+                "default": ""
         }
 ]

@@ -6,6 +6,7 @@ from support.config import config
 from support.helpers import pad_title, encode_message, decode_message
 from support.storage import resetStorage
 from support.items import getRecentlyAddedItems, getOnDeckItems, refreshItem
+from support.missing_subtitles import searchAllRecentlyAddedMissing
 
 # init GUI
 ObjectContainer.title1 = TITLE
@@ -24,6 +25,10 @@ def fatality(message=None):
     oc.add(DirectoryObject(
         key=Callback(RecentlyAddedMenu),
         title=pad_title("Recently Added Items")
+    ))
+    oc.add(DirectoryObject(
+        key=Callback(RefreshMissing),
+        title=pad_title("Refresh items with missing subtitles")
     ))
     oc.add(DirectoryObject(
         key=Callback(AdvancedMenu),
@@ -73,6 +78,11 @@ def RefreshItem(rating_key=None, came_from="/recent", force=False):
     assert rating_key
     Thread.Create(refreshItem, rating_key=rating_key, force=force)
     return Redirect(encode_message(PREFIX + came_from, "%s of item %s triggered" % ("Refresh" if not force else "Forced-refresh", rating_key)))
+
+@route(PREFIX + '/missing/refresh')
+def RefreshMissing():
+    Thread.CreateTimer(1.0, searchAllRecentlyAddedMissing)
+    return Redirect(encode_message(PREFIX, "Refresh of recently added items with missing subtitles triggered"))
 
 @route(PREFIX + '/advanced')
 def AdvancedMenu():

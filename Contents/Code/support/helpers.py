@@ -40,7 +40,8 @@ def cleanFilename(filename):
 now = datetime.datetime.now()
 def is_recent(item):
     addedAt =  datetime.datetime.fromtimestamp(item.added_at)
-    if now - datetime.timedelta(weeks=2) > addedAt:
+    value, key = Prefs["scheduler.item_is_recent_age"].split()
+    if now - datetime.timedelta(**{key: int(value)}) > addedAt:
         return False
     return True
 
