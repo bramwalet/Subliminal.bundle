@@ -1,6 +1,6 @@
 # coding=utf-8
 
-from subzero import restart
+from subzero import restart, temp
 from subzero.constants import TITLE, ART, ICON, PREFIX, PLUGIN_IDENTIFIER
 from support.config import config
 from support.helpers import pad_title, encode_message, decode_message
@@ -29,7 +29,6 @@ def fatality(message=None):
         key=Callback(AdvancedMenu),
         title=pad_title("Advanced functions")
     ))
-
 
     return oc
 

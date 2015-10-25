@@ -44,3 +44,4 @@ def resetStorage(key):
     Log.Debug("resetting storage")
     Dict[key] = {}
     Dict.Save()
+
