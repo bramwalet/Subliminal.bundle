@@ -38,7 +38,6 @@ def Start():
 
     scheduler = DefaultScheduler()
     scheduler.run()
-    scheduler.stop()
 
 
 def initSubliminalPatches():
