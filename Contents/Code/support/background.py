@@ -51,6 +51,8 @@ class DefaultScheduler(object):
 		    continue
 		
 		frequency_num, frequency_key = info["frequency"]
+		if not frequency_num:
+		    continue
 
 		if task_state["last_run"] + datetime.timedelta(**{frequency_key: frequency_num}) <= now:
 		    task_state["running"] = True
