@@ -48,7 +48,7 @@ def itemSearchMissing(rating_key, kind="episode", internal=False, external=True,
     
     missing = languages
     if existing_subs["count"]:
-        existing_flat = existing_subs["internal"] if internal else [] + existing_subs["external"] if external else []
+        existing_flat = (existing_subs["internal"] if internal else []) + (existing_subs["external"] if external else [])
         languages_set = set(languages)
         if languages_set.issubset(existing_flat):
             # all subs found
