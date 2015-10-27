@@ -183,8 +183,8 @@ class SubZeroAgent(object):
 
     def __init__(self, *args, **kwargs):
 	super(SubZeroAgent, self).__init__(*args, **kwargs)
-	self.name = "Sub-Zero Subtitles (%s, %s)" % ("Movies" if self.agent_type == "movies" else "TV", config.getVersion())
 	self.agent_type = "movies" if isinstance(self, Agent.Movies) else "series"
+	self.name = "Sub-Zero Subtitles (%s, %s)" % ("Movies" if self.agent_type == "movies" else "TV", config.getVersion())
 
     def search(self, results, media, lang):
         Log.Debug("Sub-Zero %s, %s search" % (config.version, self.agent_type))
