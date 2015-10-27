@@ -25,3 +25,6 @@ sys.modules["support.background"] = background
 
 import storage
 sys.modules["support.storage"] = storage
+
+import auth
+sys.modules["support.auth"] = auth

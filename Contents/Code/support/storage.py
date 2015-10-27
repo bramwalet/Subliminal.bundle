@@ -2,8 +2,6 @@
 
 import datetime
 
-from plex import Plex
-
 def storeSubtitleInfo(videos, subtitles, storage_type):
     """
     stores information about downloaded subtitles in plex's Dict()

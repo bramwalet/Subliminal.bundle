@@ -71,7 +71,9 @@ def findMissingSubtitles(list_item, _type="episode", internal=False, external=Tr
 def run():
     itemCount = 0
     dry_run = "--dry-run" in sys.argv
-    Plex[":/plugins"].restart("com.plexapp.agents.subzero")
+    with Plex.configuration.authentication("asdfasdfasdf"):
+	print Plex.configuration.stack[1].data
+        #Plex[":/plugins"].restart("com.plexapp.agents.subzero")
     #Plex[":/plugins/*/prefs"].set("com.plexapp.agents.subzero", "reset_storage", True)
     return
 
@@ -93,5 +95,5 @@ def run():
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.DEBUG)
     run()

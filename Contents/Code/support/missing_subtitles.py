@@ -3,7 +3,7 @@
 import datetime
 import sys
 
-from plex import Plex
+#from plex import Plex
 from support.items import getRecentlyAddedItems, MI_ITEM
 from support.config import config
 from support.helpers import format_video
@@ -13,7 +13,7 @@ def itemSearchMissing(rating_key, kind="episode", internal=False, external=True,
     existing_subs = {"internal": [], "external": [], "count": 0}
 
     item_id = int(rating_key)
-    item_container = Plex["library"].metadata(item_id)
+    item_container = config.Plex["library"].metadata(item_id)
     
     # don't process blacklisted sections
     if item_container.section.key in section_blacklist:
@@ -61,7 +61,7 @@ def itemSearchMissing(rating_key, kind="episode", internal=False, external=True,
     if missing:
         Log.Info("Triggering refresh for '%s'", item_title)
         if not dry_run:
-            Plex["library/metadata"].refresh(item_id)
+            config.Plex["library/metadata"].refresh(item_id)
 
 def searchAllRecentlyAddedMissing():
     items = getRecentlyAddedItems()

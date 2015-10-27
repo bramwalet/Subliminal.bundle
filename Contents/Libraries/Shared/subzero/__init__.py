@@ -11,6 +11,4 @@ DEPENDENCY_MODULE_NAMES = ['subliminal', 'subliminal_patch', 'enzyme', 'guessit'
 PERSONAL_MEDIA_IDENTIFIER = "com.plexapp.agents.none"
 PREFIX = "/video/subzero"
 
-def restart(prefix):
-    return Plex[":/plugins"].restart(prefix)
 

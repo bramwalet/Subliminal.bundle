@@ -1,9 +1,10 @@
 # coding=utf-8
 
-from subzero import restart, intent
+from subzero import intent
 from subzero.constants import TITLE, ART, ICON, PREFIX, PLUGIN_IDENTIFIER
 from support.config import config
 from support.helpers import pad_title, encode_message, decode_message
+from support.auth import refresh_plex_token
 from support.storage import resetStorage
 from support.items import getRecentlyAddedItems, getOnDeckItems, refreshItem
 from support.missing_subtitles import searchAllRecentlyAddedMissing
@@ -11,13 +12,15 @@ from support.missing_subtitles import searchAllRecentlyAddedMissing
 # init GUI
 ObjectContainer.title1 = TITLE
 ObjectContainer.art = R(ART)
+ObjectContainer.no_history = True
+ObjectContainer.no_cache = True
 
 @handler(PREFIX, TITLE, art=ART, thumb=ICON)
 def fatality(message=None):
     """
     subzero main menu
     """
-    oc = ObjectContainer(header=decode_message(message) if message else None)
+    oc = ObjectContainer(header=decode_message(message) if message else None, no_cache=True, no_history=True)
     oc.add(DirectoryObject(
         key=Callback(OnDeckMenu),
         title=pad_title("Items On Deck")
@@ -37,6 +40,8 @@ def fatality(message=None):
 
     return oc
 
+
+
 @route(PREFIX + '/on_deck')
 def OnDeckMenu(message=None):
     return mergedItemsMenu(title1="Items On Deck", itemGetter=getOnDeckItems, forward_came_from="/on_deck", message=message)
@@ -46,7 +51,7 @@ def RecentlyAddedMenu(message=None):
     return mergedItemsMenu(title1="Recently Added Items", itemGetter=getRecentlyAddedItems, forward_came_from="/recent", message=message)
 
 def mergedItemsMenu(title1, itemGetter, forward_came_from=None, message=None):
-    oc = ObjectContainer(title1=title1, no_cache=True, header=decode_message(message) if message else None)
+    oc = ObjectContainer(title1=title1, no_cache=True, no_history=True, header=decode_message(message) if message else None)
     items = itemGetter()
 
     for kind, title, item in items:
@@ -86,11 +91,15 @@ def RefreshMissing():
 
 @route(PREFIX + '/advanced')
 def AdvancedMenu():
-    oc = ObjectContainer(header="Internal stuff, pay attention!")
+    oc = ObjectContainer(header="Internal stuff, pay attention!", no_cache=True, no_history=True)
     
     oc.add(DirectoryObject(
         key=Callback(TriggerRestart),
         title=pad_title("Restart the plugin")
+    ))
+    oc.add(DirectoryObject(
+        key=Callback(RefreshToken),
+        title=pad_title("Re-request the API token from plex.tv")
     ))
     oc.add(DirectoryObject(
         key=Callback(ResetStorage, key="subs"),
@@ -104,14 +113,14 @@ def ValidatePrefs():
     config.initialize()
     return
 
-@route(PREFIX + '/restart/trigger')
+@route(PREFIX + '/advanced/restart/trigger')
 def TriggerRestart():
     Thread.CreateTimer(1.0, Restart)
     return Redirect(encode_message(PREFIX, "Restart triggered, please wait about 5 seconds"))
 
-@route(PREFIX + '/restart/execute')
+@route(PREFIX + '/advanced/restart/execute')
 def Restart():
-    restart(PLUGIN_IDENTIFIER)
+    config.Plex[":/plugins"].restart(PLUGIN_IDENTIFIER)
 
 @route(PREFIX + '/storage/reset', sure=bool)
 def ResetStorage(key, sure=False):
@@ -128,3 +137,13 @@ def ResetStorage(key, sure=False):
         'Success',
         'Subtitle Information Storage reset'
     )
+
+@route(PREFIX + '/refresh_token')
+def RefreshToken():
+    result = refresh_plex_token()
+    if result:
+	msg = "Token successfully refreshed."
+    else:
+	msg = "Couldn't refresh the token, please check your credentials"
+    
+    return Redirect(encode_message(PREFIX, msg))
