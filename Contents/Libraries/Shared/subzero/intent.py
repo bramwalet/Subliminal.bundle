@@ -24,21 +24,28 @@ class TempIntent(dict):
     def get(self, kind, key):
         if kind in self["store"]:
 	    now = datetime.datetime.now()
+	    hit = False
             for intent in self["store"][kind].keys():
-		ends = self["store"][kind][intent]
+            	# may need locking, for now just play it safe
+		ends = self["store"][kind].get(intent, None)
+		if not ends:
+		    continue
+		    
 		timed_out = False
                 if now > ends:
 		    timed_out = True
 		
-		hit = False
 		if intent == key and not timed_out:
 		    hit = True
 		    
 		if timed_out:
-		    del self["store"][kind][key]
+		    try:
+		        del self["store"][kind][key]
+		    except:
+		    	continue
 
-		if hit:
-            	    return True
+	    if hit:
+    	        return True
         return False
 
     def set(self, kind, key, timeout=None):
