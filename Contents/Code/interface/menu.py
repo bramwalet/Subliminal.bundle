@@ -8,7 +8,7 @@ from support.auth import refresh_plex_token
 from support.storage import resetStorage
 from support.items import getRecentlyAddedItems, getOnDeckItems, refreshItem
 from support.missing_subtitles import searchAllRecentlyAddedMissing
-from support.tasks import taskData
+from support.background import scheduler
 
 # init GUI
 ObjectContainer.title1 = TITLE
@@ -16,32 +16,31 @@ ObjectContainer.art = R(ART)
 ObjectContainer.no_history = True
 ObjectContainer.no_cache = True
 
-Plugin.AddViewGroup("Details", viewMode="InfoList", mediaType="items")
-Plugin.AddViewGroup("List", viewMode="List", mediaType="items")
-
 @handler(PREFIX, TITLE, art=ART, thumb=ICON)
 def fatality():
     """
     subzero main menu
     """
-    oc = ObjectContainer(no_cache=True, no_history=True, view_group="Details")
+    oc = ObjectContainer(no_cache=True, no_history=True)
     oc.add(DirectoryObject(
         key=Callback(OnDeckMenu),
-        title="Items On Deck"
+        title="Items On Deck",
+	summary="Shows the current on deck items"
     ))
     oc.add(DirectoryObject(
         key=Callback(RecentlyAddedMenu),
-        title="Recently Added Items"
+        title="Recently Added Items",
+	summary="Shows the recently added items, honoring the configured 'Item age to be considered recent'-setting (%s)" % Prefs["scheduler.item_is_recent_age"]
     ))
-    task_info = taskData("searchAllRecentlyAddedMissing")
     oc.add(DirectoryObject(
         key=Callback(RefreshMissing),
-        title="Refresh items with missing subtitles",
-	summary="Last refresh: %s" % task_info["last_run"] if task_info else "never"
+        title="Refresh items with missing subtitles (max-age: %s)" % Prefs["scheduler.item_is_recent_age"],
+	summary="Last scheduler run: %s; Next scheduled run: %s" % (scheduler.last_run("searchAllRecentlyAddedMissing") or "never", scheduler.next_run("searchAllRecentlyAddedMissing") or "never")
     ))
     oc.add(DirectoryObject(
         key=Callback(AdvancedMenu),
-        title="Advanced functions"
+        title="Advanced functions",
+	summary="Use at your own risk"
     ))
 
     return oc
@@ -57,7 +56,7 @@ def RecentlyAddedMenu(message=None):
     return mergedItemsMenu(title="Recently Added Items", itemGetter=getRecentlyAddedItems)
 
 def mergedItemsMenu(title, itemGetter):
-    oc = ObjectContainer(title1=title, no_cache=True, no_history=True)
+    oc = ObjectContainer(title2=title, no_cache=True, no_history=True)
     items = itemGetter()
 
     for kind, title, item in items:
@@ -74,11 +73,13 @@ def RefreshItemMenu(rating_key, title=None, came_from="/recent"):
     oc = ObjectContainer(title1=title, no_cache=True, no_history=True)
     oc.add(DirectoryObject(
     	key=Callback(RefreshItem, rating_key=rating_key),
-    	title=u"Refresh: %s" % title
+    	title=u"Refresh: %s" % title,
+	summary="Refreshes the item, possibly picking up new subtitles on disk"
     ))
     oc.add(DirectoryObject(
     	key=Callback(RefreshItem, rating_key=rating_key),
-    	title=u"Force-Refresh: %s" % title
+    	title=u"Force-Refresh: %s" % title,
+	summary="Issues a forced refresh, ignoring known subtitles and searching for new ones"
     ))
 
     return oc
@@ -97,7 +98,7 @@ def RefreshMissing():
 
 @route(PREFIX + '/advanced')
 def AdvancedMenu():
-    oc = ObjectContainer(header="Internal stuff, pay attention!", no_cache=True, no_history=True)
+    oc = ObjectContainer(header="Internal stuff, pay attention!", no_cache=True, no_history=True, title2="Advanced")
     
     oc.add(DirectoryObject(
         key=Callback(TriggerRestart),
@@ -117,6 +118,7 @@ def AdvancedMenu():
 def ValidatePrefs():
     Log.Debug("Validate Prefs called.")
     config.initialize()
+    scheduler.discover_tasks()
     return
 
 @route(PREFIX + '/advanced/restart/trigger')

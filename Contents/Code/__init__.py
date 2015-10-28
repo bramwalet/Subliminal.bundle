@@ -17,7 +17,7 @@ import interface
 from subzero.constants import OS_PLEX_USERAGENT, DEPENDENCY_MODULE_NAMES, PERSONAL_MEDIA_IDENTIFIER, PLUGIN_IDENTIFIER_SHORT,\
      PLUGIN_IDENTIFIER, PLUGIN_NAME, PREFIX
 from subzero import intent
-from support.background import DefaultScheduler
+from support.background import scheduler
 
 from interface.menu import fatality as MainMenu, ValidatePrefs
 from support.subtitlehelpers import getSubtitlesFromMetadata
@@ -36,7 +36,6 @@ def Start():
     ValidatePrefs()
     Log.Debug(config.full_version)
 
-    scheduler = DefaultScheduler()
     scheduler.run()
 
 

@@ -20,7 +20,9 @@ class DefaultScheduler(object):
 	self.tasks = {}
 	if not "tasks" in Dict:
 	    Dict["tasks"] = {}
+	self.discover_tasks()
 
+    def discover_tasks(self):
 	# discover tasks; todo: add registry
 	for item in dir(tasks):
 	    if item.startswith("task_"):
@@ -33,6 +35,23 @@ class DefaultScheduler(object):
 
     def stop(self):
 	self.running = False
+
+    def last_run(self, task):
+	if task not in Dict["tasks"]:
+	    return None
+	return Dict["tasks"][task]["last_run"]
+
+    def next_run(self, task):
+	if task not in self.tasks:
+	    return None
+	frequency_num, frequency_key = self.tasks[task]["frequency"]
+	if not frequency_num:
+	    return None
+	last = self.last_run(task)
+	use_date = last
+	if not use_date:
+	    use_date = datetime.datetime.now()
+	return use_date + datetime.timedelta(**{frequency_key: frequency_num})
 
     def worker(self):
 	while 1:
@@ -62,3 +81,5 @@ class DefaultScheduler(object):
 		    Dict.Save()
 		    
 	    Thread.Sleep(10.0)
+
+scheduler = DefaultScheduler()
