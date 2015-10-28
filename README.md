@@ -1,4 +1,4 @@
-Sub-Zero for Plex, 1.3.0.222
+Sub-Zero for Plex, 1.3.0.277
 =================
 
 ![logo](https://raw.githubusercontent.com/pannal/Sub-Zero/master/Contents/Resources/subzero.gif)
@@ -27,6 +27,13 @@ Use the following agent order:
 * **Remember: before you open a bug-ticket please double-check, that you've deleted the Sub-Zero.bundle folder BEFORE every update** (to avoid .pyc leftovers)
 
 ## Changelog
+1.3.0.230
+- integrate plex.tv authentication for plex home users (test phase)
+- menu cleanup
+- more info in the menu (scheduler last and next run for example)
+- hopefully fixed intent handling (should throw less errors now)
+- fix version display in agent names
+
 1.3.0.222
 - bugfix for search missing subtitles
 - schedduler: honor "never" 
