@@ -27,7 +27,7 @@ Use the following agent order:
 * **Remember: before you open a bug-ticket please double-check, that you've deleted the Sub-Zero.bundle folder BEFORE every update** (to avoid .pyc leftovers)
 
 ## Changelog
-1.3.0.230
+1.3.0.232
 - integrate plex.tv authentication for plex home users (test phase)
 - menu cleanup
 - more info in the menu (scheduler last and next run for example)
