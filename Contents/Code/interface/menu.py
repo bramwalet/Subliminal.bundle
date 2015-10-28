@@ -8,6 +8,7 @@ from support.auth import refresh_plex_token
 from support.storage import resetStorage
 from support.items import getRecentlyAddedItems, getOnDeckItems, refreshItem
 from support.missing_subtitles import searchAllRecentlyAddedMissing
+from support.tasks import taskData
 
 # init GUI
 ObjectContainer.title1 = TITLE
@@ -15,27 +16,32 @@ ObjectContainer.art = R(ART)
 ObjectContainer.no_history = True
 ObjectContainer.no_cache = True
 
+Plugin.AddViewGroup("Details", viewMode="InfoList", mediaType="items")
+Plugin.AddViewGroup("List", viewMode="List", mediaType="items")
+
 @handler(PREFIX, TITLE, art=ART, thumb=ICON)
-def fatality(message=None):
+def fatality():
     """
     subzero main menu
     """
-    oc = ObjectContainer(header=decode_message(message) if message else None, no_cache=True, no_history=True)
+    oc = ObjectContainer(no_cache=True, no_history=True, view_group="Details")
     oc.add(DirectoryObject(
         key=Callback(OnDeckMenu),
-        title=pad_title("Items On Deck")
+        title="Items On Deck"
     ))
     oc.add(DirectoryObject(
         key=Callback(RecentlyAddedMenu),
-        title=pad_title("Recently Added Items")
+        title="Recently Added Items"
     ))
+    task_info = taskData("searchAllRecentlyAddedMissing")
     oc.add(DirectoryObject(
         key=Callback(RefreshMissing),
-        title=pad_title("Refresh items with missing subtitles")
+        title="Refresh items with missing subtitles",
+	summary="Last refresh: %s" % task_info["last_run"] if task_info else "never"
     ))
     oc.add(DirectoryObject(
         key=Callback(AdvancedMenu),
-        title=pad_title("Advanced functions")
+        title="Advanced functions"
     ))
 
     return oc
@@ -44,20 +50,20 @@ def fatality(message=None):
 
 @route(PREFIX + '/on_deck')
 def OnDeckMenu(message=None):
-    return mergedItemsMenu(title1="Items On Deck", itemGetter=getOnDeckItems, forward_came_from="/on_deck", message=message)
+    return mergedItemsMenu(title="Items On Deck", itemGetter=getOnDeckItems)
 
 @route(PREFIX + '/recent')
 def RecentlyAddedMenu(message=None):
-    return mergedItemsMenu(title1="Recently Added Items", itemGetter=getRecentlyAddedItems, forward_came_from="/recent", message=message)
+    return mergedItemsMenu(title="Recently Added Items", itemGetter=getRecentlyAddedItems)
 
-def mergedItemsMenu(title1, itemGetter, forward_came_from=None, message=None):
-    oc = ObjectContainer(title1=title1, no_cache=True, no_history=True, header=decode_message(message) if message else None)
+def mergedItemsMenu(title, itemGetter):
+    oc = ObjectContainer(title1=title, no_cache=True, no_history=True)
     items = itemGetter()
 
     for kind, title, item in items:
-	menu_title = pad_title(title)
+	menu_title = title
 	oc.add(DirectoryObject(
-    	    key=Callback(RefreshItemMenu, title=menu_title, rating_key=item.rating_key, came_from=forward_came_from),
+    	    key=Callback(RefreshItemMenu, title=menu_title, rating_key=item.rating_key),
     	    title=menu_title
 	))
 
@@ -67,11 +73,11 @@ def mergedItemsMenu(title1, itemGetter, forward_came_from=None, message=None):
 def RefreshItemMenu(rating_key, title=None, came_from="/recent"):
     oc = ObjectContainer(title1=title, no_cache=True, no_history=True)
     oc.add(DirectoryObject(
-    	key=Callback(RefreshItem, rating_key=rating_key, came_from=came_from),
+    	key=Callback(RefreshItem, rating_key=rating_key),
     	title=u"Refresh: %s" % title
     ))
     oc.add(DirectoryObject(
-    	key=Callback(RefreshItem, rating_key=rating_key, came_from=came_from, force=True),
+    	key=Callback(RefreshItem, rating_key=rating_key),
     	title=u"Force-Refresh: %s" % title
     ))
 
@@ -82,12 +88,12 @@ def RefreshItemMenu(rating_key, title=None, came_from="/recent"):
 def RefreshItem(rating_key=None, came_from="/recent", force=False):
     assert rating_key
     Thread.Create(refreshItem, rating_key=rating_key, force=force)
-    return Redirect(encode_message(PREFIX + came_from, "%s of item %s triggered" % ("Refresh" if not force else "Forced-refresh", rating_key)))
+    return ObjectContainer(message="%s of item %s triggered" % ("Refresh" if not force else "Forced-refresh", rating_key))
 
 @route(PREFIX + '/missing/refresh')
 def RefreshMissing():
     Thread.CreateTimer(1.0, searchAllRecentlyAddedMissing)
-    return Redirect(encode_message(PREFIX, "Refresh of recently added items with missing subtitles triggered"))
+    return ObjectContainer(message="Refresh of recently added items with missing subtitles triggered")
 
 @route(PREFIX + '/advanced')
 def AdvancedMenu():
@@ -116,7 +122,7 @@ def ValidatePrefs():
 @route(PREFIX + '/advanced/restart/trigger')
 def TriggerRestart():
     Thread.CreateTimer(1.0, Restart)
-    return Redirect(encode_message(PREFIX, "Restart triggered, please wait about 5 seconds"))
+    return ObjectContainer(message="Restart triggered, please wait about 5 seconds")
 
 @route(PREFIX + '/advanced/restart/execute')
 def Restart():
@@ -133,9 +139,9 @@ def ResetStorage(key, sure=False):
 	return oc
 
     resetStorage(key)
-    return MessageContainer(
-        'Success',
-        'Subtitle Information Storage reset'
+    return ObjectContainer(
+        header='Success',
+        message='Subtitle Information Storage reset'
     )
 
 @route(PREFIX + '/refresh_token')
@@ -146,4 +152,4 @@ def RefreshToken():
     else:
 	msg = "Couldn't refresh the token, please check your credentials"
     
-    return Redirect(encode_message(PREFIX, msg))
+    return ObjectContainer(message=msg)

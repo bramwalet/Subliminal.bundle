@@ -23,6 +23,9 @@ sys.modules["support.missing_subtitles"] = missing_subtitles
 import background
 sys.modules["support.background"] = background
 
+import tasks
+sys.modules["support.tasks"] = tasks
+
 import storage
 sys.modules["support.storage"] = storage
 
