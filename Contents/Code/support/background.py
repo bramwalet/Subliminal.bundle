@@ -63,7 +63,7 @@ class DefaultScheduler(object):
 		now = datetime.datetime.now()
 
 		if name not in Dict["tasks"]:
-		    Dict["tasks"][name] = {"last_run": now, "running": False}
+		    Dict["tasks"][name] = {"last_run": None, "running": False}
 		    Dict.Save()
 		    continue
 
