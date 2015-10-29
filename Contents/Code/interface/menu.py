@@ -29,7 +29,7 @@ def fatality():
     ))
     oc.add(DirectoryObject(
         key=Callback(RecentlyAddedMenu),
-        title="Subtitles for 'Recently Added' items (max-age: %s)" %  % Prefs["scheduler.item_is_recent_age"],
+        title="Subtitles for 'Recently Added' items (max-age: %s)" % Prefs["scheduler.item_is_recent_age"],
 	summary="Shows the recently added items, honoring the configured 'Item age to be considered recent'-setting (%s) and allowing you to individually (force-) refresh their metadata/subtitles." % Prefs["scheduler.item_is_recent_age"]
     ))
     oc.add(DirectoryObject(
