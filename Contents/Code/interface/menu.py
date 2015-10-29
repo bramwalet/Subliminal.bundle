@@ -24,18 +24,18 @@ def fatality():
     oc = ObjectContainer(no_cache=True, no_history=True)
     oc.add(DirectoryObject(
         key=Callback(OnDeckMenu),
-        title="Items On Deck",
-	summary="Shows the current on deck items"
+        title="Subtitles for 'On Deck' items",
+	summary="Shows the current on deck items and allows you to individually (force-) refresh their metadata/subtitles."
     ))
     oc.add(DirectoryObject(
         key=Callback(RecentlyAddedMenu),
-        title="Recently Added Items",
-	summary="Shows the recently added items, honoring the configured 'Item age to be considered recent'-setting (%s)" % Prefs["scheduler.item_is_recent_age"]
+        title="Subtitles for 'Recently Added' items (max-age: %s)" %  % Prefs["scheduler.item_is_recent_age"],
+	summary="Shows the recently added items, honoring the configured 'Item age to be considered recent'-setting (%s) and allowing you to individually (force-) refresh their metadata/subtitles." % Prefs["scheduler.item_is_recent_age"]
     ))
     oc.add(DirectoryObject(
         key=Callback(RefreshMissing),
-        title="Refresh items with missing subtitles (max-age: %s)" % Prefs["scheduler.item_is_recent_age"],
-	summary="Last scheduler run: %s; Next scheduled run: %s" % (scheduler.last_run("searchAllRecentlyAddedMissing") or "never", scheduler.next_run("searchAllRecentlyAddedMissing") or "never")
+        title="Refresh all (recently added) items with missing subtitles (max-age: %s)" % Prefs["scheduler.item_is_recent_age"],
+	summary="Automatically run periodically by the scheduler, if configured. Last scheduler run: %s; Next scheduled run: %s" % (scheduler.last_run("searchAllRecentlyAddedMissing") or "never", scheduler.next_run("searchAllRecentlyAddedMissing") or "never")
     ))
     oc.add(DirectoryObject(
         key=Callback(AdvancedMenu),
