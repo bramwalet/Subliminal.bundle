@@ -2,6 +2,7 @@
 
 import datetime
 import logging
+import traceback
 
 import tasks
 
@@ -75,10 +76,14 @@ class DefaultScheduler(object):
 
 		if task_state["last_run"] + datetime.timedelta(**{frequency_key: frequency_num}) <= now:
 		    task_state["running"] = True
-		    info["task"]()
-		    task_state["last_run"] = now
-		    task_state["running"] = False
-		    Dict.Save()
+		    try:
+		    	info["task"]()
+		    except Exception, e:
+		    	Log.Error("Something went wrong when running %s: %s", name, traceback.format_exc())
+		    finally:
+		    	task_state["last_run"] = now
+		    	task_state["running"] = False
+		    	Dict.Save()
 		    
 	    Thread.Sleep(10.0)
 
