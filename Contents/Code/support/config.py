@@ -7,7 +7,7 @@ from babelfish import Language
 from subzero.lib.io import FileIO
 from subzero.constants import PLUGIN_NAME
 from auth import refresh_plex_token
-from plex import Plex as Plex_
+from plex import Plex
 
 SUBTITLE_EXTS     = ['utf','utf8','utf-8','srt','smi','rt','ssa','aqt','jss','ass','idx','sub','txt', 'psb']
 VIDEO_EXTS        = ['3g2', '3gp', 'asf', 'asx', 'avc', 'avi', 'avs', 'bivx', 'bup', 'divx', 'dv', 'dvr-ms', 'evo', 'fli', 'flv',
@@ -15,8 +15,6 @@ VIDEO_EXTS        = ['3g2', '3gp', 'asf', 'asx', 'avc', 'avi', 'avs', 'bivx', 'b
             	 'pva', 'qt', 'rm', 'rmvb', 'sdp', 'svq3', 'strm', 'ts', 'ty', 'vdr', 'viv', 'vob', 'vp3', 'wmv', 'wpl', 'wtv', 'xsp', 'xvid', 'webm']
 
 VERSION_RE = re.compile(ur'CFBundleVersion.+?<string>([0-9\.]+)</string>', re.DOTALL)
-
-Plex = None
 
 class Config(object):
     version = None
@@ -45,10 +43,9 @@ class Config(object):
 	if not "token" in Dict:
 	    refresh_plex_token()
 	
-	# initialize Plex api; hacky, meh
-	conf = Plex_.configuration.authentication(Dict["token"] if "token" in Dict else None)
-	Plex_.configuration.stack.append(conf)
-	self.Plex = Plex_
+	# initialize Plex api
+	Plex.configuration.defaults.authentication(Dict["token"] if "token" in Dict else None)
+	self.Plex = Plex
 
     def getVersion(self):
 	curDir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
