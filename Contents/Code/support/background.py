@@ -64,6 +64,7 @@ class DefaultScheduler(object):
 
 		if name not in Dict["tasks"]:
 		    Dict["tasks"][name] = {"last_run": now, "running": False}
+		    Dict.Save()
 		    continue
 
 		task_state = Dict["tasks"][name]
