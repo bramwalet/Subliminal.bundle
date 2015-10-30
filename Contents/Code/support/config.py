@@ -7,7 +7,7 @@ from babelfish import Language
 from subzero.lib.io import FileIO
 from subzero.constants import PLUGIN_NAME
 from auth import refresh_plex_token
-from plex import Plex
+from lib import configure_plex
 
 SUBTITLE_EXTS     = ['utf','utf8','utf-8','srt','smi','rt','ssa','aqt','jss','ass','idx','sub','txt', 'psb']
 VIDEO_EXTS        = ['3g2', '3gp', 'asf', 'asx', 'avc', 'avi', 'avs', 'bivx', 'bup', 'divx', 'dv', 'dvr-ms', 'evo', 'fli', 'flv',
@@ -39,13 +39,7 @@ class Config(object):
 	self.scheduler_series_blacklist = self.getBlacklist("scheduler.series_blacklist")
 	self.scheduler_item_blacklist = self.getBlacklist("scheduler.item_blacklist")
 	self.initialized = True
-	
-	if not "token" in Dict:
-	    refresh_plex_token()
-	
-	# initialize Plex api
-	Plex.configuration.defaults.authentication(Dict["token"] if "token" in Dict else None)
-	self.Plex = Plex
+	configure_plex()
 
     def getVersion(self):
 	curDir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))

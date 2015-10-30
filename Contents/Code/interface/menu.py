@@ -9,6 +9,7 @@ from support.storage import resetStorage
 from support.items import getRecentlyAddedItems, getOnDeckItems, refreshItem
 from support.missing_subtitles import searchAllRecentlyAddedMissing
 from support.background import scheduler
+from support.lib import Plex
 
 # init GUI
 ObjectContainer.title1 = TITLE
@@ -128,7 +129,7 @@ def TriggerRestart():
 
 @route(PREFIX + '/advanced/restart/execute')
 def Restart():
-    config.Plex[":/plugins"].restart(PLUGIN_IDENTIFIER)
+    Plex[":/plugins"].restart(PLUGIN_IDENTIFIER)
 
 @route(PREFIX + '/storage/reset', sure=bool)
 def ResetStorage(key, sure=False):

@@ -8,6 +8,9 @@ sys.modules["support.config"] = config
 import helpers
 sys.modules["support.helpers"] = helpers
 
+import lib
+sys.modules["support.lib"] = lib
+
 import localmedia
 sys.modules["subzero.localmedia"] = localmedia
 
