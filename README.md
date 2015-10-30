@@ -1,4 +1,4 @@
-Sub-Zero for Plex, 1.3.0.232
+Sub-Zero for Plex, 1.3.0.245
 =================
 
 ![logo](https://raw.githubusercontent.com/pannal/Sub-Zero/master/Contents/Resources/subzero.gif)
@@ -29,6 +29,13 @@ Use the following agent order:
 * **Remember: before you open a bug-ticket please double-check, that you've deleted the Sub-Zero.bundle folder BEFORE every update** (to avoid .pyc leftovers)
 
 ## Changelog
+1.3.0.245
+- add the option to buy me a beer
+- clarify menu items
+- more robust scheduler handling (should fix the issues of scheduler runs in the past)
+- internal cleanups
+- add date_added to stored subtitle info
+
 1.3.0.232
 - integrate plex.tv authentication for plex home users (test phase)
 - menu cleanup
