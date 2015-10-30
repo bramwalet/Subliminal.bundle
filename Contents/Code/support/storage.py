@@ -28,7 +28,7 @@ def storeSubtitleInfo(videos, subtitles, storage_type):
 		part_dict[lang] = {}
 	    lang_dict = part_dict[lang]
 	    sub_key = (subtitle.provider_name, subtitle.id)
-	    lang_dict[sub_key] = (subtitle.score, subtitle.page_link, storage_type, Hash.MD5(subtitle.content))
+	    lang_dict[sub_key] = dict(score=subtitle.score, link=subtitle.page_link, storage=storage_type, hash=Hash.MD5(subtitle.content), date_added=datetime.datetime.now())
 
     Dict.Save()
 
