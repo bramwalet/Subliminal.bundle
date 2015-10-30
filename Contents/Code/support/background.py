@@ -21,6 +21,15 @@ class DefaultScheduler(object):
 	self.tasks = {}
 	if not "tasks" in Dict:
 	    Dict["tasks"] = {}
+
+	# reset tasks' running state in case anything went wrong before, or we're dealing with an old version
+	try:
+	    for task, info in Dict["tasks"].iteritems():
+		info["running"] = False
+	except:
+	    Dict["tasks"] = {}
+	Dict.Save()
+
 	self.discover_tasks()
 
     def discover_tasks(self):
@@ -50,15 +59,16 @@ class DefaultScheduler(object):
 	    return None
 	last = self.last_run(task)
 	use_date = last
+	now = datetime.datetime.now()
 	if not use_date:
-	    use_date = datetime.datetime.now()
-	return use_date + datetime.timedelta(**{frequency_key: frequency_num})
+	    use_date = now
+	return max(use_date + datetime.timedelta(**{frequency_key: frequency_num}), now)
 
     def worker(self):
 	while 1:
 	    if not self.running:
 		break
-	    #Log.Debug("working %s", Prefs)
+
 	    for name, info in self.tasks.iteritems():
 		now = datetime.datetime.now()
 
@@ -68,14 +78,15 @@ class DefaultScheduler(object):
 		    continue
 
 		task_state = Dict["tasks"][name]
-		if task_state["running"]:
+		last_run, task_running = task_state["last_run"], task_state["running"]
+		if task_running:
 		    continue
 		
 		frequency_num, frequency_key = info["frequency"]
 		if not frequency_num:
 		    continue
 
-		if task_state["last_run"] + datetime.timedelta(**{frequency_key: frequency_num}) <= now:
+		if not last_run or last_run + datetime.timedelta(**{frequency_key: frequency_num}) <= now:
 		    task_state["running"] = True
 		    try:
 		    	info["task"]()

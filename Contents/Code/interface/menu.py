@@ -35,7 +35,7 @@ def fatality():
     ))
     oc.add(DirectoryObject(
         key=Callback(RefreshMissing),
-        title="Refresh all (recently added) items with missing subtitles (max-age: %s)" % Prefs["scheduler.item_is_recent_age"],
+        title="Search for missing subtitles (in recently-added items, max-age: %s)" % Prefs["scheduler.item_is_recent_age"],
 	summary="Automatically run periodically by the scheduler, if configured. Last scheduler run: %s; Next scheduled run: %s" % (scheduler.last_run("searchAllRecentlyAddedMissing") or "never", scheduler.next_run("searchAllRecentlyAddedMissing") or "never")
     ))
     oc.add(DirectoryObject(
@@ -50,6 +50,7 @@ def fatality():
 
 @route(PREFIX + '/on_deck')
 def OnDeckMenu(message=None):
+    print Plex.configuration.defaults.data
     return mergedItemsMenu(title="Items On Deck", itemGetter=getOnDeckItems)
 
 @route(PREFIX + '/recent')
@@ -110,6 +111,10 @@ def AdvancedMenu():
         title=pad_title("Re-request the API token from plex.tv")
     ))
     oc.add(DirectoryObject(
+        key=Callback(ResetStorage, key="tasks"),
+        title=pad_title("Reset the plugin's scheduled tasks state storage")
+    ))
+    oc.add(DirectoryObject(
         key=Callback(ResetStorage, key="subs"),
         title=pad_title("Reset the plugin's internal subtitle information storage")
     ))
@@ -137,7 +142,7 @@ def ResetStorage(key, sure=False):
 	oc = ObjectContainer(no_history=True, title1="Reset subtitle storage", title2="Are you sure?")
 	oc.add(DirectoryObject(
 	    key=Callback(ResetStorage, key=key, sure=True),
-	    title=pad_title("Are you really sure? The internal subtitle storage is very useful!")
+	    title=pad_title("Are you really sure?")
 	))
 	return oc
 
