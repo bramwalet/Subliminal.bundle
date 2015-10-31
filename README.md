@@ -1,4 +1,4 @@
-Sub-Zero for Plex, 1.3.0.256
+Sub-Zero for Plex, 1.3.0.259
 =================
 
 ![logo](https://raw.githubusercontent.com/pannal/Sub-Zero/master/Contents/Resources/subzero.gif)
@@ -30,6 +30,9 @@ Use the following agent order:
 * **Remember: before you open a bug-ticket please double-check, that you've deleted the Sub-Zero.bundle folder BEFORE every update** (to avoid .pyc leftovers)
 
 ## Changelog
+1.3.0.259
+- forgot locale-data
+
 1.3.0.256
 - fix force-refresh single items to actually force-refresh
 - re-add babel library
