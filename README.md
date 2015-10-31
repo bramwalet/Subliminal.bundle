@@ -15,6 +15,7 @@ If you like this, buy me a beer: [![Donate](https://www.paypalobjects.com/en_US/
 * ```rm -r Sub-Zero.bundle```
 * get the release you want from *https://github.com/pannal/Sub-Zero/releases/*
 * unzip the release
+* restart your plex media server!!!
 * more indepth: see [article](https://support.plex.tv/hc/en-us/articles/201187656-How-do-I-manually-install-a-channel-) on Plex website. 
 
 ### Usage
