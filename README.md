@@ -34,7 +34,7 @@ Use the following agent order:
 - clarify menu items
 - more robust scheduler handling (should fix the issues of scheduler runs in the past)
 - internal cleanups
-- add date_added to stored subtitle info
+- add date_added to stored subtitle info (all of the 1.3.0 testers: please delete your internal subtitle storage using the channel->advanced menu)
 
 1.3.0.232
 - integrate plex.tv authentication for plex home users (test phase)
