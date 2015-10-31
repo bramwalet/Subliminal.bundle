@@ -1,4 +1,4 @@
-Sub-Zero for Plex, 1.3.0.245
+Sub-Zero for Plex, 1.3.0.253
 =================
 
 ![logo](https://raw.githubusercontent.com/pannal/Sub-Zero/master/Contents/Resources/subzero.gif)
@@ -29,6 +29,16 @@ Use the following agent order:
 * **Remember: before you open a bug-ticket please double-check, that you've deleted the Sub-Zero.bundle folder BEFORE every update** (to avoid .pyc leftovers)
 
 ## Changelog
+1.3.0.253
+- rewrote background tasks subsystem
+- keep track of the status of a task and its runtime
+- add task state in channel menu to "Search for missing subtitles"
+- add date/time localization to channel menu
+- hide plex token from logs, when requesting
+- fix addic7ed show id parsing for shows with year set
+- test PMS API connectivity and fail miserably if needed (channel disabled, scheduler disabled)
+- feature-freeze for 1.3.0 final
+
 1.3.0.245
 - add the option to buy me a beer
 - clarify menu items
