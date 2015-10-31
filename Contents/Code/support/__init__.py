@@ -11,6 +11,9 @@ sys.modules["support.helpers"] = helpers
 import lib
 sys.modules["support.lib"] = lib
 
+import localization
+sys.modules["support.localization"] = localization
+
 import localmedia
 sys.modules["subzero.localmedia"] = localmedia
 

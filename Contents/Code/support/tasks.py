@@ -11,7 +11,11 @@ class Task(object):
 
     stored_attributes = ("last_run", "running", "last_run_time")
 
+    # task ready for being status-displayed?
+    ready_for_display = False
+
     def __init__(self, scheduler):
+	self.ready_for_display = False
 	self.scheduler = scheduler
 
     def __getattribute__(self, name):
@@ -43,6 +47,7 @@ class SearchAllRecentlyAddedMissing(Task):
     items_done = None
     items_searching = None
     percentage = 0
+    
 
     def signal(self, signal_name, *args, **kwargs):
 	if signal_name == "updated_metadata":
@@ -54,6 +59,8 @@ class SearchAllRecentlyAddedMissing(Task):
 	missing = getAllRecentlyAddedMissing()
 	ids = set([id for id, title in missing])
 	self.items_searching = ids
+	self.ready_for_display = True
+
 	missing_count = len(ids)
 	
 	# dispatch all searches
@@ -69,6 +76,7 @@ class SearchAllRecentlyAddedMissing(Task):
 
 	self.last_run_time = datetime.datetime.now() - time_start
 	self.percentage = 0
+	self.ready_for_display = False
 
 
 scheduler.register(SearchAllRecentlyAddedMissing)

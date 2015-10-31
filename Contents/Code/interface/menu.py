@@ -1,5 +1,6 @@
 # coding=utf-8
 
+from babel.dates import format_datetime, format_time, format_timedelta
 from subzero import intent
 from subzero.constants import TITLE, ART, ICON, PREFIX, PLUGIN_IDENTIFIER
 from support.config import config
@@ -10,6 +11,7 @@ from support.items import getRecentlyAddedItems, getOnDeckItems, refreshItem
 from support.missing_subtitles import getAllRecentlyAddedMissing, searchMissing
 from support.background import scheduler
 from support.lib import Plex
+from support.localization import initialize_locale
 
 # init GUI
 ObjectContainer.title1 = TITLE
@@ -33,10 +35,21 @@ def fatality():
         title="Subtitles for 'Recently Added' items (max-age: %s)" % Prefs["scheduler.item_is_recent_age"],
 	summary="Shows the recently added items, honoring the configured 'Item age to be considered recent'-setting (%s) and allowing you to individually (force-) refresh their metadata/subtitles." % Prefs["scheduler.item_is_recent_age"]
     ))
+
+    task_name = "searchAllRecentlyAddedMissing"
+    task = scheduler.task(task_name)
+    locale = initialize_locale()
+
+    if task.ready_for_display:
+	task_state = "Running: %s/%s (%s%%)" % (len(task.items_done), len(task.items_searching), task.percentage)
+    else:
+	task_state = "Last scheduler run: %s; Next scheduled run: %s; Last runtime: %s" % (format_datetime(scheduler.last_run(task_name), locale=locale) or "never",
+											   format_datetime(scheduler.next_run(task_name), locale=locale) or "never", format_timedelta(task.last_run_time, locale=locale))
+
     oc.add(DirectoryObject(
         key=Callback(RefreshMissing),
         title="Search for missing subtitles (in recently-added items, max-age: %s)" % Prefs["scheduler.item_is_recent_age"],
-	summary="Automatically run periodically by the scheduler, if configured. Last scheduler run: %s; Next scheduled run: %s" % (scheduler.last_run("searchAllRecentlyAddedMissing") or "never", scheduler.next_run("searchAllRecentlyAddedMissing") or "never")
+	summary="Automatically run periodically by the scheduler, if configured. %s" % task_state
     ))
     oc.add(DirectoryObject(
         key=Callback(AdvancedMenu),

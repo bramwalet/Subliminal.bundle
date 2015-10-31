@@ -49,6 +49,11 @@ class DefaultScheduler(object):
     def stop(self):
 	self.running = False
 
+    def task(self, name):
+	if name not in self.tasks:
+	    return None
+	return self.tasks[name]["task"]
+
     def last_run(self, task):
 	if task not in self.tasks:
 	    return None
