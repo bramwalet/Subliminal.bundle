@@ -26,8 +26,8 @@ def fatality():
 
     if not config.plex_api_working:
 	oc.add(DirectoryObject(
-	    key="blerp",
-    	    title="ERROR ACCESSING PMS API",
+	    key=Callback(fatality),
+    	    title="PMS API ERROR",
 	    summary=lib_unaccessible_error
         ))
 	return oc
