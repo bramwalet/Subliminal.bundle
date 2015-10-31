@@ -101,7 +101,7 @@ def RefreshItemMenu(rating_key, title=None, came_from="/recent"):
 	summary="Refreshes the item, possibly picking up new subtitles on disk"
     ))
     oc.add(DirectoryObject(
-    	key=Callback(RefreshItem, rating_key=rating_key),
+    	key=Callback(RefreshItem, rating_key=rating_key, force=True),
     	title=u"Force-Refresh: %s" % title,
 	summary="Issues a forced refresh, ignoring known subtitles and searching for new ones"
     ))
