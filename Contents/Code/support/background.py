@@ -4,9 +4,6 @@ import datetime
 import logging
 import traceback
 
-import tasks
-
-
 def parse_frequency(s):
     if s == "never":
 	return None, None
@@ -14,9 +11,14 @@ def parse_frequency(s):
     return int(num), unit
 
 class DefaultScheduler(object):
+    thread = None
+    running = False
+    registry = None
+
     def __init__(self):
 	self.thread = None
 	self.running = False
+	self.registry = []
 
 	self.tasks = {}
 	if not "tasks" in Dict:
@@ -30,16 +32,17 @@ class DefaultScheduler(object):
 	    Dict["tasks"] = {}
 	Dict.Save()
 
-	self.discover_tasks()
+    def register(self, task):
+	self.registry.append(task)
 
-    def discover_tasks(self):
+    def setup_tasks(self):
 	# discover tasks; todo: add registry
-	for item in dir(tasks):
-	    if item.startswith("task_"):
-		task_name = item.split("task_")[1]
-		self.tasks[task_name] = {"task": getattr(tasks, item), "frequency": parse_frequency(Prefs["scheduler.tasks.%s" % task_name])}
+	for cls in self.registry:
+	    task = cls(self)
+	    self.tasks[task.name] = {"task": task, "frequency": parse_frequency(Prefs["scheduler.tasks.%s" % task.name])}
 
     def run(self):
+	self.setup_tasks()
 	self.running = True
 	self.thread = Thread.Create(self.worker)
 
@@ -47,9 +50,9 @@ class DefaultScheduler(object):
 	self.running = False
 
     def last_run(self, task):
-	if task not in Dict["tasks"]:
+	if task not in self.tasks:
 	    return None
-	return Dict["tasks"][task]["last_run"]
+	return self.tasks[task]["task"].last_run
 
     def next_run(self, task):
 	if task not in self.tasks:
@@ -57,12 +60,29 @@ class DefaultScheduler(object):
 	frequency_num, frequency_key = self.tasks[task]["frequency"]
 	if not frequency_num:
 	    return None
-	last = self.last_run(task)
+	last = self.tasks[task]["task"].last_run
 	use_date = last
 	now = datetime.datetime.now()
 	if not use_date:
 	    use_date = now
 	return max(use_date + datetime.timedelta(**{frequency_key: frequency_num}), now)
+
+    def run_task(self, name):
+	task = self.tasks[name]["task"]
+	task.running = True
+	try:
+	    task.run()
+	except Exception, e:
+	    Log.Error("Something went wrong when running %s: %s", name, traceback.format_exc())
+	finally:
+	    task.last_run = datetime.datetime.now()
+	    task.running = False
+
+    def signal(self, name, *args, **kwargs):
+	for task_name, info in self.tasks.iteritems():
+	    task = info["task"]
+	    if task.running:
+		task.signal(name, *args, **kwargs)
 
     def worker(self):
 	while 1:
@@ -71,31 +91,22 @@ class DefaultScheduler(object):
 
 	    for name, info in self.tasks.iteritems():
 		now = datetime.datetime.now()
+		task = info["task"]
 
 		if name not in Dict["tasks"]:
 		    Dict["tasks"][name] = {"last_run": None, "running": False}
 		    Dict.Save()
 		    continue
 
-		task_state = Dict["tasks"][name]
-		last_run, task_running = task_state["last_run"], task_state["running"]
-		if task_running:
+		if task.running:
 		    continue
 		
 		frequency_num, frequency_key = info["frequency"]
 		if not frequency_num:
 		    continue
 
-		if not last_run or last_run + datetime.timedelta(**{frequency_key: frequency_num}) <= now:
-		    task_state["running"] = True
-		    try:
-		    	info["task"]()
-		    except Exception, e:
-		    	Log.Error("Something went wrong when running %s: %s", name, traceback.format_exc())
-		    finally:
-		    	task_state["last_run"] = now
-		    	task_state["running"] = False
-		    	Dict.Save()
+		if not task.last_run or task.last_run + datetime.timedelta(**{frequency_key: frequency_num}) <= now:
+		    self.run_task(name)
 		    
 	    Thread.Sleep(10.0)
 

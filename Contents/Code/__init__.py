@@ -199,6 +199,10 @@ class SubZeroAgent(object):
 
 	updateLocalMedia(media, media_type=self.agent_type)
 
+	# notify any running tasks about our finished update
+	for video in videos.keys():
+	    scheduler.signal("updated_metadata", video.id)
+
     def update_movies(self, metadata, media, lang):
         videos = scanMovieMedia(media)
         subtitles = downloadBestSubtitles(videos, min_score=int(Prefs["subtitles.search.minimumMovieScore"]))

@@ -7,7 +7,7 @@ from support.helpers import pad_title, encode_message, decode_message
 from support.auth import refresh_plex_token
 from support.storage import resetStorage
 from support.items import getRecentlyAddedItems, getOnDeckItems, refreshItem
-from support.missing_subtitles import searchAllRecentlyAddedMissing
+from support.missing_subtitles import getAllRecentlyAddedMissing, searchMissing
 from support.background import scheduler
 from support.lib import Plex
 
@@ -95,7 +95,7 @@ def RefreshItem(rating_key=None, came_from="/recent", force=False):
 
 @route(PREFIX + '/missing/refresh')
 def RefreshMissing():
-    Thread.CreateTimer(1.0, searchAllRecentlyAddedMissing)
+    Thread.CreateTimer(1.0, lambda: scheduler.run_task("searchAllRecentlyAddedMissing"))
     return ObjectContainer(message="Refresh of recently added items with missing subtitles triggered")
 
 @route(PREFIX + '/advanced')
@@ -124,7 +124,7 @@ def AdvancedMenu():
 def ValidatePrefs():
     Log.Debug("Validate Prefs called.")
     config.initialize()
-    scheduler.discover_tasks()
+    scheduler.setup_tasks()
     return
 
 @route(PREFIX + '/advanced/restart/trigger')

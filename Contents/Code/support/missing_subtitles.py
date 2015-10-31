@@ -8,7 +8,7 @@ from support.config import config
 from support.helpers import format_video
 from lib import Plex
 
-def itemSearchMissing(rating_key, kind="episode", internal=False, external=True, languages=[], section_blacklist=[], series_blacklist=[], item_blacklist=[], dry_run=False):
+def itemDiscoverMissing(rating_key, kind="episode", internal=False, external=True, languages=[], section_blacklist=[], series_blacklist=[], item_blacklist=[]):
     existing_subs = {"internal": [], "external": [], "count": 0}
 
     item_id = int(rating_key)
@@ -58,14 +58,13 @@ def itemSearchMissing(rating_key, kind="episode", internal=False, external=True,
         Log.Info(u"Subs still missing for '%s': %s", item_title, missing)
 
     if missing:
-        Log.Info("Triggering refresh for '%s'", item_title)
-        if not dry_run:
-            Plex["library/metadata"].refresh(item_id)
+	return item_id, item_title
 
-def searchAllRecentlyAddedMissing():
+def getAllRecentlyAddedMissing():
     items = getRecentlyAddedItems()
+    missing = []
     for kind, title, item in items:
-	itemSearchMissing(
+	state = itemDiscoverMissing(
 			    item.rating_key, 
 			    kind=kind,
 			    languages=config.langList, 
@@ -75,3 +74,12 @@ def searchAllRecentlyAddedMissing():
 			    series_blacklist=config.scheduler_series_blacklist, 
 			    item_blacklist=config.scheduler_item_blacklist
 			)
+	if state:
+	    # (item_id, title)
+	    missing.append(state)
+    return missing
+
+def searchMissing(items):
+    for item, title in items:
+	Log.Info("Triggering refresh for '%s'", title)
+	Plex["library/metadata"].refresh(item)
