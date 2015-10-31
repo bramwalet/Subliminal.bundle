@@ -17,6 +17,7 @@ import interface
 from subzero.constants import OS_PLEX_USERAGENT, DEPENDENCY_MODULE_NAMES, PERSONAL_MEDIA_IDENTIFIER, PLUGIN_IDENTIFIER_SHORT,\
      PLUGIN_IDENTIFIER, PLUGIN_NAME, PREFIX
 from subzero import intent
+from support.lib import lib_unaccessible_error
 from support.background import scheduler
 
 from interface.menu import fatality as MainMenu, ValidatePrefs
@@ -37,6 +38,10 @@ def Start():
     # init defaults; perhaps not the best idea to use ValidatePrefs here, but we'll see
     ValidatePrefs()
     Log.Debug(config.full_version)
+
+    if not config.plex_api_working:
+	Log.Error(lib_unaccessible_error)
+	return
 
     scheduler.run()
 

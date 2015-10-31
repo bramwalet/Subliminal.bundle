@@ -10,7 +10,7 @@ from support.storage import resetStorage
 from support.items import getRecentlyAddedItems, getOnDeckItems, refreshItem
 from support.missing_subtitles import getAllRecentlyAddedMissing, searchMissing
 from support.background import scheduler
-from support.lib import Plex
+from support.lib import Plex, lib_unaccessible_error
 from support.localization import initialize_locale
 
 # init GUI
@@ -25,6 +25,15 @@ def fatality():
     subzero main menu
     """
     oc = ObjectContainer(no_cache=True, no_history=True)
+
+    if not config.plex_api_working:
+	oc.add(DirectoryObject(
+	    key="blerp",
+    	    title="ERROR ACCESSING PMS API",
+	    summary=lib_unaccessible_error
+        ))
+	return oc
+
     oc.add(DirectoryObject(
         key=Callback(OnDeckMenu),
         title="Subtitles for 'On Deck' items",

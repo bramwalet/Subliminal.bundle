@@ -12,3 +12,4 @@ def configure_plex():
     # initialize Plex api
     Plex.configuration.defaults.authentication(Dict["token"] if "token" in Dict else None)
 
+lib_unaccessible_error = "\n\n\n!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!! \nCan't access your Plex Media Servers' API.\nAre you using Plex Home? Please configure your Plex.tv credentials! Advanced features disabled!\n\n\n"
