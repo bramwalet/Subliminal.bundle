@@ -1,6 +1,5 @@
 # coding=utf-8
 
-from babel.dates import format_datetime, format_time, format_timedelta
 from subzero import intent
 from subzero.constants import TITLE, ART, ICON, PREFIX, PLUGIN_IDENTIFIER
 from support.config import config
@@ -11,7 +10,6 @@ from support.items import getRecentlyAddedItems, getOnDeckItems, refreshItem
 from support.missing_subtitles import getAllRecentlyAddedMissing, searchMissing
 from support.background import scheduler
 from support.lib import Plex, lib_unaccessible_error
-from support.localization import initialize_locale
 
 # init GUI
 ObjectContainer.title1 = TITLE
@@ -47,13 +45,12 @@ def fatality():
 
     task_name = "searchAllRecentlyAddedMissing"
     task = scheduler.task(task_name)
-    locale = initialize_locale()
 
     if task.ready_for_display:
 	task_state = "Running: %s/%s (%s%%)" % (len(task.items_done), len(task.items_searching), task.percentage)
     else:
-	task_state = "Last scheduler run: %s; Next scheduled run: %s; Last runtime: %s" % (format_datetime(scheduler.last_run(task_name), locale=locale) or "never",
-											   format_datetime(scheduler.next_run(task_name), locale=locale) or "never", format_timedelta(task.last_run_time, locale=locale))
+	task_state = "Last scheduler run: %s; Next scheduled run: %s; Last runtime: %s" % (scheduler.last_run(task_name) or "never",
+											   scheduler.next_run(task_name) or "never", str(task.last_run_time).split(".")[0])
 
     oc.add(DirectoryObject(
         key=Callback(RefreshMissing),

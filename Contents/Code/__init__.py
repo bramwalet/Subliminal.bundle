@@ -24,7 +24,6 @@ from interface.menu import fatality as MainMenu, ValidatePrefs
 from support.subtitlehelpers import getSubtitlesFromMetadata
 from support.storage import storeSubtitleInfo
 from support.config import config
-from support.localization import initialize_locale
 
 
 def Start():
@@ -33,7 +32,6 @@ def Start():
     logger.registerLoggingHander(DEPENDENCY_MODULE_NAMES)
     # configured cache to be in memory as per https://github.com/Diaoul/subliminal/issues/303
     subliminal.region.configure('dogpile.cache.memory')
-    initialize_locale()
 
     # init defaults; perhaps not the best idea to use ValidatePrefs here, but we'll see
     ValidatePrefs()
