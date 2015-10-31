@@ -32,7 +32,9 @@ def refresh_plex_token():
 	try:
     	    data = JSON.ObjectFromString(request.content)
 	    token = data["user"]["authentication_token"]
-	    Log.Debug("Data returned from plex.tv: %s", data)
+	    log_data = data.copy()
+	    log_data["user"]["authentication_token"] = "xxxxxxxxxxxxxxxxxx"
+	    Log.Debug("Data returned from plex.tv: %s", log_data)
 	except:
 	    pass
 	if token:
