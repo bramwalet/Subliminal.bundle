@@ -1,6 +1,7 @@
 # coding=utf-8
 
 import datetime
+import time
 
 from missing_subtitles import getAllRecentlyAddedMissing, searchMissing
 from background import scheduler
@@ -72,7 +73,7 @@ class SearchAllRecentlyAddedMissing(Task):
 		Log.Debug("Task: %s, all items done", self.name)
 		break
 	    self.percentage = int(round(len(self.items_done) * 100 / missing_count))
-	    Thread.Sleep(2.0)
+	    time.sleep(0.1)
 
 	self.last_run_time = datetime.datetime.now() - time_start
 	self.percentage = 0
