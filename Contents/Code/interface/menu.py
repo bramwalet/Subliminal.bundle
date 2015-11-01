@@ -3,7 +3,7 @@
 from subzero import intent
 from subzero.constants import TITLE, ART, ICON, PREFIX, PLUGIN_IDENTIFIER
 from support.config import config
-from support.helpers import pad_title, encode_message, decode_message
+from support.helpers import pad_title, encode_message, decode_message, timestamp
 from support.auth import refresh_plex_token
 from support.storage import resetStorage
 from support.items import getRecentlyAddedItems, getOnDeckItems, refreshItem
@@ -18,7 +18,8 @@ ObjectContainer.no_history = True
 ObjectContainer.no_cache = True
 
 @handler(PREFIX, TITLE, art=ART, thumb=ICON)
-def fatality():
+@route(PREFIX)
+def fatality(randomize=None):
     """
     subzero main menu
     """
@@ -58,13 +59,17 @@ def fatality():
 	summary="Automatically run periodically by the scheduler, if configured. %s" % task_state
     ))
     oc.add(DirectoryObject(
+        key=Callback(fatality, randomize=timestamp()),
+        title="Refresh",
+	summary="Refreshes the current view"
+    ))
+    oc.add(DirectoryObject(
         key=Callback(AdvancedMenu),
         title="Advanced functions",
 	summary="Use at your own risk"
     ))
 
     return oc
-
 
 
 @route(PREFIX + '/on_deck')

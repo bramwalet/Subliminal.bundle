@@ -3,6 +3,7 @@
 import unicodedata
 import datetime
 import urllib
+import time
 
 # Unicode control characters can appear in ID3v2 tags but are not legal in XML.
 RE_UNICODE_CONTROL =  u'([\u0000-\u0008\u000b-\u000c\u000e-\u001f\ufffe-\uffff])' + \
@@ -85,3 +86,6 @@ def encode_message(base, s):
 
 def decode_message(s):
     return urllib.unquote_plus(s)
+
+def timestamp():
+    return int(time.time())
