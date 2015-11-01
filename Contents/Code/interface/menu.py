@@ -69,7 +69,6 @@ def fatality():
 
 @route(PREFIX + '/on_deck')
 def OnDeckMenu(message=None):
-    print Plex.configuration.defaults.data
     return mergedItemsMenu(title="Items On Deck", itemGetter=getOnDeckItems)
 
 @route(PREFIX + '/recent')
