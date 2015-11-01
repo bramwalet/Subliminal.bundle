@@ -196,17 +196,16 @@ class SubZeroAgent(object):
 
     def update(self, metadata, media, lang):
 	Log.Debug("Sub-Zero %s, %s update called" % (config.version, self.agent_type))
-	initSubliminalPatches()
 
 	try:
+	    initSubliminalPatches()
 	    videos, subtitles = getattr(self, "update_%s" % self.agent_type)(metadata, media, lang)
 
 	    if subtitles:
 		saveSubtitles(videos, subtitles)
 
 	    updateLocalMedia(media, media_type=self.agent_type)
-	except:
-	    raise
+
 	finally:
 	    # notify any running tasks about our finished update
 	    for video in videos.keys():
