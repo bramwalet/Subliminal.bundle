@@ -74,6 +74,10 @@ class DefaultScheduler(object):
 
     def run_task(self, name):
 	task = self.tasks[name]["task"]
+	if task.running:
+	    Log.Debug("Not running %s, as it's currently running." % name)
+	    return
+
 	task.running = True
 	try:
 	    task.run()
