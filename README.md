@@ -1,4 +1,4 @@
-Sub-Zero for Plex, 1.3.0.261
+Sub-Zero for Plex, 1.3.0.273
 =================
 
 ![logo](https://raw.githubusercontent.com/pannal/Sub-Zero/master/Contents/Resources/subzero.gif)
@@ -30,6 +30,13 @@ Use the following agent order:
 * **Remember: before you open a bug-ticket please double-check, that you've deleted the Sub-Zero.bundle folder BEFORE every update** (to avoid .pyc leftovers)
 
 ## Changelog
+1.3.0.273
+- more robust update functionality
+- menu: add refresh button to menu (to see the task state updating)
+- scheduler: actually skip a task if it's already running
+- scheduler: better behaviour when a task is running and a single item is refreshed at the same time
+- menu: enforce ascii on item titles
+
 1.3.0.261
 - removed localization again
 
