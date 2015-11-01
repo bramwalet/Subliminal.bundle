@@ -68,11 +68,11 @@ class SearchAllRecentlyAddedMissing(Task):
 	searchMissing(missing)
 
 	while 1:
-	    if ids == set(self.items_done):
+	    if set(self.items_done).intersection(ids) == ids:
 		Log.Debug("Task: %s, all items done", self.name)
 		break
 	    self.percentage = int(round(len(self.items_done) * 100 / missing_count))
-	    Thread.Sleep(1.0)
+	    Thread.Sleep(2.0)
 
 	self.last_run_time = datetime.datetime.now() - time_start
 	self.percentage = 0
