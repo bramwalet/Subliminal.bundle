@@ -98,7 +98,7 @@ def mergedItemsMenu(title, itemGetter):
 
 @route(PREFIX + '/item/{rating_key}/actions')
 def RefreshItemMenu(rating_key, title=None, came_from="/recent"):
-    oc = ObjectContainer(title1=title, no_cache=True, no_history=True)
+    oc = ObjectContainer(title2=title, no_cache=True, no_history=True)
     oc.add(DirectoryObject(
     	key=Callback(RefreshItem, rating_key=rating_key),
     	title=u"Refresh: %s" % title,

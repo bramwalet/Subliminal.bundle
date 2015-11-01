@@ -78,8 +78,8 @@ def pad_title(value):
 
 def format_video(item, kind, parent=None, parentTitle=None):
     if kind == "episode" and parent:
-	return u'%s S%02dE%02d' % (parentTitle or parent.show.title, parent.index, item.index)
-    return item.title
+	return unicode('%s S%02dE%02d' % (parentTitle or parent.show.title, parent.index, item.index)).encode("ascii", errors="ignore")
+    return unicode(item.title).encode("ascii", errors="ignore")
 
 def encode_message(base, s):
     return "%s?message=%s" % (base, urllib.quote_plus(s))
