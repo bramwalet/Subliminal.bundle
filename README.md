@@ -1,4 +1,4 @@
-Sub-Zero for Plex, 1.3.5.273
+Sub-Zero for Plex, 1.3.5.281
 =================
 
 ![logo](https://raw.githubusercontent.com/pannal/Sub-Zero/master/Contents/Resources/subzero.gif)
@@ -30,6 +30,9 @@ Use the following agent order:
 * **Remember: before you open a bug-ticket please double-check, that you've deleted the Sub-Zero.bundle folder BEFORE every update** (to avoid .pyc leftovers)
 
 ## Changelog
+1.3.5.281
+- fix tasks broken for 1.2 -> 1.3.5 upgraders
+
 1.3.5.273 (same build as Beta Release 1.3.0.273) - changes from previous stable 1.2.11.180
 - add a channel menu, making this plugin a hybrid (Agent+Channel)
 - add a generic background task scheduler
