@@ -90,12 +90,14 @@ Several options are provided in the preferences of this agent.
   * Items to ignore: item IDs ... see above
 
 
-Scheduler: ignore lists, what the heck?
+Scheduler
 ---------------------------------------
 
 ##### Ignore lists, what the heck?
 There are numerous occasions where one wouldn't want a certain item or even a library be included in the periodic "Search for missing subtitles"-task.
 Anime libraries are a good example of that, or home videos. Perhaps you've got your favourite series in your native language and don't want subtitles for it.
+
+Those ignore lists currently only accept numeric IDs. How you can obtain those is explained below.
 
 
 ##### How to obtain the IDs for the ignore lists
