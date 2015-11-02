@@ -18,10 +18,12 @@ class Task(object):
     def __init__(self, scheduler):
 	self.ready_for_display = False
 	self.scheduler = scheduler
+	if not self.name in Dict["tasks"]:
+	    Dict["tasks"][self.name] = {"last_run": None, "running": False, "last_run_time": None}
 
     def __getattribute__(self, name):
 	if name in object.__getattribute__(self, "stored_attributes"):
-	    return Dict["tasks"][self.name].get(name, None)
+	    return Dict["tasks"].get(self.name, {}).get(name, None)
 
 	return object.__getattribute__(self, name)
 
