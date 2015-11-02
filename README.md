@@ -104,9 +104,9 @@ Those ignore lists currently only accept numeric IDs. How you can obtain those i
 
 
 ##### How to obtain the IDs for the ignore lists
-Sections/Libraries: click on a library in PlexWeb and you'll see something like `/web/index.html#!/server/long_identifier_hash/section/3` - 3 is the library/section ID
-Series: click on a series in PlexWeb, take `25660` from `/web/index.html#!/server/long_identifier_hash/details/%2Flibrary%2Fmetadata%2F25660`
-Items (episodes/movies): click on an item in PlexWeb, take `25662` from `/web/index.html#!/server/long_identifier_hash/details/%2Flibrary%2Fmetadata%2F25662`
+* Sections/Libraries: click on a library in PlexWeb and you'll see something like this in your browser's address bar: `/web/index.html#!/server/long_identifier_hash/section/3` - `3` is the library/section ID
+* Series: click on a series in PlexWeb, take `25660` from `/web/index.html#!/server/long_identifier_hash/details/%2Flibrary%2Fmetadata%2F25660`
+* Items (episodes/movies): click on an item in PlexWeb, take `25662` from `/web/index.html#!/server/long_identifier_hash/details/%2Flibrary%2Fmetadata%2F25662`
 
 I will make this easier in future versions.
 
