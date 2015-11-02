@@ -43,7 +43,7 @@ Use the following agent order:
 - change the license to The Unlicense (while keeping the original MIT license from subliminal.bundle intact)
 - store subtitle information in internal plugin storage (for later usage)
 - many internal code improvements
-- updat documentation
+- update documentation
 
 [older changes](CHANGELOG.md)
 
