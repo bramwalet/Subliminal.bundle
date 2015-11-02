@@ -9,11 +9,11 @@
         <key>CFBundleInfoDictionaryVersion</key>
         <string>6.0</string>
         <key>CFBundleShortVersionString</key>
-        <string>1.2.11</string>
+        <string>1.3.5</string>
         <key>CFBundleSignature</key>
         <string>????</string>
         <key>CFBundleVersion</key>
-        <string>1.2.11.180</string>
+        <string>1.3.5.273</string>
         <key>PlexFrameworkVersion</key>
         <string>2</string>
         <key>PlexPluginClass</key>
@@ -32,9 +32,11 @@
 
 &lt;h1&gt;Sub-Zero for Plex&lt;/h1&gt;&lt;i&gt;Subtitles done right&lt;/i&gt;
 
-Version 1.2.11.180
+Version 1.3.5.273
 
 Originally based on @bramwalet's awesome &lt;a href=&quot;https://github.com/bramwalet/Subliminal.bundle&quot;&gt;Subliminal.bundle&lt;/a&gt;
+
+If you like this, buy me a beer: &lt;a href=&quot;https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;hosted_button_id=G9VKR2B8PMNKG&quot; target=&quot;_blank&quot; title=&quot;donate&quot;&gt;&lt;img src=&quot;https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif&quot; alt=&quot;donate&quot; title=&quot;donate&quot; /&gt;&lt;/a&gt;
 
 &lt;strong&gt;Need help?&lt;/strong&gt;
 Plex thread: &lt;a href=&quot;https://forums.plex.tv/discussion/186575&quot;>https://forums.plex.tv/discussion/186575&lt;/a&gt;

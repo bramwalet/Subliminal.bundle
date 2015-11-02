@@ -1,4 +1,4 @@
-Sub-Zero for Plex, 1.2.11.180
+Sub-Zero for Plex, 1.3.5.273
 =================
 
 ![logo](https://raw.githubusercontent.com/pannal/Sub-Zero/master/Contents/Resources/subzero.gif)
@@ -8,11 +8,14 @@ Originally based on @bramwalet's awesome [Subliminal.bundle](https://github.com/
 
 Plex forum thread: https://forums.plex.tv/discussion/186575
 
+If you like this, buy me a beer: [![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=G9VKR2B8PMNKG)
+
 ### Installation
 * go to ```Library/Application Support/Plex Media Server/Plug-ins/```
 * ```rm -r Sub-Zero.bundle```
 * get the release you want from *https://github.com/pannal/Sub-Zero/releases/*
 * unzip the release
+* restart your plex media server!!!
 * more indepth: see [article](https://support.plex.tv/hc/en-us/articles/201187656-How-do-I-manually-install-a-channel-) on Plex website. 
 
 ### Usage
@@ -27,12 +30,20 @@ Use the following agent order:
 * **Remember: before you open a bug-ticket please double-check, that you've deleted the Sub-Zero.bundle folder BEFORE every update** (to avoid .pyc leftovers)
 
 ## Changelog
-1.2.11.180
-- fix #49 (metadata storage didn't work)
-- add better detection for existing subtitles stored in metadata
-
-1.2.11.177
-- updated naming scheme to reflect rewrite.major.minor.build (this release is the same as 1.1.0.5)
+1.3.5.273 (same build as Beta Release 1.3.0.273) - changes from previous stable 1.2.11.180
+- add a channel menu, making this plugin a hybrid (Agent+Channel)
+- add a generic background task scheduler
+- add a task to search for subtitles for items with missing subtitles (manually triggered and automatic)
+- add artwork
+- add Plex.tv credentials/token-generation support (needed for Plex Home users for the API to work)
+- addic7ed: improve show name matching again
+- channel: able to browse current on-deck and recently-added items, and refresh or force-refresh (search for new subtitles) single items
+- add library/series/video blacklist for items which should be skipped in "Search for missing subtitles"-task
+- add donation links
+- change the license to The Unlicense (while keeping the original MIT license from subliminal.bundle intact)
+- store subtitle information in internal plugin storage (for later usage)
+- many internal code improvements
+- update documentation
 
 [older changes](CHANGELOG.md)
 
@@ -54,6 +65,7 @@ Configuration
 -------------
 Several options are provided in the preferences of this agent. 
 * Addic7ed username/password: Provide your addic7ed username here, otherwise the provider won't work. Please make sure your account is activated, before using the agent.
+* Plex.tv username/password: Generally recommended to be provided; needed if you use Plex Home to make the API work (the whole channel menu depends on it)
 * Subtitle language (1)/(2)/(3): Your preferred languages to download subtitles for. 
 * Additional Subtitle Languages: Additional languages to download; comma-separated; use [ISO-639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes))
 * Provider: Enable ...: Enable/disable this provider. Affects both movies and series. 
@@ -70,6 +82,34 @@ Several options are provided in the preferences of this agent.
 * Subtitle folder: (default: current media file's folder) See Store as metadata or on filesystem
 * Custom Subtitle folder: See Store as metadata or on filesystem 
 * Treat IETF language tags as ISO 639-1: Treats subtitle files with IETF language identifiers, such as pt-BR, as their ISO 639-1 counterpart. Thus "pt-BR" will be shown as "Portuguese" instead of "Unknown"
+* Scheduler: 
+  * Periodically search for recent items with missing subtitles: self-explanatory, executes the task "Search for missing subtitles" from the channel menu regularly. Configure how often it should do that. For the average library 6 hours minimum is recommended, to not hammer the providers too heavily
+  * Item age to be considered recent: The "Search for missing subtitles"-task only considers those items in the recently-added list, that are at most this old
+  * Sections to ignore: section/library IDs to be ignored in the "Search for missing subtitles"-task; numbers, comma-separated
+  * Series to ignore: series IDs to be ignored in the "Search for missing subtitles"-task; numbers; comma-separated
+  * Items to ignore: item IDs ... see above
+
+
+Scheduler
+---------------------------------------
+The built-in scheduler is capable of running a number of tasks periodically in a separate Thread of the plugin.
+This currently is used to automatically periodically search for new subtitles for your media items.
+See configuration above.
+
+##### Ignore lists, what the heck?
+There are numerous occasions where one wouldn't want a certain item or even a library be included in the periodic "Search for missing subtitles"-task.
+Anime libraries are a good example of that, or home videos. Perhaps you've got your favourite series in your native language and don't want subtitles for it.
+
+Those ignore lists currently only accept numeric IDs. How you can obtain those is explained below.
+
+
+##### How to obtain the IDs for the ignore lists
+* Sections/Libraries: click on a library in PlexWeb and you'll see something like this in your browser's address bar: `/web/index.html#!/server/long_identifier_hash/section/3` - `3` is the library/section ID
+* Series: click on a series in PlexWeb, take `25660` from `/web/index.html#!/server/long_identifier_hash/details/%2Flibrary%2Fmetadata%2F25660`
+* Items (episodes/movies): click on an item in PlexWeb, take `25662` from `/web/index.html#!/server/long_identifier_hash/details/%2Flibrary%2Fmetadata%2F25662`
+
+I will make this easier in future versions.
+
 
 Store as metadata or on filesystem
 ----------------------------------
@@ -82,7 +122,7 @@ The setting 'Subtitle folder' configures in which folder (current folder or othe
 
 License
 -------
-MIT
+The Unlicense
 
 Libraries
 ---------
@@ -102,3 +142,4 @@ Uses the following libraries and their LICENSE:
 - [xdg](https://pypi.python.org/pypi/pyxdg/) (LGPLv2)
 - [setuptools](https://pypi.python.org/pypi/setuptools/) (PSF ZPL)
 - [plexinc-agents/LocalMedia.bundle](https://github.com/plexinc-agents/LocalMedia.bundle) (Plex)
+- [fuzeman/plex.py](https://github.com/fuzeman/plex.py) (plex.py)

@@ -1,118 +1,86 @@
 # coding=utf-8
+
 import string
 import os
 import urllib
 import zipfile
 import re
 import copy
+import logger
+import datetime
+
 import subliminal
 import subliminal_patch
-import subzero
-import logger
+import support
+import interface
 
-from babelfish import Language
-from datetime import timedelta
+from subzero.constants import OS_PLEX_USERAGENT, DEPENDENCY_MODULE_NAMES, PERSONAL_MEDIA_IDENTIFIER, PLUGIN_IDENTIFIER_SHORT,\
+     PLUGIN_IDENTIFIER, PLUGIN_NAME, PREFIX
+from subzero import intent
+from support.lib import lib_unaccessible_error
+from support.background import scheduler
 
-from subzero.subtitlehelpers import getSubtitlesFromMetadata
+from interface.menu import fatality as MainMenu, ValidatePrefs
+from support.subtitlehelpers import getSubtitlesFromMetadata
+from support.storage import storeSubtitleInfo
+from support.config import config
 
-OS_PLEX_USERAGENT = 'plexapp.com v9.0'
-
-DEPENDENCY_MODULE_NAMES = ['subliminal', 'subliminal_patch', 'enzyme', 'guessit', 'requests']
-PERSONAL_MEDIA_IDENTIFIER = "com.plexapp.agents.none"
 
 def Start():
     HTTP.CacheTime = 0
     HTTP.Headers['User-agent'] = OS_PLEX_USERAGENT
-    Log.Debug("START CALLED")
     logger.registerLoggingHander(DEPENDENCY_MODULE_NAMES)
     # configured cache to be in memory as per https://github.com/Diaoul/subliminal/issues/303
     subliminal.region.configure('dogpile.cache.memory')
 
-def ValidatePrefs():
-    Log.Debug("Validate Prefs called.")
-    return 
+    # init defaults; perhaps not the best idea to use ValidatePrefs here, but we'll see
+    ValidatePrefs()
+    Log.Debug(config.full_version)
 
-# Prepare a list of languages we want subs for
-def getLangList():
-    langList = {Language.fromietf(Prefs["langPref1"])}
-    langCustom = Prefs["langPrefCustom"].strip()
-
-    if Prefs["langPref2"] != "None":
-        langList.update({Language.fromietf(Prefs["langPref2"])})
-
-    if Prefs["langPref3"] != "None":
-        langList.update({Language.fromietf(Prefs["langPref3"])})
-
-    if len(langCustom) and langCustom != "None":
-	for lang in langCustom.split(u","):
-	    lang = lang.strip()
-	    try:
-		real_lang = Language.fromietf(lang)
-	    except:
-		try:
-		    real_lang = Language.fromname(lang)
-		except:
-		    continue
-	    langList.update({real_lang})
-        
-    return langList
-
-def getSubtitleDestinationFolder():
-    if not Prefs["subtitles.save.filesystem"]:
+    if not config.plex_api_working:
+	Log.Error(lib_unaccessible_error)
 	return
 
-    fld_custom = Prefs["subtitles.save.subFolder.Custom"].strip() if bool(Prefs["subtitles.save.subFolder.Custom"]) else None
-    return fld_custom or (Prefs["subtitles.save.subFolder"] if Prefs["subtitles.save.subFolder"] != "current folder" else None)
+    scheduler.run()
+
 
 def initSubliminalPatches():
     # configure custom subtitle destination folders for scanning pre-existing subs
-    dest_folder = getSubtitleDestinationFolder()
+    dest_folder = config.subtitleDestinationFolder
     subliminal_patch.patch_video.CUSTOM_PATHS = [dest_folder] if dest_folder else []
     subliminal_patch.patch_provider_pool.DOWNLOAD_TRIES = int(Prefs['subtitles.try_downloads'])
     subliminal_patch.patch_providers.addic7ed.USE_BOOST = bool(Prefs['provider.addic7ed.boost'])
-
-def getProviders():
-    providers = {'opensubtitles' : Prefs['provider.opensubtitles.enabled'],
-                 'thesubdb' : Prefs['provider.thesubdb.enabled'],
-                 'podnapisi' : Prefs['provider.podnapisi.enabled'],
-                 'addic7ed' : Prefs['provider.addic7ed.enabled'],
-                 'tvsubtitles' : Prefs['provider.tvsubtitles.enabled']
-                 }
-    return filter(lambda prov: providers[prov], providers)
-
-def getProviderSettings():
-    provider_settings = {'addic7ed': {'username': Prefs['provider.addic7ed.username'], 
-                                      'password': Prefs['provider.addic7ed.password'],
-				      'use_random_agents': Prefs['provider.addic7ed.use_random_agents'],
-                                      },
-			 'opensubtitles': {'username': Prefs['provider.opensubtitles.username'], 
-                                      'password': Prefs['provider.opensubtitles.password'],
-				      },
-                        }
-
-    return provider_settings
 
 def scanTvMedia(media):
     videos = {}
     for season in media.seasons:
         for episode in media.seasons[season].episodes:
+	    ep = media.seasons[season].episodes[episode]
+	    forceRefresh = intent.get("force", ep.id)
             for item in media.seasons[season].episodes[episode].items:
                 for part in item.parts:
-                    scannedVideo = scanVideo(part, "episode")
+                    scannedVideo = scanVideo(part, "episode", ignore_all=forceRefresh)
+		    scannedVideo.id = media.seasons[season].episodes[episode].id
                     videos[scannedVideo] = part
     return videos
 
 def scanMovieMedia(media):
     videos = {}
+    forceRefresh = intent.get("force", media.id)
     for item in media.items:
         for part in item.parts:
-            scannedVideo = scanVideo(part, "movie")
+            scannedVideo = scanVideo(part, "movie", ignore_all=forceRefresh)
+	    scannedVideo.id = media.id
             videos[scannedVideo] = part 
     return videos
 
-def scanVideo(part, video_type):
-    embedded_subtitles = Prefs['subtitles.scan.embedded']
-    external_subtitles = Prefs['subtitles.scan.external']
+def scanVideo(part, video_type, ignore_all=False):
+    
+    embedded_subtitles = not ignore_all and Prefs['subtitles.scan.embedded']
+    external_subtitles = not ignore_all and Prefs['subtitles.scan.external']
+
+    if ignore_all:
+	Log.Debug("Force refresh intended.")
 
     Log.Debug("Scanning video: %s, subtitles=%s, embedded_subtitles=%s" % (part.file, external_subtitles, embedded_subtitles))
     try:
@@ -122,7 +90,7 @@ def scanVideo(part, video_type):
 
 def downloadBestSubtitles(video_part_map, min_score=0):
     hearing_impaired = Prefs['subtitles.search.hearingImpaired']
-    languages = getLangList()
+    languages = config.langList
     if not languages: 
 	return
 
@@ -145,16 +113,20 @@ def downloadBestSubtitles(video_part_map, min_score=0):
     if missing_languages:
 	Log.Debug("Download best subtitles using settings: min_score: %s, hearing_impaired: %s" %(min_score, hearing_impaired))
     
-	return subliminal.api.download_best_subtitles(video_part_map.keys(), languages, min_score, hearing_impaired, providers=getProviders(), provider_configs=getProviderSettings())
+	return subliminal.api.download_best_subtitles(video_part_map.keys(), languages, min_score, hearing_impaired, providers=config.providers, provider_configs=config.providerSettings)
     Log.Debug("All languages for all requested videos exist. Doing nothing.")
 
 def saveSubtitles(videos, subtitles):
     if Prefs['subtitles.save.filesystem']:
         Log.Debug("Using filesystem as subtitle storage")
         saveSubtitlesToFile(subtitles)
+	storage = "filesystem"
     else:
         Log.Debug("Using metadata as subtitle storage")
         saveSubtitlesToMetadata(videos, subtitles)
+	storage = "metadata"
+
+    storeSubtitleInfo(videos, subtitles, storage)
 
 def saveSubtitlesToFile(subtitles):
     fld_custom = Prefs["subtitles.save.subFolder.Custom"].strip() if bool(Prefs["subtitles.save.subFolder.Custom"]) else None
@@ -182,7 +154,7 @@ def saveSubtitlesToFile(subtitles):
 def saveSubtitlesToMetadata(videos, subtitles):
     for video, video_subtitles in subtitles.items():
         mediaPart = videos[video]
-        for subtitle in video_subtitles: 
+        for subtitle in video_subtitles:
             mediaPart.subtitles[Locale.Language.Match(subtitle.language.alpha2)][subtitle.page_link] = Proxy.Media(subtitle.content, ext="srt")
 
 def updateLocalMedia(media, media_type="movies"):
@@ -190,7 +162,7 @@ def updateLocalMedia(media, media_type="movies"):
     if media_type == "movies":
 	for item in media.items:
     	    for part in item.parts:
-		subzero.localmedia.findSubtitles(part)
+		support.localmedia.findSubtitles(part)
 	return
 
     # Look for subtitles for each episode.
@@ -203,47 +175,57 @@ def updateLocalMedia(media, media_type="movies"):
 
             # Look for subtitles.
             for part in i.parts:
-              subzero.localmedia.findSubtitles(part)
+              support.localmedia.findSubtitles(part)
       else:
         pass
 
-class SubZeroSubtitlesAgentMovies(Agent.Movies):
-    name = 'Sub-Zero Subtitles (Movies)'
+
+class SubZeroAgent(object):
+    agent_type = None
     languages = [Locale.Language.English]
     primary_provider = False
-    contributes_to = ['com.plexapp.agents.imdb', 'com.plexapp.agents.xbmcnfo']
+
+    def __init__(self, *args, **kwargs):
+	super(SubZeroAgent, self).__init__(*args, **kwargs)
+	self.agent_type = "movies" if isinstance(self, Agent.Movies) else "series"
+	self.name = "Sub-Zero Subtitles (%s, %s)" % ("Movies" if self.agent_type == "movies" else "TV", config.getVersion())
 
     def search(self, results, media, lang):
-        Log.Debug("MOVIE SEARCH CALLED")
+        Log.Debug("Sub-Zero %s, %s search" % (config.version, self.agent_type))
         results.Append(MetadataSearchResult(id='null', score=100))
 
     def update(self, metadata, media, lang):
-        Log.Debug("MOVIE UPDATE CALLED")
-	initSubliminalPatches()
+	Log.Debug("Sub-Zero %s, %s update called" % (config.version, self.agent_type))
+
+	try:
+	    initSubliminalPatches()
+	    videos, subtitles = getattr(self, "update_%s" % self.agent_type)(metadata, media, lang)
+
+	    if subtitles:
+		saveSubtitles(videos, subtitles)
+
+	    updateLocalMedia(media, media_type=self.agent_type)
+
+	finally:
+	    # notify any running tasks about our finished update
+	    for video in videos.keys():
+		scheduler.signal("updated_metadata", video.id)
+
+    def update_movies(self, metadata, media, lang):
         videos = scanMovieMedia(media)
         subtitles = downloadBestSubtitles(videos, min_score=int(Prefs["subtitles.search.minimumMovieScore"]))
-	if subtitles:
-    	    saveSubtitles(videos, subtitles)
-	
-	updateLocalMedia(media, media_type="movies")
+	return videos, subtitles
 
-class SubZeroSubtitlesAgentTvShows(Agent.TV_Shows):
-    
-    name = 'Sub-Zero Subtitles (TV)'
-    languages = [Locale.Language.English]
-    primary_provider = False
+    def update_series(self, metadata, media, lang):
+	videos = scanTvMedia(media)
+        subtitles = downloadBestSubtitles(videos, min_score=int(Prefs["subtitles.search.minimumTVScore"]))
+	return videos, subtitles
+
+
+class SubZeroSubtitlesAgentMovies(SubZeroAgent, Agent.Movies):
+    contributes_to = ['com.plexapp.agents.imdb', 'com.plexapp.agents.xbmcnfo', 'com.plexapp.agents.themoviedb']
+
+
+class SubZeroSubtitlesAgentTvShows(SubZeroAgent, Agent.TV_Shows):
     contributes_to = ['com.plexapp.agents.thetvdb', 'com.plexapp.agents.thetvdbdvdorder', 'com.plexapp.agents.xbmcnfotv']
 
-    def search(self, results, media, lang):
-        Log.Debug("TV SEARCH CALLED")
-        results.Append(MetadataSearchResult(id='null', score=100))
-
-    def update(self, metadata, media, lang):
-        Log.Debug("TvUpdate. Lang %s" % lang)
-	initSubliminalPatches()
-        videos = scanTvMedia(media)
-        subtitles = downloadBestSubtitles(videos, min_score=int(Prefs["subtitles.search.minimumTVScore"]))
-	if subtitles:
-    	    saveSubtitles(videos, subtitles)
-
-	updateLocalMedia(media, media_type="series")

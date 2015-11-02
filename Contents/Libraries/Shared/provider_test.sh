@@ -1,0 +1,1 @@
+python -c "import logging; logging.basicConfig(level=logging.DEBUG); import subliminal_patch, subliminal; subliminal.region.configure('dogpile.cache.memory'); from subliminal import ProviderPool; ProviderPool(providers=['addic7ed'])['addic7ed'].query('Youre the worst', 2)"

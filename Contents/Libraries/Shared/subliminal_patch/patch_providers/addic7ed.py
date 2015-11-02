@@ -3,13 +3,14 @@
 import logging
 import re
 from random import randint
-from subliminal.providers.addic7ed import Addic7edProvider, Addic7edSubtitle, ParserBeautifulSoup, Language
+from subliminal.providers.addic7ed import Addic7edProvider, Addic7edSubtitle, ParserBeautifulSoup, Language, series_year_re
 from subliminal.cache import SHOW_EXPIRATION_TIME, region
 
 from .mixins import PunctuationMixin
 
 logger = logging.getLogger(__name__)
 
+series_year_re = re.compile('^(?P<series>.+?)(?: \((?P<year>\d{4})\))?$')
 
 USE_BOOST = False
 class PatchedAddic7edSubtitle(Addic7edSubtitle):
@@ -62,7 +63,14 @@ class PatchedAddic7edProvider(PunctuationMixin, Addic7edProvider):
         # populate the show ids
         show_ids = {}
         for show in soup.select('td.version > h3 > a[href^="/show/"]'):
-            show_ids[self.clean_punctuation(show.text.lower())] = int(show['href'][6:])
+	    show_clean = self.clean_punctuation(show.text.lower())
+	    show_id = int(show['href'][6:])
+            show_ids[show_clean] = show_id
+	    match = series_year_re.match(show_clean)
+	    if match.group(2) and match.group(1) not in show_ids:
+		# year found, also add it without year
+		show_ids[match.group(1)] = show_id
+
         logger.debug('Found %d show ids', len(show_ids))
 
         return show_ids
