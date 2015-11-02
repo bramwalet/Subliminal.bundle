@@ -92,6 +92,9 @@ Several options are provided in the preferences of this agent.
 
 Scheduler
 ---------------------------------------
+The built-in scheduler is capable of running a number of tasks periodically in a separate Thread of the plugin.
+This currently is used to automatically periodically search for new subtitles for your media items.
+See configuration above.
 
 ##### Ignore lists, what the heck?
 There are numerous occasions where one wouldn't want a certain item or even a library be included in the periodic "Search for missing subtitles"-task.
