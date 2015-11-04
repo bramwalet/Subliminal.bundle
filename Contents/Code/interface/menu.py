@@ -5,7 +5,7 @@ from subzero.constants import TITLE, ART, ICON, PREFIX, PLUGIN_IDENTIFIER
 from support.config import config
 from support.helpers import pad_title, encode_message, decode_message, timestamp
 from support.auth import refresh_plex_token
-from support.storage import resetStorage
+from support.storage import resetStorage, logStorage
 from support.items import getRecentlyAddedItems, getOnDeckItems, refreshItem
 from support.missing_subtitles import getAllRecentlyAddedMissing, searchMissing
 from support.background import scheduler
@@ -137,6 +137,14 @@ def AdvancedMenu(randomize=None, header=None, message=None):
         title=pad_title("Re-request the API token from plex.tv")
     ))
     oc.add(DirectoryObject(
+        key=Callback(LogStorage, key="tasks", randomize=timestamp()),
+        title=pad_title("Log the plugin's scheduled tasks state storage")
+    ))
+    oc.add(DirectoryObject(
+        key=Callback(LogStorage, key="subs", randomize=timestamp()),
+        title=pad_title("Log the plugin's internal subtitle information storage")
+    ))
+    oc.add(DirectoryObject(
         key=Callback(ResetStorage, key="tasks", randomize=timestamp()),
         title=pad_title("Reset the plugin's scheduled tasks state storage")
     ))
@@ -173,10 +181,24 @@ def ResetStorage(key, randomize=None, sure=False):
 	return oc
 
     resetStorage(key)
+
+    if key == "tasks":
+	# reinitialize the scheduler
+	scheduler.setup_tasks()
+
     return AdvancedMenu(
 	randomize=timestamp(),
         header='Success',
-        message='Subtitle Information Storage reset'
+        message='Information Storage (%s) reset' % key
+    )
+
+@route(PREFIX + '/storage/log')
+def LogStorage(key, randomize=None):
+    logStorage(key)
+    return AdvancedMenu(
+	randomize=timestamp(),
+        header='Success',
+        message='Information Storage (%s) logged' % key
     )
 
 @route(PREFIX + '/refresh_token')

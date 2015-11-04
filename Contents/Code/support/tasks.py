@@ -51,13 +51,19 @@ class SearchAllRecentlyAddedMissing(Task):
     items_searching = None
     percentage = 0
     
+    def __init__(self, scheduler):
+	super(SearchAllRecentlyAddedMissing, self).__init__(scheduler)
+	self.items_done = None
+	self.items_searching = None
+	self.percentage = 0
 
     def signal(self, signal_name, *args, **kwargs):
-	if signal_name == "updated_metadata":
+	if signal_name == "updated_metadata" and self.items_done is not None:
 	    item_id = int(args[0])
     	    self.items_done.append(item_id)
 
     def run(self):
+	self.running = True
 	self.items_done = []
 	missing = getAllRecentlyAddedMissing()
 	ids = set([id for id, title in missing])
@@ -80,6 +86,10 @@ class SearchAllRecentlyAddedMissing(Task):
 	self.last_run_time = datetime.datetime.now() - time_start
 	self.percentage = 0
 	self.ready_for_display = False
+	self.items_done = None
+	self.items_searching = None
+	self.running = False
+	
 
 
 scheduler.register(SearchAllRecentlyAddedMissing)

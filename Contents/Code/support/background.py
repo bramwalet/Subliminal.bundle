@@ -36,7 +36,7 @@ class DefaultScheduler(object):
 	self.registry.append(task)
 
     def setup_tasks(self):
-	# discover tasks; todo: add registry
+	# discover tasks;
 	for cls in self.registry:
 	    task = cls(self)
 	    self.tasks[task.name] = {"task": task, "frequency": parse_frequency(Prefs["scheduler.tasks.%s" % task.name])}
@@ -78,14 +78,12 @@ class DefaultScheduler(object):
 	    Log.Debug("Not running %s, as it's currently running." % name)
 	    return
 
-	task.running = True
 	try:
 	    task.run()
 	except Exception, e:
 	    Log.Error("Something went wrong when running %s: %s", name, traceback.format_exc())
 	finally:
 	    task.last_run = datetime.datetime.now()
-	    task.running = False
 
     def signal(self, name, *args, **kwargs):
 	for task_name, info in self.tasks.iteritems():
@@ -103,8 +101,6 @@ class DefaultScheduler(object):
 		task = info["task"]
 
 		if name not in Dict["tasks"]:
-		    Dict["tasks"][name] = {"last_run": None, "running": False}
-		    Dict.Save()
 		    continue
 
 		if task.running:

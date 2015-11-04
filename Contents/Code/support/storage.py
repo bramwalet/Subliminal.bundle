@@ -43,3 +43,7 @@ def resetStorage(key):
     Dict[key] = {}
     Dict.Save()
 
+
+def logStorage(key):
+    if key in Dict:
+	Log.Debug(Dict[key])
