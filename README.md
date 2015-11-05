@@ -25,6 +25,15 @@ Use the following agent order:
 2. Local Media Assets
 3. anything else
 
+### Attention on the initial refresh
+When you first use this plugin, and do a refresh on all of your media, you are most likely
+to be shut out by some or all of the subtitle providers depending on your libraries' size.
+This will result in a bunch of errors in the log files as well as missing subtitles.
+
+Just be patient, after a day most of those providers will allow you access again and you can
+refresh the remaining items. If you use the default settings, this will also skip the items
+it has already downloaded all the wanted languages for.
+
 ### Encountered a bug?
 * be sure to post your logs: ```Library/Application Support/Plex Media Server/Logs/PMS Plugin Logs/com.plexapp.agents.subzero.log```; there may be multiple logs (com.plexapp.agents.subzero.log.*) depending on the amount of Videos you're refreshing
 * **Remember: before you open a bug-ticket please double-check, that you've deleted the Sub-Zero.bundle folder BEFORE every update** (to avoid .pyc leftovers)
