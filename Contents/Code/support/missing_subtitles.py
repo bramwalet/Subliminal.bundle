@@ -2,18 +2,19 @@
 
 import datetime
 import sys
-
 from support.items import getRecentlyAddedItems, MI_ITEM
 from support.config import config
 from support.helpers import format_video
 from lib import Plex
 
-def itemDiscoverMissing(rating_key, kind="episode", internal=False, external=True, languages=[], section_blacklist=[], series_blacklist=[], item_blacklist=[]):
+
+def itemDiscoverMissing(rating_key, kind="episode", internal=False, external=True, languages=[], section_blacklist=[], series_blacklist=[],
+                        item_blacklist=[]):
     existing_subs = {"internal": [], "external": [], "count": 0}
 
     item_id = int(rating_key)
     item_container = Plex["library"].metadata(item_id)
-    
+
     # don't process blacklisted sections
     if item_container.section.key in section_blacklist:
         return
@@ -21,9 +22,9 @@ def itemDiscoverMissing(rating_key, kind="episode", internal=False, external=Tru
     item = list(item_container)[0]
 
     if kind == "episode":
-	item_title = format_video(item, kind, parent=item.season, parentTitle=item.show.title)
+        item_title = format_video(item, kind, parent=item.season, parentTitle=item.show.title)
     else:
-	item_title = format_video(item, kind)
+        item_title = format_video(item, kind)
 
     if kind == "episode" and item.show.rating_key in series_blacklist:
         Log.Info("Skipping show %s in blacklist", item.show.key)
@@ -44,7 +45,7 @@ def itemDiscoverMissing(rating_key, kind="episode", internal=False, external=Tru
 
                 existing_subs[key].append(Locale.Language.Match(stream.language_code or ""))
                 existing_subs["count"] = existing_subs["count"] + 1
-    
+
     missing = languages
     if existing_subs["count"]:
         existing_flat = (existing_subs["internal"] if internal else []) + (existing_subs["external"] if external else [])
@@ -53,33 +54,35 @@ def itemDiscoverMissing(rating_key, kind="episode", internal=False, external=Tru
             # all subs found
             Log.Info(u"All subtitles exist for '%s'", item_title)
             return
-        
+
         missing = languages_set - set(existing_flat)
         Log.Info(u"Subs still missing for '%s': %s", item_title, missing)
 
     if missing:
-	return item_id, item_title
+        return item_id, item_title
+
 
 def getAllRecentlyAddedMissing():
     items = getRecentlyAddedItems()
     missing = []
     for kind, title, item in items:
-	state = itemDiscoverMissing(
-			    item.rating_key, 
-			    kind=kind,
-			    languages=config.langList, 
-			    internal=bool(Prefs["subtitles.scan.embedded"]),
-			    external=bool(Prefs["subtitles.scan.external"]),
-			    section_blacklist=config.scheduler_section_blacklist, 
-			    series_blacklist=config.scheduler_series_blacklist, 
-			    item_blacklist=config.scheduler_item_blacklist
-			)
-	if state:
-	    # (item_id, title)
-	    missing.append(state)
+        state = itemDiscoverMissing(
+            item.rating_key,
+            kind=kind,
+            languages=config.langList,
+            internal=bool(Prefs["subtitles.scan.embedded"]),
+            external=bool(Prefs["subtitles.scan.external"]),
+            section_blacklist=config.scheduler_section_blacklist,
+            series_blacklist=config.scheduler_series_blacklist,
+            item_blacklist=config.scheduler_item_blacklist
+        )
+        if state:
+            # (item_id, title)
+            missing.append(state)
     return missing
+
 
 def searchMissing(items):
     for item, title in items:
-	Log.Info("Triggering refresh for '%s'", title)
-	Plex["library/metadata"].refresh(item)
+        Log.Info("Triggering refresh for '%s'", title)
+        Plex["library/metadata"].refresh(item)

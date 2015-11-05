@@ -3,6 +3,7 @@
 from plex import Plex
 from auth import refresh_plex_token
 
+
 def configure_plex():
     # this may be the only viable usage of global :O (correct me if i'm wrong)
     global Plex
@@ -12,4 +13,6 @@ def configure_plex():
     # initialize Plex api
     Plex.configuration.defaults.authentication(Dict["token"] if "token" in Dict else None)
 
-lib_unaccessible_error = "\n\n\n!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!! \nCan't access your Plex Media Servers' API.\nAre you using Plex Home? Please configure your Plex.tv credentials! Advanced features disabled!\n\n\n"
+
+lib_unaccessible_error = "\n\n\n!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!! \nCan't access your Plex Media Servers' API.\nAre you using Plex Home?"" \
+""Please configure your Plex.tv credentials! Advanced features disabled!\n\n\n"
