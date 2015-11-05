@@ -77,21 +77,29 @@ class DefaultScheduler(object):
     def run_task(self, name):
         task = self.tasks[name]["task"]
         if task.running:
-            Log.Debug("Not running %s, as it's currently running." % name)
+            Log.Debug("Scheduler: Not running %s, as it's currently running." % name)
             return
 
         try:
+            task.prepare()
             task.run()
         except Exception, e:
-            Log.Error("Something went wrong when running %s: %s", name, traceback.format_exc())
+            Log.Error("Scheduler: Something went wrong when running %s: %s", name, traceback.format_exc())
         finally:
-            task.last_run = datetime.datetime.now()
+            task.post_run()
 
     def signal(self, name, *args, **kwargs):
         for task_name, info in self.tasks.iteritems():
             task = info["task"]
             if task.running:
-                task.signal(name, *args, **kwargs)
+                Log.Debug("Scheduler: Sending signal %s to task %s (%s, %s)", name, task_name, args, kwargs)
+                status = task.signal(name, *args, **kwargs)
+                if status:
+                    Log.Debug("Scheduler: Signal accepted by %s", task_name)
+                else:
+                    Log.Debug("Scheduler: Signal not accepted by %s", task_name)
+                continue
+            Log.Debug("Scheduler: Not sending signal %s to task %s, because: not running", name, task_name)
 
     def worker(self):
         while 1:

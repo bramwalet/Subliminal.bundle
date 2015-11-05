@@ -74,6 +74,18 @@ def scanMovieMedia(media):
     return videos
 
 
+def getItemIDs(media, kind="series"):
+    ids = []
+    if kind == "movies":
+        ids.append(media.id)
+    else:
+        for season in media.seasons:
+            for episode in media.seasons[season].episodes:
+                ids.append(media.seasons[season].episodes[episode].id)
+
+    return ids
+
+
 def scanVideo(part, video_type, ignore_all=False):
     embedded_subtitles = not ignore_all and Prefs['subtitles.scan.embedded']
     external_subtitles = not ignore_all and Prefs['subtitles.scan.external']
@@ -202,9 +214,11 @@ class SubZeroAgent(object):
     def update(self, metadata, media, lang):
         Log.Debug("Sub-Zero %s, %s update called" % (config.version, self.agent_type))
 
+        item_ids = []
         try:
             initSubliminalPatches()
             videos, subtitles = getattr(self, "update_%s" % self.agent_type)(metadata, media, lang)
+            item_ids = getItemIDs(media, kind=self.agent_type)
 
             if subtitles:
                 saveSubtitles(videos, subtitles)
@@ -213,8 +227,8 @@ class SubZeroAgent(object):
 
         finally:
             # notify any running tasks about our finished update
-            for video in videos.keys():
-                scheduler.signal("updated_metadata", video.id)
+            for item_id in item_ids:
+                scheduler.signal("updated_metadata", item_id)
 
     def update_movies(self, metadata, media, lang):
         videos = scanMovieMedia(media)
