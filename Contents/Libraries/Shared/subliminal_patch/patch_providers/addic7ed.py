@@ -53,7 +53,7 @@ class PatchedAddic7edProvider(PunctuationMixin, Addic7edProvider):
         :return: show id per series, lower case and without quotes.
         :rtype: dict
 
-	# patch: add punctuation cleaning
+        # patch: add punctuation cleaning
         """
         # get the show page
         logger.info('Getting show ids')
