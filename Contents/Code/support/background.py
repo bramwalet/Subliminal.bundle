@@ -23,16 +23,12 @@ class DefaultScheduler(object):
         self.registry = []
 
         self.tasks = {}
-        if not "tasks" in Dict:
-            Dict["tasks"] = {}
+        self.init_storage()
 
-        # reset tasks' running state in case anything went wrong before, or we're dealing with an old version
-        try:
-            for task, info in Dict["tasks"].iteritems():
-                info["running"] = False
-        except:
+    def init_storage(self):
+        if "tasks" not in Dict:
             Dict["tasks"] = {}
-        Dict.Save()
+            Dict.Save()
 
     def register(self, task):
         self.registry.append(task)
