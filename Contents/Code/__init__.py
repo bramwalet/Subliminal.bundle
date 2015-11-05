@@ -58,6 +58,7 @@ def scanTvMedia(media):
             for item in media.seasons[season].episodes[episode].items:
                 for part in item.parts:
                     scannedVideo = scanVideo(part, "episode", ignore_all=forceRefresh)
+                    scannedVideo.id = media.seasons[season].episodes[episode].id
                     videos[scannedVideo] = part
     return videos
 
@@ -68,6 +69,7 @@ def scanMovieMedia(media):
     for item in media.items:
         for part in item.parts:
             scannedVideo = scanVideo(part, "movie", ignore_all=forceRefresh)
+            scannedVideo.id = media.id
             videos[scannedVideo] = part
     return videos
 
