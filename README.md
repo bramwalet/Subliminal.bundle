@@ -1,7 +1,7 @@
-Sub-Zero for Plex, 1.3.5.281
+Sub-Zero for Plex, 1.3.6.297
 =================
 
-![logo](https://raw.githubusercontent.com/pannal/Sub-Zero/master/Contents/Resources/subzero.gif)
+![logo](https://raw.githubusercontent.com/pannal/Sub-Zero.bundle/master/Contents/Resources/subzero.gif)
 
 ##### Subtitles done right
 Originally based on @bramwalet's awesome [Subliminal.bundle](https://github.com/bramwalet/Subliminal.bundle)
@@ -13,7 +13,7 @@ If you like this, buy me a beer: [![Donate](https://www.paypalobjects.com/en_US/
 ### Installation
 * go to ```Library/Application Support/Plex Media Server/Plug-ins/```
 * ```rm -r Sub-Zero.bundle```
-* get the release you want from *https://github.com/pannal/Sub-Zero/releases/*
+* get the release you want from *https://github.com/pannal/Sub-Zero.bundle/releases/*
 * unzip the release
 * restart your plex media server!!!
 * more indepth: see [article](https://support.plex.tv/hc/en-us/articles/201187656-How-do-I-manually-install-a-channel-) on Plex website. 
@@ -39,23 +39,18 @@ it has already downloaded all the wanted languages for.
 * **Remember: before you open a bug-ticket please double-check, that you've deleted the Sub-Zero.bundle folder BEFORE every update** (to avoid .pyc leftovers)
 
 ## Changelog
+1.3.6.297
+- rename Sub-Zero to Sub-Zero.bundle (requirement for adding Sub-Zero to the Plex channel directory)
+- channel: add logging actions for the internal storage to the advanced menu
+- channel: handle item titles with foreign characters in them correctly
+- (hopefully) fix handling file names with foreign characters in them when scanning for local media
+- reformat the whole project, mostly honoring pep8
+- scheduler: fixed some serious bugs; broken tasks (stalled) and some errors many of you have seen should be gone now
+- scheduler: partly rewritten to be more robust, again
+- settings: move Plex.tv credentials to the top
+
 1.3.5.281
 - fix tasks broken for 1.2 -> 1.3.5 upgraders
-
-1.3.5.273 (same build as Beta Release 1.3.0.273) - changes from previous stable 1.2.11.180
-- add a channel menu, making this plugin a hybrid (Agent+Channel)
-- add a generic background task scheduler
-- add a task to search for subtitles for items with missing subtitles (manually triggered and automatic)
-- add artwork
-- add Plex.tv credentials/token-generation support (needed for Plex Home users for the API to work)
-- addic7ed: improve show name matching again
-- channel: able to browse current on-deck and recently-added items, and refresh or force-refresh (search for new subtitles) single items
-- add library/series/video blacklist for items which should be skipped in "Search for missing subtitles"-task
-- add donation links
-- change the license to The Unlicense (while keeping the original MIT license from subliminal.bundle intact)
-- store subtitle information in internal plugin storage (for later usage)
-- many internal code improvements
-- update documentation
 
 [older changes](CHANGELOG.md)
 
@@ -121,6 +116,24 @@ Those ignore lists currently only accept numeric IDs. How you can obtain those i
 * Items (episodes/movies): click on an item in PlexWeb, take `25662` from `/web/index.html#!/server/long_identifier_hash/details/%2Flibrary%2Fmetadata%2F25662`
 
 I will make this easier in future versions.
+
+
+The channel
+-----------
+Since 1.3.0 Sub-Zero not only comes as an agent plugin, but also has channel properties.
+By accessing the Sub-Zero channel you can get viable information about the scheduler state, search for missing subtitles,
+trigger forced-searches for individual items, and many more features yet to come.
+
+Remoting the channel
+--------------------
+The features available in the channel menu are in fact accessible and usable from the outside,
+just as any other channel with routes.
+This means, that if you're not happy with the scheduler's interval for example, you can take the following URL:
+`http://plex_ip:32400/video/subzero/missing/refresh?X-Plex-Token=XXXXXXXXXXXXXXX` (the X-Plex-Token part may not be needed outside of
+a Plex Home) and open the URL using your favourite command line tool or script (curl, wget, ...).
+This will trigger the same background task which would be started by the scheduler or by clicking the item in the channel menu.
+
+You can find all available routes by querying `http://plex_ip:32400/video/subzero` (look for the key="" entries). 
 
 
 Store as metadata or on filesystem

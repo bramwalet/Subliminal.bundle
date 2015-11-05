@@ -1,3 +1,18 @@
+1.3.5.273 (same build as Beta Release 1.3.0.273) - changes from previous stable 1.2.11.180
+- add a channel menu, making this plugin a hybrid (Agent+Channel)
+- add a generic background task scheduler
+- add a task to search for subtitles for items with missing subtitles (manually triggered and automatic)
+- add artwork
+- add Plex.tv credentials/token-generation support (needed for Plex Home users for the API to work)
+- addic7ed: improve show name matching again
+- channel: able to browse current on-deck and recently-added items, and refresh or force-refresh (search for new subtitles) single items
+- add library/series/video blacklist for items which should be skipped in "Search for missing subtitles"-task
+- add donation links
+- change the license to The Unlicense (while keeping the original MIT license from subliminal.bundle intact)
+- store subtitle information in internal plugin storage (for later usage)
+- many internal code improvements
+- update documentation
+
 1.3.0.273
 - more robust update functionality
 - menu: add refresh button to menu (to see the task state updating)
