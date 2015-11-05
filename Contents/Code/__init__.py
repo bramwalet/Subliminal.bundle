@@ -58,7 +58,7 @@ def scanTvMedia(media):
             for item in media.seasons[season].episodes[episode].items:
                 for part in item.parts:
                     scanned_video = scanVideo(part, ignore_all=force_refresh,
-                                              hints={"video_type": "episode", "expected_series": [media.title], "expected_title": [ep.title]})
+                                              hints={"type": "episode", "expected_series": [media.title], "expected_title": [ep.title]})
                     scanned_video.id = media.seasons[season].episodes[episode].id
                     videos[scanned_video] = part
     return videos
@@ -69,7 +69,7 @@ def scanMovieMedia(media):
     force_refresh = intent.get("force", media.id)
     for item in media.items:
         for part in item.parts:
-            scanned_video = scanVideo(part, ignore_all=force_refresh, hints={"video_type": "movie", "expected_title": [media.title]})
+            scanned_video = scanVideo(part, ignore_all=force_refresh, hints={"type": "movie", "expected_title": [media.title]})
             scanned_video.id = media.id
             videos[scanned_video] = part
     return videos
