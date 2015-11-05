@@ -97,6 +97,7 @@ class SearchAllRecentlyAddedMissing(Task):
                 break
             self.percentage = int(round(len(self.items_done) * 100 / missing_count))
             time.sleep(0.1)
+        self.running = False
 
     def post_run(self):
         self.ready_for_display = False
@@ -106,7 +107,7 @@ class SearchAllRecentlyAddedMissing(Task):
         self.percentage = 0
         self.items_done = None
         self.items_searching = None
-        self.running = False
+        self.items_searching_ids = None
 
 
 scheduler.register(SearchAllRecentlyAddedMissing)
