@@ -1,209 +1,427 @@
 [
-	{	"id": "subtitles.try_downloads",
-		"label": "How many download tries per subtitle (on timeout or error)",
-		"type": "enum",
-		"values": ["1", "2", "3", "4"],
-		"default": "2"
-	},
-	{
-                "id": "provider.addic7ed.username",
-                "label": "Addic7ed Username",
-                "type": "text",
-                "default": "Username"
-        },
-        {
-                "id": "provider.addic7ed.password",
-                "label": "Addic7ed Password",
-                "type": "text",
-                "option": "hidden",
-                "default": "",
-                "secure": "true" 
-        },
-	{
-                "id": "plex_username",
-                "label": "Plex.tv Username (needed for Plex Home users)",
-                "type": "text",
-                "default": ""
-        },
-        {
-                "id": "plex_password",
-                "label": "Plex.tv Password",
-                "type": "text",
-                "option": "hidden",
-                "default": "",
-                "secure": "true" 
-        },
-	{
-                "id": "provider.opensubtitles.username",
-                "label": "Opensubtitles Username (VIP)",
-                "type": "text",
-                "default": ""
-        },
-        {
-                "id": "provider.opensubtitles.password",
-                "label": "Opensubtitles Password",
-                "type": "text",
-                "option": "hidden",
-                "default": "",
-                "secure": "true" 
-        },
-	{
-                "id": "provider.addic7ed.use_random_agents",
-                "label": "Addic7ed: Use random user agents (should not be necessary)",
-                "type": "bool",
-                "default": "false"
-        },
-        {
-                "id": "langPref1",
-                "label": "Subtitle Language (1)",
-                "type": "enum",
-                "values": ["sq","ar","be","bs","bg","ca","zh","cs","da","nl","en","et","fi","fr","de","el","he","hi","hu","is","id","it","ja","ko","lv","lt","mk","ms","no","fa","pl","pt","pt-br","ro","ru","sr","sk","sl","es","sv","th","tr","uk","vi","hr"],
-                "default": "en"
-        },
-        {
-                "id": "langPref2",
-                "label": "Subtitle Language (2)",
-                "type": "enum",
-                "values": ["None", "sq","ar","be","bs","bg","ca","zh","cs","da","nl","en","et","fi","fr","de","el","he","hi","hu","is","id","it","ja","ko","lv","lt","mk","ms","no","fa","pl","pt","pt-br","ro","ru","sr","sk","sl","es","sv","th","tr","uk","vi","hr"],
-                "default": "None"
-        },
-	{
-                "id": "langPref3",
-                "label": "Subtitle Language (3)",
-                "type": "enum",
-                "values": ["None", "sq","ar","be","bs","bg","ca","zh","cs","da","nl","en","et","fi","fr","de","el","he","hi","hu","is","id","it","ja","ko","lv","lt","mk","ms","no","fa","pl","pt","pt-br","ro","ru","sr","sk","sl","es","sv","th","tr","uk","vi","hr"],
-                "default": "None"
-        },
-	{
-                "id": "langPrefCustom",
-                "label": "Additional Subtitle Languages (use ISO-639-1 codes; comma-separated)",
-                "type": "text",
-                "default": "None"
-        },
-	{
-                "id": "provider.opensubtitles.enabled",
-                "label": "Provider: Enable OpenSubtitles",
-                "type": "bool",
-                "default": "true"
-        },
-		{
-                "id": "provider.thesubdb.enabled",
-                "label": "Provider: Enable TheSubDB",
-                "type": "bool",
-                "default": "true"
-        },
-		{
-                "id": "provider.podnapisi.enabled",
-                "label": "Provider: Enable Podnapisi.NET",
-                "type": "bool",
-                "default": "true"
-        },
-		{
-                "id": "provider.addic7ed.enabled",
-                "label": "Provider: Enable Addic7ed",
-                "type": "bool",
-                "default": "true"
-        },
-		{
-                "id": "provider.addic7ed.boost",
-                "label": "Addic7ed: boost over hash score if requirements met (prefer over other providers)",
-                "type": "bool",
-                "default": "false"
-        },
-		{
-                "id": "provider.tvsubtitles.enabled",
-                "label": "Provider: Enable TVsubtitles.net",
-                "type": "bool",
-                "default": "true"
-        },
-        {
-                "id": "subtitles.scan.embedded",
-                "label": "Scan: include embedded subtitles (skip if existing)",
-                "type": "bool",
-                "default": "true"
-        },
-        {
-                "id": "subtitles.scan.external",
-                "label": "Scan: include external subtitles (skip if existing)",
-                "type": "bool",
-                "default": "true"
-        },
-        {
-                "id": "subtitles.search.minimumTVScore",
-                "label": "Minimum score for TV subtitles to download",
-                "type": "enum",
-                "values": ["100","95","90","85","80","75","70","65","60","55","50","45","40","35","30","25","20","15","10","5","0"],
-                "default": "85"
-        },
-        {
-                "id": "subtitles.search.minimumMovieScore",
-                "label": "Minimum score for movie subtitles to download",
-                "type": "enum",
-                "values": ["100","95","90","85","80","75","70","65","60","55","50","45","40","35","30","25","23","20","15","10","5","0"],
-                "default": "23"
-        },
-        {
-                "id": "subtitles.search.hearingImpaired",
-                "label": "Download hearing impaired subtitles.",
-                "type": "enum",
-		"values": ["prefer", "don't prefer", "force HI", "force non-HI"],
-                "default": "don't prefer"
-        },
-        {
-                "id": "subtitles.save.filesystem",
-                "label": "Store subtitles next to media files (instead of metadata)",
-                "type": "bool",
-                "default": "true"
-        },
-	{
-                "id": "subtitles.save.subFolder",
-                "label": "Subtitle Folder (\"current folder\" is the folder the current media file lives in)",
-                "type": "enum",
-                "values": ["current folder", "sub", "subs", "subtitle", "subtitles"],
-                "default": "current folder"
-        },
-	{
-                "id": "subtitles.save.subFolder.Custom",
-                "label": "Custom Subtitle folder (overrides \"Subtitle Folder\"; computes to real paths)",
-                "type": "text",
-                "default": ""
-        },
-	{
-                "id": "subtitles.language.ietf",
-                "label": "Treat IETF language tags as ISO 639-1 (e.g. pt-BR = pt)",
-                "type": "bool",
-                "default": "true"
-        },
-	{
-                "id": "scheduler.tasks.searchAllRecentlyAddedMissing",
-                "label": "Scheduler: Periodically search for recent items with missing subtitles",
-                "type": "enum",
-		"values": ["never", "every 1 hours", "every 3 hours", "every 6 hours", "every 12 hours", "every 24 hours"],
-                "default": "every 6 hours"
-        },
-	{
-                "id": "scheduler.item_is_recent_age",
-                "label": "Scheduler: Item age to be considered recent",
-                "type": "enum",
-		"values": ["1 days", "2 days", "3 days", "4 days", "1 weeks", "2 weeks", "3 weeks", "4 weeks"],
-                "default": "2 weeks"
-        },
-	{
-                "id": "scheduler.section_blacklist",
-                "label": "Scheduler: Sections to ignore (IDs, comma-separated)",
-                "type": "text",
-                "default": ""
-        },
-	{
-                "id": "scheduler.series_blacklist",
-                "label": "Scheduler: Series to ignore (IDs, comma-separated)",
-                "type": "text",
-                "default": ""
-        },
-	{
-                "id": "scheduler.item_blacklist",
-                "label": "Scheduler: Items to ignore (IDs, comma-separated)",
-                "type": "text",
-                "default": ""
-        }
+  {
+    "id": "subtitles.try_downloads",
+    "label": "How many download tries per subtitle (on timeout or error)",
+    "type": "enum",
+    "values": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "default": "2"
+  },
+  {
+    "id": "plex_username",
+    "label": "Plex.tv Username (needed for Plex Home users)",
+    "type": "text",
+    "default": ""
+  },
+  {
+    "id": "plex_password",
+    "label": "Plex.tv Password",
+    "type": "text",
+    "option": "hidden",
+    "default": "",
+    "secure": "true"
+  },
+  {
+    "id": "provider.addic7ed.username",
+    "label": "Addic7ed Username",
+    "type": "text",
+    "default": "Username"
+  },
+  {
+    "id": "provider.addic7ed.password",
+    "label": "Addic7ed Password",
+    "type": "text",
+    "option": "hidden",
+    "default": "",
+    "secure": "true"
+  },
+  {
+    "id": "provider.opensubtitles.username",
+    "label": "Opensubtitles Username (VIP)",
+    "type": "text",
+    "default": ""
+  },
+  {
+    "id": "provider.opensubtitles.password",
+    "label": "Opensubtitles Password",
+    "type": "text",
+    "option": "hidden",
+    "default": "",
+    "secure": "true"
+  },
+  {
+    "id": "provider.addic7ed.use_random_agents",
+    "label": "Addic7ed: Use random user agents (should not be necessary)",
+    "type": "bool",
+    "default": "false"
+  },
+  {
+    "id": "langPref1",
+    "label": "Subtitle Language (1)",
+    "type": "enum",
+    "values": [
+      "sq",
+      "ar",
+      "be",
+      "bs",
+      "bg",
+      "ca",
+      "zh",
+      "cs",
+      "da",
+      "nl",
+      "en",
+      "et",
+      "fi",
+      "fr",
+      "de",
+      "el",
+      "he",
+      "hi",
+      "hu",
+      "is",
+      "id",
+      "it",
+      "ja",
+      "ko",
+      "lv",
+      "lt",
+      "mk",
+      "ms",
+      "no",
+      "fa",
+      "pl",
+      "pt",
+      "pt-br",
+      "ro",
+      "ru",
+      "sr",
+      "sk",
+      "sl",
+      "es",
+      "sv",
+      "th",
+      "tr",
+      "uk",
+      "vi",
+      "hr"
+    ],
+    "default": "en"
+  },
+  {
+    "id": "langPref2",
+    "label": "Subtitle Language (2)",
+    "type": "enum",
+    "values": [
+      "None",
+      "sq",
+      "ar",
+      "be",
+      "bs",
+      "bg",
+      "ca",
+      "zh",
+      "cs",
+      "da",
+      "nl",
+      "en",
+      "et",
+      "fi",
+      "fr",
+      "de",
+      "el",
+      "he",
+      "hi",
+      "hu",
+      "is",
+      "id",
+      "it",
+      "ja",
+      "ko",
+      "lv",
+      "lt",
+      "mk",
+      "ms",
+      "no",
+      "fa",
+      "pl",
+      "pt",
+      "pt-br",
+      "ro",
+      "ru",
+      "sr",
+      "sk",
+      "sl",
+      "es",
+      "sv",
+      "th",
+      "tr",
+      "uk",
+      "vi",
+      "hr"
+    ],
+    "default": "None"
+  },
+  {
+    "id": "langPref3",
+    "label": "Subtitle Language (3)",
+    "type": "enum",
+    "values": [
+      "None",
+      "sq",
+      "ar",
+      "be",
+      "bs",
+      "bg",
+      "ca",
+      "zh",
+      "cs",
+      "da",
+      "nl",
+      "en",
+      "et",
+      "fi",
+      "fr",
+      "de",
+      "el",
+      "he",
+      "hi",
+      "hu",
+      "is",
+      "id",
+      "it",
+      "ja",
+      "ko",
+      "lv",
+      "lt",
+      "mk",
+      "ms",
+      "no",
+      "fa",
+      "pl",
+      "pt",
+      "pt-br",
+      "ro",
+      "ru",
+      "sr",
+      "sk",
+      "sl",
+      "es",
+      "sv",
+      "th",
+      "tr",
+      "uk",
+      "vi",
+      "hr"
+    ],
+    "default": "None"
+  },
+  {
+    "id": "langPrefCustom",
+    "label": "Additional Subtitle Languages (use ISO-639-1 codes; comma-separated)",
+    "type": "text",
+    "default": "None"
+  },
+  {
+    "id": "provider.opensubtitles.enabled",
+    "label": "Provider: Enable OpenSubtitles",
+    "type": "bool",
+    "default": "true"
+  },
+  {
+    "id": "provider.thesubdb.enabled",
+    "label": "Provider: Enable TheSubDB",
+    "type": "bool",
+    "default": "true"
+  },
+  {
+    "id": "provider.podnapisi.enabled",
+    "label": "Provider: Enable Podnapisi.NET",
+    "type": "bool",
+    "default": "true"
+  },
+  {
+    "id": "provider.addic7ed.enabled",
+    "label": "Provider: Enable Addic7ed",
+    "type": "bool",
+    "default": "true"
+  },
+  {
+    "id": "provider.addic7ed.boost",
+    "label": "Addic7ed: boost over hash score if requirements met (prefer over other providers)",
+    "type": "bool",
+    "default": "false"
+  },
+  {
+    "id": "provider.tvsubtitles.enabled",
+    "label": "Provider: Enable TVsubtitles.net",
+    "type": "bool",
+    "default": "true"
+  },
+  {
+    "id": "subtitles.scan.embedded",
+    "label": "Scan: include embedded subtitles (skip if existing)",
+    "type": "bool",
+    "default": "true"
+  },
+  {
+    "id": "subtitles.scan.external",
+    "label": "Scan: include external subtitles (skip if existing)",
+    "type": "bool",
+    "default": "true"
+  },
+  {
+    "id": "subtitles.search.minimumTVScore",
+    "label": "Minimum score for TV subtitles to download",
+    "type": "enum",
+    "values": [
+      "100",
+      "95",
+      "90",
+      "85",
+      "80",
+      "75",
+      "70",
+      "65",
+      "60",
+      "55",
+      "50",
+      "45",
+      "40",
+      "35",
+      "30",
+      "25",
+      "20",
+      "15",
+      "10",
+      "5",
+      "0"
+    ],
+    "default": "85"
+  },
+  {
+    "id": "subtitles.search.minimumMovieScore",
+    "label": "Minimum score for movie subtitles to download",
+    "type": "enum",
+    "values": [
+      "100",
+      "95",
+      "90",
+      "85",
+      "80",
+      "75",
+      "70",
+      "65",
+      "60",
+      "55",
+      "50",
+      "45",
+      "40",
+      "35",
+      "30",
+      "25",
+      "23",
+      "20",
+      "15",
+      "10",
+      "5",
+      "0"
+    ],
+    "default": "23"
+  },
+  {
+    "id": "subtitles.search.hearingImpaired",
+    "label": "Download hearing impaired subtitles.",
+    "type": "enum",
+    "values": [
+      "prefer",
+      "don't prefer",
+      "force HI",
+      "force non-HI"
+    ],
+    "default": "don't prefer"
+  },
+  {
+    "id": "subtitles.save.filesystem",
+    "label": "Store subtitles next to media files (instead of metadata)",
+    "type": "bool",
+    "default": "true"
+  },
+  {
+    "id": "subtitles.save.subFolder",
+    "label": "Subtitle Folder (\"current folder\" is the folder the current media file lives in)",
+    "type": "enum",
+    "values": [
+      "current folder",
+      "sub",
+      "subs",
+      "subtitle",
+      "subtitles"
+    ],
+    "default": "current folder"
+  },
+  {
+    "id": "subtitles.save.subFolder.Custom",
+    "label": "Custom Subtitle folder (overrides \"Subtitle Folder\"; computes to real paths)",
+    "type": "text",
+    "default": ""
+  },
+  {
+    "id": "subtitles.language.ietf",
+    "label": "Treat IETF language tags as ISO 639-1 (e.g. pt-BR = pt)",
+    "type": "bool",
+    "default": "true"
+  },
+  {
+    "id": "scheduler.tasks.searchAllRecentlyAddedMissing",
+    "label": "Scheduler: Periodically search for recent items with missing subtitles",
+    "type": "enum",
+    "values": [
+      "never",
+      "every 1 hours",
+      "every 3 hours",
+      "every 6 hours",
+      "every 12 hours",
+      "every 24 hours"
+    ],
+    "default": "every 6 hours"
+  },
+  {
+    "id": "scheduler.item_is_recent_age",
+    "label": "Scheduler: Item age to be considered recent",
+    "type": "enum",
+    "values": [
+      "1 days",
+      "2 days",
+      "3 days",
+      "4 days",
+      "1 weeks",
+      "2 weeks",
+      "3 weeks",
+      "4 weeks"
+    ],
+    "default": "2 weeks"
+  },
+  {
+    "id": "scheduler.section_blacklist",
+    "label": "Scheduler: Sections to ignore (IDs, comma-separated)",
+    "type": "text",
+    "default": ""
+  },
+  {
+    "id": "scheduler.series_blacklist",
+    "label": "Scheduler: Series to ignore (IDs, comma-separated)",
+    "type": "text",
+    "default": ""
+  },
+  {
+    "id": "scheduler.item_blacklist",
+    "label": "Scheduler: Items to ignore (IDs, comma-separated)",
+    "type": "text",
+    "default": ""
+  }
 ]
