@@ -7,6 +7,7 @@ from subliminal.providers.podnapisi import PodnapisiProvider, fix_line_ending, P
 
 logger = logging.getLogger(__name__)
 
+
 class PatchedPodnapisiProvider(PodnapisiProvider):
     def download_subtitle(self, subtitle):
         # download as a zip

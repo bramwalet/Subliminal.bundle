@@ -2,12 +2,15 @@
 
 import os
 import logging
-from subliminal.video import SUBTITLE_EXTENSIONS, VIDEO_EXTENSIONS, Language, Video, EnzymeError, MKV, guess_file_info, hash_opensubtitles, hash_thesubdb
+from babelfish import Error as BabelfishError
+from subliminal.video import SUBTITLE_EXTENSIONS, VIDEO_EXTENSIONS, Language, Video, EnzymeError, MKV, guess_file_info, hash_opensubtitles, \
+    hash_thesubdb
 
 logger = logging.getLogger(__name__)
 
 # may be absolute or relative paths; set to selected options
 CUSTOM_PATHS = []
+
 
 def _search_external_subtitles(path):
     dirpath, filename = os.path.split(path)
@@ -36,7 +39,8 @@ def _search_external_subtitles(path):
 
     logger.debug('Found subtitles %r', subtitles)
 
-    return subtitles    
+    return subtitles
+
 
 def patched_search_external_subtitles(path):
     """
@@ -46,18 +50,20 @@ def patched_search_external_subtitles(path):
     video_path, video_filename = os.path.split(path)
     subtitles = {}
     for folder_or_subfolder in [video_path] + CUSTOM_PATHS:
-	# folder_or_subfolder may be a relative path or an absolute one
-	try:
-	    abspath = unicode(os.path.abspath(os.path.join(*[video_path if not os.path.isabs(folder_or_subfolder) else "", folder_or_subfolder, video_filename])))
-	except Exception, e:
-	    logger.error("skipping path %s because of %s", repr(folder_or_subfolder), e)
-	    continue
-	logger.debug("external subs: scanning path %s", abspath)
+        # folder_or_subfolder may be a relative path or an absolute one
+        try:
+            abspath = unicode(os.path.abspath(
+                os.path.join(*[video_path if not os.path.isabs(folder_or_subfolder) else "", folder_or_subfolder, video_filename])))
+        except Exception, e:
+            logger.error("skipping path %s because of %s", repr(folder_or_subfolder), e)
+            continue
+        logger.debug("external subs: scanning path %s", abspath)
 
-	if os.path.isdir(os.path.dirname(abspath)):
-	    subtitles.update(_search_external_subtitles(abspath))
+        if os.path.isdir(os.path.dirname(abspath)):
+            subtitles.update(_search_external_subtitles(abspath))
     logger.debug("external subs: found %s", subtitles)
     return subtitles
+
 
 def scan_video(path, subtitles=True, embedded_subtitles=True, video_type=None):
     """Scan a video and its subtitle languages from a video `path`.

@@ -4,7 +4,6 @@ import logging
 from subliminal.providers import ParserBeautifulSoup
 from subliminal.cache import SHOW_EXPIRATION_TIME, region
 from subliminal.providers.tvsubtitles import TVsubtitlesProvider, link_re
-
 from .mixins import PunctuationMixin
 
 logger = logging.getLogger(__name__)

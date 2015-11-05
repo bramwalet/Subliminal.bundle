@@ -3,9 +3,8 @@
 import logging
 import re
 from random import randint
-from subliminal.providers.addic7ed import Addic7edProvider, Addic7edSubtitle, ParserBeautifulSoup, Language, series_year_re
+from subliminal.providers.addic7ed import Addic7edProvider, Addic7edSubtitle, ParserBeautifulSoup, Language
 from subliminal.cache import SHOW_EXPIRATION_TIME, region
-
 from .mixins import PunctuationMixin
 
 logger = logging.getLogger(__name__)
@@ -13,38 +12,40 @@ logger = logging.getLogger(__name__)
 series_year_re = re.compile('^(?P<series>.+?)(?: \((?P<year>\d{4})\))?$')
 
 USE_BOOST = False
+
+
 class PatchedAddic7edSubtitle(Addic7edSubtitle):
     def __init__(self, *args, **kwargs):
-	super(PatchedAddic7edSubtitle, self).__init__(*args, **kwargs)
+        super(PatchedAddic7edSubtitle, self).__init__(*args, **kwargs)
 
     def get_matches(self, video, hearing_impaired=False):
-	matches = super(PatchedAddic7edSubtitle, self).get_matches(video, hearing_impaired=hearing_impaired)
-	if not USE_BOOST:
-	    return matches
+        matches = super(PatchedAddic7edSubtitle, self).get_matches(video, hearing_impaired=hearing_impaired)
+        if not USE_BOOST:
+            return matches
 
-	if {"series", "season", "episode", "year"}.issubset(matches) and "format" in matches:
-	    matches.add("boost")
-	    logger.info("Boosting Addic7ed subtitle")
-	return matches
+        if {"series", "season", "episode", "year"}.issubset(matches) and "format" in matches:
+            matches.add("boost")
+            logger.info("Boosting Addic7ed subtitle")
+        return matches
 
 
 class PatchedAddic7edProvider(PunctuationMixin, Addic7edProvider):
     USE_ADDICTED_RANDOM_AGENTS = False
 
     def __init__(self, username=None, password=None, use_random_agents=False):
-	super(PatchedAddic7edProvider, self).__init__(username=username, password=password)
-	self.USE_ADDICTED_RANDOM_AGENTS = use_random_agents
+        super(PatchedAddic7edProvider, self).__init__(username=username, password=password)
+        self.USE_ADDICTED_RANDOM_AGENTS = use_random_agents
 
     def initialize(self):
-	# patch: add optional user agent randomization
-	super(PatchedAddic7edProvider, self).initialize()
-	if self.USE_ADDICTED_RANDOM_AGENTS:
-	    from .utils import FIRST_THOUSAND_OR_SO_USER_AGENTS as AGENT_LIST
-	    logger.debug("addic7ed: using random user agents")
-	    self.session.headers = {
-        	'User-Agent': AGENT_LIST[randint(0, len(AGENT_LIST)-1)],
-        	'Referer': self.server_url,
-    	    }
+        # patch: add optional user agent randomization
+        super(PatchedAddic7edProvider, self).initialize()
+        if self.USE_ADDICTED_RANDOM_AGENTS:
+            from .utils import FIRST_THOUSAND_OR_SO_USER_AGENTS as AGENT_LIST
+            logger.debug("addic7ed: using random user agents")
+            self.session.headers = {
+                'User-Agent': AGENT_LIST[randint(0, len(AGENT_LIST) - 1)],
+                'Referer': self.server_url,
+            }
 
     @region.cache_on_arguments(expiration_time=SHOW_EXPIRATION_TIME)
     def _get_show_ids(self):
@@ -63,13 +64,13 @@ class PatchedAddic7edProvider(PunctuationMixin, Addic7edProvider):
         # populate the show ids
         show_ids = {}
         for show in soup.select('td.version > h3 > a[href^="/show/"]'):
-	    show_clean = self.clean_punctuation(show.text.lower())
-	    show_id = int(show['href'][6:])
+            show_clean = self.clean_punctuation(show.text.lower())
+            show_id = int(show['href'][6:])
             show_ids[show_clean] = show_id
-	    match = series_year_re.match(show_clean)
-	    if match.group(2) and match.group(1) not in show_ids:
-		# year found, also add it without year
-		show_ids[match.group(1)] = show_id
+            match = series_year_re.match(show_clean)
+            if match.group(2) and match.group(1) not in show_ids:
+                # year found, also add it without year
+                show_ids[match.group(1)] = show_id
 
         logger.debug('Found %d show ids', len(show_ids))
 
@@ -121,7 +122,7 @@ class PatchedAddic7edProvider(PunctuationMixin, Addic7edProvider):
         :return: the show id, if found.
         :rtype: int or None
 
-	# patch: add punctuation cleaning
+        # patch: add punctuation cleaning
         """
         # build the params
         series_year = '%s (%d)' % (series, year) if year is not None else series
@@ -145,9 +146,9 @@ class PatchedAddic7edProvider(PunctuationMixin, Addic7edProvider):
         logger.debug('Found show id %d', show_id)
 
         return show_id
-    
+
     def query(self, series, season, year=None, country=None):
-	# patch: fix logging
+        # patch: fix logging
         # get the show id
         show_id = self.get_show_id(series, year, country)
         if show_id is None:
@@ -182,7 +183,7 @@ class PatchedAddic7edProvider(PunctuationMixin, Addic7edProvider):
             download_link = cells[9].a['href'][1:]
 
             subtitle = PatchedAddic7edSubtitle(language, hearing_impaired, page_link, series, season, episode, title, year,
-                                        version, download_link)
+                                               version, download_link)
             logger.debug('Found subtitle %r', subtitle)
             subtitles.append(subtitle)
 

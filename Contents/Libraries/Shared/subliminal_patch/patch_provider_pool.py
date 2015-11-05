@@ -7,28 +7,28 @@ import socket
 import operator
 import time
 from babelfish.exceptions import LanguageReverseError
-
 from pkg_resources import EntryPoint, iter_entry_points
-
 from subliminal.api import ProviderPool
 from subliminal_patch.patch_subtitle import compute_score
 
 logger = logging.getLogger(__name__)
 
-
 DOWNLOAD_TRIES = 0
 DOWNLOAD_RETRY_SLEEP = 2
+
 
 class OldToNewProvider(object):
     """
     Simple proxy class to support the .plugin property which would normally exist
     when this was a stevedore.extension
     """
+
     def __init__(self, provider):
-	self.provider = provider
-    
+        self.provider = provider
+
     def plugin(self):
-	return self.provider
+        return self.provider
+
     plugin = property(plugin)
 
 
@@ -55,7 +55,7 @@ class LegacyProviderManager(object):
                                      'thesubdb = subliminal.providers.thesubdb:TheSubDBProvider',
                                      'tvsubtitles = subliminal.providers.tvsubtitles:TVsubtitlesProvider']
 
-	self.enabled_providers = enabled_providers or []
+        self.enabled_providers = enabled_providers or []
 
         #: Loaded providers
         self.providers = {}
@@ -70,7 +70,7 @@ class LegacyProviderManager(object):
 
     def __getitem__(self, name):
         """Get a provider, lazy loading it if necessary"""
-	
+
         if name in self.enabled_providers and name in self.providers:
             return self.providers[name]
         for ep in iter_entry_points(self.entry_point):
@@ -116,8 +116,8 @@ class LegacyProviderManager(object):
     def __contains__(self, name):
         return name in self.providers
 
-provider_manager = LegacyProviderManager()
 
+provider_manager = LegacyProviderManager()
 
 
 class PatchedProviderPool(ProviderPool):
@@ -126,6 +126,7 @@ class PatchedProviderPool(ProviderPool):
     because the new ProviderManager in the current subliminal package relies on stevedore, which has
     problems detecting subliminal's provider extensions when running in the Plex sandbox
     """
+
     def __init__(self, providers=None, provider_configs=None):
         #: Name of providers to use
         self.providers = providers or provider_manager.available_providers
@@ -140,9 +141,9 @@ class PatchedProviderPool(ProviderPool):
         self.discarded_providers = set()
 
         #: Dedicated :data:`provider_manager` as :class:`~stevedore.enabled.EnabledExtensionManager`
-        #self.manager = EnabledExtensionManager(provider_manager.namespace, lambda e: e.name in self.providers)
-	self.manager = provider_manager if not providers else LegacyProviderManager(self.providers)
-	
+        # self.manager = EnabledExtensionManager(provider_manager.namespace, lambda e: e.name in self.providers)
+        self.manager = provider_manager if not providers else LegacyProviderManager(self.providers)
+
     def list_subtitles(self, video, languages):
         """List subtitles.
         :param video: video to list subtitles for.
@@ -179,9 +180,9 @@ class PatchedProviderPool(ProviderPool):
                 logger.error('Provider %r timed out, discarding it', name)
                 self.discarded_providers.add(name)
                 continue
-	    except LanguageReverseError, e:
-		logger.exception("Unexpected language reverse error in %s, skipping. Error: %s", name, traceback.format_exc())
-		continue
+            except LanguageReverseError, e:
+                logger.exception("Unexpected language reverse error in %s, skipping. Error: %s", name, traceback.format_exc())
+                continue
             except Exception, e:
                 logger.exception('Unexpected error in provider %r, discarding it, because of: %s', name, traceback.format_exc())
                 self.discarded_providers.add(name)
@@ -203,28 +204,28 @@ class PatchedProviderPool(ProviderPool):
             return False
 
         logger.info('Downloading subtitle %r', subtitle)
-	tries = 0
-	
-	# retry downloading on failure until settings' download retry limit hit
-	while True:
-	    tries += 1
-    	    try:
-        	self[subtitle.provider_name].download_subtitle(subtitle)
-    	    except (requests.Timeout, socket.timeout):
-        	logger.error('Provider %r timed out', subtitle.provider_name)
-    	    except:
-		logger.exception('Unexpected error in provider %r, Traceback: %s', subtitle.provider_name, traceback.format_exc())
-	    else:
-		break
+        tries = 0
 
-	    if tries == DOWNLOAD_TRIES:
-		self.discarded_providers.add(subtitle.provider_name)
-		logger.error('Maximum retries reached for provider %r, discarding it', subtitle.provider_name)
-    		return False
+        # retry downloading on failure until settings' download retry limit hit
+        while True:
+            tries += 1
+            try:
+                self[subtitle.provider_name].download_subtitle(subtitle)
+            except (requests.Timeout, socket.timeout):
+                logger.error('Provider %r timed out', subtitle.provider_name)
+            except:
+                logger.exception('Unexpected error in provider %r, Traceback: %s', subtitle.provider_name, traceback.format_exc())
+            else:
+                break
 
-	    # don't hammer the provider
-	    logger.debug('Errors while downloading subtitle, retrying provider %r in %s seconds', subtitle.provider_name, DOWNLOAD_RETRY_SLEEP)
-	    time.sleep(DOWNLOAD_RETRY_SLEEP)
+            if tries == DOWNLOAD_TRIES:
+                self.discarded_providers.add(subtitle.provider_name)
+                logger.error('Maximum retries reached for provider %r, discarding it', subtitle.provider_name)
+                return False
+
+            # don't hammer the provider
+            logger.debug('Errors while downloading subtitle, retrying provider %r in %s seconds', subtitle.provider_name, DOWNLOAD_RETRY_SLEEP)
+            time.sleep(DOWNLOAD_RETRY_SLEEP)
 
         # check subtitle validity
         if not subtitle.is_valid():
@@ -251,14 +252,14 @@ class PatchedProviderPool(ProviderPool):
         :rtype: list of :class:`~subliminal.subtitle.Subtitle`
         """
 
-	use_hearing_impaired = hearing_impaired in ("prefer", "force HI")
+        use_hearing_impaired = hearing_impaired in ("prefer", "force HI")
 
         # sort subtitles by score
-	unsorted_subtitles = []
-	for s in subtitles:
-	    logger.debug("Starting score computation for %s", s)
-	    matches = s.get_matches(video, hearing_impaired=use_hearing_impaired)
-	    unsorted_subtitles.append((s, compute_score(matches, video, scores=scores), matches))
+        unsorted_subtitles = []
+        for s in subtitles:
+            logger.debug("Starting score computation for %s", s)
+            matches = s.get_matches(video, hearing_impaired=use_hearing_impaired)
+            unsorted_subtitles.append((s, compute_score(matches, video, scores=scores), matches))
         scored_subtitles = sorted(unsorted_subtitles, key=operator.itemgetter(1), reverse=True)
 
         # download best subtitles, falling back on the next on error
@@ -268,7 +269,7 @@ class PatchedProviderPool(ProviderPool):
             if score < min_score:
                 logger.info('Score %d is below min_score (%d)', score, min_score)
                 break
-                
+
             # stop when all languages are downloaded
             if set(s.language for s in downloaded_subtitles) == languages:
                 logger.debug('All languages downloaded')
@@ -279,15 +280,15 @@ class PatchedProviderPool(ProviderPool):
                 logger.debug('Skipping subtitle: %r already downloaded', subtitle.language)
                 continue
 
-	    # bail out if hearing_impaired was wrong
-	    if not "hearing_impaired" in matches and hearing_impaired in ("force HI", "force non-HI"):
-		logger.debug('Skipping subtitle: %r with score %d because hearing-impaired set to %s', subtitle, score, hearing_impaired)
-		continue
+            # bail out if hearing_impaired was wrong
+            if not "hearing_impaired" in matches and hearing_impaired in ("force HI", "force non-HI"):
+                logger.debug('Skipping subtitle: %r with score %d because hearing-impaired set to %s', subtitle, score, hearing_impaired)
+                continue
 
             # download
             logger.info('Downloading subtitle %r with score %d', subtitle, score)
             if self.download_subtitle(subtitle):
-		subtitle.score = score
+                subtitle.score = score
                 downloaded_subtitles.append(subtitle)
 
             # stop if only one subtitle is requested

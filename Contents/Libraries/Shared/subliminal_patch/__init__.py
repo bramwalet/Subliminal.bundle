@@ -2,14 +2,13 @@
 
 import subliminal
 import babelfish
-
 from .patch_provider_pool import PatchedProviderPool
 from .patch_video import patched_search_external_subtitles, scan_video
 from .patch_providers import addic7ed, podnapisi, tvsubtitles, opensubtitles
 
-
-# patch subliminal's ProviderPool 
+# patch subliminal's ProviderPool
 subliminal.api.ProviderPool = PatchedProviderPool
+
 
 # patch subliminal's subtitle classes
 def subtitleRepr(self):
@@ -17,8 +16,9 @@ def subtitleRepr(self):
 
     # specialcasing addic7ed; eww
     if self.__class__.__name__ == "Addic7edSubtitle":
-	link = u"http://www.addic7ed.com/%s" % self.download_link
+        link = u"http://www.addic7ed.com/%s" % self.download_link
     return '<%s %r [%s]>' % (self.__class__.__name__, link, self.language)
+
 
 subliminal.subtitle.Subtitle.__repr__ = subtitleRepr
 
@@ -27,8 +27,6 @@ subliminal.providers.addic7ed.Addic7edProvider = addic7ed.PatchedAddic7edProvide
 subliminal.providers.podnapisi.PodnapisiProvider = podnapisi.PatchedPodnapisiProvider
 subliminal.providers.tvsubtitles.TVsubtitlesProvider = tvsubtitles.PatchedTVsubtitlesProvider
 subliminal.providers.opensubtitles.OpenSubtitlesProvider = opensubtitles.PatchedOpenSubtitlesProvider
-
-
 
 # add language converters
 babelfish.language_converters.register('addic7ed = subliminal_patch.patch_language:PatchedAddic7edConverter')

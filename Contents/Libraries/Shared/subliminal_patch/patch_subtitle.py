@@ -5,6 +5,7 @@ from subliminal.video import Episode, Movie
 
 logger = logging.getLogger(__name__)
 
+
 def compute_score(matches, video, scores=None):
     """Compute the score of the `matches` against the `video`.
     Some matches count as much as a combination of others in order to level the final score:
