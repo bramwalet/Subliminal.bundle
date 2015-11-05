@@ -65,11 +65,12 @@ def patched_search_external_subtitles(path):
     return subtitles
 
 
-def scan_video(path, subtitles=True, embedded_subtitles=True, video_type=None):
+def scan_video(path, subtitles=True, embedded_subtitles=True, hints=None):
     """Scan a video and its subtitle languages from a video `path`.
     :param str path: existing path to the video.
     :param bool subtitles: scan for subtitles with the same name.
     :param bool embedded_subtitles: scan for embedded subtitles.
+    :param hints: hints dict for guessit
     :return: the scanned video.
     :rtype: :class:`Video`
 
@@ -84,10 +85,11 @@ def scan_video(path, subtitles=True, embedded_subtitles=True, video_type=None):
         raise ValueError('%s is not a valid video extension' % os.path.splitext(path)[1])
 
     dirpath, filename = os.path.split(path)
-    logger.info('Scanning video (type: %s) %r in %r', video_type, filename, dirpath)
+    hints = hints or {}
+    logger.info('Scanning video (hints: %s) %r in %r', hints, filename, dirpath)
 
     # guess
-    video = Video.fromguess(path, guess_file_info(path, options={"type": video_type}))
+    video = Video.fromguess(path, guess_file_info(path, options=hints))
 
     # size and hashes
     video.size = os.path.getsize(path)
