@@ -56,6 +56,8 @@ class SearchAllRecentlyAddedMissing(Task):
     items_searching_ids = None
     percentage = 0
 
+    stall_time = 30
+
     def __init__(self, scheduler):
         super(SearchAllRecentlyAddedMissing, self).__init__(scheduler)
         self.items_done = None
@@ -90,16 +92,23 @@ class SearchAllRecentlyAddedMissing(Task):
         items_done_count = 0
 
         for item_id, title in self.items_searching:
-            Log.Debug("Task: %s, triggering refresh for %s (%s)", self.name, title, item_id)
+            Log.Debug(u"Task: %s, triggering refresh for %s (%s)", self.name, title, item_id)
             searchMissing(item_id, title)
+            search_started = datetime.datetime.now()
             while 1:
                 if item_id in self.items_done:
                     items_done_count += 1
-                    Log.Debug("Task: %s, item %s done", self.name, item_id)
+                    Log.Debug(u"Task: %s, item %s done", self.name, item_id)
                     self.percentage = int(items_done_count * 100 / missing_count)
                     break
 
-                time.sleep(0.1)
+                if (datetime.datetime.now() - search_started).total_seconds() > self.stall_time:
+                    Log.Debug(u"Task: %s, item stalled for %s seconds: %s, retrying", self.name, self.stall_time, item_id)
+                    searchMissing(item_id, title)
+                    search_started = datetime.datetime.now()
+                    time.sleep(1)
+                time.sleep(0.5)
+            time.sleep(2)
         Log.Debug("Task: %s, all items done", self.name)
         self.running = False
 
