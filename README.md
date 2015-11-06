@@ -1,4 +1,4 @@
-Sub-Zero for Plex, 1.3.6.304
+Sub-Zero for Plex, 1.3.6.316
 =================
 
 ![logo](https://raw.githubusercontent.com/pannal/Sub-Zero.bundle/master/Contents/Resources/subzero.gif)
@@ -39,21 +39,17 @@ it has already downloaded all the wanted languages for.
 * **Remember: before you open a bug-ticket please double-check, that you've deleted the Sub-Zero.bundle folder BEFORE every update** (to avoid .pyc leftovers)
 
 ## Changelog
+1.3.6.316
+- scheduler: missing subtitles task now able to handle huge libraries (thanks @chopeta, @comrade)
+- scheduler: detect item-stalling, add wait and retry logic to make missing subtitles task more robust
+- scheduler: report failed items to logs after task run completion
+- hint series name and episode title, or movie title to guessit to make detection way better (e.g. for Mr. Robot)
+
 1.3.6.304
 - scheduler: correct the recent-determination of the search for missing subtitles in recently_added task
 - scheduler: rewrote search for missing subtitles task; it now requests refreshes one by one and not in bulk anymore (hopefully fixes stalling)
 - handle rare cases of weird file system encodings (ANSI_X3.4-1968 for example)
 - fix simplejson warning on startup
-
-1.3.6.297
-- rename Sub-Zero to Sub-Zero.bundle (requirement for adding Sub-Zero to the Plex channel directory)
-- channel: add logging actions for the internal storage to the advanced menu
-- channel: handle item titles with foreign characters in them correctly
-- (hopefully) fix handling file names with foreign characters in them when scanning for local media
-- reformat the whole project, mostly honoring pep8
-- scheduler: fixed some serious bugs; broken tasks (stalled) and some errors many of you have seen should be gone now
-- scheduler: partly rewritten to be more robust, again
-- settings: move Plex.tv credentials to the top
 
 [older changes](CHANGELOG.md)
 
