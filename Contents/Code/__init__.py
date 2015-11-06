@@ -54,23 +54,24 @@ def scanTvMedia(media):
     for season in media.seasons:
         for episode in media.seasons[season].episodes:
             ep = media.seasons[season].episodes[episode]
-            forceRefresh = intent.get("force", ep.id)
+            force_refresh = intent.get("force", ep.id)
             for item in media.seasons[season].episodes[episode].items:
                 for part in item.parts:
-                    scannedVideo = scanVideo(part, "episode", ignore_all=forceRefresh)
-                    scannedVideo.id = media.seasons[season].episodes[episode].id
-                    videos[scannedVideo] = part
+                    scanned_video = scanVideo(part, ignore_all=force_refresh,
+                                              hints={"type": "episode", "expected_series": [media.title], "expected_title": [ep.title]})
+                    scanned_video.id = media.seasons[season].episodes[episode].id
+                    videos[scanned_video] = part
     return videos
 
 
 def scanMovieMedia(media):
     videos = {}
-    forceRefresh = intent.get("force", media.id)
+    force_refresh = intent.get("force", media.id)
     for item in media.items:
         for part in item.parts:
-            scannedVideo = scanVideo(part, "movie", ignore_all=forceRefresh)
-            scannedVideo.id = media.id
-            videos[scannedVideo] = part
+            scanned_video = scanVideo(part, ignore_all=force_refresh, hints={"type": "movie", "expected_title": [media.title]})
+            scanned_video.id = media.id
+            videos[scanned_video] = part
     return videos
 
 
@@ -86,7 +87,7 @@ def getItemIDs(media, kind="series"):
     return ids
 
 
-def scanVideo(part, video_type, ignore_all=False):
+def scanVideo(part, ignore_all=False, hints=None):
     embedded_subtitles = not ignore_all and Prefs['subtitles.scan.embedded']
     external_subtitles = not ignore_all and Prefs['subtitles.scan.external']
 
@@ -94,8 +95,10 @@ def scanVideo(part, video_type, ignore_all=False):
         Log.Debug("Force refresh intended.")
 
     Log.Debug("Scanning video: %s, subtitles=%s, embedded_subtitles=%s" % (part.file, external_subtitles, embedded_subtitles))
+
     try:
-        return subliminal.video.scan_video(part.file, subtitles=external_subtitles, embedded_subtitles=embedded_subtitles, video_type=video_type)
+        return subliminal.video.scan_video(part.file, subtitles=external_subtitles, embedded_subtitles=embedded_subtitles, hints=hints or {})
+
     except ValueError:
         Log.Warn("File could not be guessed by subliminal")
 
