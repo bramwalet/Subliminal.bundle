@@ -36,6 +36,10 @@ class FileIO(object):
         fp.close()
 
 
+VALID_ENCODINGS = ("latin1", "utf-8", "mbcs")
+
+
 def getViableEncoding():
     encoding = sys.getfilesystemencoding()
-    return "utf-8" if not encoding or encoding.lower() == "ascii" else encoding
+    return "utf-8" if not encoding or encoding.lower() not in VALID_ENCODINGS else encoding
+
