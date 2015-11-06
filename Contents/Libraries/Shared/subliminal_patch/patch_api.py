@@ -1,8 +1,8 @@
 # coding=utf-8
 import os
-import sys
 import logging
 from subliminal.api import get_subtitle_path, io
+from subzero.lib.io import getViableEncoding
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +45,7 @@ def save_subtitles(video, subtitles, single=False, directory=None, encoding=None
         if directory is not None:
             subtitle_path = os.path.join(directory, os.path.split(subtitle_path)[1])
 
-        subtitle_path = subtitle_path.encode(sys.getfilesystemencoding() or 'utf-8')
+        subtitle_path = subtitle_path.encode(getViableEncoding())
 
         # save content as is or in the specified encoding
         logger.info('Saving %r to %r', subtitle, subtitle_path)

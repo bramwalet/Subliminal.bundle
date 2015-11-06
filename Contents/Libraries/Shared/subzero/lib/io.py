@@ -1,4 +1,5 @@
 import os
+import sys
 
 # thanks @ plex trakt scrobbler: https://github.com/trakt/Plex-Trakt-Scrobbler/blob/master/Trakttv.bundle/Contents/Libraries/Shared/plugin/core/io.py
 
@@ -33,3 +34,8 @@ class FileIO(object):
 
         # Close file
         fp.close()
+
+
+def getViableEncoding():
+    encoding = sys.getfilesystemencoding()
+    return "utf-8" if not encoding or encoding.lower() == "ascii" else encoding
