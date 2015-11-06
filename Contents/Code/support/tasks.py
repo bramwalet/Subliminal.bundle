@@ -87,16 +87,20 @@ class SearchAllRecentlyAddedMissing(Task):
     def run(self):
         self.running = True
         missing_count = len(self.items_searching)
+        items_done_count = 0
 
-        # dispatch all searches
-        searchMissing(self.items_searching)
+        for item_id, title in self.items_searching:
+            Log.Debug("Task: %s, triggering refresh for %s (%s)", self.name, title, item_id)
+            searchMissing(item_id, title)
+            while 1:
+                if item_id in self.items_done:
+                    items_done_count += 1
+                    Log.Debug("Task: %s, item %s done", self.name, item_id)
+                    self.percentage = int(items_done_count * 100 / missing_count)
+                    break
 
-        while 1:
-            if set(self.items_done).intersection(self.items_searching_ids) == self.items_searching_ids:
-                Log.Debug("Task: %s, all items done", self.name)
-                break
-            self.percentage = int(round(len(self.items_done) * 100 / missing_count))
-            time.sleep(0.1)
+                time.sleep(0.1)
+        Log.Debug("Task: %s, all items done", self.name)
         self.running = False
 
     def post_run(self):

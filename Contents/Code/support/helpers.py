@@ -44,15 +44,13 @@ def cleanFilename(filename):
                                                                        ' ' * len(string.punctuation + string.whitespace))).strip().lower()
 
 
-now = datetime.datetime.now()
-
-
 def is_recent(item):
+    now = datetime.datetime.now()
     addedAt = datetime.datetime.fromtimestamp(item.added_at)
     value, key = Prefs["scheduler.item_is_recent_age"].split()
-    if now - datetime.timedelta(**{key: int(value)}) > addedAt:
-        return False
-    return True
+    if now - datetime.timedelta(**{key: int(value)}) < addedAt:
+        return True
+    return False
 
 
 # thanks, Plex-Trakt-Scrobbler

@@ -1,7 +1,6 @@
 # coding=utf-8
 
-import datetime
-import sys
+import types
 from support.items import getRecentlyAddedItems, MI_ITEM
 from support.config import config
 from support.helpers import format_video
@@ -82,7 +81,10 @@ def getAllRecentlyAddedMissing():
     return missing
 
 
-def searchMissing(items):
+def searchMissing(item, title):
+    Plex["library/metadata"].refresh(item)
+
+
+def searchAllMissing(items):
     for item, title in items:
-        Log.Info("Triggering refresh for '%s'", title)
-        Plex["library/metadata"].refresh(item)
+        searchMissing(item, title)
