@@ -118,6 +118,7 @@ class SearchAllRecentlyAddedMissing(Task):
                     search_started = datetime.datetime.now()
                     time.sleep(1)
                 time.sleep(0.1)
+            time.sleep(1)
 
         Log.Debug("Task: %s, done. Failed items: %s", self.name, self.items_failed)
         self.running = False
