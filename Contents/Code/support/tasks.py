@@ -54,6 +54,7 @@ class SearchAllRecentlyAddedMissing(Task):
     items_done = None
     items_searching = None
     items_searching_ids = None
+    items_failed = None
     percentage = 0
 
     stall_time = 30
@@ -63,6 +64,7 @@ class SearchAllRecentlyAddedMissing(Task):
         self.items_done = None
         self.items_searching = None
         self.items_searching_ids = None
+        self.items_failed = None
         self.percentage = 0
 
     def signal(self, signal_name, *args, **kwargs):
@@ -82,6 +84,7 @@ class SearchAllRecentlyAddedMissing(Task):
         ids = set([id for id, title in missing])
         self.items_searching = missing
         self.items_searching_ids = ids
+        self.items_failed = []
         self.percentage = 0
         self.time_start = datetime.datetime.now()
         self.ready_for_display = True
@@ -105,6 +108,7 @@ class SearchAllRecentlyAddedMissing(Task):
 
                 if (datetime.datetime.now() - search_started).total_seconds() > self.stall_time:
                     if tries > 3:
+                        self.items_failed.append(item_id)
                         Log.Debug(u"Task: %s, item stalled for %s times: %s, skipping", self.name, tries, item_id)
                         break
 
@@ -115,7 +119,7 @@ class SearchAllRecentlyAddedMissing(Task):
                     time.sleep(1)
                 time.sleep(0.5)
             time.sleep(2)
-        Log.Debug("Task: %s, all items done", self.name)
+        Log.Debug("Task: %s, done. Failed items: %s", self.name, self.items_failed)
         self.running = False
 
     def post_run(self):
@@ -125,6 +129,7 @@ class SearchAllRecentlyAddedMissing(Task):
         self.time_start = None
         self.percentage = 0
         self.items_done = None
+        self.items_failed = None
         self.items_searching = None
         self.items_searching_ids = None
 
