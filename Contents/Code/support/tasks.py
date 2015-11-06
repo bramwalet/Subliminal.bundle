@@ -106,6 +106,7 @@ class SearchAllRecentlyAddedMissing(Task):
                     self.percentage = int(items_done_count * 100 / missing_count)
                     break
 
+                # item considered stalled after self.stall_time seconds passed after last refresh
                 if (datetime.datetime.now() - search_started).total_seconds() > self.stall_time:
                     if tries > 3:
                         self.items_failed.append(item_id)
@@ -118,6 +119,7 @@ class SearchAllRecentlyAddedMissing(Task):
                     search_started = datetime.datetime.now()
                     time.sleep(1)
                 time.sleep(0.1)
+            # we can't hammer the PMS, otherwise requests will be stalled
             time.sleep(1)
 
         Log.Debug("Task: %s, done. Failed items: %s", self.name, self.items_failed)
