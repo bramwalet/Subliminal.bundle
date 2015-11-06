@@ -6,7 +6,7 @@ from support.config import config
 from support.helpers import pad_title, encode_message, decode_message, timestamp
 from support.auth import refresh_plex_token
 from support.storage import resetStorage, logStorage
-from support.items import getRecentlyAddedItems, getOnDeckItems, refreshItem
+from support.items import getRecentlyAddedItems, getOnDeckItems, refreshItem, getAllItems
 from support.missing_subtitles import getAllRecentlyAddedMissing, searchMissing
 from support.background import scheduler
 from support.lib import Plex, lib_unaccessible_error
@@ -45,6 +45,11 @@ def fatality(randomize=None, header=None, message=None, only_refresh=False):
             title="Subtitles for 'Recently Added' items (max-age: %s)" % Prefs["scheduler.item_is_recent_age"],
             summary="Shows the recently added items, honoring the configured 'Item age to be considered recent'-setting (%s) and allowing you to individually (force-) refresh their metadata/subtitles." %
                     Prefs["scheduler.item_is_recent_age"]
+        ))
+        oc.add(DirectoryObject(
+            key=Callback(SectionsMenu),
+            title="boo",
+            summary="boo"
         ))
 
         task_name = "searchAllRecentlyAddedMissing"
@@ -89,22 +94,75 @@ def RecentlyAddedMenu(message=None):
     return mergedItemsMenu(title="Recently Added Items", itemGetter=getRecentlyAddedItems)
 
 
-def mergedItemsMenu(title, itemGetter):
+def mergedItemsMenu(title, itemGetter, itemGetterKwArgs=None, *args, **kwargs):
     oc = ObjectContainer(title2=title, no_cache=True, no_history=True)
-    items = itemGetter()
+    items = itemGetter(*args, **kwargs)
 
-    for kind, title, item in items:
+    for kind, title, key, deeper, item in items:
         menu_title = title
         oc.add(DirectoryObject(
-            key=Callback(RefreshItemMenu, title=menu_title, rating_key=item.rating_key),
+            key=Callback(RefreshItemMenu, title=menu_title, rating_key=key),
             title=menu_title
         ))
 
     return oc
 
 
+def dig_tree(oc, items, menu_callback, **kwargs):
+    for kind, title, key, dig_deeper, item in items:
+        oc.add(DirectoryObject(
+            key=Callback(menu_callback, title=title, rating_key=key, deeper=dig_deeper),
+            title=title
+        ))
+    return oc
+
+
+@route(PREFIX + '/sections')
+def SectionsMenu():
+    oc = ObjectContainer(title2="Sections", no_cache=True, no_history=True)
+    items = getAllItems("sections")
+
+    #oc = dig_tree(ObjectContainer(title2="Sections", no_cache=True, no_history=True), items, SectionMenu, section=section, title=menu_title)
+
+    for kind, title, section, dig_deeper, item in items:
+        menu_title = title
+        oc.add(DirectoryObject(
+            key=Callback(SectionMenu, section=section, title=menu_title, deeper=dig_deeper),
+            title=menu_title
+        ))
+
+    return oc
+
+
+@route(PREFIX + '/section', deeper=bool)
+def SectionMenu(section, title=None, deeper=False):
+    items = getAllItems(key="all", value=section, base="library/sections", flat=not deeper)
+    oc = dig_tree(ObjectContainer(title2=title, no_cache=True, no_history=True), items, MetadataMenu)
+
+    return oc
+
+
+@route(PREFIX + '/section/contents', deeper=bool)
+def MetadataMenu(rating_key, title=None, deeper=False):
+    oc = ObjectContainer(title2=title, no_cache=True, no_history=True)
+
+    if deeper:
+        print "DEEEEEEEPER"
+        items = getAllItems(key="children", value=rating_key, base="library/metadata", flat=False)
+        for kind, title, key, dig_deeper, item in items:
+            print kind, title, key, dig_deeper
+            oc.add(DirectoryObject(
+                key=Callback(MetadataMenu, rating_key=key, title=title, deeper=dig_deeper),
+                title=title
+            ))
+    else:
+        return RefreshItemMenu(rating_key=rating_key, title=title)
+
+    return oc
+
+
 @route(PREFIX + '/item/{rating_key}/actions')
-def RefreshItemMenu(rating_key, title=None, came_from="/recent"):
+def RefreshItemMenu(rating_key, title=None):
     oc = ObjectContainer(title2=title, no_cache=True, no_history=True)
     oc.add(DirectoryObject(
         key=Callback(RefreshItem, rating_key=rating_key),
