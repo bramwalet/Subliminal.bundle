@@ -95,6 +95,7 @@ class SearchAllRecentlyAddedMissing(Task):
             Log.Debug(u"Task: %s, triggering refresh for %s (%s)", self.name, title, item_id)
             searchMissing(item_id, title)
             search_started = datetime.datetime.now()
+            tries = 1
             while 1:
                 if item_id in self.items_done:
                     items_done_count += 1
@@ -103,7 +104,12 @@ class SearchAllRecentlyAddedMissing(Task):
                     break
 
                 if (datetime.datetime.now() - search_started).total_seconds() > self.stall_time:
+                    if tries > 3:
+                        Log.Debug(u"Task: %s, item stalled for %s times: %s, skipping", self.name, tries, item_id)
+                        break
+
                     Log.Debug(u"Task: %s, item stalled for %s seconds: %s, retrying", self.name, self.stall_time, item_id)
+                    tries += 1
                     searchMissing(item_id, title)
                     search_started = datetime.datetime.now()
                     time.sleep(1)
