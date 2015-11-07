@@ -80,7 +80,7 @@ class SearchAllRecentlyAddedMissing(Task):
 
     def prepare(self):
         self.items_done = []
-        missing = getAllMissing()
+        missing = getAllMissing([])
         ids = set([id for id, title in missing])
         self.items_searching = missing
         self.items_searching_ids = ids
@@ -128,7 +128,8 @@ class SearchAllRecentlyAddedMissing(Task):
     def post_run(self):
         self.ready_for_display = False
         self.last_run = datetime.datetime.now()
-        self.last_run_time = self.last_run - self.time_start
+        if self.time_start:
+            self.last_run_time = self.last_run - self.time_start
         self.time_start = None
         self.percentage = 0
         self.items_done = None
