@@ -20,10 +20,10 @@ def getMergedItems(key="recently_added"):
         if item.type == "season":
             for child in item.children():
                 # print u"Series: %s, Season: %s, Episode: %s %s" % (item.show.title, item.title, child.index, child.title)
-                items.append(("episode", format_item(child, "show", parent=item, section_title="None"), child))
+                items.append(("episode", format_item(child, "show", parent=item, section_title=None), child))
 
         elif item.type == "episode":
-            items.append(("episode", format_item(item, "show", parent=item.season, section_title="None", parent_title=item.show.title), item))
+            items.append(("episode", format_item(item, "show", parent=item.season, section_title=None, parent_title=item.show.title), item))
 
         elif item.type == "movie":
             items.append(("movie", format_item(item, "movie"), item))

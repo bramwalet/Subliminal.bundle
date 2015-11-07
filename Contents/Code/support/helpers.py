@@ -94,16 +94,17 @@ def format_item(item, kind, parent=None, parent_title=None, section_title=None):
     :return:
     """
     return format_video(kind, item.title,
-                        section_title=(section_title or (parent.section.title if parent else None)),
+                        section_title=(section_title or (parent.section.title if parent and getattr(parent, "section") else None)),
                         parent_title=(parent_title or (parent.show.title if parent else None)),
                         season=parent.index if parent else None,
                         episode=item.index if kind == "show" else None)
 
 
 def format_video(kind, title, section_title=None, parent_title=None, season=None, episode=None):
+    section_add = ("%s: " % section_title) if section_title else ""
     if kind == "show" and parent_title:
-        return '%s: %s S%02dE%02d, %s' % (section_title, parent_title, season, episode, title)
-    return "%s: %s" % (section_title, title)
+        return '%s%s S%02dE%02d, %s' % (section_add, parent_title, season, episode, title)
+    return "%s%s" % (section_add, title)
 
 
 def encode_message(base, s):
