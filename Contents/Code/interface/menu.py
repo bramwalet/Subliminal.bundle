@@ -1,13 +1,12 @@
 # coding=utf-8
-
-from subzero import intent
+import re
 from subzero.constants import TITLE, ART, ICON, PREFIX, PLUGIN_IDENTIFIER
 from support.config import config
-from support.helpers import pad_title, encode_message, decode_message, timestamp
+from support.helpers import pad_title, timestamp, is_recent
 from support.auth import refresh_plex_token
+from support.missing_subtitles import getAllMissing
 from support.storage import resetStorage, logStorage
 from support.items import getRecentlyAddedItems, getOnDeckItems, refreshItem
-from support.missing_subtitles import getAllRecentlyAddedMissing, searchMissing
 from support.background import scheduler
 from support.lib import Plex, lib_unaccessible_error
 
@@ -35,6 +34,11 @@ def fatality(randomize=None, header=None, message=None, only_refresh=False):
         return oc
 
     if not only_refresh:
+        oc.add(DirectoryObject(
+            key=Callback(TestMenu),
+            title=pad_title("TEST ME"),
+            summary="big blabber"
+        ))
         oc.add(DirectoryObject(
             key=Callback(OnDeckMenu),
             title=pad_title("Subtitles for 'On Deck' items"),
@@ -87,6 +91,51 @@ def OnDeckMenu(message=None):
 @route(PREFIX + '/recent')
 def RecentlyAddedMenu(message=None):
     return mergedItemsMenu(title="Recently Added Items", itemGetter=getRecentlyAddedItems)
+
+
+@route(PREFIX + '/test')
+def TestMenu():
+    oc = ObjectContainer(title2="asdf", no_cache=True, no_history=True)
+    args = {
+        "X-Plex-Token": Dict["token"]
+    }
+    computed_args = "&".join(["%s=%s" % (key, String.Quote(value)) for key, value in args.iteritems()])
+    episode_re = re.compile(ur'ratingKey="(?P<key>\d+)"'
+                            ur'.+?grandparentRatingKey="(?P<parent_key>\d+)"'
+                            ur'.+?title="(?P<title>.*?)"'
+                            ur'.+?grandparentTitle="(?P<parent_title>.*?)"'
+                            ur'.+?index="(?P<episode>\d+?)"'
+                            ur'.+?parentIndex="(?P<season>\d+?)".+?addedAt="(?P<added>\d+)"')
+    movie_re = re.compile(ur'ratingKey="(?P<key>\d+)".+?title="(?P<title>.*?)".+?addedAt="(?P<added>\d+)"')
+    available_keys = ("key", "title", "parent_key", "parent_title", "season", "episode", "added")
+    search_for = []
+    for section in Plex["library"].sections():
+        if section.type not in ("movie", "show") or section.key in config.scheduler_section_blacklist:
+            Log.Debug(u"Skipping section: %s" % section.title)
+            continue
+
+        request = HTTP.Request("https://127.0.0.1:32400/library/sections/%d/recentlyAdded%s" %
+                               (int(section.key), ("?%s" % computed_args) if computed_args else ""), immediate=True)
+        matcher = episode_re if section.type == "show" else movie_re
+        matches = [m.groupdict() for m in matcher.finditer(request.content)]
+        for match in matches:
+            data = dict((key, match[key] if key in match else None) for key in available_keys)
+            if section.type == "show" and data["parent_key"] in config.scheduler_series_blacklist:
+                Log.Debug(u"Skipping series: %s" % data["parent_title"])
+                continue
+            if data["key"] in config.scheduler_item_blacklist:
+                Log.Debug(u"Skipping item: %s" % data["title"])
+                continue
+            if is_recent(int(data["added"])):
+                search_for.append((int(data["added"]), section.type, section.title, data["key"]))
+    if search_for:
+        search_for.sort()
+        search_for.reverse()
+        missing = getAllMissing(search_for)
+        if missing:
+            pass
+
+    return oc
 
 
 def mergedItemsMenu(title, itemGetter):

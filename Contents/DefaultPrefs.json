@@ -402,7 +402,9 @@
       "1 weeks",
       "2 weeks",
       "3 weeks",
-      "4 weeks"
+      "4 weeks",
+      "5 weeks",
+      "6 weeks"
     ],
     "default": "2 weeks"
   },

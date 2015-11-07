@@ -1,7 +1,7 @@
 # coding=utf-8
 
 import logging
-from helpers import is_recent, format_video
+from helpers import is_recent, format_item
 from subzero import intent
 from lib import Plex
 from config import config
@@ -20,20 +20,20 @@ def getMergedItems(key="recently_added"):
         if item.type == "season":
             for child in item.children():
                 # print u"Series: %s, Season: %s, Episode: %s %s" % (item.show.title, item.title, child.index, child.title)
-                items.append(("episode", format_video(child, "episode", parent=item), child))
+                items.append(("episode", format_item(child, "show", parent=item), child))
 
         elif item.type == "episode":
-            items.append(("episode", format_video(item, "episode", parent=item.season, parentTitle=item.show.title), item))
+            items.append(("episode", format_item(item, "show", parent=item.season, parent_title=item.show.title), item))
 
         elif item.type == "movie":
-            items.append(("movie", format_video(item, "movie"), item))
+            items.append(("movie", format_item(item, "movie"), item))
 
     return items
 
 
 def getRecentlyAddedItems():
     items = getMergedItems(key="recently_added")
-    return filter(lambda x: is_recent(x[MI_ITEM]), items)
+    return filter(lambda x: is_recent(x[MI_ITEM].added_at), items)
 
 
 def getOnDeckItems():

@@ -2,7 +2,7 @@
 
 import datetime
 import time
-from missing_subtitles import getAllRecentlyAddedMissing, searchMissing
+from missing_subtitles import getAllMissing, searchMissing
 from background import scheduler
 
 
@@ -80,7 +80,7 @@ class SearchAllRecentlyAddedMissing(Task):
 
     def prepare(self):
         self.items_done = []
-        missing = getAllRecentlyAddedMissing()
+        missing = getAllMissing()
         ids = set([id for id, title in missing])
         self.items_searching = missing
         self.items_searching_ids = ids

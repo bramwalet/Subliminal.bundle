@@ -44,11 +44,11 @@ def cleanFilename(filename):
                                                                        ' ' * len(string.punctuation + string.whitespace))).strip().lower()
 
 
-def is_recent(item):
+def is_recent(t):
     now = datetime.datetime.now()
-    addedAt = datetime.datetime.fromtimestamp(item.added_at)
+    when = datetime.datetime.fromtimestamp(t)
     value, key = Prefs["scheduler.item_is_recent_age"].split()
-    if now - datetime.timedelta(**{key: int(value)}) < addedAt:
+    if now - datetime.timedelta(**{key: int(value)}) < when:
         return True
     return False
 
@@ -85,10 +85,25 @@ def pad_title(value):
     return str_pad(value, 30, pad_char=' ')
 
 
-def format_video(item, kind, parent=None, parentTitle=None):
-    if kind == "episode" and parent:
-        return '%s S%02dE%02d' % ((parentTitle or parent.show.title), parent.index, item.index)
-    return item.title
+def format_item(item, kind, parent=None, parent_title=None, section_title=None):
+    """
+    :param item: plex item
+    :param kind: show or movie
+    :param parent: season or None
+    :param parent_title: parentTitle or None
+    :return:
+    """
+    return format_video(kind, item.title,
+                        section_title=(section_title or (parent.section.title if parent else None)),
+                        parent_title=(parent_title or (parent.show.title if parent else None)),
+                        season=parent.index if parent else None,
+                        episode=item.index if kind == "show" else None)
+
+
+def format_video(kind, title, section_title=None, parent_title=None, season=None, episode=None):
+    if kind == "show" and parent_title:
+        return '%s: %s S%02dE%02d, %s' % (section_title, parent_title, season, episode, title)
+    return "%s: %s" % (section_title, title)
 
 
 def encode_message(base, s):
