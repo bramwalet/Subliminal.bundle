@@ -7,8 +7,8 @@ from support.helpers import format_video
 from lib import Plex
 
 
-def itemDiscoverMissing(rating_key, kind="episode", internal=False, external=True, languages=[], section_blacklist=[], series_blacklist=[],
-                        item_blacklist=[]):
+def itemDiscoverMissing(rating_key, kind="episode", internal=False, external=True, languages=(), section_blacklist=(), series_blacklist=(),
+                        item_blacklist=()):
     existing_subs = {"internal": [], "external": [], "count": 0}
 
     item_id = int(rating_key)
