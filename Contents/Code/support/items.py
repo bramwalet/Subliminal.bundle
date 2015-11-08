@@ -63,8 +63,7 @@ def getRecentItems():
     """
     args = {
         "sort": "addedAt:desc",
-        "X-Plex-Container-Start": "0",
-        "X-Plex-Container-Size": "200"
+        "X-Plex-Container-Start": "0"
     }
     if "token" in Dict and Dict["token"]:
         args["X-Plex-Token"] = Dict["token"]
