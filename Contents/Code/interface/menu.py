@@ -43,7 +43,7 @@ def fatality(randomize=None, header=None, message=None, only_refresh=False):
             title="Show items with missing subtitles (max-age: %s)" % Prefs["scheduler.item_is_recent_age"],
             summary="Shows the items honoring the configured 'Item age to be considered recent'-setting (%s)"
                     " and allowing you to individually (force-) refresh their metadata/subtitles. "
-                    "Limited to recently-added items (200 per section) " % Prefs["scheduler.item_is_recent_age"]
+                    "Limited to recently-added items (max. 100 per section) " % Prefs["scheduler.item_is_recent_age"]
         ))
 
         task_name = "searchAllRecentlyAddedMissing"
