@@ -4,6 +4,7 @@ import datetime
 import time
 from missing_subtitles import getAllMissing, searchMissing
 from background import scheduler
+from support.items import getRecentItems
 
 
 class Task(object):
@@ -80,8 +81,9 @@ class SearchAllRecentlyAddedMissing(Task):
 
     def prepare(self):
         self.items_done = []
-        missing = getAllMissing([])
-        ids = set([id for id, title in missing])
+        recent_items = getRecentItems()
+        missing = getAllMissing(recent_items)
+        ids = set([id for added_at, id, title in missing])
         self.items_searching = missing
         self.items_searching_ids = ids
         self.items_failed = []
@@ -94,7 +96,7 @@ class SearchAllRecentlyAddedMissing(Task):
         missing_count = len(self.items_searching)
         items_done_count = 0
 
-        for item_id, title in self.items_searching:
+        for added_at, item_id, title in self.items_searching:
             Log.Debug(u"Task: %s, triggering refresh for %s (%s)", self.name, title, item_id)
             searchMissing(item_id, title)
             search_started = datetime.datetime.now()
