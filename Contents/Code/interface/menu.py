@@ -40,10 +40,10 @@ def fatality(randomize=None, header=None, message=None, only_refresh=False):
         ))
         oc.add(DirectoryObject(
             key=Callback(RecentlyAddedMenu),
-            title="Show items with missing subtitles (limited to recently-added items, max-age: %s)" % Prefs["scheduler.item_is_recent_age"],
-            summary="Shows the recently added items, honoring the configured 'Item age to be considered recent'-setting (%s)"
-                    " and allowing you to individually (force-) refresh their metadata/subtitles." %
-                    Prefs["scheduler.item_is_recent_age"]
+            title="Show items with missing subtitles (max-age: %s)" % Prefs["scheduler.item_is_recent_age"],
+            summary="Shows the items honoring the configured 'Item age to be considered recent'-setting (%s)"
+                    " and allowing you to individually (force-) refresh their metadata/subtitles. "
+                    "Limited to recently-added items (200 per section) " % Prefs["scheduler.item_is_recent_age"]
         ))
 
         task_name = "searchAllRecentlyAddedMissing"
@@ -96,8 +96,7 @@ def recentItemsMenu(title):
         if missing_items:
             for added_at, item_id, title in missing_items:
                 oc.add(DirectoryObject(
-                    key=Callback(RefreshItemMenu, title=title, rating_key=item_id),
-                    title=title
+                    key=Callback(RefreshItemMenu, title=title, rating_key=item_id), title=title
                 ))
 
     return oc

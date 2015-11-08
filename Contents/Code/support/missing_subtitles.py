@@ -67,10 +67,10 @@ def getAllMissing(items):
     return missing
 
 
-def searchMissing(item, title):
+def refresh_item(item, title):
     Plex["library/metadata"].refresh(item)
 
 
-def searchAllMissing(items):
+def refresh_items(items):
     for item, title in items:
-        searchMissing(item, title)
+        refresh_item(item, title)

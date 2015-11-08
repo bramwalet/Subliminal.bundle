@@ -2,7 +2,7 @@
 
 import datetime
 import time
-from missing_subtitles import getAllMissing, searchMissing
+from missing_subtitles import getAllMissing, refresh_item
 from background import scheduler
 from support.items import getRecentItems
 
@@ -98,7 +98,7 @@ class SearchAllRecentlyAddedMissing(Task):
 
         for added_at, item_id, title in self.items_searching:
             Log.Debug(u"Task: %s, triggering refresh for %s (%s)", self.name, title, item_id)
-            searchMissing(item_id, title)
+            refresh_item(item_id, title)
             search_started = datetime.datetime.now()
             tries = 1
             while 1:
@@ -117,7 +117,7 @@ class SearchAllRecentlyAddedMissing(Task):
 
                     Log.Debug(u"Task: %s, item stalled for %s seconds: %s, retrying", self.name, self.stall_time, item_id)
                     tries += 1
-                    searchMissing(item_id, title)
+                    refresh_item(item_id, title)
                     search_started = datetime.datetime.now()
                     time.sleep(1)
                 time.sleep(0.1)
