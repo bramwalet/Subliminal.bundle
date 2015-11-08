@@ -1,6 +1,7 @@
 # coding=utf-8
 
 import logging
+import re
 from helpers import is_recent, format_item
 from subzero import intent
 from lib import Plex
@@ -16,43 +17,42 @@ def getItems(key="recently_added", base="library", value=None, flat=True):
     plex has certain views that return multiple item types. recently_added and on_deck for example
     """
     items = []
-    print "Plex[%s].%s(%s)" % (base, key, value)
     for item in getattr(Plex[base], key)(*[value] if value else []):
         if hasattr(item, "scanner"):
             kind = "section"
         else:
             kind = item.type
 
-        print "KIND: ", kind
-
         if kind == "season":
             if flat:
                 # return episodes
                 for child in item.children():
-                    # print u"Series: %s, Season: %s, Episode: %s %s" % (item.show.title, item.title, child.index, child.title)
-                    items.append(("episode", format_video(child, "episode", parent=item), item.rating_key, False, child))
+                    items.append(("episode", format_item(child, "show", parent=item), int(item.rating_key), False, child))
             else:
                 # return seasons
-                items.append(("season", item.title, item.rating_key, True, item))
+                items.append(("season", item.title, int(item.rating_key), True, item))
 
         elif kind == "section":
-            items.append(("section", item.title, item.key, True, item))
+            items.append(("section", item.title, int(item.key), True, item))
 
         elif kind == "episode":
             items.append(
-                (kind, format_video(item, kind, parent=item.season, parentTitle=item.show.title), item.rating_key, False, item))
+                (kind, format_item(item, "show", parent=item.season, parent_title=item.show.title, section_title=item.section.title), int(item.rating_key), False, item))
 
-        elif kind == "movie":
-            items.append((kind, format_video(item, kind), item.rating_key, False, item))
+        elif kind in ("movie", "artist", "photo"):
+            items.append((kind, format_item(item, kind, section_title=item.section.title), int(item.rating_key), False, item))
 
         elif kind == "show":
-            items.append((kind, item.title, item.rating_key, True, item))
+            item_id = item.rating_key
+            if item.season_count == 1:
+                item_id = list(item.children())[0].rating_key
+            items.append((kind, format_item(item, kind, section_title=item.section.title), int(item_id), True, item))
 
     return items
 
 
 def getRecentlyAddedItems():
-    items = getMergedItems(key="recently_added")
+    items = getItems(key="recently_added")
     return filter(lambda x: is_recent(x[MI_ITEM].added_at), items)
 
 
@@ -95,8 +95,6 @@ def getRecentItems():
                 recent.append((int(data["added"]), section.type, section.title, data["key"]))
 
     return recent
-    items = getItems(key="recently_added")
-    return filter(lambda x: is_recent(x[MI_ITEM]), items)
 
 
 def getOnDeckItems():
@@ -105,7 +103,6 @@ def getOnDeckItems():
 
 def getAllItems(key, base="library", value=None, flat=False):
     return getItems(key, base=base, value=value, flat=flat)
-    return [(int(item.added_at), item.rating_key, title) for kind, title, item in getMergedItems(key="on_deck")]
 
 
 def refreshItem(rating_key, force=False, timeout=8000):

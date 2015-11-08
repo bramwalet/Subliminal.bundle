@@ -7,7 +7,6 @@ from support.missing_subtitles import getAllMissing
 from support.storage import resetStorage, logStorage
 from support.items import getOnDeckItems, refreshItem, getRecentItems
 from support.items import getRecentlyAddedItems, getOnDeckItems, refreshItem, getAllItems
-from support.missing_subtitles import getAllRecentlyAddedMissing, searchMissing
 from support.background import scheduler
 from support.lib import Plex, lib_unaccessible_error
 
@@ -49,8 +48,7 @@ def fatality(randomize=None, header=None, message=None, only_refresh=False):
         ))
         oc.add(DirectoryObject(
             key=Callback(SectionsMenu),
-            title="boo",
-            summary="boo"
+            title="Browse all items"
         ))
 
         task_name = "searchAllRecentlyAddedMissing"
@@ -113,14 +111,10 @@ def mergedItemsMenu(title, itemGetter, itemGetterKwArgs=None, *args, **kwargs):
     oc = ObjectContainer(title2=title, no_cache=True, no_history=True)
     items = itemGetter(*args, **kwargs)
 
-    for kind, title, key, deeper, item in items:
-        menu_title = title
-    for added_at, item_id, title in items:
+    for kind, title, item_id, deeper, item in items:
         oc.add(DirectoryObject(
-            key=Callback(RefreshItemMenu, title=menu_title, rating_key=key),
-            title=menu_title
-            key=Callback(RefreshItemMenu, title=title, rating_key=item_id),
-            title=title
+            title=title,
+            key=Callback(RefreshItemMenu, title=title, rating_key=item_id)
         ))
 
     return oc
@@ -165,10 +159,8 @@ def MetadataMenu(rating_key, title=None, deeper=False):
     oc = ObjectContainer(title2=title, no_cache=True, no_history=True)
 
     if deeper:
-        print "DEEEEEEEPER"
         items = getAllItems(key="children", value=rating_key, base="library/metadata", flat=False)
         for kind, title, key, dig_deeper, item in items:
-            print kind, title, key, dig_deeper
             oc.add(DirectoryObject(
                 key=Callback(MetadataMenu, rating_key=key, title=title, deeper=dig_deeper),
                 title=title
@@ -184,12 +176,12 @@ def RefreshItemMenu(rating_key, title=None, came_from="/recent"):
     oc = ObjectContainer(title2=title, no_cache=True, no_history=True)
     oc.add(DirectoryObject(
         key=Callback(RefreshItem, rating_key=rating_key),
-        title=u"Refresh: %s" % title,
+        title="Refresh: %s" % title,
         summary="Refreshes the item, possibly picking up new subtitles on disk"
     ))
     oc.add(DirectoryObject(
         key=Callback(RefreshItem, rating_key=rating_key, force=True),
-        title=u"Force-Refresh: %s" % title,
+        title="Force-Refresh: %s" % title,
         summary="Issues a forced refresh, ignoring known subtitles and searching for new ones"
     ))
 
