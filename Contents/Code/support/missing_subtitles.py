@@ -7,7 +7,7 @@ from support.helpers import format_item
 from lib import Plex
 
 
-def itemDiscoverMissing(rating_key, kind="show", section_title=None, internal=False, external=True, languages=()):
+def itemDiscoverMissing(rating_key, kind="show", added_at=None, section_title=None, internal=False, external=True, languages=()):
     existing_subs = {"internal": [], "external": [], "count": 0}
 
     item_id = int(rating_key)
@@ -46,7 +46,7 @@ def itemDiscoverMissing(rating_key, kind="show", section_title=None, internal=Fa
         Log.Info(u"Subs still missing for '%s': %s", item_title, missing)
 
     if missing:
-        return item_id, item_title
+        return added_at, item_id, item_title
 
 
 def getAllMissing(items):
@@ -55,13 +55,14 @@ def getAllMissing(items):
         state = itemDiscoverMissing(
             key,
             kind=kind,
+            added_at=added_at,
             section_title=section_title,
             languages=config.langList,
             internal=bool(Prefs["subtitles.scan.embedded"]),
             external=bool(Prefs["subtitles.scan.external"])
         )
         if state:
-            # (item_id, title)
+            # (added_at, item_id, title)
             missing.append(state)
     return missing
 
