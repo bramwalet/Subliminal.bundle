@@ -97,7 +97,7 @@ def recentItemsMenu(title):
     oc = ObjectContainer(title2=title, no_cache=True, no_history=True)
     recent_items = getRecentItems()
     if recent_items:
-        missing_items = reversed(sorted(getAllMissing(recent_items)))
+        missing_items = getAllMissing(recent_items)
         if missing_items:
             for added_at, item_id, title in missing_items:
                 oc.add(DirectoryObject(

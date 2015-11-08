@@ -62,9 +62,13 @@ def getRecentItems():
     :return:
     """
     args = {
-        "X-Plex-Token": Dict["token"]
+        "sort": "addedAt:desc",
+        "X-Plex-Container-Start": "0",
+        "X-Plex-Container-Size": "200"
     }
-    computed_args = "&".join(["%s=%s" % (key, String.Quote(value)) for key, value in args.iteritems()])
+    if "token" in Dict and Dict["token"]:
+        args["X-Plex-Token"] = Dict["token"]
+
     episode_re = re.compile(ur'ratingKey="(?P<key>\d+)"'
                             ur'.+?grandparentRatingKey="(?P<parent_key>\d+)"'
                             ur'.+?title="(?P<title>.*?)"'
@@ -79,8 +83,16 @@ def getRecentItems():
             Log.Debug(u"Skipping section: %s" % section.title)
             continue
 
-        request = HTTP.Request("https://127.0.0.1:32400/library/sections/%d/recentlyAdded%s" %
+        use_args = args.copy()
+        if section.type == "show":
+            use_args["type"] = "4"
+
+        computed_args = "&".join(["%s=%s" % (key, String.Quote(value)) for key, value in use_args.iteritems()])
+
+        # been using "https://127.0.0.1:32400/library/sections/%d/recentlyAdded%s" before
+        request = HTTP.Request("https://127.0.0.1:32400/library/sections/%s/all%s" %
                                (int(section.key), ("?%s" % computed_args) if computed_args else ""), immediate=True)
+
         matcher = episode_re if section.type == "show" else movie_re
         matches = [m.groupdict() for m in matcher.finditer(request.content)]
         for match in matches:
