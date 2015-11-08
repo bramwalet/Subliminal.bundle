@@ -1,8 +1,6 @@
 # coding=utf-8
 
-import datetime
 
-from plex import Plex
 from intent import intent
 
 OS_PLEX_USERAGENT = 'plexapp.com v9.0'

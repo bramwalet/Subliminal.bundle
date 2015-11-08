@@ -35,12 +35,12 @@ class DefaultScheduler(object):
 
     def setup_tasks(self):
         # discover tasks;
+        self.tasks = {}
         for cls in self.registry:
             task = cls(self)
             self.tasks[task.name] = {"task": task, "frequency": parse_frequency(Prefs["scheduler.tasks.%s" % task.name])}
 
     def run(self):
-        self.setup_tasks()
         self.running = True
         self.thread = Thread.Create(self.worker)
 
@@ -73,9 +73,10 @@ class DefaultScheduler(object):
     def run_task(self, name):
         task = self.tasks[name]["task"]
         if task.running:
-            Log.Debug("Scheduler: Not running %s, as it's currently running." % name)
+            Log.Debug("Scheduler: Not running %s, as it's currently running.", name)
             return
 
+        Log.Debug("Scheduler: Running task %s", name)
         try:
             task.prepare()
             task.run()
@@ -98,6 +99,7 @@ class DefaultScheduler(object):
             Log.Debug("Scheduler: Not sending signal %s to task %s, because: not running", name, task_name)
 
     def worker(self):
+        Thread.Sleep(10.0)
         while 1:
             if not self.running:
                 break

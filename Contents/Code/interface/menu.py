@@ -1,11 +1,11 @@
 # coding=utf-8
-
-from subzero import intent
 from subzero.constants import TITLE, ART, ICON, PREFIX, PLUGIN_IDENTIFIER
 from support.config import config
-from support.helpers import pad_title, encode_message, decode_message, timestamp
+from support.helpers import pad_title, timestamp
 from support.auth import refresh_plex_token
+from support.missing_subtitles import getAllMissing
 from support.storage import resetStorage, logStorage
+from support.items import getOnDeckItems, refreshItem, getRecentItems
 from support.items import getRecentlyAddedItems, getOnDeckItems, refreshItem, getAllItems
 from support.missing_subtitles import getAllRecentlyAddedMissing, searchMissing
 from support.background import scheduler
@@ -42,9 +42,10 @@ def fatality(randomize=None, header=None, message=None, only_refresh=False):
         ))
         oc.add(DirectoryObject(
             key=Callback(RecentlyAddedMenu),
-            title="Subtitles for 'Recently Added' items (max-age: %s)" % Prefs["scheduler.item_is_recent_age"],
-            summary="Shows the recently added items, honoring the configured 'Item age to be considered recent'-setting (%s) and allowing you to individually (force-) refresh their metadata/subtitles." %
-                    Prefs["scheduler.item_is_recent_age"]
+            title="Show items with missing subtitles (max-age: %s)" % Prefs["scheduler.item_is_recent_age"],
+            summary="Shows the items honoring the configured 'Item age to be considered recent'-setting (%s)"
+                    " and allowing you to individually (force-) refresh their metadata/subtitles. "
+                    "Limited to recently-added items (max. 100 per section) " % Prefs["scheduler.item_is_recent_age"]
         ))
         oc.add(DirectoryObject(
             key=Callback(SectionsMenu),
@@ -91,7 +92,21 @@ def OnDeckMenu(message=None):
 
 @route(PREFIX + '/recent')
 def RecentlyAddedMenu(message=None):
-    return mergedItemsMenu(title="Recently Added Items", itemGetter=getRecentlyAddedItems)
+    return recentItemsMenu(title="Recently Added Items")
+
+
+def recentItemsMenu(title):
+    oc = ObjectContainer(title2=title, no_cache=True, no_history=True)
+    recent_items = getRecentItems()
+    if recent_items:
+        missing_items = reversed(sorted(getAllMissing(recent_items)))
+        if missing_items:
+            for added_at, item_id, title in missing_items:
+                oc.add(DirectoryObject(
+                    key=Callback(RefreshItemMenu, title=title, rating_key=item_id), title=title
+                ))
+
+    return oc
 
 
 def mergedItemsMenu(title, itemGetter, itemGetterKwArgs=None, *args, **kwargs):
@@ -100,9 +115,12 @@ def mergedItemsMenu(title, itemGetter, itemGetterKwArgs=None, *args, **kwargs):
 
     for kind, title, key, deeper, item in items:
         menu_title = title
+    for added_at, item_id, title in items:
         oc.add(DirectoryObject(
             key=Callback(RefreshItemMenu, title=menu_title, rating_key=key),
             title=menu_title
+            key=Callback(RefreshItemMenu, title=title, rating_key=item_id),
+            title=title
         ))
 
     return oc
@@ -162,7 +180,7 @@ def MetadataMenu(rating_key, title=None, deeper=False):
 
 
 @route(PREFIX + '/item/{rating_key}/actions')
-def RefreshItemMenu(rating_key, title=None):
+def RefreshItemMenu(rating_key, title=None, came_from="/recent"):
     oc = ObjectContainer(title2=title, no_cache=True, no_history=True)
     oc.add(DirectoryObject(
         key=Callback(RefreshItem, rating_key=rating_key),

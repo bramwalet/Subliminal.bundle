@@ -1,3 +1,16 @@
+1.3.6.297
+- rename Sub-Zero to Sub-Zero.bundle (requirement for adding Sub-Zero to the Plex channel directory)
+- channel: add logging actions for the internal storage to the advanced menu
+- channel: handle item titles with foreign characters in them correctly
+- (hopefully) fix handling file names with foreign characters in them when scanning for local media
+- reformat the whole project, mostly honoring pep8
+- scheduler: fixed some serious bugs; broken tasks (stalled) and some errors many of you have seen should be gone now
+- scheduler: partly rewritten to be more robust, again
+- settings: move Plex.tv credentials to the top
+
+1.3.5.281
+- fix tasks broken for 1.2 -> 1.3.5 upgraders
+
 1.3.5.273 (same build as Beta Release 1.3.0.273) - changes from previous stable 1.2.11.180
 - add a channel menu, making this plugin a hybrid (Agent+Channel)
 - add a generic background task scheduler
