@@ -131,27 +131,16 @@ def dig_tree(oc, items, menu_callback, **kwargs):
 
 @route(PREFIX + '/sections')
 def SectionsMenu():
-    oc = ObjectContainer(title2="Sections", no_cache=True, no_history=True)
     items = getAllItems("sections")
 
-    #oc = dig_tree(ObjectContainer(title2="Sections", no_cache=True, no_history=True), items, SectionMenu, section=section, title=menu_title)
-
-    for kind, title, section, dig_deeper, item in items:
-        menu_title = title
-        oc.add(DirectoryObject(
-            key=Callback(SectionMenu, section=section, title=menu_title, deeper=dig_deeper),
-            title=menu_title
-        ))
-
-    return oc
+    return dig_tree(ObjectContainer(title2="Sections", no_cache=True, no_history=True), items, SectionMenu)
 
 
 @route(PREFIX + '/section', deeper=bool)
-def SectionMenu(section, title=None, deeper=False):
-    items = getAllItems(key="all", value=section, base="library/sections", flat=not deeper)
-    oc = dig_tree(ObjectContainer(title2=title, no_cache=True, no_history=True), items, MetadataMenu)
+def SectionMenu(rating_key, title=None, deeper=False):
+    items = getAllItems(key="all", value=rating_key, base="library/sections", flat=not deeper)
 
-    return oc
+    return dig_tree(ObjectContainer(title2=title, no_cache=True, no_history=True), items, MetadataMenu)
 
 
 @route(PREFIX + '/section/contents', deeper=bool)
@@ -160,11 +149,7 @@ def MetadataMenu(rating_key, title=None, deeper=False):
 
     if deeper:
         items = getAllItems(key="children", value=rating_key, base="library/metadata", flat=False)
-        for kind, title, key, dig_deeper, item in items:
-            oc.add(DirectoryObject(
-                key=Callback(MetadataMenu, rating_key=key, title=title, deeper=dig_deeper),
-                title=title
-            ))
+        dig_tree(oc, items, MetadataMenu)
     else:
         return RefreshItemMenu(rating_key=rating_key, title=title)
 
@@ -173,6 +158,7 @@ def MetadataMenu(rating_key, title=None, deeper=False):
 
 @route(PREFIX + '/item/{rating_key}/actions')
 def RefreshItemMenu(rating_key, title=None, came_from="/recent"):
+    title = unicode(title)
     oc = ObjectContainer(title2=title, no_cache=True, no_history=True)
     oc.add(DirectoryObject(
         key=Callback(RefreshItem, rating_key=rating_key),
