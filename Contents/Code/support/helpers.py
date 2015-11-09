@@ -103,7 +103,9 @@ def format_item(item, kind, parent=None, parent_title=None, section_title=None):
 def format_video(kind, title, section_title=None, parent_title=None, season=None, episode=None):
     section_add = ("%s: " % section_title) if section_title else ""
     if kind == "show" and parent_title:
-        return '%s%s S%02dE%02d, %s' % (section_add, parent_title, season or 0, episode or 0, title)
+        if season and episode:
+            return '%s%s S%02dE%02d, %s' % (section_add, parent_title, season or 0, episode or 0, title)
+        return '%s%s, %s' % (section_add, parent_title, title)
     return "%s%s" % (section_add, title)
 
 
