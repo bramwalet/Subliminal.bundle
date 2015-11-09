@@ -21,6 +21,9 @@ class MediaContainer(Container):
     media_tag_prefix = Property('mediaTagPrefix')
     media_tag_version = Property('mediaTagVersion')
 
+    size = Property('size', int)
+    total_size = Property('totalSize', int)
+
     allow_sync = Property('allowSync', bool)
     mixed_parents = Property('mixedParents', bool)
     no_cache = Property('nocache', bool)
