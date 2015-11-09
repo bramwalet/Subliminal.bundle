@@ -1,5 +1,5 @@
 # coding=utf-8
-
+import traceback
 import types
 from support.items import getRecentlyAddedItems, MI_ITEM
 from support.config import config
@@ -52,18 +52,21 @@ def itemDiscoverMissing(rating_key, kind="show", added_at=None, section_title=No
 def getAllMissing(items):
     missing = []
     for added_at, kind, section_title, key in items:
-        state = itemDiscoverMissing(
-            key,
-            kind=kind,
-            added_at=added_at,
-            section_title=section_title,
-            languages=config.langList,
-            internal=bool(Prefs["subtitles.scan.embedded"]),
-            external=bool(Prefs["subtitles.scan.external"])
-        )
-        if state:
-            # (added_at, item_id, title)
-            missing.append(state)
+        try:
+            state = itemDiscoverMissing(
+                key,
+                kind=kind,
+                added_at=added_at,
+                section_title=section_title,
+                languages=config.langList,
+                internal=bool(Prefs["subtitles.scan.embedded"]),
+                external=bool(Prefs["subtitles.scan.external"])
+            )
+            if state:
+                # (added_at, item_id, title)
+                missing.append(state)
+        except:
+            Log.Error("Something went wrong when getting the state of item %s: %s", key, traceback.format_exc())
     return missing
 
 
