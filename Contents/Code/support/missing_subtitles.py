@@ -19,18 +19,18 @@ def itemDiscoverMissing(rating_key, kind="episode", internal=False, external=Tru
         return
 
     item = list(item_container)[0]
-
-    if kind == "episode":
-        item_title = format_video(item, kind, parent=item.season, parentTitle=item.show.title)
-    else:
-        item_title = format_video(item, kind)
-
+    
     if kind == "episode" and item.show.rating_key in series_blacklist:
         Log.Info("Skipping show %s in blacklist", item.show.key)
         return
     elif item.rating_key in item_blacklist:
         Log.Info("Skipping item %s in blacklist", item.key)
         return
+
+    if kind == "episode":
+        item_title = format_video(item, kind, parent=item.season, parentTitle=item.show.title)
+    else:
+        item_title = format_video(item, kind)
 
     video = item.media
 
