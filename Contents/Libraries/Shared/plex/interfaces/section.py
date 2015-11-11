@@ -26,11 +26,16 @@ class SectionInterface(Interface):
             return self.parse(response, idict({
                 'MediaContainer': ('MediaContainer', idict({
                     'Directory': {
-                        'artist': 'Artist',
-                        'show': 'Show'
+                        'album':    'Album',
+                        'artist':   'Artist',
+
+                        'season':   'Season',
+                        'show':     'Show'
                     },
                     'Video': {
-                        'movie': 'Movie'
+                        'episode':  'Episode',
+                        'clip':     'Clip',
+                        'movie':    'Movie'
                     },
                     'Track': 'Track'
                 }))
