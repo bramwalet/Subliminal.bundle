@@ -31,7 +31,8 @@ class SectionInterface(Interface):
                     },
                     'Video': {
                         'movie': 'Movie'
-                    }
+                    },
+                    'Track': 'Track'
                 }))
             }))
 
