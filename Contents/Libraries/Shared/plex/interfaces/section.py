@@ -19,3 +19,26 @@ class SectionInterface(Interface):
                 }
             }))
         }))
+
+    def first_character(self, key, character=None):
+        if character:
+            response = self.http.get(key, ['firstCharacter', character])
+            return self.parse(response, idict({
+                'MediaContainer': ('MediaContainer', idict({
+                    'Directory': {
+                        'artist': 'Artist',
+                        'show': 'Show'
+                    },
+                    'Video': {
+                        'movie': 'Movie'
+                    }
+                }))
+            }))
+
+        response = self.http.get(key, 'firstCharacter')
+
+        return self.parse(response, idict({
+            'MediaContainer': ('MediaContainer', idict({
+                'Directory': 'Directory'
+            }))
+        }))

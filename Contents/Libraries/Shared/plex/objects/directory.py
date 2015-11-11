@@ -7,6 +7,8 @@ class Directory(Descriptor):
 
     title = Property
 
+    size = Property
+
     art = Property
     thumb = Property
 
