@@ -12,7 +12,6 @@ logger = logging.getLogger(__name__)
 
 MI_KIND, MI_TITLE, MI_KEY, MI_DEEPER, MI_ITEM = 0, 1, 2, 3, 4
 
-
 container_size_re = re.compile(ur'totalSize="(\d+)"')
 
 
@@ -36,7 +35,7 @@ def getSectionSize(key):
     return size
 
 
-def getItems(key="recently_added", base="library", value=None, flat=True):
+def getItems(key="recently_added", base="library", value=None, flat=True, add_section_title=False):
     """
     try to handle all return types plex throws at us and return a generalized item tuple
     """
@@ -62,7 +61,8 @@ def getItems(key="recently_added", base="library", value=None, flat=True):
             if flat:
                 # return episodes
                 for child in item.children():
-                    items.append(("episode", format_item(child, "show", parent=item), int(item.rating_key), False, child))
+                    items.append(("episode", format_item(child, "show", parent=item, add_section_title=add_section_title), int(item.rating_key),
+                                  False, child))
             else:
                 # return seasons
                 items.append(("season", item.title, int(item.rating_key), True, item))
@@ -76,16 +76,19 @@ def getItems(key="recently_added", base="library", value=None, flat=True):
 
         elif kind == "episode":
             items.append(
-                (kind, format_item(item, "show", parent=item.season, parent_title=item.show.title, section_title=item.section.title), int(item.rating_key), False, item))
+                (kind, format_item(item, "show", parent=item.season, parent_title=item.show.title, section_title=item.section.title,
+                                   add_section_title=add_section_title), int(item.rating_key), False, item))
 
         elif kind in ("movie", "artist", "photo"):
-            items.append((kind, format_item(item, kind, section_title=item.section.title), int(item.rating_key), False, item))
+            items.append((kind, format_item(item, kind, section_title=item.section.title, add_section_title=add_section_title),
+                          int(item.rating_key), False, item))
 
         elif kind == "show":
             item_id = item.rating_key
             if item.season_count == 1:
                 item_id = list(item.children())[0].rating_key
-            items.append((kind, format_item(item, kind, section_title=item.section.title), int(item_id), True, item))
+            items.append(
+                (kind, format_item(item, kind, section_title=item.section.title, add_section_title=add_section_title), int(item_id), True, item))
 
     return items
 
@@ -144,7 +147,7 @@ def getRecentItems():
 
 
 def getOnDeckItems():
-    return getItems(key="on_deck")
+    return getItems(key="on_deck", add_section_title=True)
 
 
 def getAllItems(key, base="library", value=None, flat=False):

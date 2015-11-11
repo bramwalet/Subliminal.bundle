@@ -12,20 +12,19 @@ from support.lib import Plex, lib_unaccessible_error
 
 
 # init GUI
-def init_gui():
-    ObjectContainer.title1 = config.full_version
-    ObjectContainer.art = R(ART)
-    ObjectContainer.no_history = True
-    ObjectContainer.no_cache = True
+ObjectContainer.art = R(ART)
+ObjectContainer.no_history = True
+ObjectContainer.no_cache = True
 
 
 @handler(PREFIX, TITLE, art=ART, thumb=ICON)
 @route(PREFIX)
-def fatality(randomize=None, header=None, message=None, only_refresh=False):
+def fatality(randomize=None, force_title=None, header=None, message=None, only_refresh=False):
     """
     subzero main menu
     """
-    oc = ObjectContainer(header=header, message=message, no_cache=True, no_history=True)
+    title = force_title if force_title is not None else config.full_version
+    oc = ObjectContainer(title1=title, title2=None, header=header, message=message, no_cache=True, no_history=True)
 
     if not config.plex_api_working:
         oc.add(DirectoryObject(
@@ -45,8 +44,7 @@ def fatality(randomize=None, header=None, message=None, only_refresh=False):
             key=Callback(RecentlyAddedMenu),
             title="Show items with missing subtitles (max-age: %s)" % Prefs["scheduler.item_is_recent_age"],
             summary="Shows the items honoring the configured 'Item age to be considered recent'-setting (%s)"
-                    " and allowing you to individually (force-) refresh their metadata/subtitles. "
-                    "Limited to recently-added items " % Prefs["scheduler.item_is_recent_age"]
+                    " and allowing you to individually (force-) refresh their metadata/subtitles. " % Prefs["scheduler.item_is_recent_age"]
         ))
         oc.add(DirectoryObject(
             key=Callback(SectionsMenu),
@@ -70,7 +68,7 @@ def fatality(randomize=None, header=None, message=None, only_refresh=False):
         ))
 
     oc.add(DirectoryObject(
-        key=Callback(fatality, randomize=timestamp()),
+        key=Callback(fatality, force_title=" ", randomize=timestamp()),
         title=pad_title("Refresh"),
         summary="Refreshes the current view"
     ))
@@ -87,15 +85,15 @@ def fatality(randomize=None, header=None, message=None, only_refresh=False):
 
 @route(PREFIX + '/on_deck')
 def OnDeckMenu(message=None):
-    return mergedItemsMenu(title="Items On Deck", itemGetter=getOnDeckItems)
+    return mergedItemsMenu(title="Items On Deck", base_title="Items On Deck", itemGetter=getOnDeckItems)
 
 
 @route(PREFIX + '/recent')
 def RecentlyAddedMenu(message=None):
-    return recentItemsMenu(title="Recently Added Items")
+    return recentItemsMenu(title="Missing Subtitles", base_title="Missing Subtitles")
 
 
-def recentItemsMenu(title):
+def recentItemsMenu(title, base_title=None):
     oc = ObjectContainer(title2=title, no_cache=True, no_history=True)
     recent_items = getRecentItems()
     if recent_items:
@@ -103,20 +101,20 @@ def recentItemsMenu(title):
         if missing_items:
             for added_at, item_id, title in missing_items:
                 oc.add(DirectoryObject(
-                    key=Callback(RefreshItemMenu, title=title, rating_key=item_id), title=title
+                    key=Callback(RefreshItemMenu, title=base_title + " > " + title, item_title=title, rating_key=item_id), title=title
                 ))
 
     return oc
 
 
-def mergedItemsMenu(title, itemGetter, itemGetterKwArgs=None, *args, **kwargs):
+def mergedItemsMenu(title, itemGetter, itemGetterKwArgs=None, base_title=None, *args, **kwargs):
     oc = ObjectContainer(title2=title, no_cache=True, no_history=True)
     items = itemGetter(*args, **kwargs)
 
     for kind, title, item_id, deeper, item in items:
         oc.add(DirectoryObject(
             title=title,
-            key=Callback(RefreshItemMenu, title=title, rating_key=item_id)
+            key=Callback(RefreshItemMenu, title=base_title + " > " + title, item_title=title, rating_key=item_id)
         ))
 
     return oc
@@ -149,20 +147,22 @@ def SectionsMenu():
     items = getAllItems("sections")
 
     return dig_tree(ObjectContainer(title2="Sections", no_cache=True, no_history=True), items, None,
-                    menu_determination_callback=determine_section_display)
+                    menu_determination_callback=determine_section_display, pass_kwargs={"base_title": "Sections"})
 
 
 @route(PREFIX + '/section', deeper=bool)
-def SectionMenu(rating_key, title=None, deeper=False):
+def SectionMenu(rating_key, title=None, base_title=None, deeper=False):
     items = getAllItems(key="all", value=rating_key, base="library/sections", flat=not deeper)
 
-    return dig_tree(ObjectContainer(title2=title, no_cache=True, no_history=True), items, MetadataMenu)
+    title = base_title + " > " + title
+    return dig_tree(ObjectContainer(title2=title, no_cache=True, no_history=True), items, MetadataMenu, pass_kwargs={"base_title": title})
 
 
 @route(PREFIX + '/section/firstLetter', deeper=bool)
-def SectionFirstLetterMenu(rating_key, title=None, deeper=False):
+def SectionFirstLetterMenu(rating_key, title=None, base_title=None, deeper=False):
     items = getAllItems(key="first_character", value=rating_key, base="library/sections", flat=not deeper)
 
+    title = base_title + " > " + title
     return dig_tree(ObjectContainer(title2=title, no_cache=True, no_history=True), items, FirstLetterMetadataMenu,
                     fill_args=["key"], force_rating_key=rating_key, pass_kwargs={"base_title": title})
 
@@ -177,38 +177,41 @@ def FirstLetterMetadataMenu(rating_key, key, title=None, base_title=None, deeper
     :param deeper:
     :return:
     """
-    oc = ObjectContainer(title2=base_title + "/" + title, no_cache=True, no_history=True)
+    title = base_title + " > " + title
+    oc = ObjectContainer(title2=title, no_cache=True, no_history=True)
 
     items = getAllItems(key="first_character", value=[rating_key, key], base="library/sections", flat=False)
-    dig_tree(oc, items, MetadataMenu)
+    dig_tree(oc, items, MetadataMenu, pass_kwargs={"base_title": title})
     return oc
 
 
 @route(PREFIX + '/section/contents', deeper=bool)
-def MetadataMenu(rating_key, title=None, deeper=False):
+def MetadataMenu(rating_key, title=None, base_title=None, deeper=False):
+    item_title = title
+    title = base_title + " > " + title
     oc = ObjectContainer(title2=title, no_cache=True, no_history=True)
 
     if deeper:
         items = getAllItems(key="children", value=rating_key, base="library/metadata", flat=False)
-        dig_tree(oc, items, MetadataMenu)
+        dig_tree(oc, items, MetadataMenu, pass_kwargs={"base_title": title})
     else:
-        return RefreshItemMenu(rating_key=rating_key, title=title)
+        return RefreshItemMenu(rating_key=rating_key, title=title, item_title=item_title)
 
     return oc
 
 
 @route(PREFIX + '/item/{rating_key}/actions')
-def RefreshItemMenu(rating_key, title=None, came_from="/recent"):
-    title = unicode(title)
+def RefreshItemMenu(rating_key, title=None, base_title=None, item_title=None, came_from="/recent"):
+    title = unicode(base_title) + " > " + unicode(title) if base_title else title
     oc = ObjectContainer(title2=title, no_cache=True, no_history=True)
     oc.add(DirectoryObject(
         key=Callback(RefreshItem, rating_key=rating_key),
-        title="Refresh: %s" % title,
+        title="Refresh: %s" % item_title,
         summary="Refreshes the item, possibly picking up new subtitles on disk"
     ))
     oc.add(DirectoryObject(
         key=Callback(RefreshItem, rating_key=rating_key, force=True),
-        title="Force-Refresh: %s" % title,
+        title="Force-Refresh: %s" % item_title,
         summary="Issues a forced refresh, ignoring known subtitles and searching for new ones"
     ))
 
@@ -264,14 +267,13 @@ def ValidatePrefs():
     Log.Debug("Validate Prefs called.")
     config.initialize()
     scheduler.setup_tasks()
-    init_gui()
     return
 
 
 @route(PREFIX + '/advanced/restart/trigger')
 def TriggerRestart(randomize=None):
     Thread.CreateTimer(1.0, Restart)
-    return fatality(header="Restart triggered, please wait about 5 seconds", only_refresh=True)
+    return fatality(header="Restart triggered, please wait about 5 seconds", force_title=" ", only_refresh=True)
 
 
 @route(PREFIX + '/advanced/restart/execute')

@@ -85,7 +85,7 @@ def pad_title(value):
     return str_pad(value, 30, pad_char=' ')
 
 
-def format_item(item, kind, parent=None, parent_title=None, section_title=None):
+def format_item(item, kind, parent=None, parent_title=None, section_title=None, add_section_title=False):
     """
     :param item: plex item
     :param kind: show or movie
@@ -97,11 +97,15 @@ def format_item(item, kind, parent=None, parent_title=None, section_title=None):
                         section_title=(section_title or (parent.section.title if parent and getattr(parent, "section") else None)),
                         parent_title=(parent_title or (parent.show.title if parent else None)),
                         season=parent.index if parent else None,
-                        episode=item.index if kind == "show" else None)
+                        episode=item.index if kind == "show" else None,
+                        add_section_title=add_section_title)
 
 
-def format_video(kind, title, section_title=None, parent_title=None, season=None, episode=None):
-    section_add = ("%s: " % section_title) if section_title else ""
+def format_video(kind, title, section_title=None, parent_title=None, season=None, episode=None, add_section_title=False):
+    section_add = ""
+    if add_section_title:
+        section_add = ("%s: " % section_title) if section_title else ""
+
     if kind == "show" and parent_title:
         if season and episode:
             return '%s%s S%02dE%02d, %s' % (section_add, parent_title, season or 0, episode or 0, title)
