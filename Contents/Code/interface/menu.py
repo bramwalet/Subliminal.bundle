@@ -1,7 +1,10 @@
 # coding=utf-8
+import types
+
+from subzero import intent
 from subzero.constants import TITLE, ART, ICON, PREFIX, PLUGIN_IDENTIFIER
 from support.config import config
-from support.helpers import pad_title, timestamp
+from support.helpers import pad_title, timestamp, format_video
 from support.auth import refresh_plex_token
 from support.missing_subtitles import getAllMissing
 from support.storage import resetStorage, logStorage
@@ -37,18 +40,19 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
     if not only_refresh:
         oc.add(DirectoryObject(
             key=Callback(OnDeckMenu),
-            title=pad_title("Subtitles for 'On Deck' items"),
+            title=pad_title("On Deck items"),
             summary="Shows the current on deck items and allows you to individually (force-) refresh their metadata/subtitles."
         ))
         oc.add(DirectoryObject(
             key=Callback(RecentlyAddedMenu),
-            title="Show items with missing subtitles (max-age: %s)" % Prefs["scheduler.item_is_recent_age"],
+            title="Items with missing subtitles",
             summary="Shows the items honoring the configured 'Item age to be considered recent'-setting (%s)"
                     " and allowing you to individually (force-) refresh their metadata/subtitles. " % Prefs["scheduler.item_is_recent_age"]
         ))
         oc.add(DirectoryObject(
             key=Callback(SectionsMenu),
-            title="Browse all items"
+            title="Browse all items",
+            summary="Go through your whole library and individually (force-) refresh the metadata/subtitles of individual items."
         ))
 
         task_name = "searchAllRecentlyAddedMissing"
@@ -70,7 +74,7 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
     oc.add(DirectoryObject(
         key=Callback(fatality, force_title=" ", randomize=timestamp()),
         title=pad_title("Refresh"),
-        summary="Refreshes the current view"
+        summary="Current state: %s" % ((Dict["current_refresh_state"] or "Idle") if "current_refresh_state" in Dict else "Idle")
     ))
 
     if not only_refresh:
@@ -81,6 +85,31 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
         ))
 
     return oc
+
+
+def set_refresh_menu_state(state_or_media, media_type="movies"):
+    if not state_or_media:
+        Dict["current_refresh_state"] = None
+        return
+
+    if isinstance(state_or_media, types.StringTypes):
+        Dict["current_refresh_state"] = state_or_media
+        return
+
+    media = state_or_media
+    media_id = media.id
+    title = None
+    if media_type == "series":
+        for season in media.seasons:
+            for episode in media.seasons[season].episodes:
+                ep = media.seasons[season].episodes[episode]
+                media_id = ep.id
+                title = format_video("show", ep.title, parent_title=media.title, season=int(season), episode=int(episode))
+    else:
+        title = format_video("movie", media.title)
+    force_refresh = intent.get("force", media_id)
+
+    Dict["current_refresh_state"] = "%sRefreshing %s" % ("Force-" if force_refresh else "", title)
 
 
 @route(PREFIX + '/on_deck')
@@ -274,11 +303,13 @@ def ValidatePrefs():
     Log.Debug("Validate Prefs called.")
     config.initialize()
     scheduler.setup_tasks()
+    set_refresh_menu_state(None)
     return
 
 
 @route(PREFIX + '/advanced/restart/trigger')
 def TriggerRestart(randomize=None):
+    set_refresh_menu_state("Restarting the plugin")
     Thread.CreateTimer(1.0, Restart)
     return fatality(header="Restart triggered, please wait about 5 seconds", force_title=" ", only_refresh=True)
 

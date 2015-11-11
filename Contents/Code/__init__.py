@@ -17,7 +17,7 @@ from subzero.constants import OS_PLEX_USERAGENT, DEPENDENCY_MODULE_NAMES, PERSON
 from subzero import intent
 from support.lib import lib_unaccessible_error
 from support.background import scheduler
-from interface.menu import fatality as MainMenu, ValidatePrefs
+from interface.menu import fatality as MainMenu, ValidatePrefs, set_refresh_menu_state
 from support.subtitlehelpers import getSubtitlesFromMetadata
 from support.storage import storeSubtitleInfo
 from support.config import config
@@ -217,6 +217,8 @@ class SubZeroAgent(object):
     def update(self, metadata, media, lang):
         Log.Debug("Sub-Zero %s, %s update called" % (config.version, self.agent_type))
 
+        set_refresh_menu_state(media, media_type=self.agent_type)
+
         item_ids = []
         try:
             initSubliminalPatches()
@@ -229,9 +231,15 @@ class SubZeroAgent(object):
             updateLocalMedia(metadata, media, media_type=self.agent_type)
 
         finally:
+            # update the menu state
+            set_refresh_menu_state(None)
+
             # notify any running tasks about our finished update
             for item_id in item_ids:
                 scheduler.signal("updated_metadata", item_id)
+
+                # resolve existing intent for that id
+                intent.resolve("force", item_id)
 
     def update_movies(self, metadata, media, lang):
         videos = scanMovieMedia(media)
