@@ -23,6 +23,8 @@ class SectionInterface(Interface):
     def first_character(self, key, character=None):
         if character:
             response = self.http.get(key, ['firstCharacter', character])
+
+            # somehow plex wrongly returns items of other libraries when character is #
             return self.parse(response, idict({
                 'MediaContainer': ('MediaContainer', idict({
                     'Directory': {
