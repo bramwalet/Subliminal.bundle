@@ -124,7 +124,7 @@ def dig_tree(oc, items, menu_callback, menu_determination_callback=None, force_r
     for kind, title, key, dig_deeper, item in items:
         add_kwargs = {}
         if fill_args:
-            add_kwargs = dict((k, getattr(item, k)) for k in fill_args)
+            add_kwargs = dict((k, getattr(item, k)) for k in fill_args if item and hasattr(item, k))
         if pass_kwargs:
             add_kwargs.update(pass_kwargs)
 
@@ -162,8 +162,15 @@ def SectionMenu(rating_key, title=None, base_title=None, deeper=False):
 def SectionFirstLetterMenu(rating_key, title=None, base_title=None, deeper=False):
     items = getAllItems(key="first_character", value=rating_key, base="library/sections", flat=not deeper)
 
+    oc = ObjectContainer(title2=title, no_cache=True, no_history=True)
     title = base_title + " > " + title
-    return dig_tree(ObjectContainer(title2=title, no_cache=True, no_history=True), items, FirstLetterMetadataMenu,
+
+    oc.add(DirectoryObject(
+            key=Callback(SectionMenu, title="All", base_title=title, rating_key=rating_key),
+            title="All"
+        )
+    )
+    return dig_tree(oc, items, FirstLetterMetadataMenu,
                     fill_args=["key"], force_rating_key=rating_key, pass_kwargs={"base_title": title})
 
 
