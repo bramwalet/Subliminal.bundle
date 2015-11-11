@@ -120,20 +120,32 @@ def mergedItemsMenu(title, itemGetter, itemGetterKwArgs=None, *args, **kwargs):
     return oc
 
 
-def dig_tree(oc, items, menu_callback, **kwargs):
+def dig_tree(oc, items, menu_callback, menu_determination_callback=None, force_rating_key=None, fill_args=None):
     for kind, title, key, dig_deeper, item in items:
+        add_kwargs = {}
+        if fill_args:
+            add_kwargs = dict((k, getattr(item, k)) for k in fill_args)
+
         oc.add(DirectoryObject(
-            key=Callback(menu_callback, title=title, rating_key=key, deeper=dig_deeper),
+            key=Callback(menu_callback or menu_determination_callback(kind, item), title=title, rating_key=force_rating_key or key,
+                         deeper=dig_deeper, **add_kwargs),
             title=title
         ))
     return oc
+
+
+def determine_section_display(kind, item):
+    if item.size > 200:
+        return SectionFirstLetterMenu
+    return SectionMenu
 
 
 @route(PREFIX + '/sections')
 def SectionsMenu():
     items = getAllItems("sections")
 
-    return dig_tree(ObjectContainer(title2="Sections", no_cache=True, no_history=True), items, SectionMenu)
+    return dig_tree(ObjectContainer(title2="Sections", no_cache=True, no_history=True), items, None,
+                    menu_determination_callback=determine_section_display)
 
 
 @route(PREFIX + '/section', deeper=bool)
@@ -141,6 +153,31 @@ def SectionMenu(rating_key, title=None, deeper=False):
     items = getAllItems(key="all", value=rating_key, base="library/sections", flat=not deeper)
 
     return dig_tree(ObjectContainer(title2=title, no_cache=True, no_history=True), items, MetadataMenu)
+
+
+@route(PREFIX + '/section/firstLetter', deeper=bool)
+def SectionFirstLetterMenu(rating_key, title=None, deeper=False):
+    items = getAllItems(key="first_character", value=rating_key, base="library/sections", flat=not deeper)
+
+    return dig_tree(ObjectContainer(title2=title, no_cache=True, no_history=True), items, FirstLetterMetadataMenu, fill_args=["key"],
+                    force_rating_key=rating_key)
+
+
+@route(PREFIX + '/section/firstLetter/key', deeper=bool)
+def FirstLetterMetadataMenu(rating_key, key, title=None, deeper=False):
+    """
+
+    :param rating_key: actually is the section's key
+    :param key: the firstLetter wanted
+    :param title:
+    :param deeper:
+    :return:
+    """
+    oc = ObjectContainer(title2=title, no_cache=True, no_history=True)
+
+    items = getAllItems(key="first_character", value=[rating_key, key], base="library/sections", flat=False)
+    dig_tree(oc, items, MetadataMenu)
+    return oc
 
 
 @route(PREFIX + '/section/contents', deeper=bool)
