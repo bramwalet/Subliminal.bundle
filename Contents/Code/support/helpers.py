@@ -119,3 +119,19 @@ def decode_message(s):
 
 def timestamp():
     return int(time.time())
+
+
+def query_plex(url, args):
+    """
+    simple http query to the plex API without parsing anything too complicated
+    :param url:
+    :param args:
+    :return:
+    """
+    use_args = args.copy()
+    if "token" in Dict and Dict["token"]:
+        use_args["X-Plex-Token"] = Dict["token"]
+
+    computed_args = "&".join(["%s=%s" % (key, String.Quote(value)) for key, value in use_args.iteritems()])
+
+    return HTTP.Request(url + ("?%s" % computed_args) if computed_args else "", immediate=True)
