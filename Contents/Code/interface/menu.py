@@ -52,7 +52,7 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
         oc.add(DirectoryObject(
             key=Callback(SectionsMenu),
             title="Browse all items",
-            summary="Go through your whole library and individually (force-) refresh the metadata/subtitles of individual items."
+            summary="Go through your whole library and (force-) refresh the metadata/subtitles of individual items."
         ))
 
         task_name = "searchAllRecentlyAddedMissing"
