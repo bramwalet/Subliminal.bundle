@@ -27,10 +27,25 @@ def compute_score(matches, video, scores=None):
 
     logger.info('Computing score for matches %r and %r', matches, video)
 
+    is_episode = isinstance(video, Episode)
+
     # remove equivalent match combinations
     if 'hash' in final_matches:
-        final_matches &= {'hash', 'hearing_impaired'}
-    elif isinstance(video, Episode):
+        if is_episode:
+            # we're an episode and we have "hash" set.
+            if {"season", "episode"} <= set(final_matches):
+                # season and episode matched, hash is valid
+                logger.info('Using valid hash, as season/episode are correct (%r) and (%r)', matches, video)
+                final_matches &= {'hash', 'hearing_impaired'}
+            else:
+                # season and episode didn't match, invalidate hash
+                logger.info('Ignoring hash as season/episode are wrong (%r) and (%r)', matches, video)
+                final_matches -= {"hash"}
+        else:
+            # hash trumps everything on non-episode videos
+            final_matches &= {'hash', 'hearing_impaired'}
+
+    elif is_episode:
         if 'imdb_id' in final_matches:
             final_matches -= {'series', 'tvdb_id', 'season', 'episode', 'title', 'year'}
         if 'tvdb_id' in final_matches:
