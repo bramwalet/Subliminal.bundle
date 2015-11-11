@@ -170,24 +170,24 @@ def SectionFirstLetterMenu(rating_key, title=None, base_title=None, deeper=False
             title="All"
         )
     )
-    return dig_tree(oc, items, FirstLetterMetadataMenu,
-                    fill_args=["key"], force_rating_key=rating_key, pass_kwargs={"base_title": title})
+    return dig_tree(oc, items, FirstLetterMetadataMenu, force_rating_key=rating_key, pass_kwargs={"base_title": title})
 
 
 @route(PREFIX + '/section/firstLetter/key', deeper=bool)
-def FirstLetterMetadataMenu(rating_key, key, title=None, base_title=None, deeper=False):
+def FirstLetterMetadataMenu(rating_key, title=None, base_title=None, deeper=False):
     """
 
     :param rating_key: actually is the section's key
     :param key: the firstLetter wanted
-    :param title:
+    :param title: the first letter, or #
     :param deeper:
     :return:
     """
+    item_title = title
     title = base_title + " > " + title
     oc = ObjectContainer(title2=title, no_cache=True, no_history=True)
 
-    items = getAllItems(key="first_character", value=[rating_key, key], base="library/sections", flat=False)
+    items = getAllItems(key="first_character", value=[rating_key, item_title], base="library/sections", flat=False)
     dig_tree(oc, items, MetadataMenu, pass_kwargs={"base_title": title})
     return oc
 
