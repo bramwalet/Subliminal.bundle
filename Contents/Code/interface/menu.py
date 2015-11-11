@@ -10,11 +10,13 @@ from support.items import getRecentlyAddedItems, getOnDeckItems, refreshItem, ge
 from support.background import scheduler
 from support.lib import Plex, lib_unaccessible_error
 
+
 # init GUI
-ObjectContainer.title1 = TITLE
-ObjectContainer.art = R(ART)
-ObjectContainer.no_history = True
-ObjectContainer.no_cache = True
+def init_gui():
+    ObjectContainer.title1 = config.full_version
+    ObjectContainer.art = R(ART)
+    ObjectContainer.no_history = True
+    ObjectContainer.no_cache = True
 
 
 @handler(PREFIX, TITLE, art=ART, thumb=ICON)
@@ -120,11 +122,13 @@ def mergedItemsMenu(title, itemGetter, itemGetterKwArgs=None, *args, **kwargs):
     return oc
 
 
-def dig_tree(oc, items, menu_callback, menu_determination_callback=None, force_rating_key=None, fill_args=None):
+def dig_tree(oc, items, menu_callback, menu_determination_callback=None, force_rating_key=None, fill_args=None, pass_kwargs=None):
     for kind, title, key, dig_deeper, item in items:
         add_kwargs = {}
         if fill_args:
             add_kwargs = dict((k, getattr(item, k)) for k in fill_args)
+        if pass_kwargs:
+            add_kwargs.update(pass_kwargs)
 
         oc.add(DirectoryObject(
             key=Callback(menu_callback or menu_determination_callback(kind, item), title=title, rating_key=force_rating_key or key,
@@ -159,12 +163,12 @@ def SectionMenu(rating_key, title=None, deeper=False):
 def SectionFirstLetterMenu(rating_key, title=None, deeper=False):
     items = getAllItems(key="first_character", value=rating_key, base="library/sections", flat=not deeper)
 
-    return dig_tree(ObjectContainer(title2=title, no_cache=True, no_history=True), items, FirstLetterMetadataMenu, fill_args=["key"],
-                    force_rating_key=rating_key)
+    return dig_tree(ObjectContainer(title2=title, no_cache=True, no_history=True), items, FirstLetterMetadataMenu,
+                    fill_args=["key"], force_rating_key=rating_key, pass_kwargs={"base_title": title})
 
 
 @route(PREFIX + '/section/firstLetter/key', deeper=bool)
-def FirstLetterMetadataMenu(rating_key, key, title=None, deeper=False):
+def FirstLetterMetadataMenu(rating_key, key, title=None, base_title=None, deeper=False):
     """
 
     :param rating_key: actually is the section's key
@@ -173,7 +177,7 @@ def FirstLetterMetadataMenu(rating_key, key, title=None, deeper=False):
     :param deeper:
     :return:
     """
-    oc = ObjectContainer(title2=title, no_cache=True, no_history=True)
+    oc = ObjectContainer(title2=base_title + "/" + title, no_cache=True, no_history=True)
 
     items = getAllItems(key="first_character", value=[rating_key, key], base="library/sections", flat=False)
     dig_tree(oc, items, MetadataMenu)
@@ -260,6 +264,7 @@ def ValidatePrefs():
     Log.Debug("Validate Prefs called.")
     config.initialize()
     scheduler.setup_tasks()
+    init_gui()
     return
 
 
