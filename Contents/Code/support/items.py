@@ -2,7 +2,8 @@
 
 import logging
 import re
-from helpers import is_recent, format_item
+import types
+from helpers import is_recent, format_item, query_plex
 from subzero import intent
 from lib import Plex
 from config import config
@@ -12,14 +13,48 @@ logger = logging.getLogger(__name__)
 MI_KIND, MI_TITLE, MI_KEY, MI_DEEPER, MI_ITEM = 0, 1, 2, 3, 4
 
 
+container_size_re = re.compile(ur'totalSize="(\d+)"')
+
+
+def getSectionSize(key):
+    """
+    quick query to determine the section size
+    :param key:
+    :return:
+    """
+    size = None
+    url = "https://127.0.0.1:32400/library/sections/%s/all" % int(key)
+    use_args = {
+        "X-Plex-Container-Size": "0",
+        "X-Plex-Container-Start": "0"
+    }
+    response = query_plex(url, use_args)
+    matches = container_size_re.findall(response.content)
+    if matches:
+        size = int(matches[0])
+
+    return size
+
+
 def getItems(key="recently_added", base="library", value=None, flat=True):
     """
-    plex has certain views that return multiple item types. recently_added and on_deck for example
+    try to handle all return types plex throws at us and return a generalized item tuple
     """
     items = []
-    for item in getattr(Plex[base], key)(*[value] if value else []):
+    apply_value = None
+    if value:
+        if isinstance(value, types.ListType):
+            apply_value = value
+        else:
+            apply_value = [value]
+    result = getattr(Plex[base], key)(*(apply_value or []))
+
+    for item in result:
+        cls = getattr(getattr(item, "__class__"), "__name__")
         if hasattr(item, "scanner"):
             kind = "section"
+        elif cls == "Directory":
+            kind = "directory"
         else:
             kind = item.type
 
@@ -32,7 +67,11 @@ def getItems(key="recently_added", base="library", value=None, flat=True):
                 # return seasons
                 items.append(("season", item.title, int(item.rating_key), True, item))
 
+        elif kind == "directory":
+            items.append(("directory", item.title, item.key, True, item))
+
         elif kind == "section":
+            item.size = getSectionSize(item.key)
             items.append(("section", item.title, int(item.key), True, item))
 
         elif kind == "episode":
@@ -66,8 +105,6 @@ def getRecentItems():
         "X-Plex-Container-Start": "0",
         "X-Plex-Container-Size": "200"
     }
-    if "token" in Dict and Dict["token"]:
-        args["X-Plex-Token"] = Dict["token"]
 
     episode_re = re.compile(ur'ratingKey="(?P<key>\d+)"'
                             ur'.+?grandparentRatingKey="(?P<parent_key>\d+)"'
@@ -87,14 +124,11 @@ def getRecentItems():
         if section.type == "show":
             use_args["type"] = "4"
 
-        computed_args = "&".join(["%s=%s" % (key, String.Quote(value)) for key, value in use_args.iteritems()])
-
-        # been using "https://127.0.0.1:32400/library/sections/%d/recentlyAdded%s" before
-        request = HTTP.Request("https://127.0.0.1:32400/library/sections/%s/all%s" %
-                               (int(section.key), ("?%s" % computed_args) if computed_args else ""), immediate=True)
+        url = "https://127.0.0.1:32400/library/sections/%s/all" % int(section.key)
+        response = query_plex(url, use_args)
 
         matcher = episode_re if section.type == "show" else movie_re
-        matches = [m.groupdict() for m in matcher.finditer(request.content)]
+        matches = [m.groupdict() for m in matcher.finditer(response.content)]
         for match in matches:
             data = dict((key, match[key] if key in match else None) for key in available_keys)
             if section.type == "show" and data["parent_key"] in config.scheduler_series_blacklist:
