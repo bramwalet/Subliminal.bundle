@@ -88,6 +88,12 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
 
 
 def set_refresh_menu_state(state_or_media, media_type="movies"):
+    """
+
+    :param state_or_media: string, None, or Media argument from Agent.update()
+    :param media_type: movies or series
+    :return:
+    """
     if not state_or_media:
         Dict["current_refresh_state"] = None
         return
@@ -241,12 +247,12 @@ def RefreshItemMenu(rating_key, title=None, base_title=None, item_title=None, ca
     title = unicode(base_title) + " > " + unicode(title) if base_title else title
     oc = ObjectContainer(title2=title, no_cache=True, no_history=True)
     oc.add(DirectoryObject(
-        key=Callback(RefreshItem, rating_key=rating_key),
+        key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title),
         title="Refresh: %s" % item_title,
         summary="Refreshes the item, possibly picking up new subtitles on disk"
     ))
     oc.add(DirectoryObject(
-        key=Callback(RefreshItem, rating_key=rating_key, force=True),
+        key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title, force=True),
         title="Force-Refresh: %s" % item_title,
         summary="Issues a forced refresh, ignoring known subtitles and searching for new ones"
     ))
@@ -255,8 +261,9 @@ def RefreshItemMenu(rating_key, title=None, base_title=None, item_title=None, ca
 
 
 @route(PREFIX + '/item/{rating_key}')
-def RefreshItem(rating_key=None, came_from="/recent", force=False):
+def RefreshItem(rating_key=None, came_from="/recent", item_title=None, force=False):
     assert rating_key
+    set_refresh_menu_state("Triggering %sRefresh for %s" % ("Force-" if force else "", item_title))
     Thread.Create(refreshItem, rating_key=rating_key, force=force)
     return fatality(randomize=timestamp(), header="%s of item %s triggered" % ("Refresh" if not force else "Forced-refresh", rating_key))
 
