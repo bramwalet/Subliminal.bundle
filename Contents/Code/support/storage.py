@@ -1,6 +1,7 @@
 # coding=utf-8
 
 import datetime
+import pprint
 
 
 def storeSubtitleInfo(videos, subtitles, storage_type):
@@ -49,4 +50,4 @@ def resetStorage(key):
 
 def logStorage(key):
     if key in Dict:
-        Log.Debug(Dict[key])
+        Log.Debug(pprint.pformat(Dict[key]))
