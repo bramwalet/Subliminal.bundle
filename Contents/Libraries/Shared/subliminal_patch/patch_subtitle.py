@@ -60,8 +60,6 @@ def compute_score(matches, video, scores=None):
             final_matches -= {'series', 'tvdb_id', 'season', 'episode', 'title', 'year'}
         if 'tvdb_id' in final_matches:
             final_matches -= {'series', 'year'}
-        if 'title' in final_matches:
-            final_matches -= {'season', 'episode'}
 
     # compute score
     logger.debug('Final matches: %r', final_matches)
