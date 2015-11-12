@@ -29,21 +29,31 @@ def compute_score(matches, video, scores=None):
 
     is_episode = isinstance(video, Episode)
 
+    episode_hash_valid_if = {"series", "season", "episode"}
+    movie_hash_valid_if = {"title", "format", "video_codec"}
+
     # remove equivalent match combinations
     if 'hash' in final_matches:
+        # hash is error-prone, try to fix that
         if is_episode:
             # we're an episode and we have "hash" set.
-            if {"season", "episode"} <= set(final_matches):
-                # season and episode matched, hash is valid
+            if episode_hash_valid_if <= set(final_matches):
+                # series, season and episode matched, hash is valid
                 logger.info('Using valid hash, as season/episode are correct (%r) and (%r)', matches, video)
                 final_matches &= {'hash', 'hearing_impaired'}
             else:
-                # season and episode didn't match, invalidate hash
-                logger.info('Ignoring hash as season/episode are wrong (%r) and (%r)', matches, video)
+                # no match, invalidate hash
+                logger.info('Ignoring hash as other matches are wrong (missing: %r) and (%r)', episode_hash_valid_if - matches, video)
                 final_matches -= {"hash"}
         else:
-            # hash trumps everything on non-episode videos
-            final_matches &= {'hash', 'hearing_impaired'}
+            if movie_hash_valid_if <= set(final_matches):
+                # title, format and video_codec match, hash is valid
+                logger.info('Using valid hash, as movie infos are correct (%r) and (%r)', matches, video)
+                final_matches &= {'hash', 'hearing_impaired'}
+            else:
+                # no match, invalidate hash
+                logger.info('Ignoring hash as other matches are wrong (missing: %r) and (%r)', movie_hash_valid_if - matches, video)
+                final_matches -= {"hash"}
 
     elif is_episode:
         if 'imdb_id' in final_matches:
