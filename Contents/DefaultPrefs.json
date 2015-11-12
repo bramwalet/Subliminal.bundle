@@ -264,13 +264,13 @@
   },
   {
     "id": "subtitles.scan.embedded",
-    "label": "Scan: include embedded subtitles (skip if existing)",
+    "label": "Scan: include subtitles embedded in the media file (and don't download seperate ones)",
     "type": "bool",
-    "default": "true"
+    "default": "false"
   },
   {
     "id": "subtitles.scan.external",
-    "label": "Scan: include external subtitles (skip if existing)",
+    "label": "Scan: include external subtitles (and don't download new ones)",
     "type": "bool",
     "default": "true"
   },
