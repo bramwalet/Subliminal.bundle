@@ -146,8 +146,6 @@ def query_plex(url, args):
 
 class DictProxy(object):
     store = None
-    translate_keys = None
-    keys_verbose = None
 
     patch_sandbox_methods = ("cmp", "contains", "unicode")
 
@@ -158,7 +156,7 @@ class DictProxy(object):
         for item in self.patch_sandbox_methods:
             setattr(self, "__%s__" % item, getattr(self, "%s__" % item))
 
-        if self.store not in Dict:
+        if self.store not in Dict or not Dict[self.store]:
             Dict[self.store] = self.setup_defaults()
 
     def __getattr__(self, name):

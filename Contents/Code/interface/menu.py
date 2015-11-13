@@ -1,5 +1,4 @@
 # coding=utf-8
-from interface.helpers import add_ignore_options, dig_tree, set_refresh_menu_state
 from subzero.constants import TITLE, ART, ICON, PREFIX, PLUGIN_IDENTIFIER
 from support.config import config
 from support.helpers import pad_title, timestamp, format_video
@@ -11,6 +10,8 @@ from support.items import getRecentItems, MI_KIND
 from support.items import getOnDeckItems, refreshItem, getAllItems
 from support.background import scheduler
 from support.lib import Plex, lib_unaccessible_error
+
+from menu_helpers import add_ignore_options, dig_tree, set_refresh_menu_state
 
 # init GUI
 ObjectContainer.art = R(ART)
@@ -133,9 +134,11 @@ def IgnoreMenu(kind, rating_key, title=None):
     rel = ignore_list[kind]
     if rating_key in rel:
         rel.remove(rating_key)
+        ignore_list.remove_title(kind, rating_key)
         state = "removed from"
     else:
         rel.append(rating_key)
+        ignore_list.add_title(kind, rating_key, title)
         state = "added to"
 
     return fatality(randomize=timestamp(), header="%s %s the ignore list" % (title, state))
@@ -266,12 +269,20 @@ def AdvancedMenu(randomize=None, header=None, message=None):
         title=pad_title("Log the plugin's internal subtitle information storage")
     ))
     oc.add(DirectoryObject(
+        key=Callback(LogStorage, key="ignore", randomize=timestamp()),
+        title=pad_title("Log the plugin's internal ignorelist storage")
+    ))
+    oc.add(DirectoryObject(
         key=Callback(ResetStorage, key="tasks", randomize=timestamp()),
         title=pad_title("Reset the plugin's scheduled tasks state storage")
     ))
     oc.add(DirectoryObject(
         key=Callback(ResetStorage, key="subs", randomize=timestamp()),
         title=pad_title("Reset the plugin's internal subtitle information storage")
+    ))
+    oc.add(DirectoryObject(
+        key=Callback(ResetStorage, key="ignore", randomize=timestamp()),
+        title=pad_title("Reset the plugin's internal ignorelist storage")
     ))
     return oc
 

@@ -27,7 +27,23 @@ class IgnoreDict(DictProxy):
     def verbose(self, name):
         return self.keys_verbose.get(name)
 
+    def get_title_key(self, kind, key):
+        return "%s_%s" % (kind, key)
+
+    def add_title(self, kind, key, title):
+        self["titles"][self.get_title_key(kind, key)] = title
+
+    def remove_title(self, kind, key):
+        title_key = self.get_title_key(kind, key)
+        if title_key in self.titles:
+            del self.titles[title_key]
+
+    def get_title(self, kind, key):
+        title_key = self.get_title_key(kind, key)
+        if title_key in self.titles:
+            return self.titles[title_key]
+
     def setup_defaults(self):
-        return {"sections": [], "series": [], "items": []}
+        return {"sections": [], "series": [], "items": [], "titles": {}}
 
 ignore_list = IgnoreDict()
