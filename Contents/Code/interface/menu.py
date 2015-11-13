@@ -1,6 +1,4 @@
 # coding=utf-8
-import types
-from subzero import intent
 from subzero.constants import TITLE, ART, ICON, PREFIX, PLUGIN_IDENTIFIER
 from support.config import config
 from support.helpers import pad_title, timestamp, format_video
@@ -8,8 +6,8 @@ from support.auth import refresh_plex_token
 from support.ignore import ignore_list
 from support.missing_subtitles import getAllMissing
 from support.storage import resetStorage, logStorage
-from support.items import getOnDeckItems, refreshItem, getRecentItems, MI_KIND
-from support.items import getRecentlyAddedItems, getOnDeckItems, refreshItem, getAllItems
+from support.items import getRecentItems, MI_KIND
+from support.items import getOnDeckItems, refreshItem, getAllItems
 from support.background import scheduler
 from support.lib import Plex, lib_unaccessible_error
 
@@ -86,37 +84,6 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
     return oc
 
 
-def set_refresh_menu_state(state_or_media, media_type="movies"):
-    """
-
-    :param state_or_media: string, None, or Media argument from Agent.update()
-    :param media_type: movies or series
-    :return:
-    """
-    if not state_or_media:
-        Dict["current_refresh_state"] = None
-        return
-
-    if isinstance(state_or_media, types.StringTypes):
-        Dict["current_refresh_state"] = state_or_media
-        return
-
-    media = state_or_media
-    media_id = media.id
-    title = None
-    if media_type == "series":
-        for season in media.seasons:
-            for episode in media.seasons[season].episodes:
-                ep = media.seasons[season].episodes[episode]
-                media_id = ep.id
-                title = format_video("show", ep.title, parent_title=media.title, season=int(season), episode=int(episode))
-    else:
-        title = format_video("movie", media.title)
-    force_refresh = intent.get("force", media_id)
-
-    Dict["current_refresh_state"] = "%sRefreshing %s" % ("Force-" if force_refresh else "", title)
-
-
 @route(PREFIX + '/on_deck')
 def OnDeckMenu(message=None):
     return mergedItemsMenu(title="Items On Deck", base_title="Items On Deck", itemGetter=getOnDeckItems)
@@ -154,52 +121,10 @@ def mergedItemsMenu(title, itemGetter, itemGetterKwArgs=None, base_title=None, *
     return oc
 
 
-def dig_tree(oc, items, menu_callback, menu_determination_callback=None, force_rating_key=None, fill_args=None, pass_kwargs=None):
-    for kind, title, key, dig_deeper, item in items:
-        add_kwargs = {}
-        if fill_args:
-            add_kwargs = dict((k, getattr(item, k)) for k in fill_args if item and hasattr(item, k))
-        if pass_kwargs:
-            add_kwargs.update(pass_kwargs)
-
-        oc.add(DirectoryObject(
-            key=Callback(menu_callback or menu_determination_callback(kind, item), title=title, rating_key=force_rating_key or key,
-                         deeper=dig_deeper, **add_kwargs),
-            title=title
-        ))
-    return oc
-
-
 def determine_section_display(kind, item):
     if item.size > 200:
         return SectionFirstLetterMenu
     return SectionMenu
-
-
-def add_ignore_options(oc, kind, title=None, rating_key=None):
-    """
-
-    :param oc: oc to add our options to
-    :param kind: movie, show, episode ... - gets translated to the ignore key (sections, series, items)
-    :param title:
-    :param rating_key:
-    :return:
-    """
-    # try to translate kind to the ignore key
-    use_kind = kind
-    if kind not in ignore_list:
-        use_kind = ignore_list.translate_key(kind)
-    if not use_kind or use_kind not in ignore_list:
-        return
-
-    in_list = rating_key in ignore_list[use_kind]
-
-    oc.add(DirectoryObject(
-            key=Callback(IgnoreMenu, kind=use_kind, rating_key=rating_key, title=title),
-            title="%s %s %s the ignore list" % (
-                "Remove" if in_list else "Add", ignore_list.verbose(use_kind), "from" if in_list else "to")
-        )
-    )
 
 
 @route(PREFIX + '/ignore/change')
@@ -212,7 +137,6 @@ def IgnoreMenu(kind, rating_key, title=None):
         rel.append(rating_key)
         state = "added to"
 
-    print Dict["ignore"]
     return fatality(randomize=timestamp(), header="%s %s the ignore list" % (title, state))
 
 
@@ -243,7 +167,6 @@ def SectionFirstLetterMenu(rating_key, title=None, base_title=None, deeper=False
     oc = ObjectContainer(title2=title, no_cache=True, no_history=True)
     title = base_title + " > " + title
     add_ignore_options(oc, "sections", title=section_title, rating_key=rating_key)
-    #add_ignore_options(oc, kind, title=title, rating_key=key)
     oc.add(DirectoryObject(
             key=Callback(SectionMenu, title="All", base_title=title, rating_key=rating_key),
             title="All"
