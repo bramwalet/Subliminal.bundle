@@ -1,7 +1,9 @@
 # coding=utf-8
 
-
 from intent import intent
+
+# expose iter to plex sandbox
+iter = iter
 
 OS_PLEX_USERAGENT = 'plexapp.com v9.0'
 
