@@ -135,13 +135,15 @@ def IgnoreMenu(kind, rating_key, title=None):
     if rating_key in rel:
         rel.remove(rating_key)
         ignore_list.remove_title(kind, rating_key)
+        ignore_list.save()
         state = "removed from"
     else:
         rel.append(rating_key)
         ignore_list.add_title(kind, rating_key, title)
+        ignore_list.save()
         state = "added to"
 
-    return fatality(randomize=timestamp(), header="%s %s the ignore list" % (title, state))
+    return fatality(randomize=timestamp(), force_title=" ", header="%s %s the ignore list" % (title, state))
 
 
 @route(PREFIX + '/sections')

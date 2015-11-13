@@ -43,6 +43,9 @@ class IgnoreDict(DictProxy):
         if title_key in self.titles:
             return self.titles[title_key]
 
+    def save(self):
+        Dict.Save()
+
     def setup_defaults(self):
         return {"sections": [], "series": [], "items": [], "titles": {}}
 
