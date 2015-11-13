@@ -44,3 +44,7 @@ sys.modules["support.storage"] = storage
 import auth
 
 sys.modules["support.auth"] = auth
+
+import ignore
+
+sys.modules["support.ignore"] = ignore
