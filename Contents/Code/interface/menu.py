@@ -1,4 +1,5 @@
 # coding=utf-8
+from interface.helpers import add_ignore_options, dig_tree, set_refresh_menu_state
 from subzero.constants import TITLE, ART, ICON, PREFIX, PLUGIN_IDENTIFIER
 from support.config import config
 from support.helpers import pad_title, timestamp, format_video
@@ -155,7 +156,7 @@ def SectionMenu(rating_key, title=None, base_title=None, deeper=False):
     section_title = title
     title = base_title + " > " + title
     oc = ObjectContainer(title2=title, no_cache=True, no_history=True)
-    add_ignore_options(oc, "sections", title=section_title, rating_key=rating_key)
+    add_ignore_options(oc, "sections", title=section_title, rating_key=rating_key, callback_menu=IgnoreMenu)
     return dig_tree(oc, items, MetadataMenu, pass_kwargs={"base_title": title})
 
 
@@ -166,7 +167,7 @@ def SectionFirstLetterMenu(rating_key, title=None, base_title=None, deeper=False
     section_title = title
     oc = ObjectContainer(title2=title, no_cache=True, no_history=True)
     title = base_title + " > " + title
-    add_ignore_options(oc, "sections", title=section_title, rating_key=rating_key)
+    add_ignore_options(oc, "sections", title=section_title, rating_key=rating_key, callback_menu=IgnoreMenu)
     oc.add(DirectoryObject(
             key=Callback(SectionMenu, title="All", base_title=title, rating_key=rating_key),
             title="All"
@@ -203,7 +204,7 @@ def MetadataMenu(rating_key, title=None, base_title=None, deeper=False):
         items = getAllItems(key="children", value=rating_key, base="library/metadata", flat=False)
         # we don't know exactly where we are here, only add ignore option to series
         if items and items[0][MI_KIND] == "season":
-            add_ignore_options(oc, "series", title=item_title, rating_key=rating_key)
+            add_ignore_options(oc, "series", title=item_title, rating_key=rating_key, callback_menu=IgnoreMenu)
         dig_tree(oc, items, MetadataMenu, pass_kwargs={"base_title": title})
     else:
         return RefreshItemMenu(rating_key=rating_key, title=title, item_title=item_title)
@@ -215,7 +216,7 @@ def MetadataMenu(rating_key, title=None, base_title=None, deeper=False):
 def RefreshItemMenu(rating_key, title=None, base_title=None, item_title=None, came_from="/recent"):
     title = unicode(base_title) + " > " + unicode(title) if base_title else title
     oc = ObjectContainer(title2=title, no_cache=True, no_history=True)
-    add_ignore_options(oc, "items", title=item_title, rating_key=rating_key)
+    add_ignore_options(oc, "items", title=item_title, rating_key=rating_key, callback_menu=IgnoreMenu)
     oc.add(DirectoryObject(
         key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title),
         title="Refresh: %s" % item_title,

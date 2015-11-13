@@ -1,13 +1,17 @@
 # coding=utf-8
+import types
+
 from subzero import intent
 from support.helpers import format_video
+from support.ignore import ignore_list
 
 
-def add_ignore_options(oc, kind, title=None, rating_key=None):
+def add_ignore_options(oc, kind, callback_menu=None, title=None, rating_key=None):
     """
 
     :param oc: oc to add our options to
     :param kind: movie, show, episode ... - gets translated to the ignore key (sections, series, items)
+    :param callback_menu: menu to inject
     :param title:
     :param rating_key:
     :return:
@@ -22,7 +26,7 @@ def add_ignore_options(oc, kind, title=None, rating_key=None):
     in_list = rating_key in ignore_list[use_kind]
 
     oc.add(DirectoryObject(
-            key=Callback(IgnoreMenu, kind=use_kind, rating_key=rating_key, title=title),
+            key=Callback(callback_menu, kind=use_kind, rating_key=rating_key, title=title),
             title="%s %s %s the ignore list" % (
                 "Remove" if in_list else "Add", ignore_list.verbose(use_kind), "from" if in_list else "to")
         )
