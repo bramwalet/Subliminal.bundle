@@ -57,6 +57,8 @@ def set_refresh_menu_state(state_or_media, media_type="movies"):
     :return:
     """
     if not state_or_media:
+        # store it in last state and remove the current
+        Dict["last_refresh_state"] = Dict["current_refresh_state"]
         Dict["current_refresh_state"] = None
         return
 

@@ -73,7 +73,10 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
     oc.add(DirectoryObject(
         key=Callback(fatality, force_title=" ", randomize=timestamp()),
         title=pad_title("Refresh"),
-        summary="Current state: %s" % ((Dict["current_refresh_state"] or "Idle") if "current_refresh_state" in Dict else "Idle")
+        summary="Current state: %s; Last state: %s" % (
+            (Dict["current_refresh_state"] or "Idle") if "current_refresh_state" in Dict else "Idle",
+            (Dict["last_refresh_state"] or "None") if "last_refresh_state" in Dict else "None"
+        )
     ))
 
     if not only_refresh:
