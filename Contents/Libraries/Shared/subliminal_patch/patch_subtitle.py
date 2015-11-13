@@ -29,7 +29,7 @@ def compute_score(matches, video, scores=None):
 
     is_episode = isinstance(video, Episode)
 
-    episode_hash_valid_if = {"series", "season", "episode"}
+    episode_hash_valid_if = {"series", "season", "episode", "format"}
     movie_hash_valid_if = {"title", "format", "video_codec"}
 
     # remove equivalent match combinations
