@@ -172,6 +172,7 @@ class DictProxy(object):
 
     def __setitem__(self, key, item):
         Dict[self.store][key] = item
+        Dict.Save()
 
     def __iter__(self):
         return iter(Dict[self.store])
