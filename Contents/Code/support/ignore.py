@@ -1,6 +1,6 @@
 # coding=utf-8
 
-from helpers import DictProxy
+from subzero.lib.dict import DictProxy
 
 
 class IgnoreDict(DictProxy):
@@ -49,4 +49,4 @@ class IgnoreDict(DictProxy):
     def setup_defaults(self):
         return {"sections": [], "series": [], "items": [], "titles": {}}
 
-ignore_list = IgnoreDict()
+ignore_list = IgnoreDict(Dict)
