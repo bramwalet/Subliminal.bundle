@@ -21,6 +21,11 @@ class IgnoreDict(DictProxy):
         "items": "Item",
     }
 
+    key_order = ("sections", "series", "items")
+
+    def __len__(self):
+        return sum(len(self.Dict[self.store][key]) for key in self.key_order)
+
     def translate_key(self, name):
         return self.translate_keys.get(name)
 

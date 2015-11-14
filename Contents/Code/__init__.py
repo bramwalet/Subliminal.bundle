@@ -1,22 +1,29 @@
 # coding=utf-8
 
-import string
 import os
-import urllib
-import zipfile
-import re
-import copy
+import sys
+
+# just some slight modifications to support sum and iter again
+from sandbox import restore_builtins
+
+restore_builtins(sys.modules['__main__'], {})
+
+module = sys.modules['__main__']
+globals = getattr(module, "__builtins__")["globals"]
+for key, value in getattr(module, "__builtins__").iteritems():
+    if key != "globals":
+        globals()[key] = value
+
 import logger
-import datetime
 import subliminal
 import subliminal_patch
 import support
+
 import interface
-from subzero.constants import OS_PLEX_USERAGENT, DEPENDENCY_MODULE_NAMES, PERSONAL_MEDIA_IDENTIFIER, PLUGIN_IDENTIFIER_SHORT, \
-    PLUGIN_IDENTIFIER, PLUGIN_NAME, PREFIX
+sys.modules["interface"] = interface
+
+from subzero.constants import OS_PLEX_USERAGENT, DEPENDENCY_MODULE_NAMES, PERSONAL_MEDIA_IDENTIFIER
 from subzero import intent
-from support.lib import lib_unaccessible_error
-from support.background import scheduler
 from interface.menu import *
 from support.subtitlehelpers import getSubtitlesFromMetadata
 from support.storage import storeSubtitleInfo

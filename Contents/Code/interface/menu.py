@@ -1,12 +1,13 @@
 # coding=utf-8
+
 from subzero.constants import TITLE, ART, ICON, PREFIX, PLUGIN_IDENTIFIER
 from support.config import config
-from support.helpers import pad_title, timestamp, format_video
+from support.helpers import pad_title, timestamp
 from support.auth import refresh_plex_token
 from support.ignore import ignore_list
 from support.missing_subtitles import getAllMissing
 from support.storage import resetStorage, logStorage
-from support.items import getRecentItems, MI_KIND
+from support.items import getRecentItems, MI_KIND, MI_DEEPER
 from support.items import getOnDeckItems, refreshItem, getAllItems
 from support.background import scheduler
 from support.lib import Plex, lib_unaccessible_error
@@ -70,8 +71,8 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
 
         oc.add(DirectoryObject(
             key=Callback(IgnoreListMenu),
-            title="Ignore list",
-            summary="Show the current ignore list (for the automatic tasks)"
+            title="Display ignore list (%d)" % len(ignore_list),
+            summary="Show the current ignore list (mainly used for the automatic tasks)"
         ))
 
     oc.add(DirectoryObject(
@@ -238,7 +239,7 @@ def MetadataMenu(rating_key, title=None, base_title=None, deeper=False):
     if deeper:
         items = getAllItems(key="children", value=rating_key, base="library/metadata", flat=False)
         # we don't know exactly where we are here, only add ignore option to series
-        if items and items[0][MI_KIND] == "season":
+        if items and (items[0][MI_KIND] == "season" or (items[0][MI_KIND] == "episode" and not items[0][MI_DEEPER])):
             add_ignore_options(oc, "series", title=item_title, rating_key=rating_key, callback_menu=IgnoreMenu)
         dig_tree(oc, items, MetadataMenu, pass_kwargs={"base_title": title})
     else:
@@ -247,14 +248,19 @@ def MetadataMenu(rating_key, title=None, base_title=None, deeper=False):
     return oc
 
 
-@route(PREFIX + '/ignore/list/{rating_key}/actions')
+@route(PREFIX + '/ignore/list')
 def IgnoreListMenu():
-    pass
+    oc = ObjectContainer(title2="Ignore list", replace_parent=True)
+    for key in ignore_list.key_order:
+        values = ignore_list[key]
+        for value in values:
+            add_ignore_options(oc, key, title=ignore_list.get_title(key, value), rating_key=value, callback_menu=IgnoreMenu, add_kind=True)
+    return oc
 
 
 @route(PREFIX + '/item/{rating_key}/actions')
 def RefreshItemMenu(rating_key, title=None, base_title=None, item_title=None, came_from="/recent"):
-    title = unicode(base_title) + " > " + unicode(title) if base_title else title
+    title = unicode(base_title) + " > " + unicode(title) if base_title else unicode(title)
     oc = ObjectContainer(title2=title, replace_parent=True)
     add_ignore_options(oc, "items", title=item_title, rating_key=rating_key, callback_menu=IgnoreMenu)
     oc.add(DirectoryObject(
