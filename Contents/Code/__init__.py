@@ -4,7 +4,7 @@ import os
 import sys
 
 # just some slight modifications to support sum and iter again
-from sandbox import restore_builtins
+from subzero.sandbox import restore_builtins
 
 restore_builtins(sys.modules['__main__'], {})
 
