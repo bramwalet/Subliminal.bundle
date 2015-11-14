@@ -10,23 +10,21 @@ from support.items import getRecentItems, MI_KIND
 from support.items import getOnDeckItems, refreshItem, getAllItems
 from support.background import scheduler
 from support.lib import Plex, lib_unaccessible_error
-
 from menu_helpers import add_ignore_options, dig_tree, set_refresh_menu_state
 
 # init GUI
 ObjectContainer.art = R(ART)
-ObjectContainer.no_history = True
 ObjectContainer.no_cache = True
 
 
 @handler(PREFIX, TITLE, art=ART, thumb=ICON)
 @route(PREFIX)
-def fatality(randomize=None, force_title=None, header=None, message=None, only_refresh=False):
+def fatality(randomize=None, force_title=None, header=None, message=None, only_refresh=False, no_history=False, replace_parent=False):
     """
     subzero main menu
     """
     title = force_title if force_title is not None else config.full_version
-    oc = ObjectContainer(title1=title, title2=None, header=header, message=message, no_cache=True, no_history=True)
+    oc = ObjectContainer(title1=title, title2=None, header=header, message=message, no_history=no_history, replace_parent=replace_parent)
 
     if not config.plex_api_working:
         oc.add(DirectoryObject(
@@ -177,9 +175,9 @@ def SectionFirstLetterMenu(rating_key, title=None, base_title=None, deeper=False
     title = base_title + " > " + title
     add_ignore_options(oc, "sections", title=section_title, rating_key=rating_key, callback_menu=IgnoreMenu)
     oc.add(DirectoryObject(
-            key=Callback(SectionMenu, title="All", base_title=title, rating_key=rating_key),
-            title="All"
-        )
+        key=Callback(SectionMenu, title="All", base_title=title, rating_key=rating_key),
+        title="All"
+    )
     )
     return dig_tree(oc, items, FirstLetterMetadataMenu, force_rating_key=rating_key, fill_args=["key"], pass_kwargs={"base_title": title})
 
@@ -223,7 +221,7 @@ def MetadataMenu(rating_key, title=None, base_title=None, deeper=False):
 @route(PREFIX + '/item/{rating_key}/actions')
 def RefreshItemMenu(rating_key, title=None, base_title=None, item_title=None, came_from="/recent"):
     title = unicode(base_title) + " > " + unicode(title) if base_title else title
-    oc = ObjectContainer(title2=title, no_cache=True, no_history=True)
+    oc = ObjectContainer(title2=title, replace_parent=True)
     add_ignore_options(oc, "items", title=item_title, rating_key=rating_key, callback_menu=IgnoreMenu)
     oc.add(DirectoryObject(
         key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title),
@@ -244,18 +242,20 @@ def RefreshItem(rating_key=None, came_from="/recent", item_title=None, force=Fal
     assert rating_key
     set_refresh_menu_state("Triggering %sRefresh for %s" % ("Force-" if force else "", item_title))
     Thread.Create(refreshItem, rating_key=rating_key, force=force)
-    return fatality(randomize=timestamp(), header="%s of item %s triggered" % ("Refresh" if not force else "Forced-refresh", rating_key))
+    return fatality(randomize=timestamp(), header="%s of item %s triggered" % ("Refresh" if not force else "Forced-refresh", rating_key),
+                    replace_parent=True)
 
 
 @route(PREFIX + '/missing/refresh')
 def RefreshMissing(randomize=None):
     Thread.CreateTimer(1.0, lambda: scheduler.run_task("searchAllRecentlyAddedMissing"))
-    return fatality(header="Refresh of recently added items with missing subtitles triggered")
+    return fatality(header="Refresh of recently added items with missing subtitles triggered", replace_parent=True)
 
 
 @route(PREFIX + '/advanced')
 def AdvancedMenu(randomize=None, header=None, message=None):
-    oc = ObjectContainer(header=header or "Internal stuff, pay attention!", message=message, no_cache=True, no_history=True, title2="Advanced")
+    oc = ObjectContainer(header=header or "Internal stuff, pay attention!", message=message, no_cache=True, no_history=True,
+                         replace_parent=True, title2="Advanced")
 
     oc.add(DirectoryObject(
         key=Callback(TriggerRestart),
@@ -305,7 +305,8 @@ def ValidatePrefs():
 def TriggerRestart(randomize=None):
     set_refresh_menu_state("Restarting the plugin")
     Thread.CreateTimer(1.0, Restart)
-    return fatality(header="Restart triggered, please wait about 5 seconds", force_title=" ", only_refresh=True)
+    return fatality(header="Restart triggered, please wait about 5 seconds", force_title=" ", only_refresh=True, replace_parent=True,
+                    no_history=True)
 
 
 @route(PREFIX + '/advanced/restart/execute')
