@@ -17,7 +17,7 @@ from subzero.constants import OS_PLEX_USERAGENT, DEPENDENCY_MODULE_NAMES, PERSON
 from subzero import intent
 from support.lib import lib_unaccessible_error
 from support.background import scheduler
-from interface.menu import fatality as MainMenu, ValidatePrefs, set_refresh_menu_state
+from interface.menu import *
 from support.subtitlehelpers import getSubtitlesFromMetadata
 from support.storage import storeSubtitleInfo
 from support.config import config
