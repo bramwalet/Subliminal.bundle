@@ -63,13 +63,19 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
                                                                                                str(task.last_run_time).split(".")[0])
 
         oc.add(DirectoryObject(
-            key=Callback(RefreshMissing, randomize=timestamp()),
+            key=Callback(RefreshMissing),
             title="Search for missing subtitles (in recently-added items, max-age: %s)" % Prefs["scheduler.item_is_recent_age"],
             summary="Automatically run periodically by the scheduler, if configured. %s" % task_state
         ))
 
+        oc.add(DirectoryObject(
+            key=Callback(IgnoreListMenu),
+            title="Ignore list",
+            summary="Show the current ignore list (for the automatic tasks)"
+        ))
+
     oc.add(DirectoryObject(
-        key=Callback(fatality, force_title=" ", randomize=timestamp()),
+        key=Callback(fatality, force_title=" "),
         title=pad_title("Refresh"),
         summary="Current state: %s; Last state: %s" % (
             (Dict["current_refresh_state"] or "Idle") if "current_refresh_state" in Dict else "Idle",
@@ -79,7 +85,7 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
 
     if not only_refresh:
         oc.add(DirectoryObject(
-            key=Callback(AdvancedMenu, randomize=timestamp()),
+            key=Callback(AdvancedMenu),
             title=pad_title("Advanced functions"),
             summary="Use at your own risk"
         ))
@@ -130,21 +136,43 @@ def determine_section_display(kind, item):
     return SectionMenu
 
 
-@route(PREFIX + '/ignore/change')
-def IgnoreMenu(kind, rating_key, title=None):
-    rel = ignore_list[kind]
-    if rating_key in rel:
-        rel.remove(rating_key)
-        ignore_list.remove_title(kind, rating_key)
-        ignore_list.save()
-        state = "removed from"
-    else:
-        rel.append(rating_key)
-        ignore_list.add_title(kind, rating_key, title)
-        ignore_list.save()
-        state = "added to"
+@route(PREFIX + '/ignore/set/{kind}/{rating_key}/{todo}/sure={sure}', kind=str, rating_key=str, todo=str, sure=bool)
+def IgnoreMenu(kind, rating_key, title=None, sure=False, todo="not_set"):
+    is_ignored = rating_key in ignore_list[kind]
+    if not sure:
+        oc = ObjectContainer(no_history=True, replace_parent=True, title1="%s %s %s %s the ignore list" % (
+            "Add" if not is_ignored else "Remove", ignore_list.verbose(kind), title, "to" if not is_ignored else "from"), title2="Are you sure?")
+        oc.add(DirectoryObject(
+            key=Callback(IgnoreMenu, kind=kind, rating_key=rating_key, title=title, sure=True, todo="add" if not is_ignored else "remove"),
+            title=pad_title("Are you sure?")
+        ))
+        return oc
 
-    return fatality(randomize=timestamp(), force_title=" ", header="%s %s the ignore list" % (title, state))
+    rel = ignore_list[kind]
+    dont_change = False
+    if todo == "remove":
+        if not is_ignored:
+            dont_change = True
+        else:
+            rel.remove(rating_key)
+            ignore_list.remove_title(kind, rating_key)
+            ignore_list.save()
+            state = "removed from"
+    elif todo == "add":
+        if is_ignored:
+            dont_change = True
+        else:
+            rel.append(rating_key)
+            ignore_list.add_title(kind, rating_key, title)
+            ignore_list.save()
+            state = "added to"
+    else:
+        dont_change = True
+
+    if dont_change:
+        return fatality(force_title=" ", header="Didn't change the ignore list", no_history=True)
+
+    return fatality(force_title=" ", header="%s %s the ignore list" % (title, state), no_history=True)
 
 
 @route(PREFIX + '/sections')
@@ -163,6 +191,7 @@ def SectionMenu(rating_key, title=None, base_title=None, deeper=False):
     title = base_title + " > " + title
     oc = ObjectContainer(title2=title, no_cache=True, no_history=True)
     add_ignore_options(oc, "sections", title=section_title, rating_key=rating_key, callback_menu=IgnoreMenu)
+
     return dig_tree(oc, items, MetadataMenu, pass_kwargs={"base_title": title})
 
 
@@ -216,6 +245,11 @@ def MetadataMenu(rating_key, title=None, base_title=None, deeper=False):
         return RefreshItemMenu(rating_key=rating_key, title=title, item_title=item_title)
 
     return oc
+
+
+@route(PREFIX + '/ignore/list/{rating_key}/actions')
+def IgnoreListMenu():
+    pass
 
 
 @route(PREFIX + '/item/{rating_key}/actions')

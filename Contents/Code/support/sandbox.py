@@ -2,7 +2,7 @@
 
 
 # dummy test to see if we can restore globals() and builtins
-
+# not used :)
 
 import pprint
 import sys
@@ -20,3 +20,4 @@ for key, value in getattr(thismodule, "__builtins__").iteritems():
         getattr(thismodule, "globals")()[key] = value
 
 pprint.pprint(globals())
+print iter
