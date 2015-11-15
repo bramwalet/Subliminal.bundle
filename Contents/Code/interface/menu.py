@@ -1,17 +1,19 @@
 # coding=utf-8
+import logging
 
-from subzero.constants import TITLE, ART, ICON, PREFIX, PLUGIN_IDENTIFIER
+import logger
+from subzero.constants import TITLE, ART, ICON, PREFIX, PLUGIN_IDENTIFIER, DEPENDENCY_MODULE_NAMES
 from support.config import config
 from support.helpers import pad_title, timestamp
 from support.auth import refresh_plex_token
 from support.ignore import ignore_list
 from support.missing_subtitles import getAllMissing
 from support.storage import resetStorage, logStorage
-from support.items import getRecentItems, MI_KIND, MI_DEEPER
+from support.items import getRecentItems, MI_DEEPER, MI_KIND, get_items_info
 from support.items import getOnDeckItems, refreshItem, getAllItems
 from support.background import scheduler
 from support.lib import Plex, lib_unaccessible_error
-from menu_helpers import add_ignore_options, dig_tree, set_refresh_menu_state
+from menu_helpers import add_ignore_options, dig_tree, set_refresh_menu_state, should_display_ignore
 
 # init GUI
 ObjectContainer.art = R(ART)
@@ -25,7 +27,8 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
     subzero main menu
     """
     title = force_title if force_title is not None else config.full_version
-    oc = ObjectContainer(title1=title, title2=None, header=header, message=message, no_history=no_history, replace_parent=replace_parent)
+    oc = ObjectContainer(title1=title, title2=None, header=unicode(header) if header else header, message=message, no_history=no_history,
+                         replace_parent=replace_parent)
 
     if not config.plex_api_working:
         oc.add(DirectoryObject(
@@ -156,6 +159,7 @@ def IgnoreMenu(kind, rating_key, title=None, sure=False, todo="not_set"):
             dont_change = True
         else:
             rel.remove(rating_key)
+            Log.Info("Removed %s (%s) from the ignore list", title, rating_key)
             ignore_list.remove_title(kind, rating_key)
             ignore_list.save()
             state = "removed from"
@@ -164,6 +168,7 @@ def IgnoreMenu(kind, rating_key, title=None, sure=False, todo="not_set"):
             dont_change = True
         else:
             rel.append(rating_key)
+            Log.Info("Added %s (%s) to the ignore list", title, rating_key)
             ignore_list.add_title(kind, rating_key, title)
             ignore_list.save()
             state = "added to"
@@ -181,39 +186,50 @@ def SectionsMenu():
     items = getAllItems("sections")
 
     return dig_tree(ObjectContainer(title2="Sections", no_cache=True, no_history=True), items, None,
-                    menu_determination_callback=determine_section_display, pass_kwargs={"base_title": "Sections"})
+                    menu_determination_callback=determine_section_display, pass_kwargs={"base_title": "Sections"},
+                    fill_args={"title": "section_title"})
 
 
-@route(PREFIX + '/section', deeper=bool)
-def SectionMenu(rating_key, title=None, base_title=None, deeper=False):
-    items = getAllItems(key="all", value=rating_key, base="library/sections", flat=not deeper)
+@route(PREFIX + '/section', ignore_options=bool)
+def SectionMenu(rating_key, title=None, base_title=None, section_title=None, ignore_options=True):
+    items = getAllItems(key="all", value=rating_key, base="library/sections")
+
+    kind, deeper = get_items_info(items)
 
     section_title = title
     title = base_title + " > " + title
     oc = ObjectContainer(title2=title, no_cache=True, no_history=True)
-    add_ignore_options(oc, "sections", title=section_title, rating_key=rating_key, callback_menu=IgnoreMenu)
+    if ignore_options:
+        add_ignore_options(oc, "sections", title=section_title, rating_key=rating_key, callback_menu=IgnoreMenu)
 
-    return dig_tree(oc, items, MetadataMenu, pass_kwargs={"base_title": title})
+    return dig_tree(oc, items, MetadataMenu,
+                    pass_kwargs={"base_title": title, "display_items": deeper, "previous_item_type": "section",
+                                 "previous_rating_key": rating_key})
 
 
 @route(PREFIX + '/section/firstLetter', deeper=bool)
-def SectionFirstLetterMenu(rating_key, title=None, base_title=None, deeper=False):
-    items = getAllItems(key="first_character", value=rating_key, base="library/sections", flat=not deeper)
+def SectionFirstLetterMenu(rating_key, title=None, base_title=None, section_title=None):
+    items = getAllItems(key="first_character", value=rating_key, base="library/sections")
 
-    section_title = title
-    oc = ObjectContainer(title2=title, no_cache=True, no_history=True)
+    kind, deeper = get_items_info(items)
+
+    title = unicode(title)
+    oc = ObjectContainer(title2=section_title, no_cache=True, no_history=True)
     title = base_title + " > " + title
     add_ignore_options(oc, "sections", title=section_title, rating_key=rating_key, callback_menu=IgnoreMenu)
+
     oc.add(DirectoryObject(
-        key=Callback(SectionMenu, title="All", base_title=title, rating_key=rating_key),
+        key=Callback(SectionMenu, title="All", base_title=title, rating_key=rating_key, ignore_options=False),
         title="All"
     )
     )
-    return dig_tree(oc, items, FirstLetterMetadataMenu, force_rating_key=rating_key, fill_args=["key"], pass_kwargs={"base_title": title})
+    return dig_tree(oc, items, FirstLetterMetadataMenu, force_rating_key=rating_key, fill_args={"key": "key"},
+                    pass_kwargs={"base_title": title, "display_items": deeper, "previous_rating_key": rating_key})
 
 
 @route(PREFIX + '/section/firstLetter/key', deeper=bool)
-def FirstLetterMetadataMenu(rating_key, key, title=None, base_title=None, deeper=False):
+def FirstLetterMetadataMenu(rating_key, key, title=None, base_title=None, display_items=False, previous_item_type=None,
+                            previous_rating_key=None):
     """
 
     :param rating_key: actually is the section's key
@@ -222,39 +238,44 @@ def FirstLetterMetadataMenu(rating_key, key, title=None, base_title=None, deeper
     :param deeper:
     :return:
     """
-    title = base_title + " > " + title
+    title = base_title + " > " + unicode(title)
     oc = ObjectContainer(title2=title, no_cache=True, no_history=True)
 
     items = getAllItems(key="first_character", value=[rating_key, key], base="library/sections", flat=False)
-    dig_tree(oc, items, MetadataMenu, pass_kwargs={"base_title": title})
+    kind, deeper = get_items_info(items)
+    dig_tree(oc, items, MetadataMenu,
+             pass_kwargs={"base_title": title, "display_items": deeper, "previous_item_type": kind, "previous_rating_key": rating_key})
     return oc
 
 
-@route(PREFIX + '/section/contents', deeper=bool)
-def MetadataMenu(rating_key, title=None, base_title=None, deeper=False):
+@route(PREFIX + '/section/contents', display_items=bool)
+def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, previous_item_type=None, previous_rating_key=None):
+    title = unicode(title)
     item_title = title
     title = base_title + " > " + title
     oc = ObjectContainer(title2=title, no_cache=True, no_history=True)
 
-    if deeper:
-        items = getAllItems(key="children", value=rating_key, base="library/metadata", flat=False)
+    if display_items:
+        items = getAllItems(key="children", value=rating_key, base="library/metadata")
+        kind, deeper = get_items_info(items)
         # we don't know exactly where we are here, only add ignore option to series
-        if items and (items[0][MI_KIND] == "season" or (items[0][MI_KIND] == "episode" and not items[0][MI_DEEPER])):
+        if should_display_ignore(items, previous=previous_item_type):
             add_ignore_options(oc, "series", title=item_title, rating_key=rating_key, callback_menu=IgnoreMenu)
-        dig_tree(oc, items, MetadataMenu, pass_kwargs={"base_title": title})
+        dig_tree(oc, items, MetadataMenu,
+                 pass_kwargs={"base_title": title, "display_items": deeper, "previous_item_type": kind, "previous_rating_key": rating_key})
     else:
         return RefreshItemMenu(rating_key=rating_key, title=title, item_title=item_title)
 
     return oc
 
 
-@route(PREFIX + '/ignore/list')
+@route(PREFIX + '/ignore_list')
 def IgnoreListMenu():
     oc = ObjectContainer(title2="Ignore list", replace_parent=True)
     for key in ignore_list.key_order:
         values = ignore_list[key]
         for value in values:
-            add_ignore_options(oc, key, title=ignore_list.get_title(key, value), rating_key=value, callback_menu=IgnoreMenu, add_kind=True)
+            add_ignore_options(oc, key, title=ignore_list.get_title(key, value), rating_key=value, callback_menu=IgnoreMenu)
     return oc
 
 
@@ -262,7 +283,7 @@ def IgnoreListMenu():
 def RefreshItemMenu(rating_key, title=None, base_title=None, item_title=None, came_from="/recent"):
     title = unicode(base_title) + " > " + unicode(title) if base_title else unicode(title)
     oc = ObjectContainer(title2=title, replace_parent=True)
-    add_ignore_options(oc, "items", title=item_title, rating_key=rating_key, callback_menu=IgnoreMenu)
+    add_ignore_options(oc, "videos", title=item_title, rating_key=rating_key, callback_menu=IgnoreMenu)
     oc.add(DirectoryObject(
         key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title),
         title="Refresh: %s" % item_title,
@@ -334,10 +355,15 @@ def AdvancedMenu(randomize=None, header=None, message=None):
 
 @route(PREFIX + '/ValidatePrefs')
 def ValidatePrefs():
+    Core.log.setLevel(logging.DEBUG)
     Log.Debug("Validate Prefs called.")
     config.initialize()
     scheduler.setup_tasks()
     set_refresh_menu_state(None)
+
+    Log.Debug("Setting log-level to %s", Prefs["log_level"])
+    logger.registerLoggingHander(DEPENDENCY_MODULE_NAMES, level=Prefs["log_level"])
+    Core.log.setLevel(logging.getLevelName(Prefs["log_level"]))
     return
 
 

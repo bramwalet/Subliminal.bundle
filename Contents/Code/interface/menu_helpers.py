@@ -1,12 +1,21 @@
 # coding=utf-8
 import types
 
+from support.items import get_kind
 from subzero import intent
 from support.helpers import format_video
 from support.ignore import ignore_list
 
 
-def add_ignore_options(oc, kind, callback_menu=None, title=None, rating_key=None, add_kind=False):
+def should_display_ignore(items, previous=None):
+    kind = get_kind(items)
+    return items and (
+        (kind in ("show", "season")) or
+        (kind == "episode" and previous != "season")
+    )
+
+
+def add_ignore_options(oc, kind, callback_menu=None, title=None, rating_key=None, add_kind=True):
     """
 
     :param oc: oc to add our options to
@@ -26,10 +35,10 @@ def add_ignore_options(oc, kind, callback_menu=None, title=None, rating_key=None
     in_list = rating_key in ignore_list[use_kind]
 
     oc.add(DirectoryObject(
-            key=Callback(callback_menu, kind=use_kind, rating_key=rating_key, title=title),
-            title="%s %s \"%s\" %s the ignore list" % (
-                "Remove" if in_list else "Add", ignore_list.verbose(kind) if add_kind else "", unicode(title), "from" if in_list else "to")
-        )
+        key=Callback(callback_menu, kind=use_kind, rating_key=rating_key, title=title),
+        title="%s %s \"%s\" %s the ignore list" % (
+            "Remove" if in_list else "Add", ignore_list.verbose(kind) if add_kind else "", unicode(title), "from" if in_list else "to")
+    )
     )
 
 
@@ -37,13 +46,13 @@ def dig_tree(oc, items, menu_callback, menu_determination_callback=None, force_r
     for kind, title, key, dig_deeper, item in items:
         add_kwargs = {}
         if fill_args:
-            add_kwargs = dict((k, getattr(item, k)) for k in fill_args if item and hasattr(item, k))
+            add_kwargs = dict((name, getattr(item, k)) for k, name in fill_args.iteritems() if item and hasattr(item, k))
         if pass_kwargs:
             add_kwargs.update(pass_kwargs)
 
         oc.add(DirectoryObject(
             key=Callback(menu_callback or menu_determination_callback(kind, item), title=title, rating_key=force_rating_key or key,
-                         deeper=dig_deeper, **add_kwargs),
+                         **add_kwargs),
             title=title
         ))
     return oc
@@ -80,4 +89,3 @@ def set_refresh_menu_state(state_or_media, media_type="movies"):
     force_refresh = intent.get("force", media_id)
 
     Dict["current_refresh_state"] = "%sRefreshing %s" % ("Force-" if force_refresh else "", title)
-

@@ -1,5 +1,4 @@
 # coding=utf-8
-import logging
 import os
 import sys
 
@@ -15,6 +14,8 @@ for key, value in getattr(module, "__builtins__").iteritems():
         globals()[key] = value
 
 import logger
+sys.modules["logger"] = logger
+
 import subliminal
 import subliminal_patch
 import support
@@ -44,10 +45,6 @@ def Start():
     if not config.plex_api_working:
         Log.Error(lib_unaccessible_error)
         return
-
-    Log.Debug("Setting log-level to %s", Prefs["log_level"])
-    logger.registerLoggingHander(DEPENDENCY_MODULE_NAMES, level=Prefs["log_level"])
-    Core.log.setLevel(logging.getLevelName(Prefs["log_level"]))
 
     scheduler.run()
 

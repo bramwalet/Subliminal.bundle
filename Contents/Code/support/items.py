@@ -3,6 +3,7 @@
 import logging
 import re
 import types
+from ignore import ignore_list
 from helpers import is_recent, format_item, query_plex
 from subzero import intent
 from lib import Plex
@@ -13,6 +14,14 @@ logger = logging.getLogger(__name__)
 MI_KIND, MI_TITLE, MI_KEY, MI_DEEPER, MI_ITEM = 0, 1, 2, 3, 4
 
 container_size_re = re.compile(ur'totalSize="(\d+)"')
+
+
+def get_items_info(items):
+    return items[0][MI_KIND], items[0][MI_DEEPER]
+
+
+def get_kind(items):
+    return items[0][MI_KIND]
 
 
 def getSectionSize(key):
@@ -75,6 +84,7 @@ def getItems(key="recently_added", base="library", value=None, flat=True, add_se
             items.append(("section", item.title, int(item.key), True, item))
 
         elif kind == "episode":
+            print item.show.key, item.show.rating_key
             items.append(
                 (kind, format_item(item, "show", parent=item.season, parent_title=item.show.title, section_title=item.section.title,
                                    add_section_title=add_section_title), int(item.rating_key), False, item))
@@ -84,11 +94,9 @@ def getItems(key="recently_added", base="library", value=None, flat=True, add_se
                           int(item.rating_key), False, item))
 
         elif kind == "show":
-            item_id = item.rating_key
-            if item.season_count == 1:
-                item_id = list(item.children())[0].rating_key
-            items.append(
-                (kind, format_item(item, kind, section_title=item.section.title, add_section_title=add_section_title), int(item_id), True, item))
+            items.append((
+                kind, format_item(item, kind, section_title=item.section.title, add_section_title=add_section_title), int(item.rating_key), True,
+                item))
 
     return items
 
@@ -118,8 +126,9 @@ def getRecentItems():
     movie_re = re.compile(ur'ratingKey="(?P<key>\d+)".+?title="(?P<title>.*?)".+?addedAt="(?P<added>\d+)"')
     available_keys = ("key", "title", "parent_key", "parent_title", "season", "episode", "added")
     recent = []
+
     for section in Plex["library"].sections():
-        if section.type not in ("movie", "show") or section.key in config.scheduler_section_blacklist:
+        if section.type not in ("movie", "show") or section.key in ignore_list.sections:
             Log.Debug(u"Skipping section: %s" % section.title)
             continue
 
@@ -134,10 +143,10 @@ def getRecentItems():
         matches = [m.groupdict() for m in matcher.finditer(response.content)]
         for match in matches:
             data = dict((key, match[key] if key in match else None) for key in available_keys)
-            if section.type == "show" and data["parent_key"] in config.scheduler_series_blacklist:
+            if section.type == "show" and data["parent_key"] in ignore_list.series:
                 Log.Debug(u"Skipping series: %s" % data["parent_title"])
                 continue
-            if data["key"] in config.scheduler_item_blacklist:
+            if data["key"] in ignore_list.videos:
                 Log.Debug(u"Skipping item: %s" % data["title"])
                 continue
             if is_recent(int(data["added"])):

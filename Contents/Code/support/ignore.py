@@ -10,21 +10,26 @@ class IgnoreDict(DictProxy):
     translate_keys = {
         "section": "sections",
         "show": "series",
-        "movie": "items",
-        "episode": "items"
+        "movie": "videos",
+        "episode": "videos"
     }
 
     # getItems types mapped to their verbose names
     keys_verbose = {
         "sections": "Section",
         "series": "Series",
-        "items": "Item",
+        "videos": "Item",
     }
 
-    key_order = ("sections", "series", "items")
+    key_order = ("sections", "series", "videos")
 
     def __len__(self):
-        return sum(len(self.Dict[self.store][key]) for key in self.key_order)
+        try:
+            return sum(len(self.Dict[self.store][key]) for key in self.key_order)
+        except KeyError:
+            # old version
+            self.Dict[self.store] = self.setup_defaults()
+        return 0
 
     def translate_key(self, name):
         return self.translate_keys.get(name)
@@ -52,6 +57,6 @@ class IgnoreDict(DictProxy):
         Dict.Save()
 
     def setup_defaults(self):
-        return {"sections": [], "series": [], "items": [], "titles": {}}
+        return {"sections": [], "series": [], "videos": [], "titles": {}}
 
 ignore_list = IgnoreDict(Dict)
