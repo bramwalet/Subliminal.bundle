@@ -1,15 +1,16 @@
 import logging
 
-def registerLoggingHander(dependencies):
+
+def registerLoggingHander(dependencies, level="ERROR"):
     plexHandler = PlexLoggerHandler()
-    for dependency in dependencies:     
-        Log.Debug("Registering LoggerHandler for dependency: %s" % dependency)   
+    for dependency in dependencies:
+        Log.Debug("Registering LoggerHandler for dependency: %s" % dependency)
         log = logging.getLogger(dependency)
-        log.setLevel('DEBUG')
+        log.setLevel(level)
         log.addHandler(plexHandler)
 
+
 class PlexLoggerHandler(logging.StreamHandler):
-    
     def __init__(self, level=0):
         super(PlexLoggerHandler, self).__init__(level)
 

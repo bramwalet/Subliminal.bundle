@@ -1,14 +1,14 @@
 # coding=utf-8
-
+import logging
 import os
 import sys
 
 # just some slight modifications to support sum and iter again
 from subzero.sandbox import restore_builtins
 
-restore_builtins(sys.modules['__main__'], {})
-
 module = sys.modules['__main__']
+restore_builtins(module, {})
+
 globals = getattr(module, "__builtins__")["globals"]
 for key, value in getattr(module, "__builtins__").iteritems():
     if key != "globals":
@@ -33,7 +33,7 @@ from support.config import config
 def Start():
     HTTP.CacheTime = 0
     HTTP.Headers['User-agent'] = OS_PLEX_USERAGENT
-    logger.registerLoggingHander(DEPENDENCY_MODULE_NAMES)
+
     # configured cache to be in memory as per https://github.com/Diaoul/subliminal/issues/303
     subliminal.region.configure('dogpile.cache.memory')
 
@@ -44,6 +44,10 @@ def Start():
     if not config.plex_api_working:
         Log.Error(lib_unaccessible_error)
         return
+
+    Log.Debug("Setting log-level to %s", Prefs["log_level"])
+    logger.registerLoggingHander(DEPENDENCY_MODULE_NAMES, level=Prefs["log_level"])
+    Core.log.setLevel(logging.getLevelName(Prefs["log_level"]))
 
     scheduler.run()
 

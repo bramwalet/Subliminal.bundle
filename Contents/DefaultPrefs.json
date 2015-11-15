@@ -12,6 +12,19 @@
     "default": "2"
   },
   {
+      "id": "log_level",
+      "label": "How verbose should the logging be?",
+      "type": "enum",
+      "values": [
+        "CRITICAL",
+        "ERROR",
+        "WARNING",
+        "INFO",
+        "DEBUG"
+      ],
+      "default": "WARNING"
+    },
+  {
     "id": "plex_username",
     "label": "Plex.tv Username (needed for Plex Home users)",
     "type": "text",
@@ -407,23 +420,5 @@
       "6 weeks"
     ],
     "default": "2 weeks"
-  },
-  {
-    "id": "scheduler.section_blacklist",
-    "label": "Scheduler: Sections to ignore (IDs, comma-separated)",
-    "type": "text",
-    "default": ""
-  },
-  {
-    "id": "scheduler.series_blacklist",
-    "label": "Scheduler: Series to ignore (IDs, comma-separated)",
-    "type": "text",
-    "default": ""
-  },
-  {
-    "id": "scheduler.item_blacklist",
-    "label": "Scheduler: Items to ignore (IDs, comma-separated)",
-    "type": "text",
-    "default": ""
   }
 ]
