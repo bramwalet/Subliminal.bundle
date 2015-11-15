@@ -84,7 +84,6 @@ def getItems(key="recently_added", base="library", value=None, flat=True, add_se
             items.append(("section", item.title, int(item.key), True, item))
 
         elif kind == "episode":
-            print item.show.key, item.show.rating_key
             items.append(
                 (kind, format_item(item, "show", parent=item.season, parent_title=item.show.title, section_title=item.section.title,
                                    add_section_title=add_section_title), int(item.rating_key), False, item))
