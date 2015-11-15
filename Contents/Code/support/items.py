@@ -44,7 +44,7 @@ def getSectionSize(key):
     return size
 
 
-def getItems(key="recently_added", base="library", value=None, flat=True, add_section_title=False):
+def getItems(key="recently_added", base="library", value=None, flat=False, add_section_title=False):
     """
     try to handle all return types plex throws at us and return a generalized item tuple
     """
@@ -67,6 +67,7 @@ def getItems(key="recently_added", base="library", value=None, flat=True, add_se
             kind = item.type
 
         if kind == "season":
+            # fixme: i think this case is unused now
             if flat:
                 # return episodes
                 for child in item.children():
