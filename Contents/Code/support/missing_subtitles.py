@@ -1,7 +1,5 @@
 # coding=utf-8
 import traceback
-import types
-from support.items import getRecentlyAddedItems, MI_ITEM
 from support.config import config
 from support.helpers import format_item
 from lib import Plex
@@ -12,10 +10,6 @@ def itemDiscoverMissing(rating_key, kind="show", added_at=None, section_title=No
 
     item_id = int(rating_key)
     item_container = Plex["library"].metadata(item_id)
-
-    # don't process blacklisted sections
-    if item_container.section.key in section_blacklist:
-        return
 
     item = list(item_container)[0]
 
