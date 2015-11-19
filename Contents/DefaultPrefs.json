@@ -403,6 +403,12 @@
     "default": "2 weeks"
   },
   {
+    "id": "scheduler.max_recent_items_per_library",
+    "label": "Scheduler: Recent items to consider per library",
+    "type": "text",
+    "default": "200"
+  },
+  {
     "id": "log_level",
     "label": "How verbose should the logging be?",
     "type": "enum",

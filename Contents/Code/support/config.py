@@ -18,12 +18,21 @@ VIDEO_EXTS = ['3g2', '3gp', 'asf', 'asx', 'avc', 'avi', 'avs', 'bivx', 'bup', 'd
 VERSION_RE = re.compile(ur'CFBundleVersion.+?<string>([0-9\.]+)</string>', re.DOTALL)
 
 
+def int_or_default(s, default):
+    try:
+        return int(s)
+    except ValueError:
+        return default
+
+
 class Config(object):
     version = None
     langList = None
     subtitleDestinationFolder = None
     providers = None
     providerSettings = None
+    max_recent_items_per_library = 200
+    plex_api_working = False
 
     initialized = False
 
@@ -34,6 +43,7 @@ class Config(object):
         self.subtitleDestinationFolder = self.getSubtitleDestinationFolder()
         self.providers = self.getProviders()
         self.providerSettings = self.getProviderSettings()
+        self.max_recent_items_per_library = int_or_default(Prefs["scheduler.max_recent_items_per_library"], 200)
         self.initialized = True
         configure_plex()
         self.plex_api_working = self.checkPlexAPI()

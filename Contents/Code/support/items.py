@@ -114,7 +114,7 @@ def getRecentItems():
     args = {
         "sort": "addedAt:desc",
         "X-Plex-Container-Start": "0",
-        "X-Plex-Container-Size": "200"
+        "X-Plex-Container-Size": "%s" % config.max_recent_items_per_library
     }
 
     episode_re = re.compile(ur'ratingKey="(?P<key>\d+)"'
