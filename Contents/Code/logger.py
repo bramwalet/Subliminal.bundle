@@ -32,3 +32,8 @@ class PlexLoggerHandler(logging.StreamHandler):
             Log.Exception(self.getFormattedString(record))
         else:
             Log.Error("UNKNOWN LEVEL: %s", record.getMessage())
+
+
+console_handler = logging.StreamHandler()
+console_formatter = Framework.core.LogFormatter('%(asctime)-15s - %(name)-32s (%(thread)x) :  %(levelname)s (%(module)s:%(lineno)d) - %(message)s')
+console_handler.setFormatter(console_formatter)

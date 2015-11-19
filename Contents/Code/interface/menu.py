@@ -1,6 +1,5 @@
 # coding=utf-8
 import logging
-
 import logger
 from subzero.constants import TITLE, ART, ICON, PREFIX, PLUGIN_IDENTIFIER, DEPENDENCY_MODULE_NAMES
 from support.config import config
@@ -361,9 +360,17 @@ def ValidatePrefs():
     scheduler.setup_tasks()
     set_refresh_menu_state(None)
 
+    if Prefs["log_console"]:
+        Log.Debug("Logging to console from now on")
+        Core.log.addHandler(logger.console_handler)
+    else:
+        Log.Debug("Stop logging to console")
+        Core.log.removeHandler(logger.console_handler)
+
     Log.Debug("Setting log-level to %s", Prefs["log_level"])
     logger.registerLoggingHander(DEPENDENCY_MODULE_NAMES, level=Prefs["log_level"])
     Core.log.setLevel(logging.getLevelName(Prefs["log_level"]))
+
     return
 
 

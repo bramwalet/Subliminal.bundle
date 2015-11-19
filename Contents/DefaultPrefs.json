@@ -12,19 +12,6 @@
     "default": "2"
   },
   {
-      "id": "log_level",
-      "label": "How verbose should the logging be?",
-      "type": "enum",
-      "values": [
-        "CRITICAL",
-        "ERROR",
-        "WARNING",
-        "INFO",
-        "DEBUG"
-      ],
-      "default": "WARNING"
-    },
-  {
     "id": "plex_username",
     "label": "Plex.tv Username (needed for Plex Home users)",
     "type": "text",
@@ -414,5 +401,24 @@
       "6 weeks"
     ],
     "default": "2 weeks"
+  },
+  {
+    "id": "log_level",
+    "label": "How verbose should the logging be?",
+    "type": "enum",
+    "values": [
+      "CRITICAL",
+      "ERROR",
+      "WARNING",
+      "INFO",
+      "DEBUG"
+    ],
+    "default": "WARNING"
+  },
+  {
+    "id": "log_console",
+    "label": "Log to console (for development/debugging)",
+    "type": "bool",
+    "default": "false"
   }
 ]
