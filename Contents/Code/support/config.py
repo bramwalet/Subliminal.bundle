@@ -86,7 +86,7 @@ class Config(object):
 
     def getProviders(self):
         providers = {'opensubtitles': Prefs['provider.opensubtitles.enabled'],
-                     'thesubdb': Prefs['provider.thesubdb.enabled'],
+                     #'thesubdb': Prefs['provider.thesubdb.enabled'],
                      'podnapisi': Prefs['provider.podnapisi.enabled'],
                      'addic7ed': Prefs['provider.addic7ed.enabled'],
                      'tvsubtitles': Prefs['provider.tvsubtitles.enabled']
