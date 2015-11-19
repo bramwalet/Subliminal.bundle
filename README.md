@@ -1,4 +1,4 @@
-Sub-Zero for Plex, 1.3.6.316
+Sub-Zero for Plex, 1.3.19.379
 =================
 
 ![logo](https://raw.githubusercontent.com/pannal/Sub-Zero.bundle/master/Contents/Resources/subzero.gif)
@@ -35,21 +35,30 @@ refresh the remaining items. If you use the default settings, this will also ski
 it has already downloaded all the wanted languages for.
 
 ### Encountered a bug?
-* be sure to post your logs: ```Library/Application Support/Plex Media Server/Logs/PMS Plugin Logs/com.plexapp.agents.subzero.log```; there may be multiple logs (com.plexapp.agents.subzero.log.*) depending on the amount of Videos you're refreshing
+* be sure to post your logs: 
+  * set your log_level to DEBUG in the settings
+  * get ```Library/Application Support/Plex Media Server/Logs/PMS Plugin Logs/com.plexapp.agents.subzero.log```; there may be multiple logs (com.plexapp.agents.subzero.log.*) depending on the amount of Videos you're refreshing
 * **Remember: before you open a bug-ticket please double-check, that you've deleted the Sub-Zero.bundle folder BEFORE every update** (to avoid .pyc leftovers)
 
 ## Changelog
-1.3.6.316
-- scheduler: missing subtitles task now able to handle huge libraries (thanks @chopeta, @comrade)
-- scheduler: detect item-stalling, add wait and retry logic to make missing subtitles task more robust
-- scheduler: report failed items to logs after task run completion
-- hint series name and episode title, or movie title to guessit to make detection way better (e.g. for Mr. Robot)
 
-1.3.6.304
-- scheduler: correct the recent-determination of the search for missing subtitles in recently_added task
-- scheduler: rewrote search for missing subtitles task; it now requests refreshes one by one and not in bulk anymore (hopefully fixes stalling)
-- handle rare cases of weird file system encodings (ANSI_X3.4-1968 for example)
-- fix simplejson warning on startup
+1.3.19.379
+
+- core: new recent items implementation (used in "Items with missing subtitles"), now really picking up everything instead of using Plex's recently_added API endpoint
+- core: be more strict about title matching - a matched title doesn't automatically mean season and episode are correct, too
+- core: rewrote the hash matching algorithm to not blindly trust hash matches anymore, but instead episodes have to match the series name, season number, episode number and format (BluRay, HDTV...); movie have to at least match the title, format and codec for the hash to be considered
+- core: remove TheSubDB support for now, as it only supports hash-based matching
+- scheduler: more robust item-fail-handling (fixes #81)
+- config: "Scan: include embedded subtitles" now by default is off, as embedded subs have proven to be pretty unreliable
+- config: add configuration option for how many items per library are to be considered recent (default: 200)
+- config: make logging verbosity configurable, default: WARNING - log files should be considerably smaller now
+- config: make console logging optional, default: off - good for development/debugging
+- config: removed the ignore lists
+- menu: added "Browse all items", where you can browse all your libraries and manage your ignore list (add/remove sections/series/items)
+- menu: added "Display ignore list", where you can manage your ignored sections, series and items
+- menu: the submenu titles are now dynamically composed of a breadcrumb-style tree so you see where you are
+- menu: show the current and past state of the important menu actions such as (force)-refresh an item or refreshing the menu, on the Refresh-button's description
+- plugin now isn't in the dev mode by default and has logging to the console off (in certain configurations this resulted in huge syslogs)
 
 [older changes](CHANGELOG.md)
 
@@ -59,7 +68,7 @@ Description
 
 Plex Metadata agent plugin based on Subliminal. This agent will search on the following sites for the best matching subtitles:
 - OpenSubtitles
-- TheSubDB
+- ~~TheSubDB~~
 - Podnapisi.NET
 - Addic7ed
 - TVsubtitles.net
@@ -70,6 +79,7 @@ All providers can be disabled or enabled on a per provider setting. Certain pref
 Configuration 
 -------------
 Several options are provided in the preferences of this agent. 
+
 * Addic7ed username/password: Provide your addic7ed username here, otherwise the provider won't work. Please make sure your account is activated, before using the agent.
 * Plex.tv username/password: Generally recommended to be provided; needed if you use Plex Home to make the API work (the whole channel menu depends on it)
 * Subtitle language (1)/(2)/(3): Your preferred languages to download subtitles for. 
@@ -91,10 +101,9 @@ Several options are provided in the preferences of this agent.
 * Scheduler: 
   * Periodically search for recent items with missing subtitles: self-explanatory, executes the task "Search for missing subtitles" from the channel menu regularly. Configure how often it should do that. For the average library 6 hours minimum is recommended, to not hammer the providers too heavily
   * Item age to be considered recent: The "Search for missing subtitles"-task only considers those items in the recently-added list, that are at most this old
-  * Sections to ignore: section/library IDs to be ignored in the "Search for missing subtitles"-task; numbers, comma-separated
-  * Series to ignore: series IDs to be ignored in the "Search for missing subtitles"-task; numbers; comma-separated
-  * Items to ignore: item IDs ... see above
-
+  * Recent items to consider per library: How many items to consider for every section/library you have - used in "Search for missing subtitles"-task and "Items with missing subtitles"-menu. Change at your own risk!
+* How verbose should the logging be?: Controls how much info we write into the log files (default: only warnings)
+* Log to console (for development/debugging): You know when you need it
 
 Scheduler
 ---------------------------------------
@@ -102,19 +111,11 @@ The built-in scheduler is capable of running a number of tasks periodically in a
 This currently is used to automatically periodically search for new subtitles for your media items.
 See configuration above.
 
-##### Ignore lists, what the heck?
-There are numerous occasions where one wouldn't want a certain item or even a library be included in the periodic "Search for missing subtitles"-task.
+##### Ignore list
+There are numerous occasions where one wouldn't want a certain item or even a library be included in the periodic "Search for missing subtitles"-task or the "Items with missing subtitles" menu function.
 Anime libraries are a good example of that, or home videos. Perhaps you've got your favourite series in your native language and don't want subtitles for it.
 
-Those ignore lists currently only accept numeric IDs. How you can obtain those is explained below.
-
-
-##### How to obtain the IDs for the ignore lists
-* Sections/Libraries: click on a library in PlexWeb and you'll see something like this in your browser's address bar: `/web/index.html#!/server/long_identifier_hash/section/3` - `3` is the library/section ID
-* Series: click on a series in PlexWeb, take `25660` from `/web/index.html#!/server/long_identifier_hash/details/%2Flibrary%2Fmetadata%2F25660`
-* Items (episodes/movies): click on an item in PlexWeb, take `25662` from `/web/index.html#!/server/long_identifier_hash/details/%2Flibrary%2Fmetadata%2F25662`
-
-I will make this easier in future versions.
+The ignore list can be managed by going through your library using the "Browse all items" menu and the "Display ignore list" menu. 
 
 
 The channel

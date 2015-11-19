@@ -258,7 +258,7 @@
   },
   {
     "id": "subtitles.scan.embedded",
-    "label": "Scan: include embedded subtitles (skip if existing)",
+    "label": "Scan: include embedded subtitles (don't download new ones if existing)",
     "type": "bool",
     "default": "true"
   },

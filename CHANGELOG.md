@@ -1,3 +1,15 @@
+1.3.6.316
+- scheduler: missing subtitles task now able to handle huge libraries (thanks @chopeta, @comrade)
+- scheduler: detect item-stalling, add wait and retry logic to make missing subtitles task more robust
+- scheduler: report failed items to logs after task run completion
+- hint series name and episode title, or movie title to guessit to make detection way better (e.g. for Mr. Robot)
+
+1.3.6.304
+- scheduler: correct the recent-determination of the search for missing subtitles in recently_added task
+- scheduler: rewrote search for missing subtitles task; it now requests refreshes one by one and not in bulk anymore (hopefully fixes stalling)
+- handle rare cases of weird file system encodings (ANSI_X3.4-1968 for example)
+- fix simplejson warning on startup
+
 1.3.6.297
 - rename Sub-Zero to Sub-Zero.bundle (requirement for adding Sub-Zero to the Plex channel directory)
 - channel: add logging actions for the internal storage to the advanced menu
