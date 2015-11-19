@@ -233,6 +233,12 @@
     "default": "true"
   },
   {
+    "id": "provider.thesubdb.enabled",
+    "label": "Provider: Enable TheSubDB",
+    "type": "bool",
+    "default": "true"
+  },
+  {
     "id": "provider.podnapisi.enabled",
     "label": "Provider: Enable Podnapisi.NET",
     "type": "bool",
@@ -258,13 +264,13 @@
   },
   {
     "id": "subtitles.scan.embedded",
-    "label": "Scan: include embedded subtitles (don't download new ones if existing)",
+    "label": "Scan: include subtitles embedded in the media file (and don't download seperate ones)",
     "type": "bool",
-    "default": "true"
+    "default": "false"
   },
   {
     "id": "subtitles.scan.external",
-    "label": "Scan: include external subtitles (skip if existing)",
+    "label": "Scan: include external subtitles (and don't download new ones)",
     "type": "bool",
     "default": "true"
   },
