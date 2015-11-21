@@ -69,7 +69,7 @@ def scanTvMedia(media):
                                               hints={"type": "episode", "expected_series": [media.title], "expected_title": [ep.title]})
                     if not scanned_video:
                         continue
-                        
+
                     scanned_video.id = media.seasons[season].episodes[episode].id
                     videos[scanned_video] = part
     return videos
