@@ -6,6 +6,12 @@ def registerLoggingHander(dependencies, level="ERROR"):
     for dependency in dependencies:
         Log.Debug("Registering LoggerHandler for dependency: %s" % dependency)
         log = logging.getLogger(dependency)
+        # remove previous plex logging handlers
+        # fixme: this is not the most elegant solution...
+        for handler in log.handlers:
+            if isinstance(handler, PlexLoggerHandler):
+                log.removeHandler(handler)
+
         log.setLevel(level)
         log.addHandler(plexHandler)
 
