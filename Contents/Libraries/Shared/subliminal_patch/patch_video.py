@@ -2,6 +2,8 @@
 
 import os
 import logging
+import traceback
+
 from babelfish import Error as BabelfishError
 from subliminal.video import SUBTITLE_EXTENSIONS, VIDEO_EXTENSIONS, Language, Video, EnzymeError, MKV, guess_file_info, hash_opensubtitles, \
     hash_thesubdb
@@ -177,6 +179,9 @@ def scan_video(path, subtitles=True, embedded_subtitles=True, hints=None):
                 logger.debug('MKV has no subtitle track')
 
     except EnzymeError:
-        logger.exception('Parsing video metadata with enzyme failed')
+        logger.error('Parsing video metadata with enzyme failed')
+
+    except Exception:
+        logger.error("Parsing video with enzyme has gone terribly wrong: %s", traceback.format_exc())
 
     return video
