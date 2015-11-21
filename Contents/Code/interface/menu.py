@@ -362,11 +362,11 @@ def ValidatePrefs():
     set_refresh_menu_state(None)
 
     if Prefs["log_console"]:
-        Log.Debug("Logging to console from now on")
         Core.log.addHandler(logger.console_handler)
+        Log.Debug("Logging to console from now on")
     else:
-        Log.Debug("Stop logging to console")
         Core.log.removeHandler(logger.console_handler)
+        Log.Debug("Stop logging to console")
 
     Log.Debug("Setting log-level to %s", Prefs["log_level"])
     logger.registerLoggingHander(DEPENDENCY_MODULE_NAMES, level=Prefs["log_level"])

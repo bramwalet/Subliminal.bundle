@@ -23,7 +23,7 @@ import support
 import interface
 sys.modules["interface"] = interface
 
-from subzero.constants import OS_PLEX_USERAGENT, DEPENDENCY_MODULE_NAMES, PERSONAL_MEDIA_IDENTIFIER
+from subzero.constants import OS_PLEX_USERAGENT, PERSONAL_MEDIA_IDENTIFIER
 from subzero import intent
 from interface.menu import *
 from support.subtitlehelpers import getSubtitlesFromMetadata
