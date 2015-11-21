@@ -145,7 +145,7 @@ def getSubtitlesFromMetadata(part):
             except ValueError:
                 Log.Error("Couldn't parse subtitle info, got proxy %s" % proxy)
                 continue
-                
+
             if p_type == "Media":
                 # metadata subtitle
                 subs[language].append(key)
