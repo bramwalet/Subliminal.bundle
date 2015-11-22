@@ -1,43 +1,166 @@
 # coding=utf-8
 
 import logging
-from helpers import is_recent, format_video
+import re
+import types
+from ignore import ignore_list
+from helpers import is_recent, format_item, query_plex
 from subzero import intent
 from lib import Plex
 from config import config
 
 logger = logging.getLogger(__name__)
 
-MI_KIND, MI_TITLE, MI_ITEM = 0, 1, 2
+MI_KIND, MI_TITLE, MI_KEY, MI_DEEPER, MI_ITEM = 0, 1, 2, 3, 4
+
+container_size_re = re.compile(ur'totalSize="(\d+)"')
 
 
-def getMergedItems(key="recently_added"):
+def get_items_info(items):
+    return items[0][MI_KIND], items[0][MI_DEEPER]
+
+
+def get_kind(items):
+    return items[0][MI_KIND]
+
+
+def getSectionSize(key):
     """
-    plex has certain views that return multiple item types. recently_added and on_deck for example
+    quick query to determine the section size
+    :param key:
+    :return:
+    """
+    size = None
+    url = "https://127.0.0.1:32400/library/sections/%s/all" % int(key)
+    use_args = {
+        "X-Plex-Container-Size": "0",
+        "X-Plex-Container-Start": "0"
+    }
+    response = query_plex(url, use_args)
+    matches = container_size_re.findall(response.content)
+    if matches:
+        size = int(matches[0])
+
+    return size
+
+
+def getItems(key="recently_added", base="library", value=None, flat=False, add_section_title=False):
+    """
+    try to handle all return types plex throws at us and return a generalized item tuple
     """
     items = []
-    for item in getattr(Plex['library'], key)():
-        if item.type == "season":
-            for child in item.children():
-                # print u"Series: %s, Season: %s, Episode: %s %s" % (item.show.title, item.title, child.index, child.title)
-                items.append(("episode", format_video(child, "episode", parent=item), child))
+    apply_value = None
+    if value:
+        if isinstance(value, types.ListType):
+            apply_value = value
+        else:
+            apply_value = [value]
+    result = getattr(Plex[base], key)(*(apply_value or []))
 
-        elif item.type == "episode":
-            items.append(("episode", format_video(item, "episode", parent=item.season, parentTitle=item.show.title), item))
+    for item in result:
+        cls = getattr(getattr(item, "__class__"), "__name__")
+        if hasattr(item, "scanner"):
+            kind = "section"
+        elif cls == "Directory":
+            kind = "directory"
+        else:
+            kind = item.type
 
-        elif item.type == "movie":
-            items.append(("movie", format_video(item, "movie"), item))
+        if kind == "season":
+            # fixme: i think this case is unused now
+            if flat:
+                # return episodes
+                for child in item.children():
+                    items.append(("episode", format_item(child, "show", parent=item, add_section_title=add_section_title), int(item.rating_key),
+                                  False, child))
+            else:
+                # return seasons
+                items.append(("season", item.title, int(item.rating_key), True, item))
+
+        elif kind == "directory":
+            items.append(("directory", item.title, item.key, True, item))
+
+        elif kind == "section":
+            item.size = getSectionSize(item.key)
+            items.append(("section", item.title, int(item.key), True, item))
+
+        elif kind == "episode":
+            items.append(
+                (kind, format_item(item, "show", parent=item.season, parent_title=item.show.title, section_title=item.section.title,
+                                   add_section_title=add_section_title), int(item.rating_key), False, item))
+
+        elif kind in ("movie", "artist", "photo"):
+            items.append((kind, format_item(item, kind, section_title=item.section.title, add_section_title=add_section_title),
+                          int(item.rating_key), False, item))
+
+        elif kind == "show":
+            items.append((
+                kind, format_item(item, kind, section_title=item.section.title, add_section_title=add_section_title), int(item.rating_key), True,
+                item))
 
     return items
 
 
 def getRecentlyAddedItems():
-    items = getMergedItems(key="recently_added")
-    return filter(lambda x: is_recent(x[MI_ITEM]), items)
+    items = getItems(key="recently_added")
+    return filter(lambda x: is_recent(x[MI_ITEM].added_at), items)
+
+
+def getRecentItems():
+    """
+    actually get the recent items, not limited like /library/recentlyAdded
+    :return:
+    """
+    args = {
+        "sort": "addedAt:desc",
+        "X-Plex-Container-Start": "0",
+        "X-Plex-Container-Size": "%s" % config.max_recent_items_per_library
+    }
+
+    episode_re = re.compile(ur'ratingKey="(?P<key>\d+)"'
+                            ur'.+?grandparentRatingKey="(?P<parent_key>\d+)"'
+                            ur'.+?title="(?P<title>.*?)"'
+                            ur'.+?grandparentTitle="(?P<parent_title>.*?)"'
+                            ur'.+?index="(?P<episode>\d+?)"'
+                            ur'.+?parentIndex="(?P<season>\d+?)".+?addedAt="(?P<added>\d+)"')
+    movie_re = re.compile(ur'ratingKey="(?P<key>\d+)".+?title="(?P<title>.*?)".+?addedAt="(?P<added>\d+)"')
+    available_keys = ("key", "title", "parent_key", "parent_title", "season", "episode", "added")
+    recent = []
+
+    for section in Plex["library"].sections():
+        if section.type not in ("movie", "show") or section.key in ignore_list.sections:
+            Log.Debug(u"Skipping section: %s" % section.title)
+            continue
+
+        use_args = args.copy()
+        if section.type == "show":
+            use_args["type"] = "4"
+
+        url = "https://127.0.0.1:32400/library/sections/%s/all" % int(section.key)
+        response = query_plex(url, use_args)
+
+        matcher = episode_re if section.type == "show" else movie_re
+        matches = [m.groupdict() for m in matcher.finditer(response.content)]
+        for match in matches:
+            data = dict((key, match[key] if key in match else None) for key in available_keys)
+            if section.type == "show" and data["parent_key"] in ignore_list.series:
+                Log.Debug(u"Skipping series: %s" % data["parent_title"])
+                continue
+            if data["key"] in ignore_list.videos:
+                Log.Debug(u"Skipping item: %s" % data["title"])
+                continue
+            if is_recent(int(data["added"])):
+                recent.append((int(data["added"]), section.type, section.title, data["key"]))
+
+    return recent
 
 
 def getOnDeckItems():
-    return getMergedItems(key="on_deck")
+    return getItems(key="on_deck", add_section_title=True)
+
+
+def getAllItems(key, base="library", value=None, flat=False):
+    return getItems(key, base=base, value=value, flat=flat)
 
 
 def refreshItem(rating_key, force=False, timeout=8000):

@@ -2,6 +2,8 @@
 
 import os
 import logging
+import traceback
+
 from babelfish import Error as BabelfishError
 from subliminal.video import SUBTITLE_EXTENSIONS, VIDEO_EXTENSIONS, Language, Video, EnzymeError, MKV, guess_file_info, hash_opensubtitles, \
     hash_thesubdb
@@ -65,18 +67,20 @@ def patched_search_external_subtitles(path):
     return subtitles
 
 
-def scan_video(path, subtitles=True, embedded_subtitles=True, video_type=None):
+def scan_video(path, subtitles=True, embedded_subtitles=True, hints=None, dont_use_actual_file=False):
     """Scan a video and its subtitle languages from a video `path`.
+    :param dont_use_actual_file: guess on filename, but don't use the actual file itself
     :param str path: existing path to the video.
     :param bool subtitles: scan for subtitles with the same name.
     :param bool embedded_subtitles: scan for embedded subtitles.
+    :param hints: hints dict for guessit
     :return: the scanned video.
     :rtype: :class:`Video`
 
     # patch: suggest video type to guessit beforehand
     """
     # check for non-existing path
-    if not os.path.exists(path):
+    if not dont_use_actual_file and not os.path.exists(path):
         raise ValueError('Path does not exist')
 
     # check video extension
@@ -84,24 +88,32 @@ def scan_video(path, subtitles=True, embedded_subtitles=True, video_type=None):
         raise ValueError('%s is not a valid video extension' % os.path.splitext(path)[1])
 
     dirpath, filename = os.path.split(path)
-    logger.info('Scanning video (type: %s) %r in %r', video_type, filename, dirpath)
+    hints = hints or {}
+    logger.info('Scanning video (hints: %s) %r in %r', hints, filename, dirpath)
+    guess_from = os.path.join(os.path.split(dirpath)[-1], filename)
 
     # guess
-    video = Video.fromguess(path, guess_file_info(path, options={"type": video_type}))
+    try:
+        video = Video.fromguess(path, guess_file_info(guess_from, options=hints))
 
-    # size and hashes
-    video.size = os.path.getsize(path)
-    if video.size > 10485760:
-        logger.debug('Size is %d', video.size)
-        video.hashes['opensubtitles'] = hash_opensubtitles(path)
-        video.hashes['thesubdb'] = hash_thesubdb(path)
-        logger.debug('Computed hashes %r', video.hashes)
-    else:
-        logger.warning('Size is lower than 10MB: hashes not computed')
+        if dont_use_actual_file:
+            return video
 
-    # external subtitles
-    if subtitles:
-        video.subtitle_languages |= set(patched_search_external_subtitles(path).values())
+        # size and hashes
+        video.size = os.path.getsize(path)
+        if video.size > 10485760:
+            logger.debug('Size is %d', video.size)
+            video.hashes['opensubtitles'] = hash_opensubtitles(path)
+            video.hashes['thesubdb'] = hash_thesubdb(path)
+            logger.debug('Computed hashes %r', video.hashes)
+        else:
+            logger.warning('Size is lower than 10MB: hashes not computed')
+
+        # external subtitles
+        if subtitles:
+            video.subtitle_languages |= set(patched_search_external_subtitles(path).values())
+    except Exception:
+        logger.error("Something went wrong when running guessit: %s", traceback.format_exc())
 
     # video metadata with enzyme
     try:
@@ -175,6 +187,9 @@ def scan_video(path, subtitles=True, embedded_subtitles=True, video_type=None):
                 logger.debug('MKV has no subtitle track')
 
     except EnzymeError:
-        logger.exception('Parsing video metadata with enzyme failed')
+        logger.error('Parsing video metadata with enzyme failed')
+
+    except Exception:
+        logger.error("Parsing video with enzyme has gone terribly wrong: %s", traceback.format_exc())
 
     return video

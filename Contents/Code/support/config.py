@@ -18,15 +18,21 @@ VIDEO_EXTS = ['3g2', '3gp', 'asf', 'asx', 'avc', 'avi', 'avs', 'bivx', 'bup', 'd
 VERSION_RE = re.compile(ur'CFBundleVersion.+?<string>([0-9\.]+)</string>', re.DOTALL)
 
 
+def int_or_default(s, default):
+    try:
+        return int(s)
+    except ValueError:
+        return default
+
+
 class Config(object):
     version = None
     langList = None
     subtitleDestinationFolder = None
     providers = None
     providerSettings = None
-    scheduler_section_blacklist = None
-    scheduler_season_blacklist = None
-    scheduler_item_blacklist = None
+    max_recent_items_per_library = 200
+    plex_api_working = False
 
     initialized = False
 
@@ -37,9 +43,7 @@ class Config(object):
         self.subtitleDestinationFolder = self.getSubtitleDestinationFolder()
         self.providers = self.getProviders()
         self.providerSettings = self.getProviderSettings()
-        self.scheduler_section_blacklist = self.getBlacklist("scheduler.section_blacklist")
-        self.scheduler_series_blacklist = self.getBlacklist("scheduler.series_blacklist")
-        self.scheduler_item_blacklist = self.getBlacklist("scheduler.item_blacklist")
+        self.max_recent_items_per_library = int_or_default(Prefs["scheduler.max_recent_items_per_library"], 200)
         self.initialized = True
         configure_plex()
         self.plex_api_working = self.checkPlexAPI()
@@ -92,7 +96,7 @@ class Config(object):
 
     def getProviders(self):
         providers = {'opensubtitles': Prefs['provider.opensubtitles.enabled'],
-                     'thesubdb': Prefs['provider.thesubdb.enabled'],
+                     #'thesubdb': Prefs['provider.thesubdb.enabled'],
                      'podnapisi': Prefs['provider.podnapisi.enabled'],
                      'addic7ed': Prefs['provider.addic7ed.enabled'],
                      'tvsubtitles': Prefs['provider.tvsubtitles.enabled']

@@ -1,15 +1,22 @@
 import logging
 
-def registerLoggingHander(dependencies):
+
+def registerLoggingHander(dependencies, level="ERROR"):
     plexHandler = PlexLoggerHandler()
-    for dependency in dependencies:     
-        Log.Debug("Registering LoggerHandler for dependency: %s" % dependency)   
+    for dependency in dependencies:
+        Log.Debug("Registering LoggerHandler for dependency: %s" % dependency)
         log = logging.getLogger(dependency)
-        log.setLevel('DEBUG')
+        # remove previous plex logging handlers
+        # fixme: this is not the most elegant solution...
+        for handler in log.handlers:
+            if isinstance(handler, PlexLoggerHandler):
+                log.removeHandler(handler)
+
+        log.setLevel(level)
         log.addHandler(plexHandler)
 
+
 class PlexLoggerHandler(logging.StreamHandler):
-    
     def __init__(self, level=0):
         super(PlexLoggerHandler, self).__init__(level)
 
@@ -31,3 +38,8 @@ class PlexLoggerHandler(logging.StreamHandler):
             Log.Exception(self.getFormattedString(record))
         else:
             Log.Error("UNKNOWN LEVEL: %s", record.getMessage())
+
+
+console_handler = logging.StreamHandler()
+console_formatter = Framework.core.LogFormatter('%(asctime)-15s - %(name)-32s (%(thread)x) :  %(levelname)s (%(module)s:%(lineno)d) - %(message)s')
+console_handler.setFormatter(console_formatter)

@@ -1,23 +1,31 @@
 # coding=utf-8
-
-import string
 import os
-import urllib
-import zipfile
-import re
-import copy
+import sys
+
+# just some slight modifications to support sum and iter again
+from subzero.sandbox import restore_builtins
+
+module = sys.modules['__main__']
+restore_builtins(module, {})
+
+globals = getattr(module, "__builtins__")["globals"]
+for key, value in getattr(module, "__builtins__").iteritems():
+    if key != "globals":
+        globals()[key] = value
+
 import logger
-import datetime
+sys.modules["logger"] = logger
+
 import subliminal
 import subliminal_patch
 import support
+
 import interface
-from subzero.constants import OS_PLEX_USERAGENT, DEPENDENCY_MODULE_NAMES, PERSONAL_MEDIA_IDENTIFIER, PLUGIN_IDENTIFIER_SHORT, \
-    PLUGIN_IDENTIFIER, PLUGIN_NAME, PREFIX
+sys.modules["interface"] = interface
+
+from subzero.constants import OS_PLEX_USERAGENT, PERSONAL_MEDIA_IDENTIFIER
 from subzero import intent
-from support.lib import lib_unaccessible_error
-from support.background import scheduler
-from interface.menu import fatality as MainMenu, ValidatePrefs
+from interface.menu import *
 from support.subtitlehelpers import getSubtitlesFromMetadata
 from support.storage import storeSubtitleInfo
 from support.config import config
@@ -26,7 +34,7 @@ from support.config import config
 def Start():
     HTTP.CacheTime = 0
     HTTP.Headers['User-agent'] = OS_PLEX_USERAGENT
-    logger.registerLoggingHander(DEPENDENCY_MODULE_NAMES)
+
     # configured cache to be in memory as per https://github.com/Diaoul/subliminal/issues/303
     subliminal.region.configure('dogpile.cache.memory')
 
@@ -54,23 +62,30 @@ def scanTvMedia(media):
     for season in media.seasons:
         for episode in media.seasons[season].episodes:
             ep = media.seasons[season].episodes[episode]
-            forceRefresh = intent.get("force", ep.id)
+            force_refresh = intent.get("force", ep.id)
             for item in media.seasons[season].episodes[episode].items:
                 for part in item.parts:
-                    scannedVideo = scanVideo(part, "episode", ignore_all=forceRefresh)
-                    scannedVideo.id = media.seasons[season].episodes[episode].id
-                    videos[scannedVideo] = part
+                    scanned_video = scanVideo(part, ignore_all=force_refresh,
+                                              hints={"type": "episode", "expected_series": [media.title], "expected_title": [ep.title]})
+                    if not scanned_video:
+                        continue
+
+                    scanned_video.id = media.seasons[season].episodes[episode].id
+                    videos[scanned_video] = part
     return videos
 
 
 def scanMovieMedia(media):
     videos = {}
-    forceRefresh = intent.get("force", media.id)
+    force_refresh = intent.get("force", media.id)
     for item in media.items:
         for part in item.parts:
-            scannedVideo = scanVideo(part, "movie", ignore_all=forceRefresh)
-            scannedVideo.id = media.id
-            videos[scannedVideo] = part
+            scanned_video = scanVideo(part, ignore_all=force_refresh, hints={"type": "movie", "expected_title": [media.title]})
+            if not scanned_video:
+                continue
+
+            scanned_video.id = media.id
+            videos[scanned_video] = part
     return videos
 
 
@@ -86,7 +101,7 @@ def getItemIDs(media, kind="series"):
     return ids
 
 
-def scanVideo(part, video_type, ignore_all=False):
+def scanVideo(part, ignore_all=False, hints=None):
     embedded_subtitles = not ignore_all and Prefs['subtitles.scan.embedded']
     external_subtitles = not ignore_all and Prefs['subtitles.scan.external']
 
@@ -94,8 +109,10 @@ def scanVideo(part, video_type, ignore_all=False):
         Log.Debug("Force refresh intended.")
 
     Log.Debug("Scanning video: %s, subtitles=%s, embedded_subtitles=%s" % (part.file, external_subtitles, embedded_subtitles))
+
     try:
-        return subliminal.video.scan_video(part.file, subtitles=external_subtitles, embedded_subtitles=embedded_subtitles, video_type=video_type)
+        return subliminal.video.scan_video(part.file, subtitles=external_subtitles, embedded_subtitles=embedded_subtitles, hints=hints or {})
+
     except ValueError:
         Log.Warn("File could not be guessed by subliminal")
 
@@ -214,6 +231,8 @@ class SubZeroAgent(object):
     def update(self, metadata, media, lang):
         Log.Debug("Sub-Zero %s, %s update called" % (config.version, self.agent_type))
 
+        set_refresh_menu_state(media, media_type=self.agent_type)
+
         item_ids = []
         try:
             initSubliminalPatches()
@@ -226,9 +245,15 @@ class SubZeroAgent(object):
             updateLocalMedia(metadata, media, media_type=self.agent_type)
 
         finally:
+            # update the menu state
+            set_refresh_menu_state(None)
+
             # notify any running tasks about our finished update
             for item_id in item_ids:
                 scheduler.signal("updated_metadata", item_id)
+
+                # resolve existing intent for that id
+                intent.resolve("force", item_id)
 
     def update_movies(self, metadata, media, lang):
         videos = scanMovieMedia(media)

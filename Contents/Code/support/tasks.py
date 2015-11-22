@@ -2,8 +2,10 @@
 
 import datetime
 import time
-from missing_subtitles import getAllRecentlyAddedMissing, searchMissing
+
+from missing_subtitles import getAllMissing, refresh_item
 from background import scheduler
+from support.items import getRecentItems
 
 
 class Task(object):
@@ -54,13 +56,17 @@ class SearchAllRecentlyAddedMissing(Task):
     items_done = None
     items_searching = None
     items_searching_ids = None
+    items_failed = None
     percentage = 0
+
+    stall_time = 30
 
     def __init__(self, scheduler):
         super(SearchAllRecentlyAddedMissing, self).__init__(scheduler)
         self.items_done = None
         self.items_searching = None
         self.items_searching_ids = None
+        self.items_failed = None
         self.percentage = 0
 
     def signal(self, signal_name, *args, **kwargs):
@@ -76,10 +82,12 @@ class SearchAllRecentlyAddedMissing(Task):
 
     def prepare(self):
         self.items_done = []
-        missing = getAllRecentlyAddedMissing()
-        ids = set([id for id, title in missing])
+        recent_items = getRecentItems()
+        missing = getAllMissing(recent_items)
+        ids = set([id for added_at, id, title in missing])
         self.items_searching = missing
         self.items_searching_ids = ids
+        self.items_failed = []
         self.percentage = 0
         self.time_start = datetime.datetime.now()
         self.ready_for_display = True
@@ -87,25 +95,48 @@ class SearchAllRecentlyAddedMissing(Task):
     def run(self):
         self.running = True
         missing_count = len(self.items_searching)
+        items_done_count = 0
 
-        # dispatch all searches
-        searchMissing(self.items_searching)
+        for added_at, item_id, title in self.items_searching:
+            Log.Debug(u"Task: %s, triggering refresh for %s (%s)", self.name, title, item_id)
+            refresh_item(item_id, title)
+            search_started = datetime.datetime.now()
+            tries = 1
+            while 1:
+                if item_id in self.items_done:
+                    items_done_count += 1
+                    Log.Debug(u"Task: %s, item %s done", self.name, item_id)
+                    self.percentage = int(items_done_count * 100 / missing_count)
+                    break
 
-        while 1:
-            if set(self.items_done).intersection(self.items_searching_ids) == self.items_searching_ids:
-                Log.Debug("Task: %s, all items done", self.name)
-                break
-            self.percentage = int(round(len(self.items_done) * 100 / missing_count))
-            time.sleep(0.1)
+                # item considered stalled after self.stall_time seconds passed after last refresh
+                if (datetime.datetime.now() - search_started).total_seconds() > self.stall_time:
+                    if tries > 3:
+                        self.items_failed.append(item_id)
+                        Log.Debug(u"Task: %s, item stalled for %s times: %s, skipping", self.name, tries, item_id)
+                        break
+
+                    Log.Debug(u"Task: %s, item stalled for %s seconds: %s, retrying", self.name, self.stall_time, item_id)
+                    tries += 1
+                    refresh_item(item_id, title)
+                    search_started = datetime.datetime.now()
+                    time.sleep(1)
+                time.sleep(0.1)
+            # we can't hammer the PMS, otherwise requests will be stalled
+            time.sleep(1)
+
+        Log.Debug("Task: %s, done. Failed items: %s", self.name, self.items_failed)
         self.running = False
 
     def post_run(self):
         self.ready_for_display = False
         self.last_run = datetime.datetime.now()
-        self.last_run_time = self.last_run - self.time_start
+        if self.time_start:
+            self.last_run_time = self.last_run - self.time_start
         self.time_start = None
         self.percentage = 0
         self.items_done = None
+        self.items_failed = None
         self.items_searching = None
         self.items_searching_ids = None
 

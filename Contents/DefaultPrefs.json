@@ -264,13 +264,13 @@
   },
   {
     "id": "subtitles.scan.embedded",
-    "label": "Scan: include embedded subtitles (skip if existing)",
+    "label": "Scan: include subtitles embedded in the media file (and don't download seperate ones)",
     "type": "bool",
-    "default": "true"
+    "default": "false"
   },
   {
     "id": "subtitles.scan.external",
-    "label": "Scan: include external subtitles (skip if existing)",
+    "label": "Scan: include external subtitles (and don't download new ones)",
     "type": "bool",
     "default": "true"
   },
@@ -286,6 +286,7 @@
       "80",
       "75",
       "70",
+      "67",
       "65",
       "60",
       "55",
@@ -301,7 +302,7 @@
       "5",
       "0"
     ],
-    "default": "85"
+    "default": "67"
   },
   {
     "id": "subtitles.search.minimumMovieScore",
@@ -402,26 +403,35 @@
       "1 weeks",
       "2 weeks",
       "3 weeks",
-      "4 weeks"
+      "4 weeks",
+      "5 weeks",
+      "6 weeks"
     ],
     "default": "2 weeks"
   },
   {
-    "id": "scheduler.section_blacklist",
-    "label": "Scheduler: Sections to ignore (IDs, comma-separated)",
+    "id": "scheduler.max_recent_items_per_library",
+    "label": "Scheduler: Recent items to consider per library",
     "type": "text",
-    "default": ""
+    "default": "200"
   },
   {
-    "id": "scheduler.series_blacklist",
-    "label": "Scheduler: Series to ignore (IDs, comma-separated)",
-    "type": "text",
-    "default": ""
+    "id": "log_level",
+    "label": "How verbose should the logging be?",
+    "type": "enum",
+    "values": [
+      "CRITICAL",
+      "ERROR",
+      "WARNING",
+      "INFO",
+      "DEBUG"
+    ],
+    "default": "WARNING"
   },
   {
-    "id": "scheduler.item_blacklist",
-    "label": "Scheduler: Items to ignore (IDs, comma-separated)",
-    "type": "text",
-    "default": ""
+    "id": "log_console",
+    "label": "Log to console (for development/debugging)",
+    "type": "bool",
+    "default": "false"
   }
 ]

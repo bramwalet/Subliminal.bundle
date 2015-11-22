@@ -1,8 +1,5 @@
 # coding=utf-8
 
-import sys
-import uuid
-
 
 def refresh_plex_token():
     username = Prefs["plex_username"]
@@ -15,7 +12,7 @@ def refresh_plex_token():
         return
 
     if "uuid" not in Dict:
-        Dict["uuid"] = uuid.uuid1()
+        Dict["uuid"] = String.UUID()
         Dict.Save()
 
     current_uuid = Dict["uuid"]

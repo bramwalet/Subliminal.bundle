@@ -1,3 +1,46 @@
+1.3.19.379
+- core: new recent items implementation (used in "Items with missing subtitles"), now really picking up everything instead of using Plex's recently_added API endpoint
+- core: be more strict about title matching - a matched title doesn't automatically mean season and episode are correct, too
+- core: rewrote the hash matching algorithm to not blindly trust hash matches anymore, but instead episodes have to match the series name, season number, episode number and format (BluRay, HDTV...); movie have to at least match the title, format and codec for the hash to be considered
+- core: remove TheSubDB support for now, as it only supports hash-based matching
+- scheduler: more robust item-fail-handling (fixes #81)
+- config: "Scan: include embedded subtitles" now by default is off, as embedded subs have proven to be pretty unreliable
+- config: add configuration option for how many items per library are to be considered recent (default: 200)
+- config: make logging verbosity configurable, default: WARNING - log files should be considerably smaller now
+- config: make console logging optional, default: off - good for development/debugging
+- config: removed the ignore lists
+- menu: added "Browse all items", where you can browse all your libraries and manage your ignore list (add/remove sections/series/items)
+- menu: added "Display ignore list", where you can manage your ignored sections, series and items
+- menu: the submenu titles are now dynamically composed of a breadcrumb-style tree so you see where you are
+- menu: show the current and past state of the important menu actions such as (force)-refresh an item or refreshing the menu, on the Refresh-button's description
+- plugin now isn't in the dev mode by default and has logging to the console off (in certain configurations this resulted in huge syslogs)
+
+
+1.3.6.316
+- scheduler: missing subtitles task now able to handle huge libraries (thanks @chopeta, @comrade)
+- scheduler: detect item-stalling, add wait and retry logic to make missing subtitles task more robust
+- scheduler: report failed items to logs after task run completion
+- hint series name and episode title, or movie title to guessit to make detection way better (e.g. for Mr. Robot)
+
+1.3.6.304
+- scheduler: correct the recent-determination of the search for missing subtitles in recently_added task
+- scheduler: rewrote search for missing subtitles task; it now requests refreshes one by one and not in bulk anymore (hopefully fixes stalling)
+- handle rare cases of weird file system encodings (ANSI_X3.4-1968 for example)
+- fix simplejson warning on startup
+
+1.3.6.297
+- rename Sub-Zero to Sub-Zero.bundle (requirement for adding Sub-Zero to the Plex channel directory)
+- channel: add logging actions for the internal storage to the advanced menu
+- channel: handle item titles with foreign characters in them correctly
+- (hopefully) fix handling file names with foreign characters in them when scanning for local media
+- reformat the whole project, mostly honoring pep8
+- scheduler: fixed some serious bugs; broken tasks (stalled) and some errors many of you have seen should be gone now
+- scheduler: partly rewritten to be more robust, again
+- settings: move Plex.tv credentials to the top
+
+1.3.5.281
+- fix tasks broken for 1.2 -> 1.3.5 upgraders
+
 1.3.5.273 (same build as Beta Release 1.3.0.273) - changes from previous stable 1.2.11.180
 - add a channel menu, making this plugin a hybrid (Agent+Channel)
 - add a generic background task scheduler

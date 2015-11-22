@@ -7,6 +7,7 @@ import time
 import re
 
 # Unicode control characters can appear in ID3v2 tags but are not legal in XML.
+
 RE_UNICODE_CONTROL = u'([\u0000-\u0008\u000b-\u000c\u000e-\u001f\ufffe-\uffff])' + \
                      u'|' + \
                      u'([%s-%s][^%s-%s])|([^%s-%s][%s-%s])|([%s-%s]$)|(^[%s-%s])' % \
@@ -44,15 +45,13 @@ def cleanFilename(filename):
                                                                        ' ' * len(string.punctuation + string.whitespace))).strip().lower()
 
 
-now = datetime.datetime.now()
-
-
-def is_recent(item):
-    addedAt = datetime.datetime.fromtimestamp(item.added_at)
+def is_recent(t):
+    now = datetime.datetime.now()
+    when = datetime.datetime.fromtimestamp(t)
     value, key = Prefs["scheduler.item_is_recent_age"].split()
-    if now - datetime.timedelta(**{key: int(value)}) > addedAt:
-        return False
-    return True
+    if now - datetime.timedelta(**{key: int(value)}) < when:
+        return True
+    return False
 
 
 # thanks, Plex-Trakt-Scrobbler
@@ -87,10 +86,32 @@ def pad_title(value):
     return str_pad(value, 30, pad_char=' ')
 
 
-def format_video(item, kind, parent=None, parentTitle=None):
-    if kind == "episode" and parent:
-        return '%s S%02dE%02d' % ((parentTitle or parent.show.title), parent.index, item.index)
-    return item.title
+def format_item(item, kind, parent=None, parent_title=None, section_title=None, add_section_title=False):
+    """
+    :param item: plex item
+    :param kind: show or movie
+    :param parent: season or None
+    :param parent_title: parentTitle or None
+    :return:
+    """
+    return format_video(kind, item.title,
+                        section_title=(section_title or (parent.section.title if parent and getattr(parent, "section") else None)),
+                        parent_title=(parent_title or (parent.show.title if parent else None)),
+                        season=parent.index if parent else None,
+                        episode=item.index if kind == "show" else None,
+                        add_section_title=add_section_title)
+
+
+def format_video(kind, title, section_title=None, parent_title=None, season=None, episode=None, add_section_title=False):
+    section_add = ""
+    if add_section_title:
+        section_add = ("%s: " % section_title) if section_title else ""
+
+    if kind == "show" and parent_title:
+        if season and episode:
+            return '%s%s S%02dE%02d, %s' % (section_add, parent_title, season or 0, episode or 0, title)
+        return '%s%s, %s' % (section_add, parent_title, title)
+    return "%s%s" % (section_add, title)
 
 
 def encode_message(base, s):
@@ -103,3 +124,20 @@ def decode_message(s):
 
 def timestamp():
     return int(time.time())
+
+
+def query_plex(url, args):
+    """
+    simple http query to the plex API without parsing anything too complicated
+    :param url:
+    :param args:
+    :return:
+    """
+    use_args = args.copy()
+    if "token" in Dict and Dict["token"]:
+        use_args["X-Plex-Token"] = Dict["token"]
+
+    computed_args = "&".join(["%s=%s" % (key, String.Quote(value)) for key, value in use_args.iteritems()])
+
+    return HTTP.Request(url + ("?%s" % computed_args) if computed_args else "", immediate=True)
+
