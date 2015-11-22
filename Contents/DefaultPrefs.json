@@ -286,6 +286,7 @@
       "80",
       "75",
       "70",
+      "67",
       "65",
       "60",
       "55",
@@ -301,7 +302,7 @@
       "5",
       "0"
     ],
-    "default": "85"
+    "default": "67"
   },
   {
     "id": "subtitles.search.minimumMovieScore",
