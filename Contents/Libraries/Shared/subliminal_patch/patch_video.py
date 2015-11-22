@@ -67,7 +67,7 @@ def patched_search_external_subtitles(path):
     return subtitles
 
 
-def scan_video(path, subtitles=True, embedded_subtitles=True, hints=None):
+def scan_video(path, subtitles=True, embedded_subtitles=True, hints=None, dry=False):
     """Scan a video and its subtitle languages from a video `path`.
     :param str path: existing path to the video.
     :param bool subtitles: scan for subtitles with the same name.
@@ -79,7 +79,7 @@ def scan_video(path, subtitles=True, embedded_subtitles=True, hints=None):
     # patch: suggest video type to guessit beforehand
     """
     # check for non-existing path
-    if not os.path.exists(path):
+    if not dry and not os.path.exists(path):
         raise ValueError('Path does not exist')
 
     # check video extension
@@ -89,10 +89,14 @@ def scan_video(path, subtitles=True, embedded_subtitles=True, hints=None):
     dirpath, filename = os.path.split(path)
     hints = hints or {}
     logger.info('Scanning video (hints: %s) %r in %r', hints, filename, dirpath)
+    guess_from = os.path.join(os.path.split(dirpath)[-1], filename)
 
     # guess
     try:
-        video = Video.fromguess(path, guess_file_info(path, options=hints))
+        video = Video.fromguess(path, guess_file_info(guess_from, options=hints))
+
+        if dry:
+            return video
 
         # size and hashes
         video.size = os.path.getsize(path)
