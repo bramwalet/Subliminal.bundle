@@ -1,4 +1,4 @@
-Sub-Zero for Plex, 1.3.19.379
+Sub-Zero for Plex, 1.3.20.396
 =================
 
 ![logo](https://raw.githubusercontent.com/pannal/Sub-Zero.bundle/master/Contents/Resources/subzero.gif)
@@ -42,23 +42,12 @@ it has already downloaded all the wanted languages for.
 
 ## Changelog
 
-1.3.19.379
+1.3.20.396
 
-- core: new recent items implementation (used in "Items with missing subtitles"), now really picking up everything instead of using Plex's recently_added API endpoint
-- core: be more strict about title matching - a matched title doesn't automatically mean season and episode are correct, too
-- core: rewrote the hash matching algorithm to not blindly trust hash matches anymore, but instead episodes have to match the series name, season number, episode number and format (BluRay, HDTV...); movie have to at least match the title, format and codec for the hash to be considered
-- core: remove TheSubDB support for now, as it only supports hash-based matching
-- scheduler: more robust item-fail-handling (fixes #81)
-- config: "Scan: include embedded subtitles" now by default is off, as embedded subs have proven to be pretty unreliable
-- config: add configuration option for how many items per library are to be considered recent (default: 200)
-- config: make logging verbosity configurable, default: WARNING - log files should be considerably smaller now
-- config: make console logging optional, default: off - good for development/debugging
-- config: removed the ignore lists
-- menu: added "Browse all items", where you can browse all your libraries and manage your ignore list (add/remove sections/series/items)
-- menu: added "Display ignore list", where you can manage your ignored sections, series and items
-- menu: the submenu titles are now dynamically composed of a breadcrumb-style tree so you see where you are
-- menu: show the current and past state of the important menu actions such as (force)-refresh an item or refreshing the menu, on the Refresh-button's description
-- plugin now isn't in the dev mode by default and has logging to the console off (in certain configurations this resulted in huge syslogs)
+- core: fix logging handlers (when saving log_level settings loggers got duplicated)
+- core: better movie matching by only hinting the filename and the last subdirectory to guessit (instead of the full path)
+- core: don't fail on wrong detection/scanning of media file
+- lower minimum tv series score from 85 to 67 (removed title; composed of: series=44 + season=11 + episode=11 + hearing_impaired=1)
 
 [older changes](CHANGELOG.md)
 

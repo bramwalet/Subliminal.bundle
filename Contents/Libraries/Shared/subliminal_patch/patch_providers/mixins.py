@@ -13,7 +13,7 @@ class PunctuationMixin(object):
     """
 
     def clean_punctuation(self, s):
-        return s.replace(".", "").replace(":", "").replace("'", "")
+        return s.replace(".", "").replace(":", "").replace("'", "").replace("&", "").replace("-", "")
 
     def clean_whitespace(self, s):
         return clean_whitespace_re.sub("", s)

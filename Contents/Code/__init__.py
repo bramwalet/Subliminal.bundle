@@ -23,7 +23,7 @@ import support
 import interface
 sys.modules["interface"] = interface
 
-from subzero.constants import OS_PLEX_USERAGENT, DEPENDENCY_MODULE_NAMES, PERSONAL_MEDIA_IDENTIFIER
+from subzero.constants import OS_PLEX_USERAGENT, PERSONAL_MEDIA_IDENTIFIER
 from subzero import intent
 from interface.menu import *
 from support.subtitlehelpers import getSubtitlesFromMetadata
@@ -67,6 +67,9 @@ def scanTvMedia(media):
                 for part in item.parts:
                     scanned_video = scanVideo(part, ignore_all=force_refresh,
                                               hints={"type": "episode", "expected_series": [media.title], "expected_title": [ep.title]})
+                    if not scanned_video:
+                        continue
+
                     scanned_video.id = media.seasons[season].episodes[episode].id
                     videos[scanned_video] = part
     return videos
@@ -78,6 +81,9 @@ def scanMovieMedia(media):
     for item in media.items:
         for part in item.parts:
             scanned_video = scanVideo(part, ignore_all=force_refresh, hints={"type": "movie", "expected_title": [media.title]})
+            if not scanned_video:
+                continue
+
             scanned_video.id = media.id
             videos[scanned_video] = part
     return videos
