@@ -143,7 +143,7 @@ def getSubtitlesFromMetadata(part):
             try:
                 p_type, p_value, p_sort, p_index, p_codec, p_format = proxy
             except ValueError:
-                Log.Error("Couldn't parse subtitle info, got proxy %s" % proxy)
+                Log.Error("Couldn't parse subtitle info, got proxy %s" % repr(proxy))
                 continue
 
             if p_type == "Media":
