@@ -267,8 +267,8 @@ class SubZeroAgent(object):
 
 
 class SubZeroSubtitlesAgentMovies(SubZeroAgent, Agent.Movies):
-    contributes_to = ['com.plexapp.agents.imdb', 'com.plexapp.agents.xbmcnfo', 'com.plexapp.agents.themoviedb']
+    contributes_to = ['com.plexapp.agents.imdb', 'com.plexapp.agents.xbmcnfo', 'com.plexapp.agents.themoviedb', 'com.plexapp.agents.hama']
 
 
 class SubZeroSubtitlesAgentTvShows(SubZeroAgent, Agent.TV_Shows):
-    contributes_to = ['com.plexapp.agents.thetvdb', 'com.plexapp.agents.thetvdbdvdorder', 'com.plexapp.agents.xbmcnfotv']
+    contributes_to = ['com.plexapp.agents.thetvdb', 'com.plexapp.agents.thetvdbdvdorder', 'com.plexapp.agents.xbmcnfotv', 'com.plexapp.agents.hama']
