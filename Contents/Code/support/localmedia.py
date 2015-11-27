@@ -103,7 +103,7 @@ def findSubtitles(part):
     if not Prefs['subtitles.save.filesystem']:
         for language, sub_list in subtitlehelpers.getSubtitlesFromMetadata(part).iteritems():
             if sub_list:
-                if not language in lang_sub_map:
+                if language not in lang_sub_map:
                     lang_sub_map[language] = []
                 lang_sub_map[language] = lang_sub_map[language] + sub_list
 
