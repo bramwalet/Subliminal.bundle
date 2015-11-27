@@ -1,4 +1,4 @@
-Sub-Zero for Plex, 1.3.20.396
+Sub-Zero for Plex, 1.3.20.403
 =================
 
 ![logo](https://raw.githubusercontent.com/pannal/Sub-Zero.bundle/master/Contents/Resources/subzero.gif)
@@ -42,12 +42,11 @@ it has already downloaded all the wanted languages for.
 
 ## Changelog
 
-1.3.20.396
-
-- core: fix logging handlers (when saving log_level settings loggers got duplicated)
-- core: better movie matching by only hinting the filename and the last subdirectory to guessit (instead of the full path)
-- core: don't fail on wrong detection/scanning of media file
-- lower minimum tv series score from 85 to 67 (removed title; composed of: series=44 + season=11 + episode=11 + hearing_impaired=1)
+1.3.20.403
+- core: handle & and - ("and" and dash) in names
+- core: fixed handling of internal metadata subtitles
+- re-upped the minimum tv score to 85 (may be even higher in the future)
+- opensubtitles: possibly significantly better movie matching (now also query for movie title, instead of only querying for video hash)
 
 [older changes](CHANGELOG.md)
 
