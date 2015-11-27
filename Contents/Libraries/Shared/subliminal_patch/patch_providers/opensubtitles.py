@@ -3,6 +3,7 @@
 import logging
 import os
 
+from babelfish import Language
 from subliminal.exceptions import ConfigurationError
 from subliminal.providers.opensubtitles import OpenSubtitlesProvider, checked, get_version, __version__, OpenSubtitlesSubtitle, Episode, Movie
 
@@ -46,6 +47,7 @@ class PatchedOpenSubtitlesProvider(OpenSubtitlesProvider):
 
         return self.query(languages, hash=video.hashes.get('opensubtitles'), size=video.size, imdb_id=video.imdb_id,
                           query=query, season=season, episode=episode)
+
     def query(self, languages, hash=None, size=None, imdb_id=None, query=None, season=None, episode=None, tag=None):
         # fill the search criteria
         criteria = []
