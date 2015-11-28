@@ -45,6 +45,13 @@ def save_subtitles(video, subtitles, single=False, directory=None, encoding=None
         if directory is not None:
             subtitle_path = os.path.join(directory, os.path.split(subtitle_path)[1])
 
+        # decode to unicode
+        try:
+            subtitle_path = subtitle_path.decode("utf-8")
+        except UnicodeDecodeError:
+            pass
+
+        # encode to filesystem encoding
         subtitle_path = subtitle_path.encode(getViableEncoding())
 
         # save content as is or in the specified encoding
