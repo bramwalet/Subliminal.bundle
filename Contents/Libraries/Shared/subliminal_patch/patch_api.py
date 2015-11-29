@@ -1,6 +1,7 @@
 # coding=utf-8
 import os
 import logging
+from bs4 import UnicodeDammit
 from subliminal.api import get_subtitle_path, io
 from subzero.lib.io import getViableEncoding
 
@@ -45,14 +46,8 @@ def save_subtitles(video, subtitles, single=False, directory=None, encoding=None
         if directory is not None:
             subtitle_path = os.path.join(directory, os.path.split(subtitle_path)[1])
 
-        # decode to unicode
-        try:
-            subtitle_path = subtitle_path.decode("utf-8")
-        except UnicodeDecodeError:
-            pass
-
-        # encode to filesystem encoding
-        subtitle_path = subtitle_path.encode(getViableEncoding())
+        # force unicode
+        subtitle_path = UnicodeDammit(subtitle_path).unicode_markup
 
         # save content as is or in the specified encoding
         logger.info('Saving %r to %r', subtitle, subtitle_path)
