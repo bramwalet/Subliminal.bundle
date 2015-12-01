@@ -195,6 +195,7 @@ def SectionMenu(rating_key, title=None, base_title=None, section_title=None, ign
     items = getAllItems(key="all", value=rating_key, base="library/sections")
 
     kind, deeper = get_items_info(items)
+    title = unicode(title)
 
     section_title = title
     title = base_title + " > " + title
