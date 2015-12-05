@@ -8,6 +8,7 @@ import operator
 import time
 from babelfish.exceptions import LanguageReverseError
 from pkg_resources import EntryPoint, iter_entry_points
+from subliminal import ProviderError
 from subliminal.api import ProviderPool
 from subliminal_patch.patch_subtitle import compute_score
 
@@ -213,6 +214,8 @@ class PatchedProviderPool(ProviderPool):
                 self[subtitle.provider_name].download_subtitle(subtitle)
             except (requests.Timeout, socket.timeout):
                 logger.error('Provider %r timed out', subtitle.provider_name)
+            except ProviderError:
+                logger.error('Unexpected error in provider %r, Traceback: %s', subtitle.provider_name, traceback.format_exc())
             except:
                 logger.exception('Unexpected error in provider %r, Traceback: %s', subtitle.provider_name, traceback.format_exc())
             else:
