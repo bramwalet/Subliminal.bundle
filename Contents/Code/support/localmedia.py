@@ -103,7 +103,7 @@ def findSubtitles(part):
                 lang_sub_map[new_language] = lang_sub_map[new_language] + subtitles
 
     # add known metadata subs to our sub list
-    if not Prefs['subtitles.save.filesystem']:
+    if not use_filesystem:
         for language, sub_list in subtitlehelpers.getSubtitlesFromMetadata(part).iteritems():
             if sub_list:
                 if language not in lang_sub_map:
