@@ -1,4 +1,4 @@
-Sub-Zero for Plex, 1.3.20.403
+Sub-Zero for Plex, 1.3.20.422
 =================
 
 ![logo](https://raw.githubusercontent.com/pannal/Sub-Zero.bundle/master/Contents/Resources/subzero.gif)
@@ -42,11 +42,15 @@ it has already downloaded all the wanted languages for.
 
 ## Changelog
 
-1.3.20.403
-- core: handle & and - ("and" and dash) in names
-- core: fixed handling of internal metadata subtitles
-- re-upped the minimum tv score to 85 (may be even higher in the future)
-- opensubtitles: possibly significantly better movie matching (now also query for movie title, instead of only querying for video hash)
+1.3.20.422  
+- tvsubtitles: show matching was partially broken
+- addic7ed: better show matching
+- core: correctly skip subtitles stored in filesystem if metadata storage was selected (Local Media Assets agent may still pick them up)  
+- core: fix local API access (switch from HTTPS to HTTP)
+- core: fix handling of library names and media paths with non-ascii chars in it  
+- core: fix bundle version to correctly display current bundle version
+- core: skip downloading multi-CD subtitle
+- settings: clarify
 
 [older changes](CHANGELOG.md)
 
