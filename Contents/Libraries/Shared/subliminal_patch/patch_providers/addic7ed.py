@@ -10,6 +10,7 @@ from .mixins import PunctuationMixin
 logger = logging.getLogger(__name__)
 
 series_year_re = re.compile('^(?P<series>.+?)(?: \((?P<year>\d{4})\))?$')
+remove_brackets_re = re.compile("^(.+?)( \([^\d]+\))$")
 
 USE_BOOST = False
 
@@ -105,6 +106,15 @@ class PatchedAddic7edProvider(PunctuationMixin, Addic7edProvider):
         if not show_id:
             logger.debug('Getting show id')
             show_id = show_ids.get(series_clean)
+
+            if not show_id:
+                # show not found, try to match it without modifiers (mostly country codes such as US/UK)
+                match = remove_brackets_re.match(series_clean)
+                if match:
+                    matched = match.group(1)
+                    show_id = show_ids.get(matched)
+                    if show_id:
+                        logger.debug("show '%s' matched to '%s': %s", series, matched, show_id)
 
         # search as last resort
         if not show_id:
