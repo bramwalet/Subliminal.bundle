@@ -252,7 +252,7 @@
   },
   {
     "id": "provider.addic7ed.boost",
-    "label": "Addic7ed: boost over hash score if requirements met (prefer over other providers)",
+    "label": "Addic7ed: prefer over other providers (if requirements met)",
     "type": "bool",
     "default": "false"
   },
@@ -264,13 +264,13 @@
   },
   {
     "id": "subtitles.scan.embedded",
-    "label": "Scan: include subtitles embedded in the media file (and don't download seperate ones)",
+    "label": "Scan: include embedded subtitles (in the media file (MKV/MP4), don't download if existing)",
     "type": "bool",
     "default": "false"
   },
   {
     "id": "subtitles.scan.external",
-    "label": "Scan: include external subtitles (and don't download new ones)",
+    "label": "Scan: include external subtitles (metadata/filesystem, don't download if existing)",
     "type": "bool",
     "default": "true"
   },
