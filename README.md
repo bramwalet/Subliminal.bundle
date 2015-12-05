@@ -12,7 +12,7 @@ If you like this, buy me a beer: [![Donate](https://www.paypalobjects.com/en_US/
 
 ### Installation
 * go to ```Library/Application Support/Plex Media Server/Plug-ins/```
-* ```rm -r Sub-Zero.bundle```
+* ```rm -r Sub-Zero.bundle``` (remove the folder)
 * get the release you want from *https://github.com/pannal/Sub-Zero.bundle/releases/*
 * unzip the release
 * restart your plex media server!!!
