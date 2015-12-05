@@ -216,6 +216,7 @@ class PatchedProviderPool(ProviderPool):
                 logger.error('Provider %r timed out', subtitle.provider_name)
             except ProviderError:
                 logger.error('Unexpected error in provider %r, Traceback: %s', subtitle.provider_name, traceback.format_exc())
+                break
             except:
                 logger.exception('Unexpected error in provider %r, Traceback: %s', subtitle.provider_name, traceback.format_exc())
             else:
