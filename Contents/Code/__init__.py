@@ -280,6 +280,10 @@ class SubZeroAgent(object):
     def update(self, metadata, media, lang):
         Log.Debug("Sub-Zero %s, %s update called" % (config.version, self.agent_type))
 
+        if not media or not len(media):
+            Log.Error("Called with empty media, something is really wrong with your setup!")
+            return
+
         set_refresh_menu_state(media, media_type=self.agent_type)
 
         item_ids = []
