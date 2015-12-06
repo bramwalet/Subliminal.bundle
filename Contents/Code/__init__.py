@@ -57,36 +57,47 @@ def initSubliminalPatches():
     subliminal_patch.patch_providers.addic7ed.USE_BOOST = bool(Prefs['provider.addic7ed.boost'])
 
 
-def scanTvMedia(media):
-    videos = {}
-    for season in media.seasons:
-        for episode in media.seasons[season].episodes:
-            ep = media.seasons[season].episodes[episode]
-            force_refresh = intent.get("force", ep.id)
-            for item in media.seasons[season].episodes[episode].items:
-                for part in item.parts:
-                    scanned_video = scanVideo(part, ignore_all=force_refresh,
-                                              hints={"type": "episode", "expected_series": [media.title], "expected_title": [ep.title]})
-                    if not scanned_video:
-                        continue
+def flattenToParts(media, kind="series"):
+    """
+    iterates through media and returns the associated parts (videos)
+    :param media:
+    :param kind:
+    :return:
+    """
+    parts = []
+    if kind == "series":
+        for season in media.seasons:
+            for episode in media.seasons[season].episodes:
+                ep = media.seasons[season].episodes[episode]
+                for item in media.seasons[season].episodes[episode].items:
+                    for part in item.parts:
+                        parts.append({"part": part, "type": "episode", "title": ep.title, "series": media.title, "id": ep.id})
+    else:
+        for item in media.items:
+            for part in item.parts:
+                parts.append({"part": part, "type": "movie", "title": media.title, "id": media.id})
+    return parts
 
-                    scanned_video.id = media.seasons[season].episodes[episode].id
-                    videos[scanned_video] = part
-    return videos
 
+def scanParts(parts, kind="series"):
+    """
+    receives a list of parts containing dictionaries returned by flattenToParts
+    :param parts:
+    :param kind: series or movies
+    :return: dictionary of scanned videos of subliminal.video.scan_video
+    """
+    ret = {}
+    for part in parts:
+        force_refresh = intent.get("force", part["id"])
+        hints = {"expected_title": [part["title"]]}
+        hints.update({"type": "episode", "expected_series": [part["series"]]} if kind == "series" else {"type": "movie"})
+        scanned_video = scanVideo(part["part"], ignore_all=force_refresh, hints=hints)
+        if not scanned_video:
+            continue
 
-def scanMovieMedia(media):
-    videos = {}
-    force_refresh = intent.get("force", media.id)
-    for item in media.items:
-        for part in item.parts:
-            scanned_video = scanVideo(part, ignore_all=force_refresh, hints={"type": "movie", "expected_title": [media.title]})
-            if not scanned_video:
-                continue
-
-            scanned_video.id = media.id
-            videos[scanned_video] = part
-    return videos
+        scanned_video.id = part["id"]
+        ret[scanned_video] = part["part"]
+    return ret
 
 
 def getItemIDs(media, kind="series"):
@@ -236,11 +247,12 @@ class SubZeroAgent(object):
         item_ids = []
         try:
             initSubliminalPatches()
-            videos, subtitles = getattr(self, "update_%s" % self.agent_type)(metadata, media, lang)
+            parts = flattenToParts(media, kind=self.agent_type)
+            scanned_parts, subtitles = getattr(self, "update_%s" % self.agent_type)(metadata, scanParts(parts, kind=self.agent_type), lang)
             item_ids = getItemIDs(media, kind=self.agent_type)
 
             if subtitles:
-                saveSubtitles(videos, subtitles)
+                saveSubtitles(scanned_parts, subtitles)
 
             updateLocalMedia(metadata, media, media_type=self.agent_type)
 
@@ -255,15 +267,13 @@ class SubZeroAgent(object):
                 # resolve existing intent for that id
                 intent.resolve("force", item_id)
 
-    def update_movies(self, metadata, media, lang):
-        videos = scanMovieMedia(media)
-        subtitles = downloadBestSubtitles(videos, min_score=int(Prefs["subtitles.search.minimumMovieScore"]))
-        return videos, subtitles
+    def update_movies(self, metadata, scanned_parts, lang):
+        subtitles = downloadBestSubtitles(scanned_parts, min_score=int(Prefs["subtitles.search.minimumMovieScore"]))
+        return scanned_parts, subtitles
 
-    def update_series(self, metadata, media, lang):
-        videos = scanTvMedia(media)
-        subtitles = downloadBestSubtitles(videos, min_score=int(Prefs["subtitles.search.minimumTVScore"]))
-        return videos, subtitles
+    def update_series(self, metadata, scanned_parts, lang):
+        subtitles = downloadBestSubtitles(scanned_parts, min_score=int(Prefs["subtitles.search.minimumTVScore"]))
+        return scanned_parts, subtitles
 
 
 class SubZeroSubtitlesAgentMovies(SubZeroAgent, Agent.Movies):
