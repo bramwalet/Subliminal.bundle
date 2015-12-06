@@ -60,6 +60,28 @@ def initSubliminalPatches():
 IGNORE_FN = ("subzero.ignore", ".subzero.ignore", ".nosz")
 
 
+def flattenToParts(media, kind="series"):
+    """
+    iterates through media and returns the associated parts (videos)
+    :param media:
+    :param kind:
+    :return:
+    """
+    parts = []
+    if kind == "series":
+        for season in media.seasons:
+            for episode in media.seasons[season].episodes:
+                ep = media.seasons[season].episodes[episode]
+                for item in media.seasons[season].episodes[episode].items:
+                    for part in item.parts:
+                        parts.append({"video": part, "type": "episode", "title": ep.title, "series": media.title, "id": ep.id})
+    else:
+        for item in media.items:
+            for part in item.parts:
+                parts.append({"video": part, "type": "movie", "title": media.title, "id": media.id})
+    return parts
+
+
 def parseMediaToParts(media, kind="series"):
     """
     returns a list of parts to be used later on; ignores folders with an existing "subzero.ignore" file
@@ -93,28 +115,6 @@ def parseMediaToParts(media, kind="series"):
         if not ignore:
             use_parts.append(part)
     return use_parts
-
-
-def flattenToParts(media, kind="series"):
-    """
-    iterates through media and returns the associated parts (videos)
-    :param media:
-    :param kind:
-    :return:
-    """
-    parts = []
-    if kind == "series":
-        for season in media.seasons:
-            for episode in media.seasons[season].episodes:
-                ep = media.seasons[season].episodes[episode]
-                for item in media.seasons[season].episodes[episode].items:
-                    for part in item.parts:
-                        parts.append({"video": part, "type": "episode", "title": ep.title, "series": media.title, "id": ep.id})
-    else:
-        for item in media.items:
-            for part in item.parts:
-                parts.append({"video": part, "type": "movie", "title": media.title, "id": media.id})
-    return parts
 
 
 def scanParts(parts, kind="series"):
