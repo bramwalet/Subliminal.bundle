@@ -12,36 +12,39 @@ def findSubtitles(part):
     lang_sub_map = {}
     part_filename = helpers.unicodize(part.file)
     part_basename = os.path.splitext(os.path.basename(part_filename))[0]
-    paths = [os.path.dirname(part_filename)]
+    use_filesystem = bool(Prefs["subtitles.save.filesystem"])
+    paths = [os.path.dirname(part_filename)] if use_filesystem else []
 
     # Check for local subtitles subdirectory
-    sub_dirs_default = ["sub", "subs", "subtitle", "subtitles"]
     sub_dir_base = paths[0]
 
     sub_dir_list = []
 
-    if Prefs["subtitles.save.subFolder"] != "current folder":
-        # got selected subfolder
-        sub_dir_list.append(os.path.join(sub_dir_base, Prefs["subtitles.save.subFolder"]))
+    global_subtitle_folder = None
 
-    sub_dir_custom = Prefs["subtitles.save.subFolder.Custom"].strip() if bool(Prefs["subtitles.save.subFolder.Custom"]) else None
-    if sub_dir_custom:
-        # got custom subfolder
-        if sub_dir_custom.startswith("/"):
-            # absolute folder
-            sub_dir_list.append(sub_dir_custom)
-        else:
-            # relative folder
-            sub_dir_list.append(os.path.join(sub_dir_base, sub_dir_custom))
+    if use_filesystem:
+        if Prefs["subtitles.save.subFolder"] != "current folder":
+            # got selected subfolder
+            sub_dir_list.append(os.path.join(sub_dir_base, Prefs["subtitles.save.subFolder"]))
 
-    for sub_dir in sub_dir_list:
-        if os.path.isdir(sub_dir):
-            paths.append(sub_dir)
+        sub_dir_custom = Prefs["subtitles.save.subFolder.Custom"].strip() if bool(Prefs["subtitles.save.subFolder.Custom"]) else None
+        if sub_dir_custom:
+            # got custom subfolder
+            if sub_dir_custom.startswith("/"):
+                # absolute folder
+                sub_dir_list.append(sub_dir_custom)
+            else:
+                # relative folder
+                sub_dir_list.append(os.path.join(sub_dir_base, sub_dir_custom))
 
-    # Check for a global subtitle location
-    global_subtitle_folder = os.path.join(Core.app_support_path, 'Subtitles')
-    if os.path.exists(global_subtitle_folder):
-        paths.append(global_subtitle_folder)
+        for sub_dir in sub_dir_list:
+            if os.path.isdir(sub_dir):
+                paths.append(sub_dir)
+
+        # Check for a global subtitle location
+        global_subtitle_folder = os.path.join(Core.app_support_path, 'Subtitles')
+        if os.path.exists(global_subtitle_folder):
+            paths.append(global_subtitle_folder)
 
     # We start by building a dictionary of files to their absolute paths. We also need to know
     # the number of media files that are actually present, in case the found local media asset
@@ -78,7 +81,7 @@ def findSubtitles(part):
         # If the file is located within the global subtitle folder and it's name doesn't match exactly
         # then we should simply ignore it.
         #
-        if file_path.count(global_subtitle_folder) and not filename_matches_part:
+        if global_subtitle_folder and file_path.count(global_subtitle_folder) and not filename_matches_part:
             continue
 
         # If we have more than one media file within the folder and located filename doesn't match
@@ -100,7 +103,7 @@ def findSubtitles(part):
                 lang_sub_map[new_language] = lang_sub_map[new_language] + subtitles
 
     # add known metadata subs to our sub list
-    if not Prefs['subtitles.save.filesystem']:
+    if not use_filesystem:
         for language, sub_list in subtitlehelpers.getSubtitlesFromMetadata(part).iteritems():
             if sub_list:
                 if language not in lang_sub_map:
