@@ -248,7 +248,9 @@ class SubZeroAgent(object):
         try:
             initSubliminalPatches()
             parts = flattenToParts(media, kind=self.agent_type)
-            scanned_parts, subtitles = getattr(self, "update_%s" % self.agent_type)(metadata, scanParts(parts, kind=self.agent_type), lang)
+            use_score = Prefs["subtitles.search.minimumMovieScore" if self.agent_type == "movies" else "subtitles.search.minimumTVScore"]
+            scanned_parts = scanParts(parts, kind=self.agent_type)
+            subtitles = downloadBestSubtitles(scanned_parts, min_score=int(use_score))
             item_ids = getItemIDs(media, kind=self.agent_type)
 
             if subtitles:
@@ -266,14 +268,6 @@ class SubZeroAgent(object):
 
                 # resolve existing intent for that id
                 intent.resolve("force", item_id)
-
-    def update_movies(self, metadata, scanned_parts, lang):
-        subtitles = downloadBestSubtitles(scanned_parts, min_score=int(Prefs["subtitles.search.minimumMovieScore"]))
-        return scanned_parts, subtitles
-
-    def update_series(self, metadata, scanned_parts, lang):
-        subtitles = downloadBestSubtitles(scanned_parts, min_score=int(Prefs["subtitles.search.minimumTVScore"]))
-        return scanned_parts, subtitles
 
 
 class SubZeroSubtitlesAgentMovies(SubZeroAgent, Agent.Movies):
