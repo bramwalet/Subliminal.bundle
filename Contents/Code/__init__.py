@@ -57,6 +57,44 @@ def initSubliminalPatches():
     subliminal_patch.patch_providers.addic7ed.USE_BOOST = bool(Prefs['provider.addic7ed.boost'])
 
 
+IGNORE_FN = ("subzero.ignore", ".subzero.ignore", ".nosz")
+
+
+def parseMediaToParts(media, kind="series"):
+    """
+    returns a list of parts to be used later on; ignores folders with an existing "subzero.ignore" file
+    :param media:
+    :param kind:
+    :return:
+    """
+    parts = flattenToParts(media, kind=kind)
+    if not Prefs["subtitles.ignore_fs"]:
+        return parts
+
+    use_parts = []
+    check_ignore_paths = [".", "../"]
+    if kind == "series":
+        check_ignore_paths.append("../../")
+
+    for part in parts:
+        base_folder, fn = os.path.split(part["video"].file)
+
+        ignore = False
+        for rel_path in check_ignore_paths:
+            fld = os.path.abspath(os.path.join(base_folder, rel_path))
+            for ifn in IGNORE_FN:
+                if os.path.isfile(os.path.join(fld, ifn)):
+                    Log.Info(u'Ignoring "%s" because "%s" exists in "%s"', fn, ifn, fld)
+                    ignore = True
+                    break
+            if ignore:
+                break
+
+        if not ignore:
+            use_parts.append(part)
+    return use_parts
+
+
 def flattenToParts(media, kind="series"):
     """
     iterates through media and returns the associated parts (videos)
@@ -71,11 +109,11 @@ def flattenToParts(media, kind="series"):
                 ep = media.seasons[season].episodes[episode]
                 for item in media.seasons[season].episodes[episode].items:
                     for part in item.parts:
-                        parts.append({"part": part, "type": "episode", "title": ep.title, "series": media.title, "id": ep.id})
+                        parts.append({"video": part, "type": "episode", "title": ep.title, "series": media.title, "id": ep.id})
     else:
         for item in media.items:
             for part in item.parts:
-                parts.append({"part": part, "type": "movie", "title": media.title, "id": media.id})
+                parts.append({"video": part, "type": "movie", "title": media.title, "id": media.id})
     return parts
 
 
@@ -91,12 +129,12 @@ def scanParts(parts, kind="series"):
         force_refresh = intent.get("force", part["id"])
         hints = {"expected_title": [part["title"]]}
         hints.update({"type": "episode", "expected_series": [part["series"]]} if kind == "series" else {"type": "movie"})
-        scanned_video = scanVideo(part["part"], ignore_all=force_refresh, hints=hints)
+        scanned_video = scanVideo(part["video"], ignore_all=force_refresh, hints=hints)
         if not scanned_video:
             continue
 
         scanned_video.id = part["id"]
-        ret[scanned_video] = part["part"]
+        ret[scanned_video] = part["video"]
     return ret
 
 
@@ -247,7 +285,7 @@ class SubZeroAgent(object):
         item_ids = []
         try:
             initSubliminalPatches()
-            parts = flattenToParts(media, kind=self.agent_type)
+            parts = parseMediaToParts(media, kind=self.agent_type)
             use_score = Prefs["subtitles.search.minimumMovieScore" if self.agent_type == "movies" else "subtitles.search.minimumTVScore"]
             scanned_parts = scanParts(parts, kind=self.agent_type)
             subtitles = downloadBestSubtitles(scanned_parts, min_score=int(use_score))
