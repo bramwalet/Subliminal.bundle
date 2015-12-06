@@ -57,9 +57,6 @@ def initSubliminalPatches():
     subliminal_patch.patch_providers.addic7ed.USE_BOOST = bool(Prefs['provider.addic7ed.boost'])
 
 
-IGNORE_FN = ("subzero.ignore", ".subzero.ignore", ".nosz")
-
-
 def flattenToParts(media, kind="series"):
     """
     iterates through media and returns the associated parts (videos)
@@ -80,6 +77,9 @@ def flattenToParts(media, kind="series"):
             for part in item.parts:
                 parts.append({"video": part, "type": "movie", "title": media.title, "id": media.id})
     return parts
+
+
+IGNORE_FN = ("subzero.ignore", ".subzero.ignore", ".nosz")
 
 
 def parseMediaToParts(media, kind="series"):
