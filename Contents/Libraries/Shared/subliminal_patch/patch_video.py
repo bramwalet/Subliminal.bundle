@@ -88,9 +88,11 @@ def scan_video(path, subtitles=True, embedded_subtitles=True, hints=None, dont_u
         raise ValueError('%s is not a valid video extension' % os.path.splitext(path)[1])
 
     dirpath, filename = os.path.split(path)
+
+    # hint guessit the filename itself and its 2 parent directories if we're an episode (most likely Series name/Season/filename), else only one
+    guess_from = os.path.join(*os.path.normpath(path).split(os.path.sep)[-3 if hints.get("type") == "episode" else -2:])
     hints = hints or {}
-    logger.info('Scanning video (hints: %s) %r in %r', hints, filename, dirpath)
-    guess_from = os.path.join(os.path.split(dirpath)[-1], filename)
+    logger.info('Scanning video (hints: %s) %r', hints, guess_from)
 
     # guess
     try:
@@ -114,6 +116,7 @@ def scan_video(path, subtitles=True, embedded_subtitles=True, hints=None, dont_u
             video.subtitle_languages |= set(patched_search_external_subtitles(path).values())
     except Exception:
         logger.error("Something went wrong when running guessit: %s", traceback.format_exc())
+        return
 
     # video metadata with enzyme
     try:
