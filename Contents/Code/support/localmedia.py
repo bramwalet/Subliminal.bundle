@@ -15,14 +15,14 @@ def findSubtitles(part):
     use_filesystem = bool(Prefs["subtitles.save.filesystem"])
     paths = [os.path.dirname(part_filename)] if use_filesystem else []
 
-    # Check for local subtitles subdirectory
-    sub_dir_base = paths[0]
-
-    sub_dir_list = []
-
     global_subtitle_folder = None
 
     if use_filesystem:
+        # Check for local subtitles subdirectory
+        sub_dir_base = paths[0]
+
+        sub_dir_list = []
+
         if Prefs["subtitles.save.subFolder"] != "current folder":
             # got selected subfolder
             sub_dir_list.append(os.path.join(sub_dir_base, Prefs["subtitles.save.subFolder"]))
