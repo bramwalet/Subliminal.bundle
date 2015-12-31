@@ -25,6 +25,12 @@ Use the following agent order:
 2. Local Media Assets
 3. anything else
 
+##### Recommended
+Create an account and input your credentials for:
+
+* Addic7ed
+* Opensubtitles
+
 ### Attention on the initial refresh
 When you first use this plugin, and do a refresh on all of your media, you are most likely
 to be shut out by some or all of the subtitle providers depending on your libraries' size.
@@ -74,6 +80,7 @@ Several options are provided in the preferences of this agent.
 
 * Addic7ed username/password: Provide your addic7ed username here, otherwise the provider won't work. Please make sure your account is activated, before using the agent.
 * Plex.tv username/password: Generally recommended to be provided; needed if you use Plex Home to make the API work (the whole channel menu depends on it)
+* Opensubtitles username/password: Generally recommended to be provided (not necessarily needed, but avoids errors)
 * Subtitle language (1)/(2)/(3): Your preferred languages to download subtitles for. 
 * Additional Subtitle Languages: Additional languages to download; comma-separated; use [ISO-639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes))
 * Provider: Enable ...: Enable/disable this provider. Affects both movies and series. 
