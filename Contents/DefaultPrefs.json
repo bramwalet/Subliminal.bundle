@@ -379,7 +379,7 @@
   },
   {
     "id": "subtitles.ignore_fs",
-    "label": "Ignore folders with \"subzero.ignore/.subzero.ignore/.nosz\" files in them",
+    "label": "Ignore folders (with \"subzero.ignore/.subzero.ignore/.nosz\" files in them)",
     "type": "bool",
     "default": "false"
   },
