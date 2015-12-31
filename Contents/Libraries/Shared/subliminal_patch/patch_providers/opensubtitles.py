@@ -10,13 +10,20 @@ logger = logging.getLogger(__name__)
 
 
 class PatchedOpenSubtitlesSubtitle(OpenSubtitlesSubtitle):
+    def __init__(self, language, hearing_impaired, page_link, subtitle_id, matched_by, movie_kind, hash, movie_name,
+                 movie_release_name, movie_year, movie_imdb_id, series_season, series_episode, query_parameters):
+        super(PatchedOpenSubtitlesSubtitle, self).__init__(language, hearing_impaired, page_link, subtitle_id, matched_by, movie_kind, hash,
+                                                           movie_name,
+                                                           movie_release_name, movie_year, movie_imdb_id, series_season, series_episode)
+        self.query_parameters = query_parameters
+
     def get_matches(self, video, hearing_impaired=False):
         matches = super(PatchedOpenSubtitlesSubtitle, self).get_matches(video, hearing_impaired=hearing_impaired)
 
         # matched by tag?
         if self.matched_by == "tag":
             # treat a tag match equally to a hash match
-            logger.debug("Subtitle matched by tag, treating it as a hash-match")
+            logger.debug("Subtitle matched by tag, treating it as a hash-match. Tag: '%s'", self.query_parameters.get("tag", None))
             matches.add("hash")
         return matches
 
@@ -51,7 +58,7 @@ class PatchedOpenSubtitlesProvider(OpenSubtitlesProvider):
             query = video.series
             season = video.season
             episode = video.episode
-        #elif ('opensubtitles' not in video.hashes or not video.size) and not video.imdb_id:
+        # elif ('opensubtitles' not in video.hashes or not video.size) and not video.imdb_id:
         #    query = video.name.split(os.sep)[-1]
         else:
             query = video.title
@@ -105,10 +112,11 @@ class PatchedOpenSubtitlesProvider(OpenSubtitlesProvider):
             movie_imdb_id = int(subtitle_item['IDMovieImdb'])
             series_season = int(subtitle_item['SeriesSeason']) if subtitle_item['SeriesSeason'] else None
             series_episode = int(subtitle_item['SeriesEpisode']) if subtitle_item['SeriesEpisode'] else None
+            query_parameters = subtitle_item["QueryParameters"]
 
             subtitle = PatchedOpenSubtitlesSubtitle(language, hearing_impaired, page_link, subtitle_id, matched_by, movie_kind,
-                                             hash, movie_name, movie_release_name, movie_year, movie_imdb_id,
-                                             series_season, series_episode)
+                                                    hash, movie_name, movie_release_name, movie_year, movie_imdb_id,
+                                                    series_season, series_episode, query_parameters)
             logger.debug('Found subtitle %r', subtitle)
             subtitles.append(subtitle)
 
