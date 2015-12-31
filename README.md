@@ -25,11 +25,12 @@ Use the following agent order:
 2. Local Media Assets
 3. anything else
 
-##### Recommended
-Create an account and input your credentials for:
+##### Recommended steps
+Create an account and provide your credentials (in the plugin configuration) for:
 
 * [Addic7ed](http://www.addic7ed.com/newaccount.php)
 * [Opensubtitles](http://www.opensubtitles.org/en/newuser)
+* Plex
 
 ### Attention on the initial refresh
 When you first use this plugin, and do a refresh on all of your media, you are most likely
