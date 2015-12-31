@@ -99,6 +99,7 @@ Several options are provided in the preferences of this agent.
 * Subtitle folder: (default: current media file's folder) See Store as metadata or on filesystem
 * Custom Subtitle folder: See Store as metadata or on filesystem 
 * Treat IETF language tags as ISO 639-1: Treats subtitle files with IETF language identifiers, such as pt-BR, as their ISO 639-1 counterpart. Thus "pt-BR" will be shown as "Portuguese" instead of "Unknown"
+* Ignore folders (...): If a folder contains one of the files named `subzero.ignore`, `.subzero.ignore`, `.nosz`, don't process them. This applies to sections/libraries, movies, series, seasons, episodes 
 * Scheduler: 
   * Periodically search for recent items with missing subtitles: self-explanatory, executes the task "Search for missing subtitles" from the channel menu regularly. Configure how often it should do that. For the average library 6 hours minimum is recommended, to not hammer the providers too heavily
   * Item age to be considered recent: The "Search for missing subtitles"-task only considers those items in the recently-added list, that are at most this old
@@ -145,6 +146,17 @@ The agent will write the subtitle files in the media folder next to the media fi
 The setting 'Subtitle folder' configures in which folder (current folder or other subfolder) the subtitles are stored. The expert user can also supply 'Custom Subtitle folder' which can also be an absolute path.
 
 **When a subfolder (either custom or predefined) is used, the automatic scheduled refresh of Plex won't pick up your subtitles, only a manual refresh will!**
+
+
+BETA: Physically Ignoring Media
+-------------------------
+Sometimes subtitles aren't needed or wanted for parts of your library.
+
+When creating a file named `subzero.ignore`, `.subzero.ignore`, or `.nosz` in any of your library's folders, be it
+the section itself, a TV show, a movie, or even a season, Sub-Zero will skip processing the contents of that folder.
+ 
+BETA notes: This may still mean that the scheduler task for missing subtitles triggers refresh actions on those items,
+but the refresh handler itself will skip those.
 
 License
 -------
