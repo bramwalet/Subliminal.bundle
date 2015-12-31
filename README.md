@@ -87,7 +87,7 @@ Several options are provided in the preferences of this agent.
 * Additional Subtitle Languages: Additional languages to download; comma-separated; use [ISO-639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes))
 * Provider: Enable ...: Enable/disable this provider. Affects both movies and series. 
 * Addic7ed: boost over hash score if requirements met: if an Addic7ed subtitle matches the video's series, season, episode, year, and format (e.g. WEB-DL), boost its score, possibly over OpenSubtitles/TheSubDB direct hash match
-* Scan: Include embedded subtitles: When enabled, subliminal finds embedded subtitles that are already present within the media file. 
+* Scan: Include embedded subtitles: When enabled, subliminal finds embedded subtitles (ignoring forced) that are already present within the media file. 
 * Scan: Include external subtitles: When enabled, subliminal finds subtitles located near the media file on the filesystem.
 * Minimum score for download: When configured, what is the minimum score for subtitles to download them? Lower scored subtitles are not downloaded.
 * Download hearing impaired subtitles: 
