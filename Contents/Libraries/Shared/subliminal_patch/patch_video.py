@@ -170,6 +170,9 @@ def scan_video(path, subtitles=True, embedded_subtitles=True, hints=None, dont_u
                 if embedded_subtitles:
                     embedded_subtitle_languages = set()
                     for st in mkv.subtitle_tracks:
+                        if st.forced:
+                            logger.debug("Ignoring forced subtitle track %r", st)
+                            continue
                         if st.language:
                             try:
                                 embedded_subtitle_languages.add(Language.fromalpha3b(st.language))
