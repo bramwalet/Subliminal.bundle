@@ -144,10 +144,10 @@ def getSubtitlesFromMetadata(part):
                 Log.Debug("Can't parse metadata: %s" % repr(proxy))
                 continue
 
-            #p_type, p_value, p_sort, p_index, p_codec, p_format = proxy[:5]
             p_type = proxy[0]
 
             if p_type == "Media":
                 # metadata subtitle
+                Log.Debug(u"Found metadata subtitle: %s, %s" % (language, repr(proxy)))
                 subs[language].append(key)
     return subs

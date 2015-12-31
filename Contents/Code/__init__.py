@@ -57,36 +57,85 @@ def initSubliminalPatches():
     subliminal_patch.patch_providers.addic7ed.USE_BOOST = bool(Prefs['provider.addic7ed.boost'])
 
 
-def scanTvMedia(media):
-    videos = {}
-    for season in media.seasons:
-        for episode in media.seasons[season].episodes:
-            ep = media.seasons[season].episodes[episode]
-            force_refresh = intent.get("force", ep.id)
-            for item in media.seasons[season].episodes[episode].items:
-                for part in item.parts:
-                    scanned_video = scanVideo(part, ignore_all=force_refresh,
-                                              hints={"type": "episode", "expected_series": [media.title], "expected_title": [ep.title]})
-                    if not scanned_video:
-                        continue
+def flattenToParts(media, kind="series"):
+    """
+    iterates through media and returns the associated parts (videos)
+    :param media:
+    :param kind:
+    :return:
+    """
+    parts = []
+    if kind == "series":
+        for season in media.seasons:
+            for episode in media.seasons[season].episodes:
+                ep = media.seasons[season].episodes[episode]
+                for item in media.seasons[season].episodes[episode].items:
+                    for part in item.parts:
+                        parts.append({"video": part, "type": "episode", "title": ep.title, "series": media.title, "id": ep.id})
+    else:
+        for item in media.items:
+            for part in item.parts:
+                parts.append({"video": part, "type": "movie", "title": media.title, "id": media.id})
+    return parts
 
-                    scanned_video.id = media.seasons[season].episodes[episode].id
-                    videos[scanned_video] = part
-    return videos
+
+IGNORE_FN = ("subzero.ignore", ".subzero.ignore", ".nosz")
 
 
-def scanMovieMedia(media):
-    videos = {}
-    force_refresh = intent.get("force", media.id)
-    for item in media.items:
-        for part in item.parts:
-            scanned_video = scanVideo(part, ignore_all=force_refresh, hints={"type": "movie", "expected_title": [media.title]})
-            if not scanned_video:
-                continue
+def parseMediaToParts(media, kind="series"):
+    """
+    returns a list of parts to be used later on; ignores folders with an existing "subzero.ignore" file
+    :param media:
+    :param kind:
+    :return:
+    """
+    parts = flattenToParts(media, kind=kind)
+    if not Prefs["subtitles.ignore_fs"]:
+        return parts
 
-            scanned_video.id = media.id
-            videos[scanned_video] = part
-    return videos
+    use_parts = []
+    check_ignore_paths = [".", "../"]
+    if kind == "series":
+        check_ignore_paths.append("../../")
+
+    for part in parts:
+        base_folder, fn = os.path.split(part["video"].file)
+
+        ignore = False
+        for rel_path in check_ignore_paths:
+            fld = os.path.abspath(os.path.join(base_folder, rel_path))
+            for ifn in IGNORE_FN:
+                if os.path.isfile(os.path.join(fld, ifn)):
+                    Log.Info(u'Ignoring "%s" because "%s" exists in "%s"', fn, ifn, fld)
+                    ignore = True
+                    break
+            if ignore:
+                break
+
+        if not ignore:
+            use_parts.append(part)
+    return use_parts
+
+
+def scanParts(parts, kind="series"):
+    """
+    receives a list of parts containing dictionaries returned by flattenToParts
+    :param parts:
+    :param kind: series or movies
+    :return: dictionary of scanned videos of subliminal.video.scan_video
+    """
+    ret = {}
+    for part in parts:
+        force_refresh = intent.get("force", part["id"])
+        hints = {"expected_title": [part["title"]]}
+        hints.update({"type": "episode", "expected_series": [part["series"]]} if kind == "series" else {"type": "movie"})
+        scanned_video = scanVideo(part["video"], ignore_all=force_refresh, hints=hints)
+        if not scanned_video:
+            continue
+
+        scanned_video.id = part["id"]
+        ret[scanned_video] = part["video"]
+    return ret
 
 
 def getItemIDs(media, kind="series"):
@@ -231,16 +280,23 @@ class SubZeroAgent(object):
     def update(self, metadata, media, lang):
         Log.Debug("Sub-Zero %s, %s update called" % (config.version, self.agent_type))
 
+        if not media:
+            Log.Error("Called with empty media, something is really wrong with your setup!")
+            return
+
         set_refresh_menu_state(media, media_type=self.agent_type)
 
         item_ids = []
         try:
             initSubliminalPatches()
-            videos, subtitles = getattr(self, "update_%s" % self.agent_type)(metadata, media, lang)
+            parts = parseMediaToParts(media, kind=self.agent_type)
+            use_score = Prefs["subtitles.search.minimumMovieScore" if self.agent_type == "movies" else "subtitles.search.minimumTVScore"]
+            scanned_parts = scanParts(parts, kind=self.agent_type)
+            subtitles = downloadBestSubtitles(scanned_parts, min_score=int(use_score))
             item_ids = getItemIDs(media, kind=self.agent_type)
 
             if subtitles:
-                saveSubtitles(videos, subtitles)
+                saveSubtitles(scanned_parts, subtitles)
 
             updateLocalMedia(metadata, media, media_type=self.agent_type)
 
@@ -255,20 +311,10 @@ class SubZeroAgent(object):
                 # resolve existing intent for that id
                 intent.resolve("force", item_id)
 
-    def update_movies(self, metadata, media, lang):
-        videos = scanMovieMedia(media)
-        subtitles = downloadBestSubtitles(videos, min_score=int(Prefs["subtitles.search.minimumMovieScore"]))
-        return videos, subtitles
-
-    def update_series(self, metadata, media, lang):
-        videos = scanTvMedia(media)
-        subtitles = downloadBestSubtitles(videos, min_score=int(Prefs["subtitles.search.minimumTVScore"]))
-        return videos, subtitles
-
 
 class SubZeroSubtitlesAgentMovies(SubZeroAgent, Agent.Movies):
-    contributes_to = ['com.plexapp.agents.imdb', 'com.plexapp.agents.xbmcnfo', 'com.plexapp.agents.themoviedb']
+    contributes_to = ['com.plexapp.agents.imdb', 'com.plexapp.agents.xbmcnfo', 'com.plexapp.agents.themoviedb', 'com.plexapp.agents.hama']
 
 
 class SubZeroSubtitlesAgentTvShows(SubZeroAgent, Agent.TV_Shows):
-    contributes_to = ['com.plexapp.agents.thetvdb', 'com.plexapp.agents.thetvdbdvdorder', 'com.plexapp.agents.xbmcnfotv']
+    contributes_to = ['com.plexapp.agents.thetvdb', 'com.plexapp.agents.thetvdbdvdorder', 'com.plexapp.agents.xbmcnfotv', 'com.plexapp.agents.hama']

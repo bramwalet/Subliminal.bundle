@@ -31,7 +31,7 @@ def getSectionSize(key):
     :return:
     """
     size = None
-    url = "https://127.0.0.1:32400/library/sections/%s/all" % int(key)
+    url = "http://127.0.0.1:32400/library/sections/%s/all" % int(key)
     use_args = {
         "X-Plex-Container-Size": "0",
         "X-Plex-Container-Start": "0"
@@ -136,7 +136,7 @@ def getRecentItems():
         if section.type == "show":
             use_args["type"] = "4"
 
-        url = "https://127.0.0.1:32400/library/sections/%s/all" % int(section.key)
+        url = "http://127.0.0.1:32400/library/sections/%s/all" % int(section.key)
         response = query_plex(url, use_args)
 
         matcher = episode_re if section.type == "show" else movie_re

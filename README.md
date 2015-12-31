@@ -1,4 +1,4 @@
-Sub-Zero for Plex, 1.3.20.396
+Sub-Zero for Plex, 1.3.20.422
 =================
 
 ![logo](https://raw.githubusercontent.com/pannal/Sub-Zero.bundle/master/Contents/Resources/subzero.gif)
@@ -12,7 +12,7 @@ If you like this, buy me a beer: [![Donate](https://www.paypalobjects.com/en_US/
 
 ### Installation
 * go to ```Library/Application Support/Plex Media Server/Plug-ins/```
-* ```rm -r Sub-Zero.bundle```
+* ```rm -r Sub-Zero.bundle``` (remove the folder)
 * get the release you want from *https://github.com/pannal/Sub-Zero.bundle/releases/*
 * unzip the release
 * restart your plex media server!!!
@@ -42,12 +42,15 @@ it has already downloaded all the wanted languages for.
 
 ## Changelog
 
-1.3.20.396
-
-- core: fix logging handlers (when saving log_level settings loggers got duplicated)
-- core: better movie matching by only hinting the filename and the last subdirectory to guessit (instead of the full path)
-- core: don't fail on wrong detection/scanning of media file
-- lower minimum tv series score from 85 to 67 (removed title; composed of: series=44 + season=11 + episode=11 + hearing_impaired=1)
+1.3.20.422  
+- tvsubtitles: show matching was partially broken
+- addic7ed: better show matching
+- core: correctly skip subtitles stored in filesystem if metadata storage was selected (Local Media Assets agent may still pick them up)  
+- core: fix local API access (switch from HTTPS to HTTP)
+- core: fix handling of library names and media paths with non-ascii chars in it  
+- core: fix bundle version to correctly display current bundle version
+- core: skip downloading multi-CD subtitle
+- settings: clarify
 
 [older changes](CHANGELOG.md)
 

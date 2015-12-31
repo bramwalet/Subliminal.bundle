@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 series_year_re = re.compile('^(?P<series>[ \w]+)(?: \((?P<year>\d{4})\))?$')
 
+
 class Addic7edSubtitle(Subtitle):
     provider_name = 'addic7ed'
 
