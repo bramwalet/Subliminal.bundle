@@ -28,8 +28,8 @@ Use the following agent order:
 ##### Recommended
 Create an account and input your credentials for:
 
-* Addic7ed
-* Opensubtitles
+* [Addic7ed](http://www.addic7ed.com/newaccount.php)
+* [Opensubtitles](http://www.opensubtitles.org/en/newuser)
 
 ### Attention on the initial refresh
 When you first use this plugin, and do a refresh on all of your media, you are most likely
