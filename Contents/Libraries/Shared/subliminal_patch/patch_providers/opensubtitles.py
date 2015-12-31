@@ -1,13 +1,24 @@
 # coding=utf-8
 
 import logging
-import os
 
 from babelfish import Language
 from subliminal.exceptions import ConfigurationError
-from subliminal.providers.opensubtitles import OpenSubtitlesProvider, checked, get_version, __version__, OpenSubtitlesSubtitle, Episode, Movie
+from subliminal.providers.opensubtitles import OpenSubtitlesProvider, checked, get_version, __version__, OpenSubtitlesSubtitle, Episode
 
 logger = logging.getLogger(__name__)
+
+
+class PatchedOpenSubtitlesSubtitle(OpenSubtitlesSubtitle):
+    def get_matches(self, video, hearing_impaired=False):
+        matches = super(PatchedOpenSubtitlesSubtitle, self).get_matches(video, hearing_impaired=hearing_impaired)
+
+        # matched by tag?
+        if self.matched_by == "tag":
+            # treat a tag match equally to a hash match
+            logger.debug("Subtitle matched by tag, treating it as a hash-match")
+            matches.add("hash")
+        return matches
 
 
 class PatchedOpenSubtitlesProvider(OpenSubtitlesProvider):
@@ -35,7 +46,7 @@ class PatchedOpenSubtitlesProvider(OpenSubtitlesProvider):
 
          patch: query movies even if hash is known
         """
-        query = season = episode = None
+        season = episode = None
         if isinstance(video, Episode):
             query = video.series
             season = video.season
@@ -95,7 +106,7 @@ class PatchedOpenSubtitlesProvider(OpenSubtitlesProvider):
             series_season = int(subtitle_item['SeriesSeason']) if subtitle_item['SeriesSeason'] else None
             series_episode = int(subtitle_item['SeriesEpisode']) if subtitle_item['SeriesEpisode'] else None
 
-            subtitle = OpenSubtitlesSubtitle(language, hearing_impaired, page_link, subtitle_id, matched_by, movie_kind,
+            subtitle = PatchedOpenSubtitlesSubtitle(language, hearing_impaired, page_link, subtitle_id, matched_by, movie_kind,
                                              hash, movie_name, movie_release_name, movie_year, movie_imdb_id,
                                              series_season, series_episode)
             logger.debug('Found subtitle %r', subtitle)
