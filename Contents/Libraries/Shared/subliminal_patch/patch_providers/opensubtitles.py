@@ -113,7 +113,7 @@ class PatchedOpenSubtitlesProvider(OpenSubtitlesProvider):
             movie_imdb_id = int(subtitle_item['IDMovieImdb'])
             series_season = int(subtitle_item['SeriesSeason']) if subtitle_item['SeriesSeason'] else None
             series_episode = int(subtitle_item['SeriesEpisode']) if subtitle_item['SeriesEpisode'] else None
-            query_parameters = subtitle_item["QueryParameters"] if subtitle_item["QueryParameters"] else None
+            query_parameters = subtitle_item.get("QueryParameters")
 
             subtitle = PatchedOpenSubtitlesSubtitle(language, hearing_impaired, page_link, subtitle_id, matched_by, movie_kind,
                                                     hash, movie_name, movie_release_name, movie_year, movie_imdb_id,
