@@ -72,10 +72,10 @@ class PatchedOpenSubtitlesProvider(OpenSubtitlesProvider):
         criteria = []
         if hash and size:
             criteria.append({'moviehash': hash, 'moviebytesize': str(size)})
-        if imdb_id:
-            criteria.append({'imdbid': imdb_id})
         if tag:
             criteria.append({'tag': tag})
+        if imdb_id:
+            criteria.append({'imdbid': imdb_id})
         if query and season and episode:
             criteria.append({'query': query, 'season': season, 'episode': episode})
         elif query:
