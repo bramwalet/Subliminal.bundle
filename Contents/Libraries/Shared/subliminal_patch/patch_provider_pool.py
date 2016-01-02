@@ -285,7 +285,7 @@ class PatchedProviderPool(ProviderPool):
                 continue
 
             # bail out if hearing_impaired was wrong
-            if not "hearing_impaired" in matches and hearing_impaired in ("force HI", "force non-HI"):
+            if "hearing_impaired" not in matches and hearing_impaired in ("force HI", "force non-HI"):
                 logger.debug('Skipping subtitle: %r with score %d because hearing-impaired set to %s', subtitle, score, hearing_impaired)
                 continue
 

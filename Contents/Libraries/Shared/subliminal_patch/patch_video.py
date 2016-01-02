@@ -79,6 +79,8 @@ def scan_video(path, subtitles=True, embedded_subtitles=True, hints=None, dont_u
 
     # patch: suggest video type to guessit beforehand
     """
+    hints = hints or {}
+
     # check for non-existing path
     if not dont_use_actual_file and not os.path.exists(path):
         raise ValueError('Path does not exist')
