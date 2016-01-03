@@ -50,14 +50,15 @@ the items with missing subtitles automatically.
 
 ## Changelog
 
-1.3.20.422  
-- tvsubtitles: show matching was partially broken
-- addic7ed: better show matching
-- core: correctly skip subtitles stored in filesystem if metadata storage was selected (Local Media Assets agent may still pick them up)  
-- core: fix local API access (switch from HTTPS to HTTP)
-- core: fix handling of library names and media paths with non-ascii chars in it  
-- core: fix bundle version to correctly display current bundle version
-- core: skip downloading multi-CD subtitle
+1.3.20.459
+
+- core: slight code cleanup and fixes
+- core: add physical (filesystem) ignore mode (create files named `subzero.ignore`, `.subzero.ignore`, `.nosz` to ignore specific files/seasons/series/libraries)
+- core: fix guessit hinting of tv series with rare folder layout (e.g. series_name/a/S01E01.mkv)
+- core: remove "format" necessity from (opensubtitles) hash-validation
+- OpenSubtitles: dramatically improve matching: add tag (exact filename) matching and treat it just like hash matches
+- core: ignore embedded forced subtitles (fixes #106)
+- docs: update
 - settings: clarify
 
 [older changes](CHANGELOG.md)

@@ -1,3 +1,14 @@
+1.3.20.422  
+- tvsubtitles: show matching was partially broken
+- addic7ed: better show matching
+- core: correctly skip subtitles stored in filesystem if metadata storage was selected (Local Media Assets agent may still pick them up)  
+- core: fix local API access (switch from HTTPS to HTTP)
+- core: fix handling of library names and media paths with non-ascii chars in it  
+- core: fix bundle version to correctly display current bundle version
+- core: skip downloading multi-CD subtitle
+- settings: clarify
+
+
 1.3.20.403
 - core: handle & and - ("and" and dash) in names
 - core: fixed handling of internal metadata subtitles
