@@ -3,10 +3,30 @@
 import logging
 import os
 
+from babelfish import Language
 from subliminal.exceptions import ConfigurationError
-from subliminal.providers.opensubtitles import OpenSubtitlesProvider, checked, get_version, __version__, Episode, Movie
+from subliminal.providers.opensubtitles import OpenSubtitlesProvider, checked, get_version, __version__, OpenSubtitlesSubtitle, Episode
 
 logger = logging.getLogger(__name__)
+
+
+class PatchedOpenSubtitlesSubtitle(OpenSubtitlesSubtitle):
+    def __init__(self, language, hearing_impaired, page_link, subtitle_id, matched_by, movie_kind, hash, movie_name,
+                 movie_release_name, movie_year, movie_imdb_id, series_season, series_episode, query_parameters):
+        super(PatchedOpenSubtitlesSubtitle, self).__init__(language, hearing_impaired, page_link, subtitle_id, matched_by, movie_kind, hash,
+                                                           movie_name,
+                                                           movie_release_name, movie_year, movie_imdb_id, series_season, series_episode)
+        self.query_parameters = query_parameters or {}
+
+    def get_matches(self, video, hearing_impaired=False):
+        matches = super(PatchedOpenSubtitlesSubtitle, self).get_matches(video, hearing_impaired=hearing_impaired)
+
+        # matched by tag?
+        if self.matched_by == "tag":
+            # treat a tag match equally to a hash match
+            logger.debug("Subtitle matched by tag, treating it as a hash-match. Tag: '%s'", self.query_parameters.get("tag", None))
+            matches.add("hash")
+        return matches
 
 
 class PatchedOpenSubtitlesProvider(OpenSubtitlesProvider):
@@ -32,17 +52,73 @@ class PatchedOpenSubtitlesProvider(OpenSubtitlesProvider):
         :param languages:
         :return:
 
-         patch: query movies even if hash is known
+         patch: query movies even if hash is known; add tag parameter
         """
-        query = season = episode = None
+        season = episode = None
         if isinstance(video, Episode):
             query = video.series
             season = video.season
             episode = video.episode
-        #elif ('opensubtitles' not in video.hashes or not video.size) and not video.imdb_id:
+        # elif ('opensubtitles' not in video.hashes or not video.size) and not video.imdb_id:
         #    query = video.name.split(os.sep)[-1]
         else:
             query = video.title
 
         return self.query(languages, hash=video.hashes.get('opensubtitles'), size=video.size, imdb_id=video.imdb_id,
-                          query=query, season=season, episode=episode)
+                          query=query, season=season, episode=episode, tag=os.path.basename(video.name))
+
+    def query(self, languages, hash=None, size=None, imdb_id=None, query=None, season=None, episode=None, tag=None):
+        # fill the search criteria
+        criteria = []
+        if hash and size:
+            criteria.append({'moviehash': hash, 'moviebytesize': str(size)})
+        if tag:
+            criteria.append({'tag': tag})
+        if imdb_id:
+            criteria.append({'imdbid': imdb_id})
+        if query and season and episode:
+            criteria.append({'query': query, 'season': season, 'episode': episode})
+        elif query:
+            criteria.append({'query': query})
+        if not criteria:
+            raise ValueError('Not enough information')
+
+        # add the language
+        for criterion in criteria:
+            criterion['sublanguageid'] = ','.join(sorted(l.opensubtitles for l in languages))
+
+        # query the server
+        logger.info('Searching subtitles %r', criteria)
+        response = checked(self.server.SearchSubtitles(self.token, criteria))
+        subtitles = []
+
+        # exit if no data
+        if not response['data']:
+            logger.info('No subtitles found')
+            return subtitles
+
+        # loop over subtitle items
+        for subtitle_item in response['data']:
+            # read the item
+            language = Language.fromopensubtitles(subtitle_item['SubLanguageID'])
+            hearing_impaired = bool(int(subtitle_item['SubHearingImpaired']))
+            page_link = subtitle_item['SubtitlesLink']
+            subtitle_id = int(subtitle_item['IDSubtitleFile'])
+            matched_by = subtitle_item['MatchedBy']
+            movie_kind = subtitle_item['MovieKind']
+            hash = subtitle_item['MovieHash']
+            movie_name = subtitle_item['MovieName']
+            movie_release_name = subtitle_item['MovieReleaseName']
+            movie_year = int(subtitle_item['MovieYear']) if subtitle_item['MovieYear'] else None
+            movie_imdb_id = int(subtitle_item['IDMovieImdb'])
+            series_season = int(subtitle_item['SeriesSeason']) if subtitle_item['SeriesSeason'] else None
+            series_episode = int(subtitle_item['SeriesEpisode']) if subtitle_item['SeriesEpisode'] else None
+            query_parameters = subtitle_item.get("QueryParameters")
+
+            subtitle = PatchedOpenSubtitlesSubtitle(language, hearing_impaired, page_link, subtitle_id, matched_by, movie_kind,
+                                                    hash, movie_name, movie_release_name, movie_year, movie_imdb_id,
+                                                    series_season, series_episode, query_parameters)
+            logger.debug('Found subtitle %r', subtitle)
+            subtitles.append(subtitle)
+
+        return subtitles

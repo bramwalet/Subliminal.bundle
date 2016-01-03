@@ -378,6 +378,12 @@
     "default": "true"
   },
   {
+    "id": "subtitles.ignore_fs",
+    "label": "Ignore folders (with \"subzero.ignore/.subzero.ignore/.nosz\" files in them)",
+    "type": "bool",
+    "default": "false"
+  },
+  {
     "id": "scheduler.tasks.searchAllRecentlyAddedMissing",
     "label": "Scheduler: Periodically search for recent items with missing subtitles",
     "type": "enum",

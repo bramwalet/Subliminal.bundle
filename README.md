@@ -12,7 +12,7 @@ If you like this, buy me a beer: [![Donate](https://www.paypalobjects.com/en_US/
 
 ### Installation
 * go to ```Library/Application Support/Plex Media Server/Plug-ins/```
-* ```rm -r Sub-Zero.bundle```
+* ```rm -r Sub-Zero.bundle``` (remove the folder)
 * get the release you want from *https://github.com/pannal/Sub-Zero.bundle/releases/*
 * unzip the release
 * restart your plex media server!!!
@@ -25,14 +25,22 @@ Use the following agent order:
 2. Local Media Assets
 3. anything else
 
+##### Recommended steps
+Create an account and provide your credentials (in the plugin configuration) for:
+
+* [Addic7ed](http://www.addic7ed.com/newaccount.php)
+* [Opensubtitles](http://www.opensubtitles.org/en/newuser)
+* [Plex](https://plex.tv/users/sign_up)
+
 ### Attention on the initial refresh
-When you first use this plugin, and do a refresh on all of your media, you are most likely
-to be shut out by some or all of the subtitle providers depending on your libraries' size.
+When you first use this plugin and run a refresh on all of your media, you may be
+blacklisted out of excessive usage by some or all of the subtitle providers depending on your library's size.
 This will result in a bunch of errors in the log files as well as missing subtitles.
 
-Just be patient, after a day most of those providers will allow you access again and you can
+Just be patient, after a day most of those providers will allow you to access them again and you can
 refresh the remaining items. If you use the default settings, this will also skip the items
-it has already downloaded all the wanted languages for.
+it has already downloaded all the wanted languages for. Also, as subtitles will be missing, the scheduler should pick up
+the items with missing subtitles automatically.
 
 ### Encountered a bug?
 * be sure to post your logs: 
@@ -42,14 +50,15 @@ it has already downloaded all the wanted languages for.
 
 ## Changelog
 
-1.3.20.422  
-- tvsubtitles: show matching was partially broken
-- addic7ed: better show matching
-- core: correctly skip subtitles stored in filesystem if metadata storage was selected (Local Media Assets agent may still pick them up)  
-- core: fix local API access (switch from HTTPS to HTTP)
-- core: fix handling of library names and media paths with non-ascii chars in it  
-- core: fix bundle version to correctly display current bundle version
-- core: skip downloading multi-CD subtitle
+1.3.20.459
+
+- core: slight code cleanup and fixes
+- core: add physical (filesystem) ignore mode (create files named `subzero.ignore`, `.subzero.ignore`, `.nosz` to ignore specific files/seasons/series/libraries)
+- core: fix guessit hinting of tv series with rare folder layout (e.g. series_name/a/S01E01.mkv)
+- core: remove "format" necessity from (opensubtitles) hash-validation
+- OpenSubtitles: dramatically improve matching: add tag (exact filename) matching and treat it just like hash matches
+- core: ignore embedded forced subtitles (fixes #106)
+- docs: update
 - settings: clarify
 
 [older changes](CHANGELOG.md)
@@ -74,11 +83,12 @@ Several options are provided in the preferences of this agent.
 
 * Addic7ed username/password: Provide your addic7ed username here, otherwise the provider won't work. Please make sure your account is activated, before using the agent.
 * Plex.tv username/password: Generally recommended to be provided; needed if you use Plex Home to make the API work (the whole channel menu depends on it)
+* Opensubtitles username/password: Generally recommended to be provided (not necessarily needed, but avoids errors)
 * Subtitle language (1)/(2)/(3): Your preferred languages to download subtitles for. 
 * Additional Subtitle Languages: Additional languages to download; comma-separated; use [ISO-639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes))
 * Provider: Enable ...: Enable/disable this provider. Affects both movies and series. 
 * Addic7ed: boost over hash score if requirements met: if an Addic7ed subtitle matches the video's series, season, episode, year, and format (e.g. WEB-DL), boost its score, possibly over OpenSubtitles/TheSubDB direct hash match
-* Scan: Include embedded subtitles: When enabled, subliminal finds embedded subtitles that are already present within the media file. 
+* Scan: Include embedded subtitles: When enabled, subliminal finds embedded subtitles (ignoring forced) that are already present within the media file. 
 * Scan: Include external subtitles: When enabled, subliminal finds subtitles located near the media file on the filesystem.
 * Minimum score for download: When configured, what is the minimum score for subtitles to download them? Lower scored subtitles are not downloaded.
 * Download hearing impaired subtitles: 
@@ -90,6 +100,7 @@ Several options are provided in the preferences of this agent.
 * Subtitle folder: (default: current media file's folder) See Store as metadata or on filesystem
 * Custom Subtitle folder: See Store as metadata or on filesystem 
 * Treat IETF language tags as ISO 639-1: Treats subtitle files with IETF language identifiers, such as pt-BR, as their ISO 639-1 counterpart. Thus "pt-BR" will be shown as "Portuguese" instead of "Unknown"
+* Ignore folders (...): If a folder contains one of the files named `subzero.ignore`, `.subzero.ignore`, `.nosz`, don't process them. This applies to sections/libraries, movies, series, seasons, episodes 
 * Scheduler: 
   * Periodically search for recent items with missing subtitles: self-explanatory, executes the task "Search for missing subtitles" from the channel menu regularly. Configure how often it should do that. For the average library 6 hours minimum is recommended, to not hammer the providers too heavily
   * Item age to be considered recent: The "Search for missing subtitles"-task only considers those items in the recently-added list, that are at most this old
@@ -136,6 +147,17 @@ The agent will write the subtitle files in the media folder next to the media fi
 The setting 'Subtitle folder' configures in which folder (current folder or other subfolder) the subtitles are stored. The expert user can also supply 'Custom Subtitle folder' which can also be an absolute path.
 
 **When a subfolder (either custom or predefined) is used, the automatic scheduled refresh of Plex won't pick up your subtitles, only a manual refresh will!**
+
+
+BETA: Physically Ignoring Media
+-------------------------
+Sometimes subtitles aren't needed or wanted for parts of your library.
+
+When creating a file named `subzero.ignore`, `.subzero.ignore`, or `.nosz` in any of your library's folders, be it
+the section itself, a TV show, a movie, or even a season, Sub-Zero will skip processing the contents of that folder.
+ 
+BETA notes: This may still mean that the scheduler task for missing subtitles triggers refresh actions on those items,
+but the refresh handler itself will skip those.
 
 License
 -------
