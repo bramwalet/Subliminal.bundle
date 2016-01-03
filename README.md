@@ -1,4 +1,4 @@
-Sub-Zero for Plex, 1.3.20.459
+Sub-Zero for Plex, 1.3.23.459
 =================
 
 ![logo](https://raw.githubusercontent.com/pannal/Sub-Zero.bundle/master/Contents/Resources/subzero.gif)
@@ -50,7 +50,7 @@ the items with missing subtitles automatically.
 
 ## Changelog
 
-1.3.20.459
+1.3.23.459
 
 - core: slight code cleanup and fixes
 - core: add physical (filesystem) ignore mode (create files named `subzero.ignore`, `.subzero.ignore`, `.nosz` to ignore specific files/seasons/series/libraries)
