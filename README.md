@@ -63,7 +63,6 @@ the items with missing subtitles automatically.
 
 [older changes](CHANGELOG.md)
 
-
 Description
 ------------
 
