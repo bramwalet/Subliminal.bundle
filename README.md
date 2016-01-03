@@ -1,4 +1,4 @@
-Sub-Zero for Plex, 1.3.20.422
+Sub-Zero for Plex, 1.3.20.459
 =================
 
 ![logo](https://raw.githubusercontent.com/pannal/Sub-Zero.bundle/master/Contents/Resources/subzero.gif)
