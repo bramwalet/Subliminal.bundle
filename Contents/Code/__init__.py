@@ -265,13 +265,15 @@ def updateLocalMedia(metadata, media, media_type="movies"):
 
 class SubZeroAgent(object):
     agent_type = None
+    agent_type_short = None
     languages = [Locale.Language.English]
     primary_provider = False
+    score_prefs_key = None
 
     def __init__(self, *args, **kwargs):
         super(SubZeroAgent, self).__init__(*args, **kwargs)
         self.agent_type = "movies" if isinstance(self, Agent.Movies) else "series"
-        self.name = "Sub-Zero Subtitles (%s, %s)" % ("Movies" if self.agent_type == "movies" else "TV", config.getVersion())
+        self.name = "Sub-Zero Subtitles (%s, %s)" % (self.agent_type_short, config.getVersion())
 
     def search(self, results, media, lang):
         Log.Debug("Sub-Zero %s, %s search" % (config.version, self.agent_type))
@@ -290,7 +292,7 @@ class SubZeroAgent(object):
         try:
             initSubliminalPatches()
             parts = parseMediaToParts(media, kind=self.agent_type)
-            use_score = Prefs["subtitles.search.minimumMovieScore" if self.agent_type == "movies" else "subtitles.search.minimumTVScore"]
+            use_score = Prefs[self.score_prefs_key]
             scanned_parts = scanParts(parts, kind=self.agent_type)
             subtitles = downloadBestSubtitles(scanned_parts, min_score=int(use_score))
             item_ids = getItemIDs(media, kind=self.agent_type)
@@ -314,7 +316,11 @@ class SubZeroAgent(object):
 
 class SubZeroSubtitlesAgentMovies(SubZeroAgent, Agent.Movies):
     contributes_to = ['com.plexapp.agents.imdb', 'com.plexapp.agents.xbmcnfo', 'com.plexapp.agents.themoviedb', 'com.plexapp.agents.hama']
+    score_prefs_key = "subtitles.search.minimumMovieScore"
+    agent_type_short = "Movies"
 
 
 class SubZeroSubtitlesAgentTvShows(SubZeroAgent, Agent.TV_Shows):
     contributes_to = ['com.plexapp.agents.thetvdb', 'com.plexapp.agents.thetvdbdvdorder', 'com.plexapp.agents.xbmcnfotv', 'com.plexapp.agents.hama']
+    score_prefs_key = "subtitles.search.minimumTVScore"
+    agent_type_short = "TV"
