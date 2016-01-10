@@ -19,6 +19,24 @@ ObjectContainer.art = R(ART)
 ObjectContainer.no_cache = True
 
 
+def enable_channel(func):
+    def noop(*args, **kwargs):
+        def inner(*a, **k):
+            return None
+
+        return inner
+
+    def wrap(*args, **kwargs):
+        return (func if Prefs["enable_channel"] else noop)(*args, **kwargs)
+
+    return wrap
+
+# noinspection PyUnboundLocalVariable
+route = enable_channel(route)
+# noinspection PyUnboundLocalVariable
+handler = enable_channel(handler)
+
+
 @handler(PREFIX, TITLE, art=ART, thumb=ICON)
 @route(PREFIX)
 def fatality(randomize=None, force_title=None, header=None, message=None, only_refresh=False, no_history=False, replace_parent=False):

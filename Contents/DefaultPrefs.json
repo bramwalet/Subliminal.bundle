@@ -1,5 +1,11 @@
 [
   {
+    "id": "enable_channel",
+    "label": "Enable Sub-Zero channel features?",
+    "type": "bool",
+    "default": "true"
+  },
+  {
     "id": "subtitles.try_downloads",
     "label": "How many download tries per subtitle (on timeout or error)",
     "type": "enum",
