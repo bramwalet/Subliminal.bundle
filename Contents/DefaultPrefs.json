@@ -1,7 +1,7 @@
 [
   {
     "id": "enable_channel",
-    "label": "Enable Sub-Zero channel features?",
+    "label": "Enable Sub-Zero channel (disabling doesn't affect the subtitle features)?",
     "type": "bool",
     "default": "true"
   },
