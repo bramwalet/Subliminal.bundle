@@ -1,40 +1,28 @@
 # coding=utf-8
 import logging
+
 import logger
+from menu_helpers import add_ignore_options, dig_tree, set_refresh_menu_state, should_display_ignore, enable_channel_wrapper
 from subzero.constants import TITLE, ART, ICON, PREFIX, PLUGIN_IDENTIFIER, DEPENDENCY_MODULE_NAMES
+from support.auth import refresh_plex_token
+from support.background import scheduler
 from support.config import config
 from support.helpers import pad_title, timestamp
-from support.auth import refresh_plex_token
 from support.ignore import ignore_list
+from support.items import getOnDeckItems, refreshItem, getAllItems
+from support.items import getRecentItems, get_items_info
+from support.lib import Plex, lib_unaccessible_error
 from support.missing_subtitles import getAllMissing
 from support.storage import resetStorage, logStorage
-from support.items import getRecentItems, MI_DEEPER, MI_KIND, get_items_info
-from support.items import getOnDeckItems, refreshItem, getAllItems
-from support.background import scheduler
-from support.lib import Plex, lib_unaccessible_error
-from menu_helpers import add_ignore_options, dig_tree, set_refresh_menu_state, should_display_ignore
 
 # init GUI
 ObjectContainer.art = R(ART)
 ObjectContainer.no_cache = True
 
-
-def enable_channel(func):
-    def noop(*args, **kwargs):
-        def inner(*a, **k):
-            return None
-
-        return inner
-
-    def wrap(*args, **kwargs):
-        return (func if Prefs["enable_channel"] else noop)(*args, **kwargs)
-
-    return wrap
-
 # noinspection PyUnboundLocalVariable
-route = enable_channel(route)
+route = enable_channel_wrapper(route)
 # noinspection PyUnboundLocalVariable
-handler = enable_channel(handler)
+handler = enable_channel_wrapper(handler)
 
 
 @handler(PREFIX, TITLE, art=ART, thumb=ICON)
@@ -372,10 +360,29 @@ def AdvancedMenu(randomize=None, header=None, message=None):
     return oc
 
 
-@route(PREFIX + '/ValidatePrefs')
+@route(PREFIX + '/ValidatePrefs', enforce_route=True)
 def ValidatePrefs():
     Core.log.setLevel(logging.DEBUG)
     Log.Debug("Validate Prefs called.")
+
+    # cache the channel state
+    update_dict = False
+    restart = False
+    if "channel_enabled" not in Dict:
+        update_dict = True
+
+    elif Dict["channel_enabled"] != Prefs["enable_channel"]:
+        Log.Debug("Channel features %s, restarting plugin", "enabled" if Prefs["enable_channel"] else "disabled")
+        update_dict = True
+        restart = True
+
+    if update_dict:
+        Dict["channel_enabled"] = Prefs["enable_channel"]
+        Dict.Save()
+
+    if restart:
+        DispatchRestart()
+
     config.initialize()
     scheduler.setup_tasks()
     set_refresh_menu_state(None)
@@ -394,10 +401,14 @@ def ValidatePrefs():
     return
 
 
+def DispatchRestart():
+    Thread.CreateTimer(1.0, Restart)
+
+
 @route(PREFIX + '/advanced/restart/trigger')
 def TriggerRestart(randomize=None):
     set_refresh_menu_state("Restarting the plugin")
-    Thread.CreateTimer(1.0, Restart)
+    DispatchRestart()
     return fatality(header="Restart triggered, please wait about 5 seconds", force_title=" ", only_refresh=True, replace_parent=True,
                     no_history=True)
 
