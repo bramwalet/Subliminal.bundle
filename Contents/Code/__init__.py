@@ -169,7 +169,7 @@ def scanVideo(part, ignore_all=False, hints=None):
     Log.Debug("Scanning video: %s, subtitles=%s, embedded_subtitles=%s" % (part.file, external_subtitles, embedded_subtitles))
 
     try:
-        return subliminal.video.scan_video(part.file, subtitles=external_subtitles, embedded_subtitles=embedded_subtitles,hints=hints or {},
+        return subliminal.video.scan_video(part.file, subtitles=external_subtitles, embedded_subtitles=embedded_subtitles, hints=hints or {},
                                            video_fps=part.fps)
 
     except ValueError:
