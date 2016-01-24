@@ -117,6 +117,14 @@ def parseMediaToParts(media, kind="series"):
     return use_parts
 
 
+def getFPS(streams):
+    for stream in streams:
+        # video
+        if stream.type == 1:
+            return stream.frameRate
+    return "25.000"
+
+
 def scanParts(parts, kind="series"):
     """
     receives a list of parts containing dictionaries returned by flattenToParts
@@ -129,6 +137,7 @@ def scanParts(parts, kind="series"):
         force_refresh = intent.get("force", part["id"])
         hints = {"expected_title": [part["title"]]}
         hints.update({"type": "episode", "expected_series": [part["series"]]} if kind == "series" else {"type": "movie"})
+        part["video"].fps = getFPS(part["video"].streams)
         scanned_video = scanVideo(part["video"], ignore_all=force_refresh, hints=hints)
         if not scanned_video:
             continue
@@ -160,7 +169,8 @@ def scanVideo(part, ignore_all=False, hints=None):
     Log.Debug("Scanning video: %s, subtitles=%s, embedded_subtitles=%s" % (part.file, external_subtitles, embedded_subtitles))
 
     try:
-        return subliminal.video.scan_video(part.file, subtitles=external_subtitles, embedded_subtitles=embedded_subtitles, hints=hints or {})
+        return subliminal.video.scan_video(part.file, subtitles=external_subtitles, embedded_subtitles=embedded_subtitles,hints=hints or {},
+                                           video_fps=part.fps)
 
     except ValueError:
         Log.Warn("File could not be guessed by subliminal")

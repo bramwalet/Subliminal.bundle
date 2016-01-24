@@ -67,7 +67,7 @@ def patched_search_external_subtitles(path):
     return subtitles
 
 
-def scan_video(path, subtitles=True, embedded_subtitles=True, hints=None, dont_use_actual_file=False):
+def scan_video(path, subtitles=True, embedded_subtitles=True, hints=None, video_fps=None, dont_use_actual_file=False):
     """Scan a video and its subtitle languages from a video `path`.
     :param dont_use_actual_file: guess on filename, but don't use the actual file itself
     :param str path: existing path to the video.
@@ -99,6 +99,7 @@ def scan_video(path, subtitles=True, embedded_subtitles=True, hints=None, dont_u
     # guess
     try:
         video = Video.fromguess(path, guess_file_info(guess_from, options=hints))
+        video.fps = video_fps
 
         if dont_use_actual_file:
             return video

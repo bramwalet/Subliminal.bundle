@@ -12,14 +12,20 @@ logger = logging.getLogger(__name__)
 
 class PatchedOpenSubtitlesSubtitle(OpenSubtitlesSubtitle):
     def __init__(self, language, hearing_impaired, page_link, subtitle_id, matched_by, movie_kind, hash, movie_name,
-                 movie_release_name, movie_year, movie_imdb_id, series_season, series_episode, query_parameters):
+                 movie_release_name, movie_year, movie_imdb_id, series_season, series_episode, query_parameters, fps):
         super(PatchedOpenSubtitlesSubtitle, self).__init__(language, hearing_impaired, page_link, subtitle_id, matched_by, movie_kind, hash,
                                                            movie_name,
                                                            movie_release_name, movie_year, movie_imdb_id, series_season, series_episode)
         self.query_parameters = query_parameters or {}
+        self.fps = fps
 
     def get_matches(self, video, hearing_impaired=False):
         matches = super(PatchedOpenSubtitlesSubtitle, self).get_matches(video, hearing_impaired=hearing_impaired)
+
+        if video.fps and (video.fps != self.fps):
+            logger.debug("Wrong FPS (expected: %s, got: %s, lowering score massively", (video.fps, self.fps))
+            # fixme: may be too harsh
+            return set()
 
         # matched by tag?
         if self.matched_by == "tag":
@@ -111,13 +117,14 @@ class PatchedOpenSubtitlesProvider(OpenSubtitlesProvider):
             movie_release_name = subtitle_item['MovieReleaseName']
             movie_year = int(subtitle_item['MovieYear']) if subtitle_item['MovieYear'] else None
             movie_imdb_id = int(subtitle_item['IDMovieImdb'])
+            movie_fps = subtitle_item.get('MovieFPS')
             series_season = int(subtitle_item['SeriesSeason']) if subtitle_item['SeriesSeason'] else None
             series_episode = int(subtitle_item['SeriesEpisode']) if subtitle_item['SeriesEpisode'] else None
             query_parameters = subtitle_item.get("QueryParameters")
 
             subtitle = PatchedOpenSubtitlesSubtitle(language, hearing_impaired, page_link, subtitle_id, matched_by, movie_kind,
                                                     hash, movie_name, movie_release_name, movie_year, movie_imdb_id,
-                                                    series_season, series_episode, query_parameters)
+                                                    series_season, series_episode, query_parameters, fps=movie_fps)
             logger.debug('Found subtitle %r', subtitle)
             subtitles.append(subtitle)
 
