@@ -22,7 +22,7 @@ class PatchedOpenSubtitlesSubtitle(OpenSubtitlesSubtitle):
     def get_matches(self, video, hearing_impaired=False):
         matches = super(PatchedOpenSubtitlesSubtitle, self).get_matches(video, hearing_impaired=hearing_impaired)
 
-        if video.fps and (video.fps != self.fps):
+        if video.fps and self.fps and (video.fps != self.fps):
             logger.debug("Wrong FPS (expected: %s, got: %s, lowering score massively)", video.fps, self.fps)
             # fixme: may be too harsh
             return set()
