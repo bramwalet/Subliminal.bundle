@@ -43,12 +43,16 @@ class PatchedOpenSubtitlesSubtitle(OpenSubtitlesSubtitle):
 
 
 class PatchedOpenSubtitlesProvider(OpenSubtitlesProvider):
-    def __init__(self, username=None, password=None):
+    def __init__(self, username=None, password=None, use_tag_search=False):
         if username is not None and password is None or username is None and password is not None:
             raise ConfigurationError('Username and password must be specified')
 
         self.username = username or ''
         self.password = password or ''
+        self.use_tag_search = use_tag_search
+
+        if use_tag_search:
+            logger.info("Using tag/exact filename search")
 
         super(PatchedOpenSubtitlesProvider, self).__init__()
 
@@ -60,7 +64,6 @@ class PatchedOpenSubtitlesProvider(OpenSubtitlesProvider):
 
     def list_subtitles(self, video, languages):
         """
-
         :param video:
         :param languages:
         :return:
@@ -78,14 +81,14 @@ class PatchedOpenSubtitlesProvider(OpenSubtitlesProvider):
             query = video.title
 
         return self.query(languages, hash=video.hashes.get('opensubtitles'), size=video.size, imdb_id=video.imdb_id,
-                          query=query, season=season, episode=episode, tag=os.path.basename(video.name))
+                          query=query, season=season, episode=episode, tag=os.path.basename(video.name), use_tag_search=self.use_tag_search)
 
-    def query(self, languages, hash=None, size=None, imdb_id=None, query=None, season=None, episode=None, tag=None):
+    def query(self, languages, hash=None, size=None, imdb_id=None, query=None, season=None, episode=None, tag=None, use_tag_search=False):
         # fill the search criteria
         criteria = []
         if hash and size:
             criteria.append({'moviehash': hash, 'moviebytesize': str(size)})
-        if tag:
+        if use_tag_search and tag:
             criteria.append({'tag': tag})
         if imdb_id:
             criteria.append({'imdbid': imdb_id})

@@ -110,6 +110,7 @@ class Config(object):
                                           },
                              'opensubtitles': {'username': Prefs['provider.opensubtitles.username'],
                                                'password': Prefs['provider.opensubtitles.password'],
+                                               'use_tag_search': Prefs['provider.opensubtitles.use_tags']
                                                },
                              }
 

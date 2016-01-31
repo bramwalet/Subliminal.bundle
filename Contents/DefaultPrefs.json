@@ -269,6 +269,12 @@
     "default": "true"
   },
   {
+    "id": "provider.opensubtitles.use_tags",
+    "label": "I keep the exact (release-) filename of my media files",
+    "type": "bool",
+    "default": "true"
+  },
+  {
     "id": "subtitles.scan.embedded",
     "label": "Scan: include embedded subtitles (in the media file (MKV/MP4), don't download if existing)",
     "type": "bool",
