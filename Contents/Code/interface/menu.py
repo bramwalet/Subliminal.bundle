@@ -310,7 +310,7 @@ def RefreshItem(rating_key=None, came_from="/recent", item_title=None, force=Fal
     assert rating_key
     set_refresh_menu_state("Triggering %sRefresh for %s" % ("Force-" if force else "", item_title))
     Thread.Create(refreshItem, rating_key=rating_key, force=force)
-    return fatality(randomize=timestamp(), header="%s of item %s triggered" % ("Refresh" if not force else "Forced-refresh", rating_key),
+    return fatality(randomize=timestamp(), header=u"%s of item %s triggered" % ("Refresh" if not force else "Forced-refresh", rating_key),
                     replace_parent=True)
 
 

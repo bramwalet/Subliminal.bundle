@@ -88,7 +88,7 @@ def set_refresh_menu_state(state_or_media, media_type="movies"):
         title = format_video("movie", media.title)
     force_refresh = intent.get("force", media_id)
 
-    Dict["current_refresh_state"] = "%sRefreshing %s" % ("Force-" if force_refresh else "", title)
+    Dict["current_refresh_state"] = u"%sRefreshing %s" % ("Force-" if force_refresh else "", unicode(title))
 
 
 def enable_channel_wrapper(func):
