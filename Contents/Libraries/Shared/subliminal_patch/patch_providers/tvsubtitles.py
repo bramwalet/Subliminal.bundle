@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 # clean_punctuation actually removes the dash in YYYY-YYYY year range
 # fixme: clean_punctuation is stupid
-link_re = re.compile('^(?P<series>.+?)(?: \(?\d{4}\)?| \((?:US|UK)\))? \((?P<first_year>\d{4})\d{4}\)$')
+link_re = re.compile('^(?P<series>.+)(?: \(?\d{4}\)?| \((?:US|UK)\))? \((?P<first_year>\d{4})\d{4}\)$')
 
 
 class PatchedTVsubtitlesProvider(PunctuationMixin, TVsubtitlesProvider):
