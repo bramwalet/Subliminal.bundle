@@ -36,7 +36,7 @@ def add_ignore_options(oc, kind, callback_menu=None, title=None, rating_key=None
 
     oc.add(DirectoryObject(
         key=Callback(callback_menu, kind=use_kind, rating_key=rating_key, title=title),
-        title="%s %s \"%s\" %s the ignore list" % (
+        title=u"%s %s \"%s\" %s the ignore list" % (
             "Remove" if in_list else "Add", ignore_list.verbose(kind) if add_kind else "", unicode(title), "from" if in_list else "to")
     )
     )

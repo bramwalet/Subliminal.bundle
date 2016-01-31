@@ -293,12 +293,12 @@ def RefreshItemMenu(rating_key, title=None, base_title=None, item_title=None, ca
     add_ignore_options(oc, "videos", title=item_title, rating_key=rating_key, callback_menu=IgnoreMenu)
     oc.add(DirectoryObject(
         key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title),
-        title="Refresh: %s" % item_title,
+        title=u"Refresh: %s" % item_title,
         summary="Refreshes the item, possibly picking up new subtitles on disk"
     ))
     oc.add(DirectoryObject(
         key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title, force=True),
-        title="Force-Refresh: %s" % item_title,
+        title=u"Force-Refresh: %s" % item_title,
         summary="Issues a forced refresh, ignoring known subtitles and searching for new ones"
     ))
 
