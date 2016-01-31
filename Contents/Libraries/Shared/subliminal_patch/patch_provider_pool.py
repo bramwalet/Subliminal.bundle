@@ -262,7 +262,12 @@ class PatchedProviderPool(ProviderPool):
         unsorted_subtitles = []
         for s in subtitles:
             logger.debug("Starting score computation for %s", s)
-            matches = s.get_matches(video, hearing_impaired=use_hearing_impaired)
+            try:
+                matches = s.get_matches(video, hearing_impaired=use_hearing_impaired)
+            except AttributeError:
+                logger.error("Match computation failed for %s: %s", s, traceback.format_exc())
+                continue
+
             unsorted_subtitles.append((s, compute_score(matches, video, scores=scores), matches))
         scored_subtitles = sorted(unsorted_subtitles, key=operator.itemgetter(1), reverse=True)
 
