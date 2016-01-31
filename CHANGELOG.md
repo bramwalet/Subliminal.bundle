@@ -1,3 +1,15 @@
+1.3.23.459
+
+- core: slight code cleanup and fixes
+- core: add physical (filesystem) ignore mode (create files named `subzero.ignore`, `.subzero.ignore`, `.nosz` to ignore specific files/seasons/series/libraries)
+- core: fix guessit hinting of tv series with rare folder layout (e.g. series_name/a/S01E01.mkv)
+- core: remove "format" necessity from (opensubtitles) hash-validation
+- OpenSubtitles: dramatically improve matching: add tag (exact filename) matching and treat it just like hash matches
+- core: ignore embedded forced subtitles (fixes #106)
+- docs: update
+- settings: clarify
+
+
 1.3.20.422  
 - tvsubtitles: show matching was partially broken
 - addic7ed: better show matching

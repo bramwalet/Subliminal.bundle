@@ -1,4 +1,4 @@
-Sub-Zero for Plex, 1.3.23.459
+Sub-Zero for Plex, 1.3.27.491
 =================
 
 ![logo](https://raw.githubusercontent.com/pannal/Sub-Zero.bundle/master/Contents/Resources/subzero.gif)
@@ -50,16 +50,17 @@ the items with missing subtitles automatically.
 
 ## Changelog
 
-1.3.23.459
+1.3.27.491
 
-- core: slight code cleanup and fixes
-- core: add physical (filesystem) ignore mode (create files named `subzero.ignore`, `.subzero.ignore`, `.nosz` to ignore specific files/seasons/series/libraries)
-- core: fix guessit hinting of tv series with rare folder layout (e.g. series_name/a/S01E01.mkv)
-- core: remove "format" necessity from (opensubtitles) hash-validation
-- OpenSubtitles: dramatically improve matching: add tag (exact filename) matching and treat it just like hash matches
-- core: ignore embedded forced subtitles (fixes #106)
-- docs: update
-- settings: clarify
+- menu/core: make Sub-Zero channel menu optional (setting: "Enable Sub-Zero channel (disabling doesn't affect the subtitle features)?")
+- OpenSubtitles: detect and match video/subtitle FPS (framerate) to reduce out of sync subtitle matches
+- core: internal fixes; add _markerlib library (rare)
+- core: don't score tvshow episode title matches, should improve episode subtitle matches quite a bit (and reduce out of sync subtitles)
+- OpenSubtitles: make tag/exact filename matches optional (setting: "I keep the exact (release-) filename of my media files")
+- menu: unicode video title errors fixed
+- TVSubtitles: correctly match certain show IDs (such as "Series Name (US)")
+- core: don't break subtitle evaluation on crashed guessing
+
 
 [older changes](CHANGELOG.md)
 
