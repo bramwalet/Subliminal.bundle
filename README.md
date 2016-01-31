@@ -81,6 +81,7 @@ Configuration
 -------------
 Several options are provided in the preferences of this agent. 
 
+* Enable Sub-Zero channel (disabling doesn't affect the subtitle features)?: Show or hide the Sub-Zero channel from your PMS
 * Addic7ed username/password: Provide your addic7ed username here, otherwise the provider won't work. Please make sure your account is activated, before using the agent.
 * Plex.tv username/password: Generally recommended to be provided; needed if you use Plex Home to make the API work (the whole channel menu depends on it)
 * Opensubtitles username/password: Generally recommended to be provided (not necessarily needed, but avoids errors)
@@ -88,6 +89,7 @@ Several options are provided in the preferences of this agent.
 * Additional Subtitle Languages: Additional languages to download; comma-separated; use [ISO-639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes))
 * Provider: Enable ...: Enable/disable this provider. Affects both movies and series. 
 * Addic7ed: boost over hash score if requirements met: if an Addic7ed subtitle matches the video's series, season, episode, year, and format (e.g. WEB-DL), boost its score, possibly over OpenSubtitles/TheSubDB direct hash match
+* I keep the exact (release-) filename of my media files: If you don't rename your media files automatically or manually and keep the original release's file names, enabling this option may help finding suitable subtitles for your media. Otherwise: disable this. 
 * Scan: Include embedded subtitles: When enabled, subliminal finds embedded subtitles (ignoring forced) that are already present within the media file. 
 * Scan: Include external subtitles: When enabled, subliminal finds subtitles located near the media file on the filesystem.
 * Minimum score for download: When configured, what is the minimum score for subtitles to download them? Lower scored subtitles are not downloaded.
