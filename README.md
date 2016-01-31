@@ -88,7 +88,7 @@ Several options are provided in the preferences of this agent.
 * Subtitle language (1)/(2)/(3): Your preferred languages to download subtitles for. 
 * Additional Subtitle Languages: Additional languages to download; comma-separated; use [ISO-639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes))
 * Provider: Enable ...: Enable/disable this provider. Affects both movies and series. 
-* Addic7ed: boost over hash score if requirements met: if an Addic7ed subtitle matches the video's series, season, episode, year, and format (e.g. WEB-DL), boost its score, possibly over OpenSubtitles/TheSubDB direct hash match
+* Addic7ed: (TV only) boost over hash score if requirements met: if an Addic7ed subtitle matches the video's series, season, episode, year, boost its score, possibly over OpenSubtitles/TheSubDB direct hash match. Recommended for higher quality subtitle results. 
 * I keep the exact (release-) filename of my media files: If you don't rename your media files automatically or manually and keep the original release's file names, enabling this option may help finding suitable subtitles for your media. Otherwise: disable this. 
 * Scan: Include embedded subtitles: When enabled, subliminal finds embedded subtitles (ignoring forced) that are already present within the media file. 
 * Scan: Include external subtitles: When enabled, subliminal finds subtitles located near the media file on the filesystem.
