@@ -42,3 +42,5 @@ subliminal.video.search_external_subtitles = patched_search_external_subtitles
 subliminal.video.scan_video = scan_video
 
 subliminal.video.Episode.scores["boost"] = 40
+
+subliminal.video.Episode.scores["title"] = 0
