@@ -16,6 +16,7 @@ for key, value in getattr(module, "__builtins__").iteritems():
 import logger
 sys.modules["logger"] = logger
 
+from subzero import intent
 import subliminal
 import subliminal_patch
 import support
