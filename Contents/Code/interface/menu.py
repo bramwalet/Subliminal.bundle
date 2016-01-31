@@ -308,7 +308,7 @@ def RefreshItemMenu(rating_key, title=None, base_title=None, item_title=None, ca
 @route(PREFIX + '/item/{rating_key}')
 def RefreshItem(rating_key=None, came_from="/recent", item_title=None, force=False):
     assert rating_key
-    set_refresh_menu_state("Triggering %sRefresh for %s" % ("Force-" if force else "", item_title))
+    set_refresh_menu_state(u"Triggering %sRefresh for %s" % ("Force-" if force else "", item_title))
     Thread.Create(refreshItem, rating_key=rating_key, force=force)
     return fatality(randomize=timestamp(), header=u"%s of item %s triggered" % ("Refresh" if not force else "Forced-refresh", rating_key),
                     replace_parent=True)
