@@ -241,7 +241,7 @@ def saveSubtitlesToFile(subtitles):
                 fld = os.path.join(fld_base, Prefs["subtitles.save.subFolder"])
             if not os.path.exists(fld):
                 os.makedirs(fld)
-        subliminal.api.save_subtitles(video, video_subtitles, directory=fld)
+        subliminal.api.save_subtitles(video, video_subtitles, directory=fld, single=Prefs['subtitles.only_one'])
 
 
 def saveSubtitlesToMetadata(videos, subtitles):

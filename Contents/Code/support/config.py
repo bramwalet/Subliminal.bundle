@@ -67,6 +67,9 @@ class Config(object):
         l = {Language.fromietf(Prefs["langPref1"])}
         langCustom = Prefs["langPrefCustom"].strip()
 
+        if Prefs['subtitles.only_one']:
+            return l
+
         if Prefs["langPref2"] != "None":
             l.update({Language.fromietf(Prefs["langPref2"])})
 

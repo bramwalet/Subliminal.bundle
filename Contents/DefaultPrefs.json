@@ -233,6 +233,12 @@
     "default": "None"
   },
   {
+    "id": "subtitles.only_one",
+    "label": "Restrict to one language (skips adding \".lang.\" to the subtitle filename; only uses \"Subtitle Language (1)\")",
+    "type": "bool",
+    "default": "false"
+  },
+  {
     "id": "provider.opensubtitles.enabled",
     "label": "Provider: Enable OpenSubtitles",
     "type": "bool",
