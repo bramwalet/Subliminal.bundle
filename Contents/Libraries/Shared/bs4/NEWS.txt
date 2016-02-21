@@ -1,3 +1,127 @@
+= 4.4.1 (20150928) =
+
+* Fixed a bug that deranged the tree when part of it was
+  removed. Thanks to Eric Weiser for the patch and John Wiseman for a
+  test. [bug=1481520]
+
+* Fixed a parse bug with the html5lib tree-builder. Thanks to Roel
+  Kramer for the patch. [bug=1483781]
+
+* Improved the implementation of CSS selector grouping. Thanks to
+  Orangain for the patch. [bug=1484543]
+
+* Fixed the test_detect_utf8 test so that it works when chardet is
+  installed. [bug=1471359]
+
+* Corrected the output of Declaration objects. [bug=1477847]
+
+
+= 4.4.0 (20150703) =
+
+Especially important changes:
+
+* Added a warning when you instantiate a BeautifulSoup object without
+  explicitly naming a parser. [bug=1398866]
+
+* __repr__ now returns an ASCII bytestring in Python 2, and a Unicode
+  string in Python 3, instead of a UTF8-encoded bytestring in both
+  versions. In Python 3, __str__ now returns a Unicode string instead
+  of a bytestring. [bug=1420131]
+
+* The `text` argument to the find_* methods is now called `string`,
+  which is more accurate. `text` still works, but `string` is the
+  argument described in the documentation. `text` may eventually
+  change its meaning, but not for a very long time. [bug=1366856]
+
+* Changed the way soup objects work under copy.copy(). Copying a
+  NavigableString or a Tag will give you a new NavigableString that's
+  equal to the old one but not connected to the parse tree. Patch by
+  Martijn Peters. [bug=1307490]
+
+* Started using a standard MIT license. [bug=1294662]
+
+* Added a Chinese translation of the documentation by Delong .w.
+
+New features:
+
+* Introduced the select_one() method, which uses a CSS selector but
+  only returns the first match, instead of a list of
+  matches. [bug=1349367]
+
+* You can now create a Tag object without specifying a
+  TreeBuilder. Patch by Martijn Pieters. [bug=1307471]
+
+* You can now create a NavigableString or a subclass just by invoking
+  the constructor. [bug=1294315]
+
+* Added an `exclude_encodings` argument to UnicodeDammit and to the
+  Beautiful Soup constructor, which lets you prohibit the detection of
+  an encoding that you know is wrong. [bug=1469408]
+
+* The select() method now supports selector grouping. Patch by
+  Francisco Canas [bug=1191917]
+
+Bug fixes:
+
+* Fixed yet another problem that caused the html5lib tree builder to
+  create a disconnected parse tree. [bug=1237763]
+
+* Force object_was_parsed() to keep the tree intact even when an element
+  from later in the document is moved into place. [bug=1430633]
+
+* Fixed yet another bug that caused a disconnected tree when html5lib
+  copied an element from one part of the tree to another. [bug=1270611]
+
+* Fixed a bug where Element.extract() could create an infinite loop in
+  the remaining tree.
+
+* The select() method can now find tags whose names contain
+  dashes. Patch by Francisco Canas. [bug=1276211]
+
+* The select() method can now find tags with attributes whose names
+  contain dashes. Patch by Marek Kapolka. [bug=1304007]
+
+* Improved the lxml tree builder's handling of processing
+  instructions. [bug=1294645]
+
+* Restored the helpful syntax error that happens when you try to
+  import the Python 2 edition of Beautiful Soup under Python
+  3. [bug=1213387]
+
+* In Python 3.4 and above, set the new convert_charrefs argument to
+  the html.parser constructor to avoid a warning and future
+  failures. Patch by Stefano Revera. [bug=1375721]
+
+* The warning when you pass in a filename or URL as markup will now be
+  displayed correctly even if the filename or URL is a Unicode
+  string. [bug=1268888]
+
+* If the initial <html> tag contains a CDATA list attribute such as
+  'class', the html5lib tree builder will now turn its value into a
+  list, as it would with any other tag. [bug=1296481]
+
+* Fixed an import error in Python 3.5 caused by the removal of the
+  HTMLParseError class. [bug=1420063]
+
+* Improved docstring for encode_contents() and
+  decode_contents(). [bug=1441543]
+
+* Fixed a crash in Unicode, Dammit's encoding detector when the name
+  of the encoding itself contained invalid bytes. [bug=1360913]
+
+* Improved the exception raised when you call .unwrap() or
+  .replace_with() on an element that's not attached to a tree.
+
+* Raise a NotImplementedError whenever an unsupported CSS pseudoclass
+  is used in select(). Previously some cases did not result in a
+  NotImplementedError.
+
+* It's now possible to pickle a BeautifulSoup object no matter which
+  tree builder was used to create it. However, the only tree builder
+  that survives the pickling process is the HTMLParserTreeBuilder
+  ('html.parser'). If you unpickle a BeautifulSoup object created with
+  some other tree builder, soup.builder will be None. [bug=1231545]
+
 = 4.3.2 (20131002) =
 
 * Fixed a bug in which short Unicode input was improperly encoded to
