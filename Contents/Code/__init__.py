@@ -14,6 +14,7 @@ for key, value in getattr(module, "__builtins__").iteritems():
         globals()[key] = value
 
 import logger
+
 sys.modules["logger"] = logger
 
 from subzero import intent
@@ -22,12 +23,13 @@ import subliminal_patch
 import support
 
 import interface
+
 sys.modules["interface"] = interface
 
 from subzero.constants import OS_PLEX_USERAGENT, PERSONAL_MEDIA_IDENTIFIER
 from subzero import intent
 from interface.menu import *
-from support.subtitlehelpers import getSubtitlesFromMetadata
+from support.subtitlehelpers import getSubtitlesFromMetadata, force_utf8
 from support.storage import storeSubtitleInfo
 from support.config import config
 
@@ -241,14 +243,16 @@ def saveSubtitlesToFile(subtitles):
                 fld = os.path.join(fld_base, Prefs["subtitles.save.subFolder"])
             if not os.path.exists(fld):
                 os.makedirs(fld)
-        subliminal.api.save_subtitles(video, video_subtitles, directory=fld, single=Prefs['subtitles.only_one'])
+        subliminal.api.save_subtitles(video, video_subtitles, directory=fld, single=Prefs['subtitles.only_one'],
+                                      encode_with=force_utf8 if Prefs['subtitles.enforce_encoding'] else None)
 
 
 def saveSubtitlesToMetadata(videos, subtitles):
     for video, video_subtitles in subtitles.items():
         mediaPart = videos[video]
         for subtitle in video_subtitles:
-            mediaPart.subtitles[Locale.Language.Match(subtitle.language.alpha2)][subtitle.page_link] = Proxy.Media(subtitle.content, ext="srt")
+            content = force_utf8(subtitle.content) if Prefs['subtitles.enforce_encoding'] else subtitle.content
+            mediaPart.subtitles[Locale.Language.Match(subtitle.language.alpha2)][subtitle.page_link] = Proxy.Media(content, ext="srt")
 
 
 def updateLocalMedia(metadata, media, media_type="movies"):
@@ -332,6 +336,7 @@ class SubZeroSubtitlesAgentMovies(SubZeroAgent, Agent.Movies):
 
 
 class SubZeroSubtitlesAgentTvShows(SubZeroAgent, Agent.TV_Shows):
-    contributes_to = ['com.plexapp.agents.thetvdb', 'com.plexapp.agents.thetvdbdvdorder', 'com.plexapp.agents.xbmcnfotv', 'com.plexapp.agents.hama']
+    contributes_to = ['com.plexapp.agents.thetvdb', 'com.plexapp.agents.thetvdbdvdorder', 'com.plexapp.agents.xbmcnfotv',
+                      'com.plexapp.agents.hama']
     score_prefs_key = "subtitles.search.minimumTVScore"
     agent_type_verbose = "TV"

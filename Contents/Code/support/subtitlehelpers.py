@@ -4,6 +4,8 @@ import re, unicodedata, os
 import config
 import helpers
 
+from bs4 import UnicodeDammit
+
 
 class SubtitleHelper(object):
     def __init__(self, filename):
@@ -151,3 +153,8 @@ def getSubtitlesFromMetadata(part):
                 Log.Debug(u"Found metadata subtitle: %s, %s" % (language, repr(proxy)))
                 subs[language].append(key)
     return subs
+
+
+def force_utf8(content):
+    a = UnicodeDammit(content)
+    return (a.unicode_markup if a.unicode_markup else content.decode('ascii', 'replace')).encode("utf-8")

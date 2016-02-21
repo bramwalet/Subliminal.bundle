@@ -239,6 +239,12 @@
     "default": "false"
   },
   {
+    "id": "subtitles.enforce_encoding",
+    "label": "Normalize subtitle encoding to UTF-8",
+    "type": "bool",
+    "default": "true"
+  },
+  {
     "id": "provider.opensubtitles.enabled",
     "label": "Provider: Enable OpenSubtitles",
     "type": "bool",
