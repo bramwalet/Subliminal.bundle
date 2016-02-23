@@ -251,7 +251,7 @@ def saveSubtitlesToMetadata(videos, subtitles):
     for video, video_subtitles in subtitles.items():
         mediaPart = videos[video]
         for subtitle in video_subtitles:
-            content = force_utf8(subtitle.content) if Prefs['subtitles.enforce_encoding'] else subtitle.content
+            content = force_utf8(subtitle.text) if Prefs['subtitles.enforce_encoding'] else subtitle.content
             mediaPart.subtitles[Locale.Language.Match(subtitle.language.alpha2)][subtitle.page_link] = Proxy.Media(content, ext="srt")
 
 

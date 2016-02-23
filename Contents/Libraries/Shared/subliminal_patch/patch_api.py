@@ -58,7 +58,7 @@ def save_subtitles(video, subtitles, single=False, directory=None, encoding=None
 
         # save normalized subtitle if encoder or no encoding is given
         if has_encoder or encoding is None:
-            content = encode_with(subtitle.content) if has_encoder else subtitle.content
+            content = encode_with(subtitle.text) if has_encoder else subtitle.content
             with io.open(subtitle_path, 'wb') as f:
                 f.write(content)
 
