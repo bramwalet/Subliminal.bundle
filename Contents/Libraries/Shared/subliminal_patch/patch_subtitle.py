@@ -1,7 +1,11 @@
 # coding=utf-8
 
 import logging
+
+import chardet
+from bs4 import UnicodeDammit
 from subliminal.video import Episode, Movie
+from subliminal import Subtitle
 
 logger = logging.getLogger(__name__)
 
@@ -58,3 +62,68 @@ def compute_score(matches, video, scores=None):
     logger.info('Computed score %d', score)
 
     return score
+
+
+class PatchedSubtitle(Subtitle):
+    def guess_encoding(self):
+        """Guess encoding using the language, falling back on chardet.
+
+        :return: the guessed encoding.
+        :rtype: str
+
+        """
+        logger.info('Guessing encoding for language %s', self.language)
+
+        # always try utf-8 first
+        encodings = ['utf-8']
+
+        # add language-specific encodings
+        if self.language.alpha3 == 'zho':
+            encodings.extend(['gb18030', 'big5'])
+        elif self.language.alpha3 == 'jpn':
+            encodings.append('shift-jis')
+        elif self.language.alpha3 == 'ara':
+            encodings.append('windows-1256')
+        elif self.language.alpha3 == 'heb':
+            encodings.append('windows-1255')
+        elif self.language.alpha3 == 'tur':
+            encodings.extend(['iso-8859-9', 'windows-1254'])
+        elif self.language.alpha3 == 'pol':
+            # Eastern European Group 1
+            encodings.extend(['windows-1250'])
+        elif self.language.alpha3 == 'bul':
+            # Eastern European Group 2
+            encodings.extend(['windows-1251'])
+        else:
+            # Western European (windows-1252)
+            encodings.append('latin-1')
+
+        # try to decode
+        logger.debug('Trying encodings %r', encodings)
+        for encoding in encodings:
+            try:
+                self.content.decode(encoding)
+            except UnicodeDecodeError:
+                pass
+            else:
+                logger.info('Guessed encoding %s', encoding)
+                return encoding
+
+        logger.warning('Could not guess encoding from language')
+
+        # fallback on chardet
+        encoding = chardet.detect(self.content)['encoding']
+        logger.info('Chardet found encoding %s', encoding)
+
+        if not encoding:
+            # fallback on bs4
+            logger.info('Falling back to bs4 detection')
+            a = UnicodeDammit(self.content)
+
+            Log.Debug("bs4 detected encoding: %s" % a.original_encoding)
+
+            if a.original_encoding:
+                return a.original_encoding
+            raise ValueError(u"Couldn't guess the proper encoding for %s" % self)
+
+        return encoding

@@ -6,6 +6,7 @@ from .patch_provider_pool import PatchedProviderPool
 from .patch_video import patched_search_external_subtitles, scan_video
 from .patch_providers import addic7ed, podnapisi, tvsubtitles, opensubtitles
 from .patch_api import save_subtitles
+from .patch_subtitle import PatchedSubtitle
 
 # patch subliminal's ProviderPool
 subliminal.api.ProviderPool = PatchedProviderPool
@@ -40,6 +41,9 @@ subliminal.video.search_external_subtitles = patched_search_external_subtitles
 
 # patch subliminal's scan_video function
 subliminal.video.scan_video = scan_video
+
+# patch subliminal's subtitle encoding detection
+subliminal.subtitle.Subtitle = PatchedSubtitle
 
 subliminal.video.Episode.scores["boost"] = 40
 
