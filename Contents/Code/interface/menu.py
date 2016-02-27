@@ -44,6 +44,16 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
         return oc
 
     if not only_refresh:
+        if Dict["current_refresh_state"]:
+            oc.add(DirectoryObject(
+                key=Callback(fatality, force_title=" ", randomize=timestamp()),
+                title=pad_title("Working ... refresh here"),
+                summary="Current state: %s; Last state: %s" % (
+                    (Dict["current_refresh_state"] or "Idle") if "current_refresh_state" in Dict else "Idle",
+                    (Dict["last_refresh_state"] or "None") if "last_refresh_state" in Dict else "None"
+                )
+            ))
+
         oc.add(DirectoryObject(
             key=Callback(OnDeckMenu),
             title=pad_title("On Deck items"),
