@@ -275,11 +275,11 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
     if display_items:
         items = getAllItems(key="children", value=rating_key, base="library/metadata")
         kind, deeper = get_items_info(items)
+        dig_tree(oc, items, MetadataMenu,
+                 pass_kwargs={"base_title": title, "display_items": deeper, "previous_item_type": kind, "previous_rating_key": rating_key})
         # we don't know exactly where we are here, only add ignore option to series
         if should_display_ignore(items, previous=previous_item_type):
             add_ignore_options(oc, "series", title=item_title, rating_key=rating_key, callback_menu=IgnoreMenu)
-        dig_tree(oc, items, MetadataMenu,
-                 pass_kwargs={"base_title": title, "display_items": deeper, "previous_item_type": kind, "previous_rating_key": rating_key})
     else:
         return RefreshItemMenu(rating_key=rating_key, title=title, item_title=item_title)
 
@@ -300,7 +300,6 @@ def IgnoreListMenu():
 def RefreshItemMenu(rating_key, title=None, base_title=None, item_title=None, came_from="/recent"):
     title = unicode(base_title) + " > " + unicode(title) if base_title else unicode(title)
     oc = ObjectContainer(title2=title, replace_parent=True)
-    add_ignore_options(oc, "videos", title=item_title, rating_key=rating_key, callback_menu=IgnoreMenu)
     oc.add(DirectoryObject(
         key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title),
         title=u"Refresh: %s" % item_title,
@@ -311,6 +310,7 @@ def RefreshItemMenu(rating_key, title=None, base_title=None, item_title=None, ca
         title=u"Force-Refresh: %s" % item_title,
         summary="Issues a forced refresh, ignoring known subtitles and searching for new ones"
     ))
+    add_ignore_options(oc, "videos", title=item_title, rating_key=rating_key, callback_menu=IgnoreMenu)
 
     return oc
 
