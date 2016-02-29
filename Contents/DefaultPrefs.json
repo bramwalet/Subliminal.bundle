@@ -35,7 +35,7 @@
     "id": "provider.addic7ed.username",
     "label": "Addic7ed Username",
     "type": "text",
-    "default": "Username"
+    "default": ""
   },
   {
     "id": "provider.addic7ed.password",
