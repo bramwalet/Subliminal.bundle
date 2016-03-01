@@ -11,4 +11,4 @@ PREFIX = "/video/%s" % PLUGIN_IDENTIFIER_SHORT
 
 TITLE = "%s Subtitles" % PLUGIN_NAME
 ART      = 'art-default.jpg'
-ICON     = 'icon-default.png'
+ICON     = 'icon-default.jpg'
