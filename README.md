@@ -10,7 +10,10 @@ Plex forum thread: https://forums.plex.tv/discussion/186575
 
 If you like this, buy me a beer: [![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=G9VKR2B8PMNKG)
 
-### Installation
+### Automatic Installation
+* Sub-Zero now is listed in the official Plex Channel Directory. You can install it from there.
+
+### Manual Installation
 * go to ```Library/Application Support/Plex Media Server/Plug-ins/```
 * ```rm -r Sub-Zero.bundle``` (remove the folder)
 * get the release you want from *https://github.com/pannal/Sub-Zero.bundle/releases/*
