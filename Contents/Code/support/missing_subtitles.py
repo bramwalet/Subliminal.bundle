@@ -6,7 +6,7 @@ from support.helpers import format_item
 from support.lib import Plex
 
 
-def itemDiscoverMissing(rating_key, kind="show", added_at=None, section_title=None, internal=False, external=True, languages=()):
+def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_title=None, internal=False, external=True, languages=()):
     existing_subs = {"internal": [], "external": [], "count": 0}
 
     item_id = int(rating_key)
@@ -48,11 +48,11 @@ def itemDiscoverMissing(rating_key, kind="show", added_at=None, section_title=No
         return added_at, item_id, item_title
 
 
-def getAllMissing(items):
+def items_get_all_missing_subs(items):
     missing = []
     for added_at, kind, section_title, key in items:
         try:
-            state = itemDiscoverMissing(
+            state = item_discover_missing_subs(
                 key,
                 kind=kind,
                 added_at=added_at,

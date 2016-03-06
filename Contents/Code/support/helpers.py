@@ -20,7 +20,7 @@ RE_UNICODE_CONTROL = u'([\u0000-\u0008\u000b-\u000c\u000e-\u001f\ufffe-\uffff])'
 
 
 # A platform independent way to split paths which might come in with different separators.
-def splitPath(str):
+def split_path(str):
     if str.find('\\') != -1:
         return str.split('\\')
     else:
@@ -40,7 +40,7 @@ def unicodize(s):
     return filename
 
 
-def cleanFilename(filename):
+def clean_filename(filename):
     # this will remove any whitespace and punctuation chars and replace them with spaces, strip and return as lowercase
     return string.translate(filename.encode('utf-8'), string.maketrans(string.punctuation + string.whitespace,
                                                                        ' ' * len(string.punctuation + string.whitespace))).strip().lower()

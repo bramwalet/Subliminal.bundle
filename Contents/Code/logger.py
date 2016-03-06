@@ -1,8 +1,8 @@
 import logging
 
 
-def registerLoggingHander(dependencies, level="ERROR"):
-    plexHandler = PlexLoggerHandler()
+def register_logging_handler(dependencies, level="ERROR"):
+    plex_handler = PlexLoggerHandler()
     for dependency in dependencies:
         Log.Debug("Registering LoggerHandler for dependency: %s" % dependency)
         log = logging.getLogger(dependency)
@@ -13,7 +13,7 @@ def registerLoggingHander(dependencies, level="ERROR"):
                 log.removeHandler(handler)
 
         log.setLevel(level)
-        log.addHandler(plexHandler)
+        log.addHandler(plex_handler)
 
 
 class PlexLoggerHandler(logging.StreamHandler):

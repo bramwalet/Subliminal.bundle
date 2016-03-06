@@ -23,16 +23,15 @@ import subliminal_patch
 import support
 
 import interface
-
 sys.modules["interface"] = interface
 
 from subzero.constants import OS_PLEX_USERAGENT, PERSONAL_MEDIA_IDENTIFIER
 from subzero import intent
 from interface.menu import *
 from support import helpers
-from support.subtitlehelpers import getSubtitlesFromMetadata, force_utf8
-from support.storage import storeSubtitleInfo
-from support.config import config, IGNORE_FN
+from support.subtitlehelpers import get_subtitles_from_metadata, force_utf8
+from support.storage import store_subtitle_info, whack_missing_parts
+from support.config import config
 
 
 def Start():
@@ -55,7 +54,7 @@ def Start():
     scheduler.run()
 
 
-def initSubliminalPatches():
+def init_subliminal_patches():
     # configure custom subtitle destination folders for scanning pre-existing subs
     dest_folder = config.subtitleDestinationFolder
     subliminal_patch.patch_video.CUSTOM_PATHS = [dest_folder] if dest_folder else []
@@ -63,7 +62,7 @@ def initSubliminalPatches():
     subliminal_patch.patch_providers.addic7ed.USE_BOOST = bool(Prefs['provider.addic7ed.boost'])
 
 
-def flattenToParts(media, kind="series"):
+def flatten_media(media, kind="series"):
     """
     iterates through media and returns the associated parts (videos)
     :param media:
@@ -85,14 +84,14 @@ def flattenToParts(media, kind="series"):
     return parts
 
 
-def parseMediaToParts(media, kind="series"):
+def convert_media_to_parts(media, kind="series"):
     """
     returns a list of parts to be used later on; ignores folders with an existing "subzero.ignore" file
     :param media:
     :param kind:
     :return:
     """
-    parts = flattenToParts(media, kind=kind)
+    parts = flatten_media(media, kind=kind)
     if not Prefs["subtitles.ignore_fs"]:
         return parts
 
@@ -120,7 +119,7 @@ def parseMediaToParts(media, kind="series"):
     return use_parts
 
 
-def getFPS(streams):
+def get_stream_fps(streams):
     for stream in streams:
         # video
         if stream.type == 1:
@@ -128,19 +127,19 @@ def getFPS(streams):
     return "25.000"
 
 
-def scanParts(parts, kind="series"):
+def scan_parts(parts, kind="series"):
     """
     receives a list of parts containing dictionaries returned by flattenToParts
     :param parts:
     :param kind: series or movies
-    :return: dictionary of scanned videos of subliminal.video.scan_video
+    :return: dictionary of subliminal.video.scan_video, key=subliminal scanned video, value=plex file part
     """
     ret = {}
     for part in parts:
         force_refresh = intent.get("force", part["id"])
         hints = helpers.get_item_hints(part["title"], kind, series=part["series"] if kind == "series" else None)
-        part["video"].fps = getFPS(part["video"].streams)
-        scanned_video = scanVideo(part["video"], ignore_all=force_refresh, hints=hints)
+        part["video"].fps = get_stream_fps(part["video"].streams)
+        scanned_video = scan_video(part["video"], ignore_all=force_refresh, hints=hints)
         if not scanned_video:
             continue
 
@@ -149,7 +148,7 @@ def scanParts(parts, kind="series"):
     return ret
 
 
-def getItemIDs(media, kind="series"):
+def get_media_item_ids(media, kind="series"):
     ids = []
     if kind == "movies":
         ids.append(media.id)
@@ -161,7 +160,7 @@ def getItemIDs(media, kind="series"):
     return ids
 
 
-def scanVideo(plex_video, ignore_all=False, hints=None):
+def scan_video(plex_video, ignore_all=False, hints=None):
     embedded_subtitles = not ignore_all and Prefs['subtitles.scan.embedded']
     external_subtitles = not ignore_all and Prefs['subtitles.scan.external']
 
@@ -178,7 +177,7 @@ def scanVideo(plex_video, ignore_all=False, hints=None):
         Log.Warn("File could not be guessed by subliminal")
 
 
-def downloadBestSubtitles(video_part_map, min_score=0):
+def download_best_subtitles(video_part_map, min_score=0):
     hearing_impaired = Prefs['subtitles.search.hearingImpaired']
     languages = config.langList
     if not languages:
@@ -188,7 +187,7 @@ def downloadBestSubtitles(video_part_map, min_score=0):
     for video, part in video_part_map.iteritems():
         if not Prefs['subtitles.save.filesystem']:
             # scan for existing metadata subtitles
-            meta_subs = getSubtitlesFromMetadata(part)
+            meta_subs = get_subtitles_from_metadata(part)
             for language, subList in meta_subs.iteritems():
                 if subList:
                     video.subtitle_languages.add(language)
@@ -216,20 +215,20 @@ def downloadBestSubtitles(video_part_map, min_score=0):
     Log.Debug("All languages for all requested videos exist. Doing nothing.")
 
 
-def saveSubtitles(videos, subtitles):
+def save_subtitles(videos, subtitles):
     if Prefs['subtitles.save.filesystem']:
         Log.Debug("Using filesystem as subtitle storage")
-        saveSubtitlesToFile(subtitles)
+        save_subtitles_to_file(subtitles)
         storage = "filesystem"
     else:
         Log.Debug("Using metadata as subtitle storage")
-        saveSubtitlesToMetadata(videos, subtitles)
+        save_subtitles_to_metadata(videos, subtitles)
         storage = "metadata"
 
-    storeSubtitleInfo(videos, subtitles, storage)
+    store_subtitle_info(videos, subtitles, storage)
 
 
-def saveSubtitlesToFile(subtitles):
+def save_subtitles_to_file(subtitles):
     fld_custom = Prefs["subtitles.save.subFolder.Custom"].strip() if bool(Prefs["subtitles.save.subFolder.Custom"]) else None
 
     for video, video_subtitles in subtitles.items():
@@ -254,7 +253,7 @@ def saveSubtitlesToFile(subtitles):
                                       encode_with=force_utf8 if Prefs['subtitles.enforce_encoding'] else None)
 
 
-def saveSubtitlesToMetadata(videos, subtitles):
+def save_subtitles_to_metadata(videos, subtitles):
     for video, video_subtitles in subtitles.items():
         mediaPart = videos[video]
         for subtitle in video_subtitles:
@@ -262,12 +261,12 @@ def saveSubtitlesToMetadata(videos, subtitles):
             mediaPart.subtitles[Locale.Language.Match(subtitle.language.alpha2)][subtitle.page_link] = Proxy.Media(content, ext="srt")
 
 
-def updateLocalMedia(metadata, media, media_type="movies"):
+def update_local_media(metadata, media, media_type="movies"):
     # Look for subtitles
     if media_type == "movies":
         for item in media.items:
             for part in item.parts:
-                support.localmedia.findSubtitles(part)
+                support.localmedia.find_subtitles(part)
         return
 
     # Look for subtitles for each episode.
@@ -280,7 +279,7 @@ def updateLocalMedia(metadata, media, media_type="movies"):
 
                     # Look for subtitles.
                     for part in i.parts:
-                        support.localmedia.findSubtitles(part)
+                        support.localmedia.find_subtitles(part)
         else:
             pass
 
@@ -295,7 +294,7 @@ class SubZeroAgent(object):
     def __init__(self, *args, **kwargs):
         super(SubZeroAgent, self).__init__(*args, **kwargs)
         self.agent_type = "movies" if isinstance(self, Agent.Movies) else "series"
-        self.name = "Sub-Zero Subtitles (%s, %s)" % (self.agent_type_verbose, config.getVersion())
+        self.name = "Sub-Zero Subtitles (%s, %s)" % (self.agent_type_verbose, config.get_version())
 
     def search(self, results, media, lang):
         Log.Debug("Sub-Zero %s, %s search" % (config.version, self.agent_type))
@@ -312,17 +311,19 @@ class SubZeroAgent(object):
 
         item_ids = []
         try:
-            initSubliminalPatches()
-            parts = parseMediaToParts(media, kind=self.agent_type)
+            init_subliminal_patches()
+            parts = convert_media_to_parts(media, kind=self.agent_type)
             use_score = Prefs[self.score_prefs_key]
-            scanned_parts = scanParts(parts, kind=self.agent_type)
-            subtitles = downloadBestSubtitles(scanned_parts, min_score=int(use_score))
-            item_ids = getItemIDs(media, kind=self.agent_type)
+            scanned_parts = scan_parts(parts, kind=self.agent_type)
+            subtitles = download_best_subtitles(scanned_parts, min_score=int(use_score))
+            item_ids = get_media_item_ids(media, kind=self.agent_type)
+
+            whack_missing_parts(scanned_parts)
 
             if subtitles:
-                saveSubtitles(scanned_parts, subtitles)
+                save_subtitles(scanned_parts, subtitles)
 
-            updateLocalMedia(metadata, media, media_type=self.agent_type)
+            update_local_media(metadata, media, media_type=self.agent_type)
 
         finally:
             # update the menu state

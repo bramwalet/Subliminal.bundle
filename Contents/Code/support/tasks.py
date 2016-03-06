@@ -3,9 +3,9 @@
 import datetime
 import time
 
-from missing_subtitles import getAllMissing, refresh_item
+from missing_subtitles import items_get_all_missing_subs, refresh_item
 from background import scheduler
-from support.items import getRecentItems
+from support.items import get_recent_items
 
 
 class Task(object):
@@ -82,8 +82,8 @@ class SearchAllRecentlyAddedMissing(Task):
 
     def prepare(self):
         self.items_done = []
-        recent_items = getRecentItems()
-        missing = getAllMissing(recent_items)
+        recent_items = get_recent_items()
+        missing = items_get_all_missing_subs(recent_items)
         ids = set([id for added_at, id, title in missing])
         self.items_searching = missing
         self.items_searching_ids = ids

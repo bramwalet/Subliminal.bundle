@@ -8,7 +8,7 @@ import subtitlehelpers
 from subzero.lib.io import getViableEncoding
 
 
-def findSubtitles(part):
+def find_subtitles(part):
     lang_sub_map = {}
     part_filename = helpers.unicodize(part.file)
     part_basename = os.path.splitext(os.path.basename(part_filename))[0]
@@ -90,7 +90,7 @@ def findSubtitles(part):
         if total_media_files > 1 and not filename_matches_part:
             continue
 
-        subtitle_helper = subtitlehelpers.SubtitleHelpers(file_path)
+        subtitle_helper = subtitlehelpers.subtitle_helpers(file_path)
         if subtitle_helper != None:
             local_lang_map = subtitle_helper.process_subtitles(part)
             for new_language, subtitles in local_lang_map.items():
@@ -104,7 +104,7 @@ def findSubtitles(part):
 
     # add known metadata subs to our sub list
     if not use_filesystem:
-        for language, sub_list in subtitlehelpers.getSubtitlesFromMetadata(part).iteritems():
+        for language, sub_list in subtitlehelpers.get_subtitles_from_metadata(part).iteritems():
             if sub_list:
                 if language not in lang_sub_map:
                     lang_sub_map[language] = []
