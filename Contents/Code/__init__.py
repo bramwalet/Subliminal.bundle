@@ -161,18 +161,18 @@ def getItemIDs(media, kind="series"):
     return ids
 
 
-def scanVideo(part, ignore_all=False, hints=None):
+def scanVideo(plex_video, ignore_all=False, hints=None):
     embedded_subtitles = not ignore_all and Prefs['subtitles.scan.embedded']
     external_subtitles = not ignore_all and Prefs['subtitles.scan.external']
 
     if ignore_all:
         Log.Debug("Force refresh intended.")
 
-    Log.Debug("Scanning video: %s, subtitles=%s, embedded_subtitles=%s" % (part.file, external_subtitles, embedded_subtitles))
+    Log.Debug("Scanning video: %s, subtitles=%s, embedded_subtitles=%s" % (plex_video.file, external_subtitles, embedded_subtitles))
 
     try:
-        return subliminal.video.scan_video(part.file, subtitles=external_subtitles, embedded_subtitles=embedded_subtitles, hints=hints or {},
-                                           video_fps=part.fps)
+        return subliminal.video.scan_video(plex_video.file, subtitles=external_subtitles, embedded_subtitles=embedded_subtitles,
+                                           hints=hints or {}, video_fps=plex_video.fps)
 
     except ValueError:
         Log.Warn("File could not be guessed by subliminal")
