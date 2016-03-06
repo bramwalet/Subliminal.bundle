@@ -29,6 +29,7 @@ sys.modules["interface"] = interface
 from subzero.constants import OS_PLEX_USERAGENT, PERSONAL_MEDIA_IDENTIFIER
 from subzero import intent
 from interface.menu import *
+from support import helpers
 from support.subtitlehelpers import getSubtitlesFromMetadata, force_utf8
 from support.storage import storeSubtitleInfo
 from support.config import config, IGNORE_FN
@@ -137,8 +138,7 @@ def scanParts(parts, kind="series"):
     ret = {}
     for part in parts:
         force_refresh = intent.get("force", part["id"])
-        hints = {"expected_title": [part["title"]]}
-        hints.update({"type": "episode", "expected_series": [part["series"]]} if kind == "series" else {"type": "movie"})
+        hints = helpers.get_item_hints(part["title"], kind, series=part["series"] if kind == "series" else None)
         part["video"].fps = getFPS(part["video"].streams)
         scanned_video = scanVideo(part["video"], ignore_all=force_refresh, hints=hints)
         if not scanned_video:

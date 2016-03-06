@@ -160,3 +160,8 @@ def check_write_permissions(path):
         # os.access check
         return os.access(path, os.W_OK | os.X_OK)
     return False
+
+def get_item_hints(title, kind, series=None):
+    hints = {"expected_title": [title]}
+    hints.update({"type": "episode", "expected_series": [series]} if kind == "series" else {"type": "movie"})
+    return hints
