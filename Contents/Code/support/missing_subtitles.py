@@ -57,7 +57,7 @@ def items_get_all_missing_subs(items):
                 kind=kind,
                 added_at=added_at,
                 section_title=section_title,
-                languages=config.langList,
+                languages=config.lang_list,
                 internal=bool(Prefs["subtitles.scan.embedded"]),
                 external=bool(Prefs["subtitles.scan.external"])
             )

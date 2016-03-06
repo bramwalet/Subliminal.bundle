@@ -56,7 +56,7 @@ def Start():
 
 def init_subliminal_patches():
     # configure custom subtitle destination folders for scanning pre-existing subs
-    dest_folder = config.subtitleDestinationFolder
+    dest_folder = config.subtitle_destination_folder
     subliminal_patch.patch_video.CUSTOM_PATHS = [dest_folder] if dest_folder else []
     subliminal_patch.patch_provider_pool.DOWNLOAD_TRIES = int(Prefs['subtitles.try_downloads'])
     subliminal_patch.patch_providers.addic7ed.USE_BOOST = bool(Prefs['provider.addic7ed.boost'])
@@ -179,7 +179,7 @@ def scan_video(plex_video, ignore_all=False, hints=None):
 
 def download_best_subtitles(video_part_map, min_score=0):
     hearing_impaired = Prefs['subtitles.search.hearingImpaired']
-    languages = config.langList
+    languages = config.lang_list
     if not languages:
         return
 
@@ -211,7 +211,7 @@ def download_best_subtitles(video_part_map, min_score=0):
         Log.Debug("Download best subtitles using settings: min_score: %s, hearing_impaired: %s" % (min_score, hearing_impaired))
 
         return subliminal.api.download_best_subtitles(video_part_map.keys(), languages, min_score, hearing_impaired, providers=config.providers,
-                                                      provider_configs=config.providerSettings)
+                                                      provider_configs=config.provider_settings)
     Log.Debug("All languages for all requested videos exist. Doing nothing.")
 
 
