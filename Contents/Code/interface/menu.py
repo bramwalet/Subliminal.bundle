@@ -15,6 +15,7 @@ from support.items import get_recent_items, get_items_info
 from support.lib import Plex
 from support.missing_subtitles import items_get_all_missing_subs
 from support.storage import reset_storage, log_storage, get_subtitle_info
+from support.plex_media import scan_parts
 
 # init GUI
 ObjectContainer.art = R(ART)

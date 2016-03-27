@@ -13,6 +13,9 @@ import lib
 
 sys.modules["support.lib"] = lib
 
+import plex_media
+sys.modules["support.plex_media"] = plex_media
+
 import localmedia
 
 sys.modules["subzero.localmedia"] = localmedia
