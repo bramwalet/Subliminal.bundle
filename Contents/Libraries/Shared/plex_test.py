@@ -71,6 +71,18 @@ def findMissingSubtitles(list_item, _type="episode", internal=False, external=Tr
 
 
 def run():
+    token = sys.argv[1]
+    Plex.configuration.defaults.authentication(token)
+    sections = Plex["library"].sections()
+    #section = list(sections)[0]
+    #print section.title, section.path, dir(section), list(section._children)[0].path
+    #return
+    for container in sections:
+        print container.title
+        for location in container:
+            print location.path
+
+    return
     itemCount = 0
     dry_run = "--dry-run" in sys.argv
     with Plex.configuration.authentication("asdfasdfasdf"):

@@ -3,6 +3,7 @@
 import os
 import re
 import inspect
+
 from babelfish import Language
 from subzero.lib.io import FileIO
 from subzero.constants import PLUGIN_NAME
@@ -14,6 +15,8 @@ VIDEO_EXTS = ['3g2', '3gp', 'asf', 'asx', 'avc', 'avi', 'avs', 'bivx', 'bup', 'd
               'm2t', 'm2ts', 'm2v', 'm4v', 'mkv', 'mov', 'mp4', 'mpeg', 'mpg', 'mts', 'nsv', 'nuv', 'ogm', 'ogv', 'tp',
               'pva', 'qt', 'rm', 'rmvb', 'sdp', 'svq3', 'strm', 'ts', 'ty', 'vdr', 'viv', 'vob', 'vp3', 'wmv', 'wpl', 'wtv', 'xsp', 'xvid',
               'webm']
+
+IGNORE_FN = ("subzero.ignore", ".subzero.ignore", ".nosz")
 
 VERSION_RE = re.compile(ur'CFBundleVersion.+?<string>([0-9\.]+)</string>', re.DOTALL)
 
@@ -33,6 +36,8 @@ class Config(object):
     providerSettings = None
     max_recent_items_per_library = 200
     plex_api_working = False
+    permissions_ok = False
+    missing_permissions = None
 
     initialized = False
 
@@ -47,9 +52,42 @@ class Config(object):
         self.initialized = True
         configure_plex()
         self.plex_api_working = self.checkPlexAPI()
+        self.missing_permissions = []
+        self.permissions_ok = self.checkPermissions()
 
     def checkPlexAPI(self):
         return bool(Plex["library"].sections())
+
+    def checkPermissions(self):
+        if not Prefs["subtitles.save.filesystem"] or not Prefs["check_permissions"]:
+            return True
+
+        if not self.plex_api_working:
+            return
+
+        use_ignore_fs = Prefs["subtitles.ignore_fs"]
+        sections = Plex["library"].sections()
+        all_permissions_ok = True
+        for section in list(sections):
+            title = section.title
+            for location in section:
+                if use_ignore_fs:
+                    ignore = False
+                    # check whether we've got an ignore file inside the section path
+                    for ifn in IGNORE_FN:
+                        if os.path.isfile(os.path.join(location.path, ifn)):
+                            ignore = True
+                    if ignore:
+                        continue
+
+                # section not ignored, check for write permissions
+                if not os.access(location.path, os.W_OK | os.X_OK):
+                    # not enough permissions
+                    self.missing_permissions.append((title, location.path))
+                    all_permissions_ok = False
+
+        return all_permissions_ok
+
 
     def getVersion(self):
         curDir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))

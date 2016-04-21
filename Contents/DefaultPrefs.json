@@ -434,6 +434,12 @@
     "default": "200"
   },
   {
+    "id": "check_permissions",
+    "label": "Check for correct folder permissions of every library on plugin start",
+    "type": "bool",
+    "default": "true"
+  },
+  {
     "id": "log_level",
     "label": "How verbose should the logging be?",
     "type": "enum",
