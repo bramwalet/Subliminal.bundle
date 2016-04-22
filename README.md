@@ -1,4 +1,4 @@
-Sub-Zero for Plex, 1.3.27.491
+Sub-Zero for Plex, 1.3.31.513
 =================
 
 ![logo](https://raw.githubusercontent.com/pannal/Sub-Zero.bundle/master/Contents/Resources/subzero.gif)
@@ -53,16 +53,15 @@ the items with missing subtitles automatically.
 
 ## Changelog
 
-1.3.27.491
+1.3.31.513
 
-- menu/core: make Sub-Zero channel menu optional (setting: "Enable Sub-Zero channel (disabling doesn't affect the subtitle features)?")
-- OpenSubtitles: detect and match video/subtitle FPS (framerate) to reduce out of sync subtitle matches
-- core: internal fixes; add _markerlib library (rare)
-- core: don't score tvshow episode title matches, should improve episode subtitle matches quite a bit (and reduce out of sync subtitles)
-- OpenSubtitles: make tag/exact filename matches optional (setting: "I keep the exact (release-) filename of my media files")
-- menu: unicode video title errors fixed
-- TVSubtitles: correctly match certain show IDs (such as "Series Name (US)")
-- core: don't break subtitle evaluation on crashed guessing
+- core: add option to only download one language again (and skip the addition of .lang to the subtitle filename) (default: off); fixes #126 
+- core: add option to always encode saved subtitles to UTF-8 (default: on); fixes #128
+- core: add fallback encoding detection using bs4.UnicodeDammit; hopefully fixes #101
+- core: update libraries: chardet, beautifulsoup, six
+- menu/core: check Plex libraries for permission problems on plugin start and report them in the channel menu (option, default: on); fixes #143
+- menu: while a manual refresh takes place, add a refresh button to the top of the SZ menu for convenience
+- menu: move the "add/remove X to ignore list" menu item to the bottom of the list on item detail 
 
 
 [older changes](CHANGELOG.md)
@@ -85,11 +84,14 @@ Configuration
 Several options are provided in the preferences of this agent. 
 
 * Enable Sub-Zero channel (disabling doesn't affect the subtitle features)?: Show or hide the Sub-Zero channel from your PMS
+* How many download tries per subtitle (on timeout or error): How often should we retry a failed subtitle download? (default: on)
 * Addic7ed username/password: Provide your addic7ed username here, otherwise the provider won't work. Please make sure your account is activated, before using the agent.
 * Plex.tv username/password: Generally recommended to be provided; needed if you use Plex Home to make the API work (the whole channel menu depends on it)
 * Opensubtitles username/password: Generally recommended to be provided (not necessarily needed, but avoids errors)
 * Subtitle language (1)/(2)/(3): Your preferred languages to download subtitles for. 
 * Additional Subtitle Languages: Additional languages to download; comma-separated; use [ISO-639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes))
+* Restrict to one language (skips adding ".lang." to the subtitle filename; only uses "Subtitle Language (1)"): default: off
+* Normalize subtitle encoding to UTF-8: default: on
 * Provider: Enable ...: Enable/disable this provider. Affects both movies and series. 
 * Addic7ed: (TV only) boost over hash score if requirements met: if an Addic7ed subtitle matches the video's series, season, episode, year, boost its score, possibly over OpenSubtitles/TheSubDB direct hash match. Recommended for higher quality subtitle results. 
 * I keep the exact (release-) filename of my media files: If you don't rename your media files automatically or manually and keep the original release's file names, enabling this option may help finding suitable subtitles for your media. Otherwise: disable this. 
@@ -110,6 +112,7 @@ Several options are provided in the preferences of this agent.
   * Periodically search for recent items with missing subtitles: self-explanatory, executes the task "Search for missing subtitles" from the channel menu regularly. Configure how often it should do that. For the average library 6 hours minimum is recommended, to not hammer the providers too heavily
   * Item age to be considered recent: The "Search for missing subtitles"-task only considers those items in the recently-added list, that are at most this old
   * Recent items to consider per library: How many items to consider for every section/library you have - used in "Search for missing subtitles"-task and "Items with missing subtitles"-menu. Change at your own risk!
+* Check for correct folder permissions of every library on plugin start: if enabled, SZ checks for necessary permissions of your library folders and warns about them in the plugin channel
 * How verbose should the logging be?: Controls how much info we write into the log files (default: only warnings)
 * Log to console (for development/debugging): You know when you need it
 

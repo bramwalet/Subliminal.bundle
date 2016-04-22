@@ -1,3 +1,15 @@
+1.3.27.491
+
+- menu/core: make Sub-Zero channel menu optional (setting: "Enable Sub-Zero channel (disabling doesn't affect the subtitle features)?")
+- OpenSubtitles: detect and match video/subtitle FPS (framerate) to reduce out of sync subtitle matches
+- core: internal fixes; add _markerlib library (rare)
+- core: don't score tvshow episode title matches, should improve episode subtitle matches quite a bit (and reduce out of sync subtitles)
+- OpenSubtitles: make tag/exact filename matches optional (setting: "I keep the exact (release-) filename of my media files")
+- menu: unicode video title errors fixed
+- TVSubtitles: correctly match certain show IDs (such as "Series Name (US)")
+- core: don't break subtitle evaluation on crashed guessing
+
+
 1.3.23.459
 
 - core: slight code cleanup and fixes
