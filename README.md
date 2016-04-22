@@ -10,13 +10,16 @@ Plex forum thread: https://forums.plex.tv/discussion/186575
 
 If you like this, buy me a beer: [![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=G9VKR2B8PMNKG)
 
-### Installation
+### Automatic Installation
+* Sub-Zero now is listed in the official Plex Channel Directory. You can install it from there.
+
+### Manual/Development/Testing Installation
 * go to ```Library/Application Support/Plex Media Server/Plug-ins/```
 * ```rm -r Sub-Zero.bundle``` (remove the folder)
 * get the release you want from *https://github.com/pannal/Sub-Zero.bundle/releases/*
 * unzip the release
+* edit `Contents/Info.plist` and set `<key>PlexPluginDevMode</key>`'s value to `<string>1</string>` to avoid automatic updates with the stable release to your manual installation
 * restart your plex media server!!!
-* more indepth: see [article](https://support.plex.tv/hc/en-us/articles/201187656-How-do-I-manually-install-a-channel-) on Plex website. 
 
 ### Usage
 Use the following agent order:

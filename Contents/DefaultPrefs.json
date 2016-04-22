@@ -35,7 +35,7 @@
     "id": "provider.addic7ed.username",
     "label": "Addic7ed Username",
     "type": "text",
-    "default": "Username"
+    "default": ""
   },
   {
     "id": "provider.addic7ed.password",
@@ -444,6 +444,12 @@
     "label": "Scheduler: Recent items to consider per library",
     "type": "text",
     "default": "200"
+  },
+  {
+    "id": "check_permissions",
+    "label": "Check for correct folder permissions of every library on plugin start",
+    "type": "bool",
+    "default": "true"
   },
   {
     "id": "log_level",

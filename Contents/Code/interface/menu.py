@@ -43,6 +43,15 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
         ))
         return oc
 
+    if not config.permissions_ok:
+        for title, path in config.missing_permissions:
+            oc.add(DirectoryObject(
+                key=Callback(fatality, randomize=timestamp()),
+                title=pad_title("Insufficient permissions"),
+                summary="Insufficient permissions on library %s, folder: %s" % (title, path)
+            ))
+        return oc
+
     if not only_refresh:
         if Dict["current_refresh_state"]:
             oc.add(DirectoryObject(

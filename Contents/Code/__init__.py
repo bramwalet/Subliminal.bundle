@@ -31,7 +31,7 @@ from subzero import intent
 from interface.menu import *
 from support.subtitlehelpers import getSubtitlesFromMetadata, force_utf8
 from support.storage import storeSubtitleInfo
-from support.config import config
+from support.config import config, IGNORE_FN
 
 
 def Start():
@@ -47,6 +47,10 @@ def Start():
 
     if not config.plex_api_working:
         Log.Error(lib_unaccessible_error)
+        return
+
+    if not config.permissions_ok:
+        Log.Error("Insufficient permissions on library folders")
         return
 
     scheduler.run()
@@ -80,9 +84,6 @@ def flattenToParts(media, kind="series"):
             for part in item.parts:
                 parts.append({"video": part, "type": "movie", "title": media.title, "id": media.id})
     return parts
-
-
-IGNORE_FN = ("subzero.ignore", ".subzero.ignore", ".nosz")
 
 
 def parseMediaToParts(media, kind="series"):
