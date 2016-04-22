@@ -47,9 +47,9 @@ the items with missing subtitles automatically.
 
 ### Encountered a bug?
 * be sure to post your logs: 
-  * set your log_level to DEBUG in the settings
+  * set your log_level to DEBUG in Sub-Zero's settings
   * get ```Library/Application Support/Plex Media Server/Logs/PMS Plugin Logs/com.plexapp.agents.subzero.log```; there may be multiple logs (com.plexapp.agents.subzero.log.*) depending on the amount of Videos you're refreshing
-* **Remember: before you open a bug-ticket please double-check, that you've deleted the Sub-Zero.bundle folder BEFORE every update** (to avoid .pyc leftovers)
+* **Remember: If you're using the manual installation, before you open a bug-ticket please double-check, that you've deleted the Sub-Zero.bundle folder BEFORE every update** (to avoid .pyc leftovers)
 
 ## Changelog
 
