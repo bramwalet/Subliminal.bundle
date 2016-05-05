@@ -179,6 +179,7 @@ Uses the following libraries and their LICENSE:
 - [guessit](https://pypi.python.org/pypi/guessit/) (LGPLv3)
 - [html5lib](https://pypi.python.org/pypi/html5lib/) (MIT)
 - [pysrt](https://pypi.python.org/pypi/pysrt/) (GPLv3)
+- [pysubs2](https://github.com/tkarabela/pysubs2/blob/master/LICENSE.txt)
 - [requests](https://pypi.python.org/pypi/requests/) (Apache 2.0)
 - [stevedore](https://pypi.python.org/pypi/stevedore/) (Apache)
 - [subliminal](https://pypi.python.org/pypi/subliminal/) (MIT)
