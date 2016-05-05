@@ -35,7 +35,7 @@ def itemDiscoverMissing(rating_key, kind="show", added_at=None, section_title=No
     if existing_subs["count"]:
         existing_flat = (existing_subs["internal"] if internal else []) + (existing_subs["external"] if external else [])
         languages_set = set(languages)
-        if languages_set.issubset(existing_flat):
+        if languages_set.issubset(existing_flat) or (len(existing_flat) >= 1 and Prefs['subtitles.only_one']):
             # all subs found
             Log.Info(u"All subtitles exist for '%s'", item_title)
             return
