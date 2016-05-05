@@ -1,10 +1,11 @@
 # coding=utf-8
-
+import os
 import unicodedata
 import datetime
 import urllib
 import time
 import re
+import platform
 
 # Unicode control characters can appear in ID3v2 tags but are not legal in XML.
 
@@ -141,3 +142,21 @@ def query_plex(url, args):
 
     return HTTP.Request(url + ("?%s" % computed_args) if computed_args else "", immediate=True)
 
+
+def check_write_permissions(path):
+    if platform.system() == "Windows":
+        # physical access check
+        check_path = os.path.join(os.path.realpath(path), ".sz_perm_chk")
+        try:
+            if os.path.exists(check_path):
+                os.rmdir(check_path)
+            os.mkdir(check_path)
+            os.rmdir(check_path)
+            return True
+        except OSError:
+            pass
+
+    else:
+        # os.access check
+        return os.access(path, os.W_OK | os.X_OK)
+    return False
