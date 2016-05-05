@@ -196,8 +196,16 @@ def downloadBestSubtitles(video_part_map, min_score=0):
                     video.subtitle_languages.add(language)
                     Log.Debug("Found metadata subtitle %s for %s", language, video)
 
-        if not (languages - video.subtitle_languages):
-            Log.Debug('All languages %r exist for %s', languages, video)
+        missing_subs = (languages - video.subtitle_languages)
+
+        # all languages are found if we either really have subs for all languages or we only want to have exactly one language
+        # and we've only found one (the case for a selected language, Prefs['subtitles.only_one'] (one found sub matches any language))
+        found_one_which_is_enough = len(video.subtitle_languages) >= 1 and Prefs['subtitles.only_one']
+        if not missing_subs or found_one_which_is_enough:
+            if found_one_which_is_enough:
+                Log.Debug('Only one language was requested, and we\'ve got a subtitle for %s', video)
+            else:
+                Log.Debug('All languages %r exist for %s', languages, video)
             continue
         missing_languages = True
         break
