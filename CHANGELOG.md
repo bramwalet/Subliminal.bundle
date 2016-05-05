@@ -1,3 +1,14 @@
+1.3.31.513
+
+- core: add option to only download one language again (and skip the addition of .lang to the subtitle filename) (default: off); fixes #126 
+- core: add option to always encode saved subtitles to UTF-8 (default: on); fixes #128
+- core: add fallback encoding detection using bs4.UnicodeDammit; hopefully fixes #101
+- core: update libraries: chardet, beautifulsoup, six
+- menu/core: check Plex libraries for permission problems on plugin start and report them in the channel menu (option, default: on); fixes #143
+- menu: while a manual refresh takes place, add a refresh button to the top of the SZ menu for convenience
+- menu: move the "add/remove X to ignore list" menu item to the bottom of the list on item detail 
+
+
 1.3.27.491
 
 - menu/core: make Sub-Zero channel menu optional (setting: "Enable Sub-Zero channel (disabling doesn't affect the subtitle features)?")

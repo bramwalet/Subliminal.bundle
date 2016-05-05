@@ -1,4 +1,4 @@
-Sub-Zero for Plex, 1.3.31.513
+Sub-Zero for Plex, 1.3.33.522
 =================
 
 ![logo](https://raw.githubusercontent.com/pannal/Sub-Zero.bundle/master/Contents/Resources/subzero.gif)
@@ -53,16 +53,12 @@ the items with missing subtitles automatically.
 
 ## Changelog
 
-1.3.31.513
+1.3.33.522
 
-- core: add option to only download one language again (and skip the addition of .lang to the subtitle filename) (default: off); fixes #126 
-- core: add option to always encode saved subtitles to UTF-8 (default: on); fixes #128
-- core: add fallback encoding detection using bs4.UnicodeDammit; hopefully fixes #101
-- core: update libraries: chardet, beautifulsoup, six
-- menu/core: check Plex libraries for permission problems on plugin start and report them in the channel menu (option, default: on); fixes #143
-- menu: while a manual refresh takes place, add a refresh button to the top of the SZ menu for convenience
-- menu: move the "add/remove X to ignore list" menu item to the bottom of the list on item detail 
-
+- core: fix library permission detection on windows; fixes #151
+- core: "Restrict to one language" now behaves like it should (one found subtitle of any language is treated as sufficient); fixes #149
+- core: add support for other subtitle formats such as ssa/ass/microdvd, convert to srt; fixes #138
+- core: hopefully more consistent force-refresh handling (intent); fixes #118
 
 [older changes](CHANGELOG.md)
 
