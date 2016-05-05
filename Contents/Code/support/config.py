@@ -7,8 +7,8 @@ import inspect
 from babelfish import Language
 from subzero.lib.io import FileIO
 from subzero.constants import PLUGIN_NAME
-from auth import refresh_plex_token
 from lib import configure_plex, Plex
+from helpers import check_write_permissions
 
 SUBTITLE_EXTS = ['utf', 'utf8', 'utf-8', 'srt', 'smi', 'rt', 'ssa', 'aqt', 'jss', 'ass', 'idx', 'sub', 'txt', 'psb']
 VIDEO_EXTS = ['3g2', '3gp', 'asf', 'asx', 'avc', 'avi', 'avs', 'bivx', 'bup', 'divx', 'dv', 'dvr-ms', 'evo', 'fli', 'flv',
@@ -81,13 +81,12 @@ class Config(object):
                         continue
 
                 # section not ignored, check for write permissions
-                if not os.access(location.path, os.W_OK | os.X_OK):
+                if not check_write_permissions(location.path):
                     # not enough permissions
                     self.missing_permissions.append((title, location.path))
                     all_permissions_ok = False
 
         return all_permissions_ok
-
 
     def getVersion(self):
         curDir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))

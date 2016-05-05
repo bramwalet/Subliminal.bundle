@@ -50,7 +50,9 @@ def Start():
         return
 
     if not config.permissions_ok:
-        Log.Error("Insufficient permissions on library folders")
+        Log.Error("Insufficient permissions on library folders:")
+        for title, path in config.missing_permissions:
+            Log.Error("Insufficient permissions on library %s, folder: %s" % (title, path))
         return
 
     scheduler.run()
