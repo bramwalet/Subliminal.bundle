@@ -18,20 +18,6 @@
     "default": "2"
   },
   {
-    "id": "plex_username",
-    "label": "Plex.tv Username (needed for Plex Home users)",
-    "type": "text",
-    "default": ""
-  },
-  {
-    "id": "plex_password",
-    "label": "Plex.tv Password",
-    "type": "text",
-    "option": "hidden",
-    "default": "",
-    "secure": "true"
-  },
-  {
     "id": "provider.addic7ed.username",
     "label": "Addic7ed Username",
     "type": "text",

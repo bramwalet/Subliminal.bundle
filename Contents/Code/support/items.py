@@ -3,11 +3,12 @@
 import logging
 import re
 import types
+
 from ignore import ignore_list
 from helpers import is_recent, format_item, query_plex
 from subzero import intent
-from lib import Plex
 from config import config
+from support.lib import Plex
 
 logger = logging.getLogger(__name__)
 

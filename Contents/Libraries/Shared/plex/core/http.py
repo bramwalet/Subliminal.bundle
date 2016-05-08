@@ -73,17 +73,18 @@ class HttpClient(object):
             return response
 
         # TODO retrying requests on 502, 503 errors?
-        try:
-            response = self.session.send(prepared)
-        except socket.gaierror as e:
-            code, _ = e
-
-            if code != 8:
-                raise e
-
-            log.warn('Encountered socket.gaierror (code: 8)')
-
-            response = self._build().send(prepared)
+        # try:
+        #     response = self.session.send(prepared)
+        # except socket.gaierror as e:
+        #     code, _ = e
+#
+        #     if code != 8:
+        #         raise e
+#
+        #     log.warn('Encountered socket.gaierror (code: 8)')
+#
+        #     response = self._build().send(prepared)
+        response = request.request.send()
 
         # Store response in cache
         self._cache_store(prepared, response)

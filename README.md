@@ -82,7 +82,6 @@ Several options are provided in the preferences of this agent.
 * Enable Sub-Zero channel (disabling doesn't affect the subtitle features)?: Show or hide the Sub-Zero channel from your PMS
 * How many download tries per subtitle (on timeout or error): How often should we retry a failed subtitle download? (default: on)
 * Addic7ed username/password: Provide your addic7ed username here, otherwise the provider won't work. Please make sure your account is activated, before using the agent.
-* Plex.tv username/password: Generally recommended to be provided; needed if you use Plex Home to make the API work (the whole channel menu depends on it)
 * Opensubtitles username/password: Generally recommended to be provided (not necessarily needed, but avoids errors)
 * Subtitle language (1)/(2)/(3): Your preferred languages to download subtitles for. 
 * Additional Subtitle Languages: Additional languages to download; comma-separated; use [ISO-639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes))

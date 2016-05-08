@@ -1,18 +1,36 @@
 # coding=utf-8
 
-from plex import Plex
-from auth import refresh_plex_token
+import plex
+from subzero.lib.httpfake import PlexPyNativeResponseProxy
 
 
-def configure_plex():
-    # this may be the only viable usage of global :O (correct me if i'm wrong)
-    global Plex
-    if not "token" in Dict or not (Prefs["plex_username"] and Prefs["plex_password"]):
-        refresh_plex_token()
+class PlexPyNativeRequestProxy(object):
+    """
+    A really dumb object that tries to mimic requests.Request in an incomplete way, so that plex.Plex
+    uses native plex HTTPRequests instead of the better requests.Request class.
 
-    # initialize Plex api
-    Plex.configuration.defaults.authentication(Dict["token"] if "token" in Dict else None)
+    This allows us to operate freely on 127.0.0.1's PMS.
+
+    To be used in conjunction with subzero.lib.httpfake.PlexPyNativeResponseProxy
+    """
+    url = None
+    data = None
+    headers = None
+    method = None
+
+    def prepare(self):
+        return self
+
+    def send(self):
+        data = None
+        status_code = 200
+        try:
+            data = HTTP.Request(self.url, headers=self.headers, immediate=True, method=self.method)
+        except Ex.HTTPError as e:
+            status_code = e.code
+        return PlexPyNativeResponseProxy(data, status_code, self)
 
 
-lib_unaccessible_error = "\n\n\n!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!! \nCan't access your Plex Media Servers' API.\nAre you using Plex Home?"" \
-""Please configure your Plex.tv credentials! Advanced features disabled!\n\n\n"
+plex.request.Request = PlexPyNativeRequestProxy
+
+Plex = plex.Plex

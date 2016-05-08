@@ -7,7 +7,7 @@ import inspect
 from babelfish import Language
 from subzero.lib.io import FileIO
 from subzero.constants import PLUGIN_NAME
-from lib import configure_plex, Plex
+from lib import Plex
 from helpers import check_write_permissions
 
 SUBTITLE_EXTS = ['utf', 'utf8', 'utf-8', 'srt', 'smi', 'rt', 'ssa', 'aqt', 'jss', 'ass', 'idx', 'sub', 'txt', 'psb']
@@ -35,7 +35,6 @@ class Config(object):
     providers = None
     providerSettings = None
     max_recent_items_per_library = 200
-    plex_api_working = False
     permissions_ok = False
     missing_permissions = None
 
@@ -50,20 +49,12 @@ class Config(object):
         self.providerSettings = self.getProviderSettings()
         self.max_recent_items_per_library = int_or_default(Prefs["scheduler.max_recent_items_per_library"], 200)
         self.initialized = True
-        configure_plex()
-        self.plex_api_working = self.checkPlexAPI()
         self.missing_permissions = []
         self.permissions_ok = self.checkPermissions()
-
-    def checkPlexAPI(self):
-        return bool(Plex["library"].sections())
 
     def checkPermissions(self):
         if not Prefs["subtitles.save.filesystem"] or not Prefs["check_permissions"]:
             return True
-
-        if not self.plex_api_working:
-            return
 
         use_ignore_fs = Prefs["subtitles.ignore_fs"]
         sections = Plex["library"].sections()

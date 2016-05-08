@@ -2,6 +2,7 @@
 import logging
 
 import logger
+
 from menu_helpers import add_ignore_options, dig_tree, set_refresh_menu_state, should_display_ignore, enable_channel_wrapper
 from subzero.constants import TITLE, ART, ICON, PREFIX, PLUGIN_IDENTIFIER, DEPENDENCY_MODULE_NAMES
 from support.auth import refresh_plex_token
@@ -11,9 +12,9 @@ from support.helpers import pad_title, timestamp
 from support.ignore import ignore_list
 from support.items import getOnDeckItems, refreshItem, getAllItems
 from support.items import getRecentItems, get_items_info
-from support.lib import Plex, lib_unaccessible_error
 from support.missing_subtitles import getAllMissing
 from support.storage import resetStorage, logStorage
+from support.lib import Plex
 
 # init GUI
 ObjectContainer.art = R(ART)
@@ -34,14 +35,6 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
     title = force_title if force_title is not None else config.full_version
     oc = ObjectContainer(title1=title, title2=None, header=unicode(header) if header else header, message=message, no_history=no_history,
                          replace_parent=replace_parent)
-
-    if not config.plex_api_working:
-        oc.add(DirectoryObject(
-            key=Callback(fatality, randomize=timestamp()),
-            title=pad_title("PMS API ERROR"),
-            summary=lib_unaccessible_error
-        ))
-        return oc
 
     if not config.permissions_ok:
         for title, path in config.missing_permissions:

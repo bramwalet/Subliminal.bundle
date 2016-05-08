@@ -1,8 +1,9 @@
 # coding=utf-8
 import traceback
+
 from support.config import config
 from support.helpers import format_item
-from lib import Plex
+from support.lib import Plex
 
 
 def itemDiscoverMissing(rating_key, kind="show", added_at=None, section_title=None, internal=False, external=True, languages=()):

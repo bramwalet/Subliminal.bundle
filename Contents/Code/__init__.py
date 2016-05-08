@@ -45,10 +45,6 @@ def Start():
     ValidatePrefs()
     Log.Debug(config.full_version)
 
-    if not config.plex_api_working:
-        Log.Error(lib_unaccessible_error)
-        return
-
     if not config.permissions_ok:
         Log.Error("Insufficient permissions on library folders:")
         for title, path in config.missing_permissions:
