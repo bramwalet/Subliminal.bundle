@@ -22,6 +22,7 @@ class PlexPyNativeRequestProxy(object):
         return self
 
     def send(self):
+        # fixme: add self.data to HTTP.Request
         data = None
         status_code = 200
         try:
