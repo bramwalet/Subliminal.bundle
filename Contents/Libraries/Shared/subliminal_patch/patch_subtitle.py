@@ -3,6 +3,8 @@
 import logging
 
 import chardet
+import pysrt
+import pysubs2
 from bs4 import UnicodeDammit
 from subliminal.video import Episode, Movie
 from subliminal import Subtitle
@@ -127,3 +129,31 @@ class PatchedSubtitle(Subtitle):
             raise ValueError(u"Couldn't guess the proper encoding for %s" % self)
 
         return encoding
+
+    def is_valid(self):
+        """Check if a :attr:`text` is a valid SubRip format.
+
+        :return: whether or not the subtitle is valid.
+        :rtype: bool
+
+        """
+        if not self.text:
+            return False
+
+        # valid srt
+        try:
+            pysrt.from_string(self.text, error_handling=pysrt.ERROR_RAISE)
+        except Exception, e:
+            logger.error("PySRT-parsing failed: %s, trying pysubs2", e)
+        else:
+            return True
+
+        # something else, try to return srt
+        try:
+            subs = pysubs2.SSAFile.from_string(self.text)
+            self.content = subs.to_string("srt")
+        except:
+            logger.exception("Couldn't convert subtitle %s to .srt format", self)
+            return False
+
+        return True

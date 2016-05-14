@@ -6,6 +6,10 @@ import babelfish
 # patch subliminal's subtitle encoding detection
 from .patch_subtitle import PatchedSubtitle
 subliminal.subtitle.Subtitle = PatchedSubtitle
+subliminal.providers.addic7ed.Addic7edSubtitle.__bases__ = (PatchedSubtitle,)
+subliminal.providers.podnapisi.PodnapisiProvider.__bases__ = (PatchedSubtitle,)
+subliminal.providers.tvsubtitles.TVsubtitlesProvider.__bases__ = (PatchedSubtitle,)
+subliminal.providers.opensubtitles.OpenSubtitlesSubtitle.__bases__ = (PatchedSubtitle,)
 
 from .patch_provider_pool import PatchedProviderPool
 from .patch_video import patched_search_external_subtitles, scan_video

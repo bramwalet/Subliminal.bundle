@@ -7,7 +7,6 @@ import chardet
 from guessit.matchtree import MatchTree
 from guessit.plugins.transformers import get_transformer
 import pysrt
-import pysubs2
 
 from .video import Episode, Movie
 
@@ -70,22 +69,11 @@ class Subtitle(object):
         if not self.text:
             return False
 
-        # valid srt
         try:
             pysrt.from_string(self.text, error_handling=pysrt.ERROR_RAISE)
         except pysrt.Error as e:
             if e.args[0] < 80:
                 return False
-        else:
-            return True
-
-        # something else, try to return srt
-        try:
-            subs = pysubs2.SSAFile.from_string(self.text)
-            self.content = subs.to_string("srt")
-        except:
-            logger.exception("Couldn't convert subtitle %s to .srt format", self)
-            return False
 
         return True
 
