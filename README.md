@@ -37,21 +37,6 @@ the items with missing subtitles automatically.
 
 [older changes](CHANGELOG.md)
 
-Description
-------------
-
-Plex Metadata agent plugin based on Subliminal. This agent will search on the following sites for the best matching subtitles:
-- OpenSubtitles
-- ~~TheSubDB~~
-- Podnapisi.NET
-- Addic7ed
-- TVsubtitles.net
-
-All providers can be disabled or enabled on a per provider setting. Certain preferences change the behaviour of subliminal, for instance the minimum score of subtitles to download, or whether to download hearing impaired subtitles or not. The agent stores the subtitles as metadata, but can be configured (See Configuration) to store it next to the media files. 
-
-
-
-
 Scheduler
 ---------------------------------------
 The built-in scheduler is capable of running a number of tasks periodically in a separate Thread of the plugin.
