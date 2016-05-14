@@ -1,4 +1,4 @@
-Sub-Zero for Plex
+#Sub-Zero for Plex
 =================
 [![](https://img.shields.io/github/release/pannal/Sub-Zero.bundle.svg?style=flat)](https://github.com/pannal/Sub-Zero.bundle/releases) [![Maintenance](https://img.shields.io/maintenance/yes/2016.svg?maxAge=2592000)]()
 
@@ -9,7 +9,20 @@ Originally based on @bramwalet's awesome [Subliminal.bundle](https://github.com/
 
 Plex forum thread: https://forums.plex.tv/discussion/186575
 
+## Information
 Please see [the Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki) for further information
+
+## Changelog
+
+1.3.33.522
+
+- core: fix library permission detection on windows; fixes #151
+- core: "Restrict to one language" now behaves like it should (one found subtitle of any language is treated as sufficient); fixes #149
+- core: add support for other subtitle formats such as ssa/ass/microdvd, convert to srt; fixes #138
+- core: hopefully more consistent force-refresh handling (intent); fixes #118
+
+[older changes](CHANGELOG.md)
+
 
 If you like this, buy me a beer: [![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=G9VKR2B8PMNKG)
 
@@ -42,18 +55,6 @@ refresh the remaining items. If you use the default settings, this will also ski
 it has already downloaded all the wanted languages for. Also, as subtitles will be missing, the scheduler should pick up
 the items with missing subtitles automatically.
 
-
-
-## Changelog
-
-1.3.33.522
-
-- core: fix library permission detection on windows; fixes #151
-- core: "Restrict to one language" now behaves like it should (one found subtitle of any language is treated as sufficient); fixes #149
-- core: add support for other subtitle formats such as ssa/ass/microdvd, convert to srt; fixes #138
-- core: hopefully more consistent force-refresh handling (intent); fixes #118
-
-[older changes](CHANGELOG.md)
 
 Scheduler
 ---------------------------------------
