@@ -9,7 +9,7 @@ Originally based on @bramwalet's awesome [Subliminal.bundle](https://github.com/
 
 Plex forum thread: https://forums.plex.tv/discussion/186575
 
-Please see [the Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)
+Please see [the Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki) for further information
 
 If you like this, buy me a beer: [![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=G9VKR2B8PMNKG)
 
