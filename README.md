@@ -5,9 +5,6 @@
 ![logo](https://raw.githubusercontent.com/pannal/Sub-Zero.bundle/master/Contents/Resources/subzero.gif)
 
 ##### Subtitles done right
-Originally based on @bramwalet's awesome [Subliminal.bundle](https://github.com/bramwalet/Subliminal.bundle)
-
-Plex forum thread: https://forums.plex.tv/discussion/186575
 
 ## Information
 Please see [the Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki) for further information
