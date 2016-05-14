@@ -71,19 +71,6 @@ Since 1.3.0 Sub-Zero not only comes as an agent plugin, but also has channel pro
 By accessing the Sub-Zero channel you can get viable information about the scheduler state, search for missing subtitles,
 trigger forced-searches for individual items, and many more features yet to come.
 
-Remoting the channel
---------------------
-The features available in the channel menu are in fact accessible and usable from the outside,
-just as any other channel with routes.
-This means, that if you're not happy with the scheduler's interval for example, you can take the following URL:
-`http://plex_ip:32400/video/subzero/missing/refresh?X-Plex-Token=XXXXXXXXXXXXXXX` (the X-Plex-Token part may not be needed outside of
-a Plex Home) and open the URL using your favourite command line tool or script (curl, wget, ...).
-This will trigger the same background task which would be started by the scheduler or by clicking the item in the channel menu.
-
-You can find all available routes by querying `http://plex_ip:32400/video/subzero` (look for the key="" entries). 
-
-
-
 
 BETA: Physically Ignoring Media
 -------------------------
