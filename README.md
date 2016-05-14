@@ -7,7 +7,7 @@
 ##### Subtitles done right
 
 ## Information
-Please see [the Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki) for further information
+Please see **[the Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)** for further information
 
 ## Changelog
 
