@@ -1,3 +1,21 @@
+Sub-Zero for Plex
+=================
+[![](https://img.shields.io/github/release/pannal/Sub-Zero.bundle.svg?style=flat)](https://github.com/pannal/Sub-Zero.bundle/releases) [![Maintenance](https://img.shields.io/maintenance/yes/2016.svg?maxAge=2592000)]()
+
+![logo](https://raw.githubusercontent.com/pannal/Sub-Zero.bundle/master/Contents/Resources/subzero.gif)
+
+##### Subtitles done right
+Originally based on @bramwalet's awesome [Subliminal.bundle](https://github.com/bramwalet/Subliminal.bundle)
+
+Plex forum thread: https://forums.plex.tv/discussion/186575
+
+Please see [the Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)
+
+If you like this, buy me a beer: [![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=G9VKR2B8PMNKG)
+
+
+**************************** Below is a placeholder of information not yet migrated to the Wiki *************************
+
 
 
 ### Usage
