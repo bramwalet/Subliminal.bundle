@@ -28,7 +28,6 @@ from subzero.constants import OS_PLEX_USERAGENT, PERSONAL_MEDIA_IDENTIFIER
 from subzero import intent
 from interface.menu import *
 from support.plex_media import convert_media_to_parts, get_media_item_ids, scan_parts
-from support import helpers
 from support.subtitlehelpers import get_subtitles_from_metadata, force_utf8
 from support.storage import store_subtitle_info, whack_missing_parts
 from support.config import config

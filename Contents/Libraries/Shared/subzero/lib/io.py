@@ -39,7 +39,8 @@ class FileIO(object):
 VALID_ENCODINGS = ("latin1", "utf-8", "mbcs")
 
 
-def getViableEncoding():
+def get_viable_encoding():
+    # fixme: bad
     encoding = sys.getfilesystemencoding()
     return "utf-8" if not encoding or encoding.lower() not in VALID_ENCODINGS else encoding
 

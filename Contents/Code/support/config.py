@@ -6,7 +6,6 @@ import inspect
 from babelfish import Language
 from subzero.lib.io import FileIO
 from subzero.constants import PLUGIN_NAME
-from auth import refresh_plex_token
 from lib import Plex
 from helpers import check_write_permissions
 

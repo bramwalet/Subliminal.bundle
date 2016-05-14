@@ -150,6 +150,7 @@ class PatchedSubtitle(Subtitle):
 
         # something else, try to return srt
         try:
+            logger.debug("Trying parsing with PySubs2")
             subs = pysubs2.SSAFile.from_string(self.text)
             self.content = subs.to_string("srt")
         except:

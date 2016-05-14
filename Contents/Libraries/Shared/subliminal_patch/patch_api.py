@@ -3,7 +3,7 @@ import os
 import logging
 from bs4 import UnicodeDammit
 from subliminal.api import get_subtitle_path, io
-from subzero.lib.io import getViableEncoding
+from subzero.lib.io import get_viable_encoding
 
 logger = logging.getLogger(__name__)
 

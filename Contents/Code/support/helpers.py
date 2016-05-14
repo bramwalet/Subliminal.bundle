@@ -135,8 +135,6 @@ def query_plex(url, args):
     :return:
     """
     use_args = args.copy()
-    if "token" in Dict and Dict["token"]:
-        use_args["X-Plex-Token"] = Dict["token"]
 
     computed_args = "&".join(["%s=%s" % (key, String.Quote(value)) for key, value in use_args.iteritems()])
 
@@ -160,6 +158,7 @@ def check_write_permissions(path):
         # os.access check
         return os.access(path, os.W_OK | os.X_OK)
     return False
+
 
 def get_item_hints(title, kind, series=None):
     hints = {"expected_title": [title]}

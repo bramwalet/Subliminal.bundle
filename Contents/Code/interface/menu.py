@@ -1,11 +1,9 @@
 # coding=utf-8
 import logging
-import os
 import logger
 
 from menu_helpers import add_ignore_options, dig_tree, set_refresh_menu_state, should_display_ignore, enable_channel_wrapper
 from subzero.constants import TITLE, ART, ICON, PREFIX, PLUGIN_IDENTIFIER, DEPENDENCY_MODULE_NAMES
-from support.auth import refresh_plex_token
 from support.background import scheduler
 from support.config import config
 from support.helpers import pad_title, timestamp
@@ -433,10 +431,6 @@ def AdvancedMenu(randomize=None, header=None, message=None):
         title=pad_title("Restart the plugin")
     ))
     oc.add(DirectoryObject(
-        key=Callback(RefreshToken, randomize=timestamp()),
-        title=pad_title("Re-request the API token from plex.tv")
-    ))
-    oc.add(DirectoryObject(
         key=Callback(LogStorage, key="tasks", randomize=timestamp()),
         title=pad_title("Log the plugin's scheduled tasks state storage")
     ))
@@ -553,14 +547,3 @@ def LogStorage(key, randomize=None):
         header='Success',
         message='Information Storage (%s) logged' % key
     )
-
-
-@route(PREFIX + '/refresh_token')
-def RefreshToken(randomize=None):
-    result = refresh_plex_token()
-    if result:
-        msg = "Token successfully refreshed."
-    else:
-        msg = "Couldn't refresh the token, please check your credentials"
-
-    return AdvancedMenu(header=msg)

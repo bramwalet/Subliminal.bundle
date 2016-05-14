@@ -1,6 +1,6 @@
 # coding=utf-8
 
-import re, unicodedata, os
+import re, os
 import config
 import helpers
 
