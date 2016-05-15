@@ -32,16 +32,6 @@ Create an account and provide your credentials (in the plugin configuration) for
 * [Opensubtitles](http://www.opensubtitles.org/en/newuser)
 * [Plex](https://plex.tv/users/sign_up)
 
-### Attention on the initial refresh
-When you first use this plugin and run a refresh on all of your media, you may be
-blacklisted out of excessive usage by some or all of the subtitle providers depending on your library's size.
-This will result in a bunch of errors in the log files as well as missing subtitles.
-
-Just be patient, after a day most of those providers will allow you to access them again and you can
-refresh the remaining items. If you use the default settings, this will also skip the items
-it has already downloaded all the wanted languages for. Also, as subtitles will be missing, the scheduler should pick up
-the items with missing subtitles automatically.
-
 Scheduler
 ---------------------------------------
 The built-in scheduler is capable of running a number of tasks periodically in a separate Thread of the plugin.
