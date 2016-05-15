@@ -10,7 +10,7 @@ Plex forum thread: https://forums.plex.tv/discussion/186575
 
 ## Information
 
-To see the manual, please visit **[The Wiki](https://raw.githubusercontent.com/pannal/Sub-Zero.bundle/master/wiki)**
+To see the manual, please visit **[The Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)**
 
 ## Changelog
 
