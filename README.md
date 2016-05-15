@@ -30,10 +30,6 @@ The built-in scheduler is capable of running a number of tasks periodically in a
 This currently is used to automatically periodically search for new subtitles for your media items.
 See configuration above.
 
-##### Ignore list
-There are numerous occasions where one wouldn't want a certain item or even a library be included in the periodic "Search for missing subtitles"-task or the "Items with missing subtitles" menu function.
-Anime libraries are a good example of that, or home videos. Perhaps you've got your favourite series in your native language and don't want subtitles for it.
-
 The ignore list can be managed by going through your library using the "Browse all items" menu and the "Display ignore list" menu. 
 
 BETA: Physically Ignoring Media
