@@ -24,14 +24,6 @@ If you like this, buy me a beer: [![Donate](https://www.paypalobjects.com/en_US/
 
 
 **************************** Below is a placeholder of information not yet migrated to the Wiki *************************
-
-##### Recommended steps
-Create an account and provide your credentials (in the plugin configuration) for:
-
-* [Addic7ed](http://www.addic7ed.com/newaccount.php)
-* [Opensubtitles](http://www.opensubtitles.org/en/newuser)
-* [Plex](https://plex.tv/users/sign_up)
-
 Scheduler
 ---------------------------------------
 The built-in scheduler is capable of running a number of tasks periodically in a separate Thread of the plugin.
