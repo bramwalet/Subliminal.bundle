@@ -21,16 +21,3 @@ Please see **[the Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)** for fu
 
 
 If you like this, buy me a beer: [![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=G9VKR2B8PMNKG)
-
-
-**************************** Below is a placeholder of information not yet migrated to the Wiki *************************
-
-BETA: Physically Ignoring Media
--------------------------
-Sometimes subtitles aren't needed or wanted for parts of your library.
-
-When creating a file named `subzero.ignore`, `.subzero.ignore`, or `.nosz` in any of your library's folders, be it
-the section itself, a TV show, a movie, or even a season, Sub-Zero will skip processing the contents of that folder.
- 
-BETA notes: This may still mean that the scheduler task for missing subtitles triggers refresh actions on those items,
-but the refresh handler itself will skip those.
