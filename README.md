@@ -24,13 +24,6 @@ If you like this, buy me a beer: [![Donate](https://www.paypalobjects.com/en_US/
 
 
 **************************** Below is a placeholder of information not yet migrated to the Wiki *************************
-Scheduler
----------------------------------------
-The built-in scheduler is capable of running a number of tasks periodically in a separate Thread of the plugin.
-This currently is used to automatically periodically search for new subtitles for your media items.
-See configuration above.
-
-The ignore list can be managed by going through your library using the "Browse all items" menu and the "Display ignore list" menu. 
 
 BETA: Physically Ignoring Media
 -------------------------
