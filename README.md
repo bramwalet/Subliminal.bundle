@@ -54,12 +54,6 @@ Anime libraries are a good example of that, or home videos. Perhaps you've got y
 
 The ignore list can be managed by going through your library using the "Browse all items" menu and the "Display ignore list" menu. 
 
-The channel
------------
-Since 1.3.0 Sub-Zero not only comes as an agent plugin, but also has channel properties.
-By accessing the Sub-Zero channel you can get viable information about the scheduler state, search for missing subtitles,
-trigger forced-searches for individual items, and many more features yet to come.
-
 BETA: Physically Ignoring Media
 -------------------------
 Sometimes subtitles aren't needed or wanted for parts of your library.
