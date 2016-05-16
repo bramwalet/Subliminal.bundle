@@ -229,7 +229,7 @@ class SubZeroSubtitlesAgentMovies(SubZeroAgent, Agent.Movies):
 
 
 class SubZeroSubtitlesAgentTvShows(SubZeroAgent, Agent.TV_Shows):
-    contributes_to = ['com.plexapp.agents.thetvdb', 'com.plexapp.agents.thetvdbdvdorder', 'com.plexapp.agents.xbmcnfotv',
-                      'com.plexapp.agents.hama']
-    score_prefs_key = "subtitles.search.minimumTVScore"
-    agent_type_verbose = "TV"
+	contributes_to = ['com.plexapp.agents.thetvdb', 'com.plexapp.agents.themoviedb', 'com.plexapp.agents.thetvdbdvdorder', 'com.plexapp.agents.xbmcnfotv', 'com.plexapp.agents.hama']
+	score_prefs_key = "subtitles.search.minimumTVScore"
+	agent_type_verbose = "TV"
+
