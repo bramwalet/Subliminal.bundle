@@ -9,7 +9,7 @@
 
 ## Information
 I've been receiving great support by [@ukdtom](https://github.com/ukdtom) recently:<br/>
-Please see **[the Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)** for further information
+He has created **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)**. Please have a look in case of any questions.
 
 ## Changelog
 
