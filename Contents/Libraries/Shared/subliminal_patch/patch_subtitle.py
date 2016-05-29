@@ -90,10 +90,15 @@ class PatchedSubtitle(Subtitle):
             encodings.append('windows-1255')
         elif self.language.alpha3 == 'tur':
             encodings.extend(['iso-8859-9', 'windows-1254'])
-        elif self.language.alpha3 == 'pol':
+
+        # Polish, Czech, Slovak, Hungarian, Slovene, Bosnian, Croatian, Serbian (Latin script),
+        # Romanian (before 1993 spelling reform) and Albanian
+        elif self.language.alpha3 in ('pol', 'cze', 'svk', 'hun', 'svn', 'bih', 'hrv', 'srb', 'rou', 'alb'):
             # Eastern European Group 1
             encodings.extend(['windows-1250'])
-        elif self.language.alpha3 == 'bul':
+
+        # Bulgarian, Serbian and Macedonian
+        elif self.language.alpha3 in ('bul', 'srb', 'mkd'):
             # Eastern European Group 2
             encodings.extend(['windows-1251'])
         else:
