@@ -4,7 +4,7 @@ import os
 import re
 import inspect
 from babelfish import Language
-from subzero.lib.io import FileIO
+from subzero.lib.io import FileIO, get_viable_encoding
 from subzero.constants import PLUGIN_NAME
 from lib import Plex
 from helpers import check_write_permissions
@@ -37,10 +37,12 @@ class Config(object):
     max_recent_items_per_library = 200
     permissions_ok = False
     missing_permissions = None
+    fs_encoding = None
 
     initialized = False
 
     def initialize(self):
+        self.fs_encoding = get_viable_encoding()
         self.version = self.get_version()
         self.full_version = u"%s %s" % (PLUGIN_NAME, self.version)
         self.lang_list = self.get_lang_list()
@@ -62,17 +64,21 @@ class Config(object):
         for section in list(sections):
             title = section.title
             for location in section:
+                path_str = location.path
+                if isinstance(path_str, unicode):
+                    path_str = path_str.encode(self.fs_encoding)
+
                 if use_ignore_fs:
                     ignore = False
                     # check whether we've got an ignore file inside the section path
                     for ifn in IGNORE_FN:
-                        if os.path.isfile(os.path.join(location.path, ifn)):
+                        if os.path.isfile(os.path.join(path_str, ifn)):
                             ignore = True
                     if ignore:
                         continue
 
                 # section not ignored, check for write permissions
-                if not check_write_permissions(location.path):
+                if not check_write_permissions(path_str):
                     # not enough permissions
                     self.missing_permissions.append((title, location.path))
                     all_permissions_ok = False
