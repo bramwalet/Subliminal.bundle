@@ -7,13 +7,13 @@ import logging
 # patch subliminal's subtitle encoding detection
 from .patch_subtitle import PatchedSubtitle
 subliminal.subtitle.Subtitle = PatchedSubtitle
-from subliminal.providers.addic7ed import Addic7edProvider
-from subliminal.providers.podnapisi import PodnapisiProvider
-from subliminal.providers.tvsubtitles import TVsubtitlesProvider
+from subliminal.providers.addic7ed import Addic7edSubtitle
+from subliminal.providers.podnapisi import PodnapisiSubtitle
+from subliminal.providers.tvsubtitles import TVsubtitlesSubtitle
 from subliminal.providers.opensubtitles import OpenSubtitlesSubtitle
-setattr(Addic7edProvider, "__bases__", (PatchedSubtitle,))
-setattr(PodnapisiProvider, "__bases__", (PatchedSubtitle,))
-setattr(TVsubtitlesProvider, "__bases__", (PatchedSubtitle,))
+setattr(Addic7edSubtitle, "__bases__", (PatchedSubtitle,))
+setattr(PodnapisiSubtitle, "__bases__", (PatchedSubtitle,))
+setattr(TVsubtitlesSubtitle, "__bases__", (PatchedSubtitle,))
 setattr(OpenSubtitlesSubtitle, "__bases__", (PatchedSubtitle,))
 
 from .patch_provider_pool import PatchedProviderPool
