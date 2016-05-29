@@ -26,33 +26,44 @@ class TempIntent(dict):
         if name in self:
             del self[name]
 
-    def get(self, kind, key):
+    def get(self, kind, *keys):
         with lock:
-            if kind in self["store"]:
-                now = datetime.datetime.now()
+            # iter all requested keys
+            for key in keys:
                 hit = False
-                for known_key in self["store"][kind].keys():
-                    # may need locking, for now just play it safe
-                    ends = self["store"][kind].get(known_key, None)
-                    if not ends:
-                        continue
 
-                    timed_out = False
-                    if now > ends:
-                        timed_out = True
+                # skip key if invalid
+                if not key:
+                    continue
 
-                    if known_key == key and not timed_out:
-                        hit = True
+                # valid kind?
+                if kind in self["store"]:
+                    now = datetime.datetime.now()
 
-                    if timed_out:
-                        try:
-                            del self["store"][kind][key]
-                        except:
+                    # iter all known kinds (previously created)
+                    for known_key in self["store"][kind].keys():
+                        # may need locking, for now just play it safe
+                        ends = self["store"][kind].get(known_key, None)
+                        if not ends:
                             continue
 
-                if hit:
-                    return True
-            return False
+                        timed_out = False
+                        if now > ends:
+                            timed_out = True
+
+                        # key and kind in storage, and not timed out = hit
+                        if known_key == key and not timed_out:
+                            hit = True
+
+                        if timed_out:
+                            try:
+                                del self["store"][kind][key]
+                            except:
+                                continue
+
+                    if hit:
+                        return True
+        return False
 
     def resolve(self, kind, key):
         with lock:
