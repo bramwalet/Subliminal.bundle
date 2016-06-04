@@ -48,8 +48,7 @@ def add_ignore_options(oc, kind, callback_menu=None, title=None, rating_key=None
 def dig_tree(oc, items, menu_callback, menu_determination_callback=None, force_rating_key=None, fill_args=None, pass_kwargs=None,
              thumb=default_thumb):
     for kind, title, key, dig_deeper, item in items:
-        if item.thumb:
-            thumb = item.thumb
+        thumb = item.thumb or item.art or thumb
 
         add_kwargs = {}
         if fill_args:
