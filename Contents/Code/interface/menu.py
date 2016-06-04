@@ -144,10 +144,11 @@ def recentItemsMenu(title, base_title=None):
     if recent_items:
         missing_items = items_get_all_missing_subs(recent_items)
         if missing_items:
-            for added_at, item_id, title in missing_items:
+            for added_at, item_id, title, item in missing_items:
                 oc.add(DirectoryObject(
                     key=Callback(ItemDetailsMenu, title=base_title + " > " + title, item_title=title, rating_key=item_id),
-                    title=title
+                    title=title,
+                    thumb=item.thumb or default_thumb
                 ))
 
     return oc
