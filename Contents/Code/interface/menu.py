@@ -18,6 +18,8 @@ from support.plex_media import scan_parts
 # init GUI
 ObjectContainer.art = R(ART)
 ObjectContainer.no_cache = True
+# default thumb
+thumb=R(ICON)
 
 # noinspection PyUnboundLocalVariable
 route = enable_channel_wrapper(route)
@@ -40,7 +42,8 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
             oc.add(DirectoryObject(
                 key=Callback(fatality, randomize=timestamp()),
                 title=pad_title("Insufficient permissions"),
-                summary="Insufficient permissions on library %s, folder: %s" % (title, path)
+                summary="Insufficient permissions on library %s, folder: %s" % (title, path),
+                thumb=thumb
             ))
         return oc
 
@@ -49,6 +52,7 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
             oc.add(DirectoryObject(
                 key=Callback(fatality, force_title=" ", randomize=timestamp()),
                 title=pad_title("Working ... refresh here"),
+                thumb=thumb,
                 summary="Current state: %s; Last state: %s" % (
                     (Dict["current_refresh_state"] or "Idle") if "current_refresh_state" in Dict else "Idle",
                     (Dict["last_refresh_state"] or "None") if "last_refresh_state" in Dict else "None"
@@ -58,17 +62,20 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
         oc.add(DirectoryObject(
             key=Callback(OnDeckMenu),
             title=pad_title("On Deck items"),
+            thumb=thumb,
             summary="Shows the current on deck items and allows you to individually (force-) refresh their metadata/subtitles."
         ))
         oc.add(DirectoryObject(
             key=Callback(RecentlyAddedMenu),
             title="Items with missing subtitles",
+            thumb=thumb,
             summary="Shows the items honoring the configured 'Item age to be considered recent'-setting (%s)"
                     " and allowing you to individually (force-) refresh their metadata/subtitles. " % Prefs["scheduler.item_is_recent_age"]
         ))
         oc.add(DirectoryObject(
             key=Callback(SectionsMenu),
             title="Browse all items",
+            thumb=thumb,
             summary="Go through your whole library and manage your ignore list. You can also "
                     "(force-) refresh the metadata/subtitles of individual items."
         ))
@@ -86,18 +93,21 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
         oc.add(DirectoryObject(
             key=Callback(RefreshMissing),
             title="Search for missing subtitles (in recently-added items, max-age: %s)" % Prefs["scheduler.item_is_recent_age"],
+            thumb=thumb,
             summary="Automatically run periodically by the scheduler, if configured. %s" % task_state
         ))
 
         oc.add(DirectoryObject(
             key=Callback(IgnoreListMenu),
             title="Display ignore list (%d)" % len(ignore_list),
+            thumb=thumb,
             summary="Show the current ignore list (mainly used for the automatic tasks)"
         ))
 
     oc.add(DirectoryObject(
         key=Callback(fatality, force_title=" ", randomize=timestamp()),
         title=pad_title("Refresh"),
+        thumb=thumb,
         summary="Current state: %s; Last state: %s" % (
             (Dict["current_refresh_state"] or "Idle") if "current_refresh_state" in Dict else "Idle",
             (Dict["last_refresh_state"] or "None") if "last_refresh_state" in Dict else "None"
@@ -108,6 +118,7 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
         oc.add(DirectoryObject(
             key=Callback(AdvancedMenu),
             title=pad_title("Advanced functions"),
+            thumb=thumb,
             summary="Use at your own risk"
         ))
 
@@ -142,7 +153,7 @@ def recentItemsMenu(title, base_title=None):
         if missing_items:
             for added_at, item_id, title in missing_items:
                 oc.add(DirectoryObject(
-                    key=Callback(ItemDetailsMenu, title=base_title + " > " + title, item_title=title, rating_key=item_id), title=title
+                    key=Callback(ItemDetailsMenu, title=base_title + " > " + title, item_title=title, thumb=thumb, rating_key=item_id), title=title
                 ))
 
     return oc
@@ -165,6 +176,7 @@ def mergedItemsMenu(title, itemGetter, itemGetterKwArgs=None, base_title=None, *
     for kind, title, item_id, deeper, item in items:
         oc.add(DirectoryObject(
             title=title,
+            thumb=thumb,
             key=Callback(ItemDetailsMenu, title=base_title + " > " + title, item_title=title, rating_key=item_id)
         ))
 
@@ -200,7 +212,8 @@ def IgnoreMenu(kind, rating_key, title=None, sure=False, todo="not_set"):
             "Add" if not is_ignored else "Remove", ignore_list.verbose(kind), title, "to" if not is_ignored else "from"), title2="Are you sure?")
         oc.add(DirectoryObject(
             key=Callback(IgnoreMenu, kind=kind, rating_key=rating_key, title=title, sure=True, todo="add" if not is_ignored else "remove"),
-            title=pad_title("Are you sure?")
+            title=pad_title("Are you sure?"),
+            thumb=thumb
         ))
         return oc
 
@@ -353,12 +366,14 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
             key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title, refresh_kind=kind, previous_rating_key=previous_rating_key,
                          timeout=16000),
             title=u"Refresh: %s" % item_title,
+            thumb=thumb,
             summary="Refreshes the item, possibly picking up new subtitles on disk"
         ))
         oc.add(DirectoryObject(
             key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title, force=True, refresh_kind=kind,
                          previous_rating_key=previous_rating_key, timeout=16000),
             title=u"Force-Refresh: %s" % item_title,
+            thumb=thumb,
             summary="Issues a forced refresh, ignoring known subtitles and searching for new ones"
         ))
     else:
@@ -378,7 +393,7 @@ def IgnoreListMenu():
 
 
 @route(PREFIX + '/item/{rating_key}/actions')
-def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, randomize=None):
+def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, randomize=None, thumb=thumb):
     """
     displays the item details menu of an item that doesn't contain any deeper tree, such as a movie or an episode
     :param rating_key:
@@ -386,6 +401,7 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
     :param base_title:
     :param item_title:
     :param randomize:
+    :param thumb:
     :return:
     """
     title = unicode(base_title) + " > " + unicode(title) if base_title else unicode(title)
@@ -393,11 +409,13 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
     oc.add(DirectoryObject(
         key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title),
         title=u"Refresh: %s" % item_title,
+        thumb=thumb,
         summary="Refreshes the item, possibly picking up new subtitles on disk"
     ))
     oc.add(DirectoryObject(
         key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title, force=True),
         title=u"Force-Refresh: %s" % item_title,
+        thumb=thumb,
         summary="Issues a forced refresh, ignoring known subtitles and searching for new ones"
     ))
     add_ignore_options(oc, "videos", title=item_title, rating_key=rating_key, callback_menu=IgnoreMenu)
@@ -428,31 +446,38 @@ def AdvancedMenu(randomize=None, header=None, message=None):
 
     oc.add(DirectoryObject(
         key=Callback(TriggerRestart),
-        title=pad_title("Restart the plugin")
+        title=pad_title("Restart the plugin"),
+        thumb=thumb
     ))
     oc.add(DirectoryObject(
         key=Callback(LogStorage, key="tasks", randomize=timestamp()),
-        title=pad_title("Log the plugin's scheduled tasks state storage")
+        title=pad_title("Log the plugin's scheduled tasks state storage"),
+        thumb=thumb
     ))
     oc.add(DirectoryObject(
         key=Callback(LogStorage, key="subs", randomize=timestamp()),
-        title=pad_title("Log the plugin's internal subtitle information storage")
+        title=pad_title("Log the plugin's internal subtitle information storage"),
+        thumb=thumb
     ))
     oc.add(DirectoryObject(
         key=Callback(LogStorage, key="ignore", randomize=timestamp()),
-        title=pad_title("Log the plugin's internal ignorelist storage")
+        title=pad_title("Log the plugin's internal ignorelist storage"),
+        thumb=thumb
     ))
     oc.add(DirectoryObject(
         key=Callback(ResetStorage, key="tasks", randomize=timestamp()),
-        title=pad_title("Reset the plugin's scheduled tasks state storage")
+        title=pad_title("Reset the plugin's scheduled tasks state storage"),
+        thumb=thumb
     ))
     oc.add(DirectoryObject(
         key=Callback(ResetStorage, key="subs", randomize=timestamp()),
-        title=pad_title("Reset the plugin's internal subtitle information storage")
+        title=pad_title("Reset the plugin's internal subtitle information storage"),
+        thumb=thumb
     ))
     oc.add(DirectoryObject(
         key=Callback(ResetStorage, key="ignore", randomize=timestamp()),
-        title=pad_title("Reset the plugin's internal ignorelist storage")
+        title=pad_title("Reset the plugin's internal ignorelist storage"),
+        thumb=thumb
     ))
     return oc
 
@@ -521,7 +546,9 @@ def ResetStorage(key, randomize=None, sure=False):
         oc = ObjectContainer(no_history=True, title1="Reset subtitle storage", title2="Are you sure?")
         oc.add(DirectoryObject(
             key=Callback(ResetStorage, key=key, sure=True, randomize=timestamp()),
-            title=pad_title("Are you really sure?")
+            title=pad_title("Are you really sure?"),
+            thumb=thumb
+
         ))
         return oc
 

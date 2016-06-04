@@ -81,8 +81,9 @@ def get_items(key="recently_added", base="library", value=None, flat=False, add_
             items.append(("directory", item.title, item.key, True, item))
 
         elif kind == "section":
-            item.size = get_section_size(item.key)
-            items.append(("section", item.title, int(item.key), True, item))
+            if item.type in ['movie', 'show']:
+                item.size = get_section_size(item.key)
+                items.append(("section", item.title, int(item.key), True, item))
 
         elif kind == "episode":
             items.append(
