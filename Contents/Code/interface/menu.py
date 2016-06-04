@@ -2,14 +2,14 @@
 import logging
 import logger
 
-from menu_helpers import add_ignore_options, dig_tree, set_refresh_menu_state, should_display_ignore, enable_channel_wrapper, default_thumb
+from menu_helpers import add_ignore_options, dig_tree, set_refresh_menu_state, \
+    should_display_ignore, enable_channel_wrapper, default_thumb
 from subzero.constants import TITLE, ART, ICON, PREFIX, PLUGIN_IDENTIFIER, DEPENDENCY_MODULE_NAMES
 from support.background import scheduler
 from support.config import config
 from support.helpers import pad_title, timestamp
 from support.ignore import ignore_list
-from support.items import get_on_deck_items, refresh_item, get_all_items
-from support.items import get_recent_items, get_items_info
+from support.items import get_item, get_on_deck_items, refresh_item, get_all_items, get_recent_items, get_items_info
 from support.lib import Plex
 from support.missing_subtitles import items_get_all_missing_subs
 from support.storage import reset_storage, log_storage, get_subtitle_info
@@ -396,16 +396,20 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
     :return:
     """
     title = unicode(base_title) + " > " + unicode(title) if base_title else unicode(title)
+    item = get_item(rating_key)
+
     oc = ObjectContainer(title2=title, replace_parent=True)
     oc.add(DirectoryObject(
         key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title),
         title=u"Refresh: %s" % item_title,
-        summary="Refreshes the item, possibly picking up new subtitles on disk"
+        summary="Refreshes the item, possibly picking up new subtitles on disk",
+        thumb=item.thumb or default_thumb
     ))
     oc.add(DirectoryObject(
         key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title, force=True),
         title=u"Force-Refresh: %s" % item_title,
-        summary="Issues a forced refresh, ignoring known subtitles and searching for new ones"
+        summary="Issues a forced refresh, ignoring known subtitles and searching for new ones",
+        thumb=item.thumb or default_thumb
     ))
     add_ignore_options(oc, "videos", title=item_title, rating_key=rating_key, callback_menu=IgnoreMenu)
 

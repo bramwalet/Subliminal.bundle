@@ -3,6 +3,7 @@ import traceback
 
 from support.config import config
 from support.helpers import format_item
+from support.items import get_item
 from support.lib import Plex
 
 
@@ -10,9 +11,7 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
     existing_subs = {"internal": [], "external": [], "count": 0}
 
     item_id = int(rating_key)
-    item_container = Plex["library"].metadata(item_id)
-
-    item = list(item_container)[0]
+    item = get_item(rating_key)
 
     if kind == "show":
         item_title = format_item(item, kind, parent=item.season, section_title=section_title, parent_title=item.show.title)

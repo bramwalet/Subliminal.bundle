@@ -16,6 +16,14 @@ MI_KIND, MI_TITLE, MI_KEY, MI_DEEPER, MI_ITEM = 0, 1, 2, 3, 4
 container_size_re = re.compile(ur'totalSize="(\d+)"')
 
 
+def get_item(key):
+    item_id = int(key)
+    item_container = Plex["library"].metadata(item_id)
+
+    item = list(item_container)[0]
+    return item
+
+
 def get_items_info(items):
     return items[0][MI_KIND], items[0][MI_DEEPER]
 
