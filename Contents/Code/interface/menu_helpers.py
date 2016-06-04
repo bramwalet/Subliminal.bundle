@@ -1,7 +1,7 @@
 # coding=utf-8
 import types
 
-from support.items import get_kind
+from support.items import get_kind, get_item_thumb
 from subzero import intent
 from support.helpers import format_video
 from support.ignore import ignore_list
@@ -48,7 +48,7 @@ def add_ignore_options(oc, kind, callback_menu=None, title=None, rating_key=None
 def dig_tree(oc, items, menu_callback, menu_determination_callback=None, force_rating_key=None, fill_args=None, pass_kwargs=None,
              thumb=default_thumb):
     for kind, title, key, dig_deeper, item in items:
-        thumb = item.thumb or item.art or thumb
+        thumb = get_item_thumb(item) or thumb
 
         add_kwargs = {}
         if fill_args:

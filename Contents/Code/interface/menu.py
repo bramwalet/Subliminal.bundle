@@ -9,7 +9,7 @@ from support.background import scheduler
 from support.config import config
 from support.helpers import pad_title, timestamp
 from support.ignore import ignore_list
-from support.items import get_item, get_on_deck_items, refresh_item, get_all_items, get_recent_items, get_items_info
+from support.items import get_item, get_on_deck_items, refresh_item, get_all_items, get_recent_items, get_items_info, get_item_thumb
 from support.lib import Plex
 from support.missing_subtitles import items_get_all_missing_subs
 from support.storage import reset_storage, log_storage, get_subtitle_info
@@ -148,7 +148,7 @@ def recentItemsMenu(title, base_title=None):
                 oc.add(DirectoryObject(
                     key=Callback(ItemDetailsMenu, title=base_title + " > " + title, item_title=title, rating_key=item_id),
                     title=title,
-                    thumb=item.thumb or default_thumb
+                    thumb=get_item_thumb(item) or default_thumb
                 ))
 
     return oc
@@ -172,7 +172,7 @@ def mergedItemsMenu(title, itemGetter, itemGetterKwArgs=None, base_title=None, *
         oc.add(DirectoryObject(
             title=title,
             key=Callback(ItemDetailsMenu, title=base_title + " > " + title, item_title=title, rating_key=item_id),
-            thumb=item.thumb or default_thumb
+            thumb=get_item_thumb(item) or default_thumb
         ))
 
     return oc

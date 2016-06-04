@@ -24,6 +24,15 @@ def get_item(key):
     return item
 
 
+def get_item_thumb(item):
+    kind = type(item).__name__
+    if kind == "Episode":
+        return item.show.thumb
+    elif kind == "Section":
+        return item.art
+    return item.thumb
+
+
 def get_items_info(items):
     return items[0][MI_KIND], items[0][MI_DEEPER]
 
