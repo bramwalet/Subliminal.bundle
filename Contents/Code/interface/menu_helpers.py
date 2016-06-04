@@ -7,8 +7,8 @@ from support.helpers import format_video
 from support.ignore import ignore_list
 from subzero.constants import ICON
 
-# default thumb
-thumb=R(ICON)
+default_thumb = R(ICON)
+
 
 def should_display_ignore(items, previous=None):
     kind = get_kind(items)
@@ -39,17 +39,17 @@ def add_ignore_options(oc, kind, callback_menu=None, title=None, rating_key=None
 
     oc.add(DirectoryObject(
         key=Callback(callback_menu, kind=use_kind, rating_key=rating_key, title=title),
-        thumb=thumb,
         title=u"%s %s \"%s\" %s the ignore list" % (
             "Remove" if in_list else "Add", ignore_list.verbose(kind) if add_kind else "", unicode(title), "from" if in_list else "to")
     )
     )
 
 
-def dig_tree(oc, items, menu_callback, menu_determination_callback=None, force_rating_key=None, fill_args=None, pass_kwargs=None, thumb=thumb):
+def dig_tree(oc, items, menu_callback, menu_determination_callback=None, force_rating_key=None, fill_args=None, pass_kwargs=None,
+             thumb=default_thumb):
     for kind, title, key, dig_deeper, item in items:
         if item.thumb:
-            thumb=item.thumb
+            thumb = item.thumb
 
         add_kwargs = {}
         if fill_args:
