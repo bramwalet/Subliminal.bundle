@@ -3,11 +3,12 @@
 import logging
 import re
 import types
+import os
 from ignore import ignore_list
 from helpers import is_recent, format_item, query_plex
 from subzero import intent
 from lib import Plex
-from config import config
+from config import config, IGNORE_FN
 
 logger = logging.getLogger(__name__)
 
@@ -24,8 +25,12 @@ def get_item(key):
     return item
 
 
+def get_item_kind(item):
+    return type(item).__name__
+
+
 def get_item_thumb(item):
-    kind = type(item).__name__
+    kind = get_item_kind(item)
     if kind == "Episode":
         return item.show.thumb
     elif kind == "Section":
@@ -179,6 +184,53 @@ def get_on_deck_items():
 
 def get_all_items(key, base="library", value=None, flat=False):
     return get_items(key, base=base, value=value, flat=flat)
+
+
+def is_physically_ignored(folder):
+    # check whether we've got an ignore file inside the path
+    for ifn in IGNORE_FN:
+        if os.path.isfile(os.path.join(folder, ifn)):
+            Log.Info(u'Ignoring "%s" because "%s" exists', folder, ifn)
+            return True
+    return False
+
+
+def is_ignored(rating_key, item=None):
+    """
+    check whether an item, its show/season/section is in the soft or the hard ignore list
+    :param rating_key:
+    :param item:
+    :return:
+    """
+    # item in soft ignore list
+    if rating_key in ignore_list["videos"]:
+        return True
+
+    item = item or get_item(rating_key)
+    kind = get_item_kind(item)
+
+    # show in soft ignore list
+    if kind == "Episode" and item.show.rating_key in ignore_list["series"]:
+        return True
+
+    # section in soft ignore list
+    if item.section.key in ignore_list["sections"]:
+        return True
+
+    # physical ignore list
+    if Prefs["subtitles.ignore_fs"]:
+        # normally check current item folder and the library
+        check_ignore_paths = [".", "../"]
+        if kind == "Episode":
+            # series/episode, we've got a season folder here, also
+            check_ignore_paths.append("../../")
+
+        for part in item.media.parts:
+            for sub_path in check_ignore_paths:
+                if is_physically_ignored(os.path.abspath(os.path.join(os.path.dirname(part.file), sub_path))):
+                    return True
+
+    return False
 
 
 def refresh_item(rating_key, force=False, timeout=8000, refresh_kind=None, parent_rating_key=None):

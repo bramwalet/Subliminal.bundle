@@ -5,7 +5,7 @@ import time
 
 from missing_subtitles import items_get_all_missing_subs, refresh_item
 from background import scheduler
-from support.items import get_recent_items
+from support.items import get_recent_items, is_ignored
 
 
 class Task(object):
@@ -84,7 +84,7 @@ class SearchAllRecentlyAddedMissing(Task):
         self.items_done = []
         recent_items = get_recent_items()
         missing = items_get_all_missing_subs(recent_items)
-        ids = set([id for added_at, id, title, item in missing])
+        ids = set([id for added_at, id, title, item in missing if not is_ignored(id, item=item)])
         self.items_searching = missing
         self.items_searching_ids = ids
         self.items_failed = []

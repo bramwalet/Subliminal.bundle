@@ -30,6 +30,7 @@ from interface.menu import *
 from support.plex_media import convert_media_to_parts, get_media_item_ids, scan_parts
 from support.subtitlehelpers import get_subtitles_from_metadata, force_utf8
 from support.storage import store_subtitle_info, whack_missing_parts
+from support.items import is_ignored
 from support.config import config
 
 
@@ -197,6 +198,19 @@ class SubZeroAgent(object):
         try:
             init_subliminal_patches()
             parts = convert_media_to_parts(media, kind=self.agent_type)
+
+            # media ignored?
+            use_any_parts = False
+            for part in parts:
+                if is_ignored(part["id"]):
+                    Log.Debug(u"Ignoring %s" % part)
+                    continue
+                use_any_parts = True
+
+            if not use_any_parts:
+                Log.Debug(u"Nothing to do.")
+                return
+
             use_score = Prefs[self.score_prefs_key]
             scanned_parts = scan_parts(parts, kind=self.agent_type)
             subtitles = download_best_subtitles(scanned_parts, min_score=int(use_score))
