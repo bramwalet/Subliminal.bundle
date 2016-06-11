@@ -5,7 +5,7 @@ import config
 import helpers
 import subtitlehelpers
 
-from subzero.lib.io import get_viable_encoding
+from config import config as sz_config
 
 
 def find_subtitles(part):
@@ -54,14 +54,14 @@ def find_subtitles(part):
     total_media_files = 0
     for path in paths:
         path = helpers.unicodize(path)
-        for file_path_listing in os.listdir(path):
+        for file_path_listing in os.listdir(path.encode(sz_config.fs_encoding)):
 
             # When using os.listdir with a unicode path, it will always return a string using the
             # NFD form. However, we internally are using the form NFC and therefore need to convert
             # it to allow correct regex / comparisons to be performed.
             #
             file_path_listing = helpers.unicodize(file_path_listing)
-            if os.path.isfile(os.path.join(path, file_path_listing).encode(get_viable_encoding())):
+            if os.path.isfile(os.path.join(path, file_path_listing).encode(sz_config.fs_encoding)):
                 file_paths[file_path_listing.lower()] = os.path.join(path, file_path_listing)
 
             # If we've found an actual media file, we should record it.
