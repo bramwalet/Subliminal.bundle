@@ -37,6 +37,7 @@ class Config(object):
     max_recent_items_per_library = 200
     permissions_ok = False
     missing_permissions = None
+    ignore_paths = None
     fs_encoding = None
 
     initialized = False
@@ -52,9 +53,10 @@ class Config(object):
         self.max_recent_items_per_library = int_or_default(Prefs["scheduler.max_recent_items_per_library"], 200)
         self.initialized = True
         self.missing_permissions = []
-        self.permissions_ok = self.checkPermissions()
+        self.ignore_paths = self.parse_ignore_paths()
+        self.permissions_ok = self.check_permissions()
 
-    def checkPermissions(self):
+    def check_permissions(self):
         if not Prefs["subtitles.save.filesystem"] or not Prefs["check_permissions"]:
             return True
 
@@ -69,13 +71,13 @@ class Config(object):
                     path_str = path_str.encode(self.fs_encoding)
 
                 if use_ignore_fs:
-                    ignore = False
                     # check whether we've got an ignore file inside the section path
-                    for ifn in IGNORE_FN:
-                        if os.path.isfile(os.path.join(path_str, ifn)):
-                            ignore = True
-                    if ignore:
+                    if self.is_physically_ignored(path_str):
                         continue
+
+                if self.is_path_ignored(path_str):
+                    # is the path in our ignored paths setting?
+                    continue
 
                 # section not ignored, check for write permissions
                 if not check_write_permissions(path_str):
@@ -93,8 +95,28 @@ class Config(object):
         if result:
             return result.group(1)
 
-    def get_blacklist(self, key):
-        return map(lambda id: id.strip(), (Prefs[key] or "").split(","))
+    def parse_ignore_paths(self):
+        paths = Prefs["subtitles.ignore_paths"]
+        try:
+            return [path.strip() for path in paths.split(",")]
+        except:
+            Log.Error("Couldn't parse your ignore paths settings: %s" % paths)
+        return []
+
+    def is_physically_ignored(self, folder):
+        # check whether we've got an ignore file inside the path
+        for ifn in IGNORE_FN:
+            if os.path.isfile(os.path.join(folder, ifn)):
+                Log.Info(u'Ignoring "%s" because "%s" exists', folder, ifn)
+                return True
+
+        return False
+
+    def is_path_ignored(self, fn):
+        for path in self.ignore_paths:
+            if fn.startswith(path):
+                return True
+        return False
 
     # Prepare a list of languages we want subs for
     def get_lang_list(self):

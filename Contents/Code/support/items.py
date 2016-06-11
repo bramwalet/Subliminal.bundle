@@ -186,15 +186,6 @@ def get_all_items(key, base="library", value=None, flat=False):
     return get_items(key, base=base, value=value, flat=flat)
 
 
-def is_physically_ignored(folder):
-    # check whether we've got an ignore file inside the path
-    for ifn in IGNORE_FN:
-        if os.path.isfile(os.path.join(folder, ifn)):
-            Log.Info(u'Ignoring "%s" because "%s" exists', folder, ifn)
-            return True
-    return False
-
-
 def is_ignored(rating_key, item=None):
     """
     check whether an item, its show/season/section is in the soft or the hard ignore list
@@ -217,8 +208,8 @@ def is_ignored(rating_key, item=None):
     if item.section.key in ignore_list["sections"]:
         return True
 
-    # physical ignore list
-    if Prefs["subtitles.ignore_fs"]:
+    # physical/path ignore
+    if Prefs["subtitles.ignore_fs"] or config.ignore_paths:
         # normally check current item folder and the library
         check_ignore_paths = [".", "../"]
         if kind == "Episode":
@@ -226,9 +217,13 @@ def is_ignored(rating_key, item=None):
             check_ignore_paths.append("../../")
 
         for part in item.media.parts:
-            for sub_path in check_ignore_paths:
-                if is_physically_ignored(os.path.abspath(os.path.join(os.path.dirname(part.file), sub_path))):
-                    return True
+            if config.ignore_paths and config.is_path_ignored(part.file):
+                return True
+
+            if Prefs["subtitles.ignore_fs"]:
+                for sub_path in check_ignore_paths:
+                    if config.is_physically_ignored(os.path.abspath(os.path.join(os.path.dirname(part.file), sub_path))):
+                        return True
 
     return False
 

@@ -394,6 +394,12 @@
     "default": "false"
   },
   {
+      "id": "subtitles.ignore_paths",
+      "label": "Ignore anything in the following paths (comma-separated)",
+      "type": "text",
+      "default": ""
+  },
+  {
     "id": "scheduler.tasks.searchAllRecentlyAddedMissing",
     "label": "Scheduler: Periodically search for recent items with missing subtitles",
     "type": "enum",
