@@ -41,32 +41,7 @@ def convert_media_to_parts(media, kind="series"):
     :param kind:
     :return:
     """
-    parts = flatten_media(media, kind=kind)
-    if not Prefs["subtitles.ignore_fs"]:
-        return parts
-
-    use_parts = []
-    check_ignore_paths = [".", "../"]
-    if kind == "series":
-        check_ignore_paths.append("../../")
-
-    for part in parts:
-        base_folder, fn = os.path.split(part["video"].file)
-
-        ignore = False
-        for rel_path in check_ignore_paths:
-            fld = os.path.abspath(os.path.join(base_folder, rel_path))
-            for ifn in IGNORE_FN:
-                if os.path.isfile(os.path.join(fld, ifn)):
-                    Log.Info(u'Ignoring "%s" because "%s" exists in "%s"', fn, ifn, fld)
-                    ignore = True
-                    break
-            if ignore:
-                break
-
-        if not ignore:
-            use_parts.append(part)
-    return use_parts
+    return flatten_media(media, kind=kind)
 
 
 def get_stream_fps(streams):

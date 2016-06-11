@@ -195,6 +195,7 @@ def is_ignored(rating_key, item=None):
     """
     # item in soft ignore list
     if rating_key in ignore_list["videos"]:
+        Log.Debug("Item %s is in the soft ignore list" % rating_key)
         return True
 
     item = item or get_item(rating_key)
@@ -202,10 +203,12 @@ def is_ignored(rating_key, item=None):
 
     # show in soft ignore list
     if kind == "Episode" and item.show.rating_key in ignore_list["series"]:
+        Log.Debug("Item %s's show is in the soft ignore list" % rating_key)
         return True
 
     # section in soft ignore list
     if item.section.key in ignore_list["sections"]:
+        Log.Debug("Item %s's section is in the soft ignore list" % rating_key)
         return True
 
     # physical/path ignore
@@ -218,11 +221,13 @@ def is_ignored(rating_key, item=None):
 
         for part in item.media.parts:
             if config.ignore_paths and config.is_path_ignored(part.file):
+                Log.Debug("Item %s's path is manually ignored" % rating_key)
                 return True
 
             if Prefs["subtitles.ignore_fs"]:
                 for sub_path in check_ignore_paths:
                     if config.is_physically_ignored(os.path.abspath(os.path.join(os.path.dirname(part.file), sub_path))):
+                        Log.Debug("An ignore file exists in either the items or its parent folders")
                         return True
 
     return False
