@@ -39,6 +39,7 @@ class Config(object):
     missing_permissions = None
     ignore_paths = None
     fs_encoding = None
+    notify_executable = None
 
     initialized = False
 
@@ -55,6 +56,7 @@ class Config(object):
         self.missing_permissions = []
         self.ignore_paths = self.parse_ignore_paths()
         self.permissions_ok = self.check_permissions()
+        self.notify_executable = self.check_notify_executable()
 
     def check_permissions(self):
         if not Prefs["subtitles.save.filesystem"] or not Prefs["check_permissions"]:
@@ -117,6 +119,15 @@ class Config(object):
             if fn.startswith(path):
                 return True
         return False
+
+    def check_notify_executable(self):
+        fn = Prefs["notify_executable"]
+        if not fn:
+            return
+
+        if os.path.isfile(fn) and os.access(fn, os.X_OK):
+            return fn
+        Log.Error("Notify executable not existing or not executable: %s" % fn)
 
     # Prepare a list of languages we want subs for
     def get_lang_list(self):

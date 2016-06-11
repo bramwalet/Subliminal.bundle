@@ -406,6 +406,12 @@
       "default": ""
   },
   {
+      "id": "notify_executable",
+      "label": "Call this executable upon successful subtitle download",
+      "type": "text",
+      "default": ""
+  },
+  {
     "id": "scheduler.tasks.searchAllRecentlyAddedMissing",
     "label": "Scheduler: Periodically search for recent items with missing subtitles",
     "type": "enum",
