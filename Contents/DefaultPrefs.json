@@ -382,6 +382,12 @@
     "default": ""
   },
   {
+    "id": "subtitles.save.metadata_fallback",
+    "label": "Fall back to metadata storage if filesystem storage failed",
+    "type": "bool",
+    "default": "false"
+  },
+  {
     "id": "subtitles.language.ietf",
     "label": "Treat IETF language tags as ISO 639-1 (e.g. pt-BR = pt)",
     "type": "bool",

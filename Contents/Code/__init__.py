@@ -101,14 +101,25 @@ def download_best_subtitles(video_part_map, min_score=0):
 
 
 def save_subtitles(videos, subtitles):
+    meta_fallback = False
+    storage = "metadata"
     if Prefs['subtitles.save.filesystem']:
-        Log.Debug("Using filesystem as subtitle storage")
-        save_subtitles_to_file(subtitles)
         storage = "filesystem"
-    else:
-        Log.Debug("Using metadata as subtitle storage")
+        try:
+            Log.Debug("Using filesystem as subtitle storage")
+            save_subtitles_to_file(subtitles)
+        except OSError:
+            if Prefs["subtitles.save.metadata_fallback"]:
+                meta_fallback = True
+            else:
+                raise
+
+    if not Prefs['subtitles.save.filesystem'] or meta_fallback:
+        if meta_fallback:
+            Log.Debug("Using metadata as subtitle storage, because filesystem storage failed")
+        else:
+            Log.Debug("Using metadata as subtitle storage")
         save_subtitles_to_metadata(videos, subtitles)
-        storage = "metadata"
 
     store_subtitle_info(videos, subtitles, storage)
 
