@@ -99,10 +99,11 @@ class Config(object):
 
     def parse_ignore_paths(self):
         paths = Prefs["subtitles.ignore_paths"]
-        try:
-            return [path.strip() for path in paths.split(",")]
-        except:
-            Log.Error("Couldn't parse your ignore paths settings: %s" % paths)
+        if paths:
+            try:
+                return [path.strip() for path in paths.split(",")]
+            except:
+                Log.Error("Couldn't parse your ignore paths settings: %s" % paths)
         return []
 
     def is_physically_ignored(self, folder):
