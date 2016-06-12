@@ -3,7 +3,7 @@ import logging
 import logger
 
 from menu_helpers import add_ignore_options, dig_tree, set_refresh_menu_state, \
-    should_display_ignore, enable_channel_wrapper, default_thumb
+    should_display_ignore, enable_channel_wrapper, default_thumb, debounce
 from subzero.constants import TITLE, ART, ICON, PREFIX, PLUGIN_IDENTIFIER, DEPENDENCY_MODULE_NAMES
 from support.background import scheduler
 from support.config import config
@@ -88,7 +88,7 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
                                                                                                str(task.last_run_time).split(".")[0])
 
         oc.add(DirectoryObject(
-            key=Callback(RefreshMissing),
+            key=Callback(RefreshMissing, randomize=timestamp()),
             title="Search for missing subtitles (in recently-added items, max-age: %s)" % Prefs["scheduler.item_is_recent_age"],
             summary="Automatically run periodically by the scheduler, if configured. %s" % task_state
         ))
@@ -358,7 +358,7 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
         # add refresh
         oc.add(DirectoryObject(
             key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title, refresh_kind=kind, previous_rating_key=previous_rating_key,
-                         timeout=16000),
+                         timeout=16000, randomize=timestamp()),
             title=u"Refresh: %s" % item_title,
             summary="Refreshes the item, possibly picking up new subtitles on disk"
         ))
@@ -400,13 +400,13 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
 
     oc = ObjectContainer(title2=title, replace_parent=True)
     oc.add(DirectoryObject(
-        key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title),
+        key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title, randomize=timestamp()),
         title=u"Refresh: %s" % item_title,
         summary="Refreshes the item, possibly picking up new subtitles on disk",
         thumb=item.thumb or default_thumb
     ))
     oc.add(DirectoryObject(
-        key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title, force=True),
+        key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title, force=True, randomize=timestamp()),
         title=u"Force-Refresh: %s" % item_title,
         summary="Issues a forced refresh, ignoring known subtitles and searching for new ones",
         thumb=item.thumb or default_thumb
@@ -417,19 +417,26 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
 
 
 @route(PREFIX + '/item/{rating_key}')
-def RefreshItem(rating_key=None, came_from="/recent", item_title=None, force=False, refresh_kind=None, previous_rating_key=None, timeout=8000):
+@debounce
+def RefreshItem(rating_key=None, came_from="/recent", item_title=None, force=False, refresh_kind=None, previous_rating_key=None, timeout=8000, randomize=None, trigger=True):
     assert rating_key
-    set_refresh_menu_state(u"Triggering %sRefresh for %s" % ("Force-" if force else "", item_title))
-    Thread.Create(refresh_item, rating_key=rating_key, force=force, refresh_kind=refresh_kind, parent_rating_key=previous_rating_key,
-                  timeout=int(timeout))
-    return fatality(randomize=timestamp(), header=u"%s of item %s triggered" % ("Refresh" if not force else "Forced-refresh", rating_key),
-                    replace_parent=True)
+    header = " "
+    if trigger:
+        set_refresh_menu_state(u"Triggering %sRefresh for %s" % ("Force-" if force else "", item_title))
+        Thread.Create(refresh_item, rating_key=rating_key, force=force, refresh_kind=refresh_kind, parent_rating_key=previous_rating_key,
+                      timeout=int(timeout))
+        header = u"%s of item %s triggered" % ("Refresh" if not force else "Forced-refresh", rating_key)
+    return fatality(randomize=timestamp(), header=header, replace_parent=True)
 
 
 @route(PREFIX + '/missing/refresh')
-def RefreshMissing(randomize=None):
-    Thread.CreateTimer(1.0, lambda: scheduler.run_task("searchAllRecentlyAddedMissing"))
-    return fatality(header="Refresh of recently added items with missing subtitles triggered", replace_parent=True)
+@debounce
+def RefreshMissing(randomize=None, trigger=True):
+    header = " "
+    if trigger:
+        Thread.CreateTimer(1.0, lambda: scheduler.run_task("searchAllRecentlyAddedMissing"))
+        header = "Refresh of recently added items with missing subtitles triggered"
+    return fatality(header=header, replace_parent=True)
 
 
 @route(PREFIX + '/advanced')
@@ -438,7 +445,7 @@ def AdvancedMenu(randomize=None, header=None, message=None):
                          replace_parent=True, title2="Advanced")
 
     oc.add(DirectoryObject(
-        key=Callback(TriggerRestart),
+        key=Callback(TriggerRestart, randomize=timestamp()),
         title=pad_title("Restart the plugin"),
     ))
     oc.add(DirectoryObject(
@@ -514,11 +521,13 @@ def DispatchRestart():
 
 
 @route(PREFIX + '/advanced/restart/trigger')
-def TriggerRestart(randomize=None):
-    set_refresh_menu_state("Restarting the plugin")
-    DispatchRestart()
+@debounce
+def TriggerRestart(randomize=None, trigger=True):
+    if trigger:
+        set_refresh_menu_state("Restarting the plugin")
+        DispatchRestart()
     return fatality(header="Restart triggered, please wait about 5 seconds", force_title=" ", only_refresh=True, replace_parent=True,
-                    no_history=True)
+                    no_history=True, randomize=timestamp())
 
 
 @route(PREFIX + '/advanced/restart/execute')

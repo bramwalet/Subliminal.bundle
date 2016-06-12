@@ -6,6 +6,7 @@ from subzero import intent
 from support.helpers import format_video
 from support.ignore import ignore_list
 from subzero.constants import ICON
+from subzero.func import debouncer
 
 default_thumb = R(ICON)
 
@@ -117,5 +118,23 @@ def enable_channel_wrapper(func):
     def wrap(*args, **kwargs):
         enforce_route = kwargs.pop("enforce_route", None)
         return (func if Prefs["enable_channel"] or enforce_route else noop)(*args, **kwargs)
+
+    return wrap
+
+
+def debounce(func):
+    """
+    prevent func from being called twice with the same arguments
+    :param func:
+    :return:
+    """
+    def wrap(*args, **kwargs):
+        if "randomize" in kwargs:
+            if ([func] + list(args), kwargs) in debouncer:
+                kwargs["trigger"] = False
+                Log.Debug("not triggering %s twice with %s, %s" % (func, args, kwargs))
+            else:
+                debouncer.add([func] + list(args), kwargs)
+        return func(*args, **kwargs)
 
     return wrap
