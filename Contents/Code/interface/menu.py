@@ -39,7 +39,7 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
     oc = ObjectContainer(title1=title, title2=None, header=unicode(header) if header else header, message=message, no_history=no_history,
                          replace_parent=replace_parent, no_cache=True)
 
-    if not config.permissions_ok:
+    if not config.permissions_ok and config.missing_permissions:
         for title, path in config.missing_permissions:
             oc.add(DirectoryObject(
                 key=Callback(fatality, randomize=timestamp()),
