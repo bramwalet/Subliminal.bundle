@@ -126,9 +126,13 @@ class Config(object):
         if not fn:
             return
 
-        if os.path.isfile(fn) and os.access(fn, os.X_OK):
-            return fn
-        Log.Error("Notify executable not existing or not executable: %s" % fn)
+        splitted_fn = fn.split()
+        exe_fn = splitted_fn[0]
+        arguments = [arg.strip() for arg in splitted_fn[1:]]
+
+        if os.path.isfile(exe_fn) and os.access(exe_fn, os.X_OK):
+            return exe_fn, arguments
+        Log.Error("Notify executable not existing or not executable: %s" % exe_fn)
 
     # Prepare a list of languages we want subs for
     def get_lang_list(self):

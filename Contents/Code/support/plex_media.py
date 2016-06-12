@@ -4,6 +4,7 @@ import os
 import subliminal
 import helpers
 
+from items import get_item
 from subzero import intent
 
 
@@ -15,19 +16,47 @@ def flatten_media(media, kind="series"):
     :return:
     """
     parts = []
+
+    def get_metadata_dict(item, part, add):
+        data = {
+            "section": item.section.title,
+            "path": part.file,
+            "folder": os.path.dirname(part.file),
+            "filename": os.path.basename(part.file)
+        }
+        data.update(add)
+        return data
+
     if kind == "series":
         for season in media.seasons:
             season_object = media.seasons[season]
             for episode in media.seasons[season].episodes:
                 ep = media.seasons[season].episodes[episode]
+
+                # get plex item via API for additional metadata
+                plex_episode = get_item(ep.id)
+
                 for item in media.seasons[season].episodes[episode].items:
                     for part in item.parts:
-                        parts.append({"video": part, "type": "episode", "title": ep.title, "series": media.title, "id": ep.id,
-                                      "series_id": media.id, "season_id": season_object.id})
+                        parts.append(
+                            get_metadata_dict(plex_episode, part,
+                                              {"video": part, "type": "episode", "title": ep.title,
+                                               "series": media.title, "id": ep.id,
+                                               "series_id": media.id, "season_id": season_object.id,
+                                               "season": plex_episode.season.index,
+                                               })
+                        )
     else:
+        plex_item = get_item(media.id)
         for item in media.items:
             for part in item.parts:
-                parts.append({"video": part, "type": "movie", "title": media.title, "id": media.id, "series_id": None, "season_id": None})
+                parts.append(
+                    get_metadata_dict(plex_item, part, {"video": part, "type": "movie",
+                                                        "title": media.title, "id": media.id,
+                                                        "series_id": None,
+                                                        "season_id": None,
+                                                        "section": plex_item.section.title})
+                )
     return parts
 
 
@@ -52,7 +81,6 @@ def get_stream_fps(streams):
         # video
         stream_type = getattr(stream, "type", getattr(stream, "stream_type", None))
         if stream_type == 1:
-            print stream_type, dir(stream)
             return getattr(stream, "frameRate", getattr(stream, "frame_rate", "25.000"))
     return "25.000"
 
@@ -104,5 +132,8 @@ def scan_parts(parts, kind="series"):
             continue
 
         scanned_video.id = part["id"]
+        part_metadata = part.copy()
+        del part_metadata["video"]
+        scanned_video.plexapi_metadata = part_metadata
         ret[scanned_video] = part["video"]
     return ret

@@ -14,6 +14,11 @@ for key, value in getattr(module, "__builtins__").iteritems():
         globals()[key] = value
 
 import logger
+import logging
+
+# temporarily add the console handler and set it to DEBUG to catch errors upon imports
+Core.log.addHandler(logger.console_handler)
+Core.log.setLevel(logging.DEBUG)
 
 sys.modules["logger"] = logger
 
@@ -29,6 +34,7 @@ from subzero import intent
 from interface.menu import *
 from support.plex_media import convert_media_to_parts, get_media_item_ids, scan_parts
 from support.subtitlehelpers import get_subtitles_from_metadata, force_utf8
+from support.helpers import notify_executable
 from support.storage import store_subtitle_info, whack_missing_parts
 from support.items import is_ignored
 from support.config import config
@@ -102,6 +108,7 @@ def download_best_subtitles(video_part_map, min_score=0):
 
 def save_subtitles(videos, subtitles):
     meta_fallback = False
+    save_successful = False
     storage = "metadata"
     if Prefs['subtitles.save.filesystem']:
         storage = "filesystem"
@@ -113,13 +120,18 @@ def save_subtitles(videos, subtitles):
                 meta_fallback = True
             else:
                 raise
+        else:
+            save_successful = True
 
     if not Prefs['subtitles.save.filesystem'] or meta_fallback:
         if meta_fallback:
             Log.Debug("Using metadata as subtitle storage, because filesystem storage failed")
         else:
             Log.Debug("Using metadata as subtitle storage")
-        save_subtitles_to_metadata(videos, subtitles)
+        save_successful = save_subtitles_to_metadata(videos, subtitles)
+
+    if save_successful and config.notify_executable:
+        notify_executable(config.notify_executable, videos, subtitles, storage)
 
     store_subtitle_info(videos, subtitles, storage)
 
@@ -147,6 +159,7 @@ def save_subtitles_to_file(subtitles):
                 os.makedirs(fld)
         subliminal.api.save_subtitles(video, video_subtitles, directory=fld, single=Prefs['subtitles.only_one'],
                                       encode_with=force_utf8 if Prefs['subtitles.enforce_encoding'] else None)
+    return True
 
 
 def save_subtitles_to_metadata(videos, subtitles):
@@ -155,6 +168,7 @@ def save_subtitles_to_metadata(videos, subtitles):
         for subtitle in video_subtitles:
             content = force_utf8(subtitle.text) if Prefs['subtitles.enforce_encoding'] else subtitle.content
             mediaPart.subtitles[Locale.Language.Match(subtitle.language.alpha2)][subtitle.page_link] = Proxy.Media(content, ext="srt")
+    return True
 
 
 def update_local_media(metadata, media, media_type="movies"):
@@ -254,7 +268,7 @@ class SubZeroSubtitlesAgentMovies(SubZeroAgent, Agent.Movies):
 
 
 class SubZeroSubtitlesAgentTvShows(SubZeroAgent, Agent.TV_Shows):
-	contributes_to = ['com.plexapp.agents.thetvdb', 'com.plexapp.agents.themoviedb', 'com.plexapp.agents.thetvdbdvdorder', 'com.plexapp.agents.xbmcnfotv', 'com.plexapp.agents.hama']
-	score_prefs_key = "subtitles.search.minimumTVScore"
-	agent_type_verbose = "TV"
-
+    contributes_to = ['com.plexapp.agents.thetvdb', 'com.plexapp.agents.themoviedb',
+                      'com.plexapp.agents.thetvdbdvdorder', 'com.plexapp.agents.xbmcnfotv', 'com.plexapp.agents.hama']
+    score_prefs_key = "subtitles.search.minimumTVScore"
+    agent_type_verbose = "TV"

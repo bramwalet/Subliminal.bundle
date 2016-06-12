@@ -49,6 +49,8 @@ def save_subtitles(video, subtitles, single=False, directory=None, encoding=None
         # force unicode
         subtitle_path = UnicodeDammit(subtitle_path).unicode_markup
 
+        subtitle.storage_path = subtitle_path
+
         # save content as is or in the specified encoding
         logger.info('Saving %r to %r', subtitle, subtitle_path)
         has_encoder = callable(encode_with)

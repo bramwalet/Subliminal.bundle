@@ -1,11 +1,13 @@
 # coding=utf-8
 import os
+import traceback
 import unicodedata
 import datetime
 import urllib
 import time
 import re
 import platform
+import subprocess
 
 # Unicode control characters can appear in ID3v2 tags but are not legal in XML.
 RE_UNICODE_CONTROL = u'([\u0000-\u0008\u000b-\u000c\u000e-\u001f\ufffe-\uffff])' + \
@@ -42,7 +44,8 @@ def unicodize(s):
 def clean_filename(filename):
     # this will remove any whitespace and punctuation chars and replace them with spaces, strip and return as lowercase
     return string.translate(filename.encode('utf-8'), string.maketrans(string.punctuation + string.whitespace,
-                                                                       ' ' * len(string.punctuation + string.whitespace))).strip().lower()
+                                                                       ' ' * len(
+                                                                           string.punctuation + string.whitespace))).strip().lower()
 
 
 def is_recent(t):
@@ -95,14 +98,16 @@ def format_item(item, kind, parent=None, parent_title=None, section_title=None, 
     :return:
     """
     return format_video(kind, item.title,
-                        section_title=(section_title or (parent.section.title if parent and getattr(parent, "section") else None)),
+                        section_title=(
+                            section_title or (parent.section.title if parent and getattr(parent, "section") else None)),
                         parent_title=(parent_title or (parent.show.title if parent else None)),
                         season=parent.index if parent else None,
                         episode=item.index if kind == "show" else None,
                         add_section_title=add_section_title)
 
 
-def format_video(kind, title, section_title=None, parent_title=None, season=None, episode=None, add_section_title=False):
+def format_video(kind, title, section_title=None, parent_title=None, season=None, episode=None,
+                 add_section_title=False):
     section_add = ""
     if add_section_title:
         section_add = ("%s: " % section_title) if section_title else ""
@@ -163,3 +168,37 @@ def get_item_hints(title, kind, series=None):
     hints = {"expected_title": [title]}
     hints.update({"type": "episode", "expected_series": [series]} if kind == "series" else {"type": "movie"})
     return hints
+
+
+def notify_executable(exe_info, videos, subtitles, storage):
+    variables = (
+        "subtitle_language", "subtitle_path", "subtitle_filename", "provider", "score", "storage", "series_id",
+        "series", "title", "section", "filename", "path", "folder", "season_id", "type", "id", "season"
+    )
+    exe, arguments = exe_info
+    for video, video_subtitles in subtitles.items():
+        for subtitle in video_subtitles:
+            lang = Locale.Language.Match(subtitle.language.alpha2)
+            data = video.plexapi_metadata.copy()
+            data.update({
+                "subtitle_language": lang,
+                "provider": subtitle.provider_name,
+                "score": subtitle.score,
+                "storage": storage,
+                "subtitle_path": subtitle.storage_path,
+                "subtitle_filename": os.path.basename(subtitle.storage_path)
+            })
+
+            # fill missing data with None
+            prepared_data = dict((v, data.get(v)) for v in variables)
+
+            prepared_arguments = [arg % prepared_data for arg in arguments]
+
+            Log.Debug(u"Calling %s with arguments: %s" % (exe, prepared_arguments))
+            try:
+                output = subprocess.check_output([exe] + prepared_arguments, stderr=subprocess.STDOUT)
+            except subprocess.CalledProcessError:
+                Log.Error(u"Calling %s failed: %s" % (exe, traceback.format_exc()))
+            else:
+                Log.Debug(u"Process output: %s" % output)
+
