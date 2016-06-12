@@ -12,3 +12,21 @@ PREFIX = "/video/%s" % PLUGIN_IDENTIFIER_SHORT
 TITLE = "%s Subtitles" % PLUGIN_NAME
 ART      = 'art-default.jpg'
 ICON     = 'icon-default.jpg'
+
+
+# media types as on https://github.com/Arcanemagus/plex-api/wiki/MediaTypes
+MOVIE = 1
+SHOW = 2
+SEASON = 3
+EPISODE = 4
+TRAILER = 5
+COMIC = 6
+PERSON = 7
+ARTIST = 8
+ALBUM = 9
+TRACK = 10
+PHOTO_ALBUM = 11
+PICTURE = 12
+PHOTO = 13
+CLIP = 14
+PLAYLIST_ITEM = 15

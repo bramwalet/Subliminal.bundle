@@ -5,7 +5,7 @@ import re
 import inspect
 from babelfish import Language
 from subzero.lib.io import FileIO, get_viable_encoding
-from subzero.constants import PLUGIN_NAME
+from subzero.constants import PLUGIN_NAME, PLUGIN_IDENTIFIER, MOVIE, SHOW
 from lib import Plex
 from helpers import check_write_permissions
 
@@ -138,24 +138,27 @@ class Config(object):
         Log.Error("Notify executable not existing or not executable: %s" % exe_fn)
 
     def check_enabled_sections(self):
-        #for section in self.sections:
-        #    #ret = query_plex("/system/agents?")
-        #    #print section.key
+        enabled_for_primary_agents = []
+        enabled_sections = {}
+
+        # find which agents we're enabled for
         for agent in Plex.agents():
-            print agent.identifier, repr(agent.primary)
             if not agent.primary:
                 continue
 
-            print "main", agent.identifier
-
             for t in list(agent.media_types):
-                if t.media_type in (1, 2):
+                if t.media_type in (MOVIE, SHOW):
                     related_agents = Plex.primary_agent(agent.identifier, t.media_type)
                     for a in related_agents:
-                        if a.enabled:
-                            print "enabled:", a.identifier
-                    #print agent_config, dir(agent_config), agent_config.enabled, agent_config.identifier,
+                        if a.identifier == PLUGIN_IDENTIFIER and a.enabled:
+                            enabled_for_primary_agents.append(agent.identifier)
 
+        # find the libraries that use them
+        for library in self.sections:
+            if library.agent in enabled_for_primary_agents:
+                enabled_sections[library.key] = library
+
+        return enabled_sections
 
     # Prepare a list of languages we want subs for
     def get_lang_list(self):
