@@ -40,6 +40,8 @@ class Config(object):
     ignore_paths = None
     fs_encoding = None
     notify_executable = None
+    sections = None
+    enabled_sections = None
 
     initialized = False
 
@@ -52,20 +54,21 @@ class Config(object):
         self.providers = self.get_providers()
         self.provider_settings = self.get_provider_settings()
         self.max_recent_items_per_library = int_or_default(Prefs["scheduler.max_recent_items_per_library"], 200)
-        self.initialized = True
+        self.sections = list(Plex["library"].sections())
         self.missing_permissions = []
         self.ignore_paths = self.parse_ignore_paths()
         self.permissions_ok = self.check_permissions()
         self.notify_executable = self.check_notify_executable()
+        self.enabled_sections = self.check_enabled_sections()
+        self.initialized = True
 
     def check_permissions(self):
         if not Prefs["subtitles.save.filesystem"] or not Prefs["check_permissions"]:
             return True
 
         use_ignore_fs = Prefs["subtitles.ignore_fs"]
-        sections = Plex["library"].sections()
         all_permissions_ok = True
-        for section in list(sections):
+        for section in self.sections:
             title = section.title
             for location in section:
                 path_str = location.path
@@ -133,6 +136,26 @@ class Config(object):
         if os.path.isfile(exe_fn) and os.access(exe_fn, os.X_OK):
             return exe_fn, arguments
         Log.Error("Notify executable not existing or not executable: %s" % exe_fn)
+
+    def check_enabled_sections(self):
+        #for section in self.sections:
+        #    #ret = query_plex("/system/agents?")
+        #    #print section.key
+        for agent in Plex.agents():
+            print agent.identifier, repr(agent.primary)
+            if not agent.primary:
+                continue
+
+            print "main", agent.identifier
+
+            for t in list(agent.media_types):
+                if t.media_type in (1, 2):
+                    related_agents = Plex.primary_agent(agent.identifier, t.media_type)
+                    for a in related_agents:
+                        if a.enabled:
+                            print "enabled:", a.identifier
+                    #print agent_config, dir(agent_config), agent_config.enabled, agent_config.identifier,
+
 
     # Prepare a list of languages we want subs for
     def get_lang_list(self):

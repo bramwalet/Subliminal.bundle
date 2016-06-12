@@ -40,3 +40,20 @@ class RootInterface(Interface):
                 'Server': 'Server'
             }))
         }))
+
+    def agents(self):
+        response = self.http.get('system/agents')
+
+        return self.parse(response, idict({
+            'MediaContainer': ('Container', idict({
+                'Agent': 'Agent'
+            }))
+        }))
+
+    def primary_agent(self, guid, media_type):
+        response = self.http.get('/system/agents/%s/config/%s' % (guid, media_type))
+        return self.parse(response, idict({
+            'MediaContainer': ('Container', idict({
+                'Agent': 'Agent'
+            }))
+        }))
