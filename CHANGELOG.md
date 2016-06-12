@@ -1,3 +1,11 @@
+1.3.33.522
+
+- core: fix library permission detection on windows; fixes #151
+- core: "Restrict to one language" now behaves like it should (one found subtitle of any language is treated as sufficient); fixes #149
+- core: add support for other subtitle formats such as ssa/ass/microdvd, convert to srt; fixes #138
+- core: hopefully more consistent force-refresh handling (intent); fixes #118
+
+
 1.3.31.513
 
 - core: add option to only download one language again (and skip the addition of .lang to the subtitle filename) (default: off); fixes #126 

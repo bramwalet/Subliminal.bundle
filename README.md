@@ -13,12 +13,22 @@ He has created **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/w
 
 ## Changelog
 
-1.3.33.522
+1.3.46.605
 
-- core: fix library permission detection on windows; fixes #151
-- core: "Restrict to one language" now behaves like it should (one found subtitle of any language is treated as sufficient); fixes #149
-- core: add support for other subtitle formats such as ssa/ass/microdvd, convert to srt; fixes #138
-- core: hopefully more consistent force-refresh handling (intent); fixes #118
+- add wiki (thanks @ukdtom / @dane22)
+- core: remove necessity of Plex credentials; fixes #148
+- core: fix non-SRT subtitle support; fixes #138
+- core: generic source overhaul in preparation for release 1.4
+- core: better filesystem encoding detection; may fix #159
+- core: add encoding handling for windows-1250 and windows-1251 encoding (eastern europe); fixes #162
+- core: overhaul ignore handling; fixes #164
+- core: implement ignore by path setting; fixes #134
+- core: add setting for optional fallback to metadata storage, if filesystem storage failed; fixes #100
+- core: add setting for notifying an executable after a subtitle has been downloaded (see Wiki); fixes #65
+- core: only handle sections for which Sub-Zero is enabled (in PMS agent settings); fixes #167
+- menu: add series/season force-refresh
+- menu: show item thumbnail/art where applicable
+- menu: mitigate PlexWeb behaviour of calling our handlers twice; fixes #168
 
 [older changes](CHANGELOG.md)
 
