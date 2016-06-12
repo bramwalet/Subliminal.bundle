@@ -158,6 +158,7 @@ class Config(object):
             if library.agent in enabled_for_primary_agents:
                 enabled_sections[library.key] = library
 
+        Log.Debug(u"I'm enabled for: %s" % [lib.title for key, lib in enabled_sections.iteritems()])
         return enabled_sections
 
     # Prepare a list of languages we want subs for

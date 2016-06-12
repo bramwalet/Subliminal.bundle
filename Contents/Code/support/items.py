@@ -88,6 +88,17 @@ def get_items(key="recently_added", base="library", value=None, flat=False, add_
         else:
             kind = item.type
 
+        # only return items for our enabled sections
+        section_key = None
+        if kind == "section":
+            section_key = item.key
+        else:
+            if hasattr(item, "section_key"):
+                section_key = getattr(item, "section_key")
+
+        if section_key and section_key not in config.enabled_sections:
+            continue
+
         if kind == "season":
             # fixme: i think this case is unused now
             if flat:
@@ -151,7 +162,9 @@ def get_recent_items():
     recent = []
 
     for section in Plex["library"].sections():
-        if section.type not in ("movie", "show") or section.key in ignore_list.sections:
+        if section.type not in ("movie", "show") \
+                or section.key not in config.enabled_sections \
+                or section.key in ignore_list.sections:
             Log.Debug(u"Skipping section: %s" % section.title)
             continue
 

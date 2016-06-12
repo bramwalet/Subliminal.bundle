@@ -34,7 +34,7 @@ class LibraryInterface(Interface):
             'MediaContainer': ('MediaContainer', idict({
                 'Video': {
                     'movie':    'Movie',
-		    'episode': 	'Episode'
+                    'episode':  'Episode'
                 }
             }))
         }))

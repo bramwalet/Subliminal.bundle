@@ -5,6 +5,9 @@ from plex.objects.library.section import Section
 class Metadata(Descriptor):
     section = Property(resolver=lambda: Metadata.construct_section)
 
+    # somehow section doesn't resolve on onDeck, add key manually
+    section_key = Property('librarySectionID')
+
     key = Property
     guid = Property
     rating_key = Property('ratingKey')
@@ -32,3 +35,4 @@ class Metadata(Descriptor):
         }
 
         return Section.construct(client, node, attribute_map, child=True)
+
