@@ -13,6 +13,10 @@ He has created **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/w
 
 ## Changelog
 
+1.3.46.606
+- core: hotfix for new users (who've never downloaded a subtitle with SZ before); fixes #169
+
+
 1.3.46.605
 
 - add wiki (thanks @ukdtom / @dane22)

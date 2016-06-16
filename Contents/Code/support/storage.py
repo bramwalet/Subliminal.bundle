@@ -17,6 +17,9 @@ def whack_missing_parts(videos, existing_parts=None):
     """
     # shortcut
 
+    if "subs" not in Dict:
+        return
+
     if not existing_parts:
         existing_parts = []
         for part in videos.viewvalues():
