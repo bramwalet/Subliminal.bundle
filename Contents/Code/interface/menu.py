@@ -2,7 +2,8 @@
 import logging
 import logger
 import os
-
+from subliminal.api import list_subtitles
+from babelfish import Language
 from menu_helpers import add_ignore_options, dig_tree, set_refresh_menu_state, \
     should_display_ignore, enable_channel_wrapper, default_thumb, debounce
 from subzero.constants import TITLE, ART, ICON, PREFIX, PLUGIN_IDENTIFIER, DEPENDENCY_MODULE_NAMES
@@ -461,7 +462,7 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
 
             oc.add(DirectoryObject(
                 key=Callback(TriggerListAvailableSubsForItem, rating_key=rating_key, part_id=part.id, title=title,
-                             item_title=item_title,
+                             item_title=item_title, language=lang_short,
                              item_type=plex_item.type, filename=filename),
                 title=u"Available subtitles for: %s, %s" % (lang_short, filename),
                 summary=summary
@@ -477,7 +478,7 @@ MANUAL_SUB_SEARCH = {}
 
 @route(PREFIX + '/item/search/{rating_key}/{part_id}')
 def TriggerListAvailableSubsForItem(rating_key=None, part_id=None, title=None, item_title=None, filename=None,
-                                    item_type="episode", force=False):
+                                    item_type="episode", language=None, force=False):
     assert rating_key, part_id
     plex_item = list(Plex["library"].metadata(rating_key))[0]
 
@@ -506,6 +507,11 @@ def TriggerListAvailableSubsForItem(rating_key=None, part_id=None, title=None, i
                                                                "section": plex_item.section.title})
 
     scanned_parts = scan_parts([metadata], kind="series" if item_type == "episode" else "movie")
+    print scanned_parts, language
+    available_subs = list_subtitles(scanned_parts.keys(), {Language.fromietf(language)},
+                                    providers=config.providers,
+                                    provider_configs=config.provider_settings)
+    print available_subs
 
     return ItemDetailsMenu(rating_key, randomize=timestamp(), title=title, item_title=item_title)
 
