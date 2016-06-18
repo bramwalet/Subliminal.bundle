@@ -1,6 +1,7 @@
 # coding=utf-8
 import logging
 import logger
+import os
 
 from menu_helpers import add_ignore_options, dig_tree, set_refresh_menu_state, \
     should_display_ignore, enable_channel_wrapper, default_thumb, debounce
@@ -13,7 +14,7 @@ from support.items import get_item, get_on_deck_items, refresh_item, get_all_ite
 from support.lib import Plex
 from support.missing_subtitles import items_get_all_missing_subs
 from support.storage import reset_storage, log_storage, get_subtitle_info
-from support.plex_media import scan_parts
+from support.plex_media import scan_parts, get_metadata_dict
 
 # init GUI
 ObjectContainer.art = R(ART)
@@ -411,9 +412,102 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
         summary="Issues a forced refresh, ignoring known subtitles and searching for new ones",
         thumb=item.thumb or default_thumb
     ))
+
+    # get stored subtitle info for item id
+    current_subtitle_info = get_subtitle_info(rating_key)
+
+    # get the plex item
+    plex_item = list(Plex["library"].metadata(rating_key))[0]
+
+    # get current media info for that item
+    media = plex_item.media
+
+    # look for subtitles for all available media parts and all of their languages
+    for part in media.parts:
+        filename = os.path.basename(part.file)
+
+        # get corresponding stored subtitle data for that media part (physical media item)
+        sub_part_data = current_subtitle_info.get(str(part.id), {})
+
+        # iterate through all configured languages
+        for lang_short in config.lang_list:
+            sub_data_for_lang = sub_part_data.get(lang_short, {})
+
+            # try getting current subtitle information for that language
+            current_subtitle_key = sub_data_for_lang.get("current", (None, None))
+            current_sub_provider_name, current_sub_id = current_subtitle_key
+
+            legacy_storage = False
+
+            # old storage version; take newest subtitle as current if available
+            if not current_sub_provider_name:
+                subtitle_keys = sorted([(sub["date_added"], key) for key, sub in sub_data_for_lang.iteritems()], None,
+                                       None, True)
+                current_subtitle_key = None, None
+                if subtitle_keys:
+                    current_subtitle_key = subtitle_keys[0][1]
+
+                current_sub_provider_name, current_sub_id = current_subtitle_key
+                legacy_storage = True
+
+            summary = u"No current subtitle in storage"
+            if current_sub_provider_name:
+                current_subtitle = sub_part_data[lang_short][current_subtitle_key]
+
+                summary = u"Current subtitle%s: %s (added: %s), Language: %s, Score: %i, Storage: %s, From: %s" % \
+                          (u" (legacy/inaccurate)" if legacy_storage else "", current_sub_provider_name,
+                           current_subtitle["date_added"].strftime("%Y-%m-%d %H:%M:%S"), lang_short,
+                           current_subtitle["score"], current_subtitle["storage"], current_subtitle["link"])
+
+            oc.add(DirectoryObject(
+                key=Callback(TriggerListAvailableSubsForItem, rating_key=rating_key, part_id=part.id, title=title,
+                             item_title=item_title,
+                             item_type=plex_item.type, filename=filename),
+                title=u"Available subtitles for: %s, %s" % (lang_short, filename),
+                summary=summary
+            ))
+
     add_ignore_options(oc, "videos", title=item_title, rating_key=rating_key, callback_menu=IgnoreMenu)
 
     return oc
+
+
+MANUAL_SUB_SEARCH = {}
+
+
+@route(PREFIX + '/item/search/{rating_key}/{part_id}')
+def TriggerListAvailableSubsForItem(rating_key=None, part_id=None, title=None, item_title=None, filename=None,
+                                    item_type="episode", force=False):
+    assert rating_key, part_id
+    plex_item = list(Plex["library"].metadata(rating_key))[0]
+
+    # find current part
+    current_part = None
+    for part in plex_item.media.parts:
+        if str(part.id) == part_id:
+            current_part = part
+
+    if not current_part:
+        raise ValueError("Part unknown")
+
+    # get normalized metadata
+    if item_type == "episode":
+        metadata = get_metadata_dict(plex_item, current_part,
+                                     {"video": current_part, "type": "episode", "title": plex_item.title,
+                                      "series": plex_item.show.title, "id": plex_item.rating_key,
+                                      "series_id": plex_item.show.rating_key, "season_id": plex_item.season.rating_key,
+                                      "season": plex_item.season.index,
+                                      })
+    else:
+        metadata = get_metadata_dict(plex_item, current_part, {"video": current_part, "type": "movie",
+                                                               "title": plex_item.title, "id": plex_item.rating_key,
+                                                               "series_id": None,
+                                                               "season_id": None,
+                                                               "section": plex_item.section.title})
+
+    scanned_parts = scan_parts([metadata], kind="series" if item_type == "episode" else "movie")
+
+    return ItemDetailsMenu(rating_key, randomize=timestamp(), title=title, item_title=item_title)
 
 
 @route(PREFIX + '/item/{rating_key}')

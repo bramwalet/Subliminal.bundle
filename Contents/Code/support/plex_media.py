@@ -8,6 +8,17 @@ from items import get_item
 from subzero import intent
 
 
+def get_metadata_dict(item, part, add):
+    data = {
+        "section": item.section.title,
+        "path": part.file,
+        "folder": os.path.dirname(part.file),
+        "filename": os.path.basename(part.file)
+    }
+    data.update(add)
+    return data
+
+
 def flatten_media(media, kind="series"):
     """
     iterates through media and returns the associated parts (videos)
@@ -16,16 +27,6 @@ def flatten_media(media, kind="series"):
     :return:
     """
     parts = []
-
-    def get_metadata_dict(item, part, add):
-        data = {
-            "section": item.section.title,
-            "path": part.file,
-            "folder": os.path.dirname(part.file),
-            "filename": os.path.basename(part.file)
-        }
-        data.update(add)
-        return data
 
     if kind == "series":
         for season in media.seasons:
