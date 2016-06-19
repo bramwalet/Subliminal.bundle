@@ -14,11 +14,6 @@ for key, value in getattr(module, "__builtins__").iteritems():
         globals()[key] = value
 
 import logger
-import logging
-
-# temporarily add the console handler and set it to DEBUG to catch errors upon imports
-Core.log.addHandler(logger.console_handler)
-Core.log.setLevel(logging.DEBUG)
 
 sys.modules["logger"] = logger
 
