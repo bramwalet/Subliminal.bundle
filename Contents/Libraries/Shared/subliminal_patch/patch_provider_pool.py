@@ -274,15 +274,15 @@ class PatchedProviderPool(ProviderPool):
         # download best subtitles, falling back on the next on error
         downloaded_subtitles = []
         for subtitle, score, matches in scored_subtitles:
-            # check score
-            if score < min_score:
-                logger.info('Score %d is below min_score (%d)', score, min_score)
-                break
-
             # stop when all languages are downloaded
             if set(s.language for s in downloaded_subtitles) == languages:
                 logger.debug('All languages downloaded')
                 break
+
+            # check score
+            if score < min_score:
+                logger.info('Score %d is below min_score (%d)', score, min_score)
+                continue
 
             # check downloaded languages
             if subtitle.language in set(s.language for s in downloaded_subtitles):
