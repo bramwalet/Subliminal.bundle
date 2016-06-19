@@ -15,7 +15,7 @@ from support.items import get_item, get_on_deck_items, refresh_item, get_all_ite
 from support.lib import Plex
 from support.missing_subtitles import items_get_all_missing_subs
 from support.storage import reset_storage, log_storage, get_subtitle_info
-from support.plex_media import scan_parts, get_metadata_dict
+from support.plex_media import scan_videos, get_metadata_dict
 
 # init GUI
 ObjectContainer.art = R(ART)
@@ -494,19 +494,19 @@ def TriggerListAvailableSubsForItem(rating_key=None, part_id=None, title=None, i
     # get normalized metadata
     if item_type == "episode":
         metadata = get_metadata_dict(plex_item, current_part,
-                                     {"video": current_part, "type": "episode", "title": plex_item.title,
+                                     {"plex_part": current_part, "type": "episode", "title": plex_item.title,
                                       "series": plex_item.show.title, "id": plex_item.rating_key,
                                       "series_id": plex_item.show.rating_key, "season_id": plex_item.season.rating_key,
                                       "season": plex_item.season.index,
                                       })
     else:
-        metadata = get_metadata_dict(plex_item, current_part, {"video": current_part, "type": "movie",
+        metadata = get_metadata_dict(plex_item, current_part, {"plex_part": current_part, "type": "movie",
                                                                "title": plex_item.title, "id": plex_item.rating_key,
                                                                "series_id": None,
                                                                "season_id": None,
                                                                "section": plex_item.section.title})
 
-    scanned_parts = scan_parts([metadata], kind="series" if item_type == "episode" else "movie")
+    scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie")
     print scanned_parts, language
     available_subs = list_subtitles(scanned_parts.keys(), {Language.fromietf(language)},
                                     providers=config.providers,

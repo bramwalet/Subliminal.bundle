@@ -32,7 +32,7 @@ sys.modules["interface"] = interface
 from subzero.constants import OS_PLEX_USERAGENT, PERSONAL_MEDIA_IDENTIFIER
 from subzero import intent
 from interface.menu import *
-from support.plex_media import convert_media_to_parts, get_media_item_ids, scan_parts
+from support.plex_media import media_to_videos, get_media_item_ids, scan_videos
 from support.subtitlehelpers import get_subtitles_from_metadata, force_utf8
 from support.helpers import notify_executable
 from support.storage import store_subtitle_info, whack_missing_parts
@@ -106,7 +106,7 @@ def download_best_subtitles(video_part_map, min_score=0):
     Log.Debug("All languages for all requested videos exist. Doing nothing.")
 
 
-def save_subtitles(videos, subtitles):
+def save_subtitles(scanned_video_part_map, downloaded_subtitles):
     meta_fallback = False
     save_successful = False
     storage = "metadata"
@@ -114,7 +114,7 @@ def save_subtitles(videos, subtitles):
         storage = "filesystem"
         try:
             Log.Debug("Using filesystem as subtitle storage")
-            save_subtitles_to_file(subtitles)
+            save_subtitles_to_file(downloaded_subtitles)
         except OSError:
             if Prefs["subtitles.save.metadata_fallback"]:
                 meta_fallback = True
@@ -128,12 +128,12 @@ def save_subtitles(videos, subtitles):
             Log.Debug("Using metadata as subtitle storage, because filesystem storage failed")
         else:
             Log.Debug("Using metadata as subtitle storage")
-        save_successful = save_subtitles_to_metadata(videos, subtitles)
+        save_successful = save_subtitles_to_metadata(scanned_video_part_map, downloaded_subtitles)
 
     if save_successful and config.notify_executable:
-        notify_executable(config.notify_executable, videos, subtitles, storage)
+        notify_executable(config.notify_executable, scanned_video_part_map, downloaded_subtitles, storage)
 
-    store_subtitle_info(videos, subtitles, storage)
+    store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage)
 
 
 def save_subtitles_to_file(subtitles):
@@ -222,13 +222,13 @@ class SubZeroAgent(object):
         item_ids = []
         try:
             init_subliminal_patches()
-            parts = convert_media_to_parts(media, kind=self.agent_type)
+            videos = media_to_videos(media, kind=self.agent_type)
 
             # media ignored?
             use_any_parts = False
-            for part in parts:
-                if is_ignored(part["id"]):
-                    Log.Debug(u"Ignoring %s" % part)
+            for video in videos:
+                if is_ignored(video["id"]):
+                    Log.Debug(u"Ignoring %s" % video)
                     continue
                 use_any_parts = True
 
@@ -237,14 +237,18 @@ class SubZeroAgent(object):
                 return
 
             use_score = Prefs[self.score_prefs_key]
-            scanned_parts = scan_parts(parts, kind=self.agent_type)
-            subtitles = download_best_subtitles(scanned_parts, min_score=int(use_score))
+
+            # scanned_video_part_map = {subliminal.Video: plex_part, ...}
+            scanned_video_part_map = scan_videos(videos, kind=self.agent_type)
+
+            # downloaded_subtitles = {subliminal.Video: [subtitle, subtitle, ...]}
+            downloaded_subtitles = download_best_subtitles(scanned_video_part_map, min_score=int(use_score))
             item_ids = get_media_item_ids(media, kind=self.agent_type)
 
-            whack_missing_parts(scanned_parts)
+            whack_missing_parts(scanned_video_part_map)
 
-            if subtitles:
-                save_subtitles(scanned_parts, subtitles)
+            if downloaded_subtitles:
+                save_subtitles(scanned_video_part_map, downloaded_subtitles)
 
             update_local_media(metadata, media, media_type=self.agent_type)
 
