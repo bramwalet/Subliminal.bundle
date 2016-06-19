@@ -2,10 +2,42 @@
 import os
 import logging
 from bs4 import UnicodeDammit
-from subliminal.api import get_subtitle_path, io
-from subzero.lib.io import get_viable_encoding
+from subliminal.api import get_subtitle_path, io, defaultdict
+from subliminal_patch.patch_provider_pool import PatchedProviderPool
 
 logger = logging.getLogger(__name__)
+
+
+def list_all_subtitles(videos, languages, **kwargs):
+    """List all available subtitles.
+
+    The `videos` must pass the `languages` check of :func:`check_video`.
+
+    All other parameters are passed onwards to the :class:`ProviderPool` constructor.
+
+    :param videos: videos to list subtitles for.
+    :type videos: set of :class:`~subliminal.video.Video`
+    :param languages: languages to search for.
+    :type languages: set of :class:`~babelfish.language.Language`
+    :return: found subtitles per video.
+    :rtype: dict of :class:`~subliminal.video.Video` to list of :class:`~subliminal.subtitle.Subtitle`
+
+    """
+    listed_subtitles = defaultdict(list)
+
+    # return immediatly if no video passed the checks
+    if not videos:
+        return listed_subtitles
+
+    # list subtitles
+    with PatchedProviderPool(**kwargs) as pool:
+        for video in videos:
+            logger.info('Listing subtitles for %r', video)
+            subtitles = pool.list_subtitles(video, languages - video.subtitle_languages)
+            listed_subtitles[video].extend(subtitles)
+            logger.info('Found %d subtitle(s)', len(subtitles))
+
+    return listed_subtitles
 
 
 def save_subtitles(video, subtitles, single=False, directory=None, encoding=None, encode_with=None):

@@ -1,11 +1,17 @@
 # coding=utf-8
 import logging
+
+import operator
+
 import logger
 import os
-from subliminal.api import list_subtitles
+import traceback
+
+from subliminal_patch.patch_api import list_all_subtitles
 from babelfish import Language
 from menu_helpers import add_ignore_options, dig_tree, set_refresh_menu_state, \
     should_display_ignore, enable_channel_wrapper, default_thumb, debounce
+from subliminal_patch.patch_subtitle import compute_score
 from subzero.constants import TITLE, ART, ICON, PREFIX, PLUGIN_IDENTIFIER, DEPENDENCY_MODULE_NAMES
 from support.background import scheduler
 from support.config import config
@@ -477,9 +483,13 @@ MANUAL_SUB_SEARCH = {}
 
 
 @route(PREFIX + '/item/search/{rating_key}/{part_id}')
+@debounce
 def TriggerListAvailableSubsForItem(rating_key=None, part_id=None, title=None, item_title=None, filename=None,
-                                    item_type="episode", language=None, force=False):
+                                    item_type="episode", language=None, force=False, trigger=True):
     assert rating_key, part_id
+    if not trigger:
+        return
+
     plex_item = list(Plex["library"].metadata(rating_key))[0]
 
     # find current part
@@ -493,6 +503,7 @@ def TriggerListAvailableSubsForItem(rating_key=None, part_id=None, title=None, i
 
     # get normalized metadata
     if item_type == "episode":
+        min_score = Prefs["subtitles.search.minimumTVScore"]
         metadata = get_metadata_dict(plex_item, current_part,
                                      {"plex_part": current_part, "type": "episode", "title": plex_item.title,
                                       "series": plex_item.show.title, "id": plex_item.rating_key,
@@ -500,18 +511,45 @@ def TriggerListAvailableSubsForItem(rating_key=None, part_id=None, title=None, i
                                       "season": plex_item.season.index,
                                       })
     else:
+        min_score = Prefs["subtitles.search.minimumMovieScore"]
         metadata = get_metadata_dict(plex_item, current_part, {"plex_part": current_part, "type": "movie",
                                                                "title": plex_item.title, "id": plex_item.rating_key,
                                                                "series_id": None,
                                                                "season_id": None,
                                                                "section": plex_item.section.title})
 
+    min_score = int(min_score)
     scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie")
-    print scanned_parts, language
-    available_subs = list_subtitles(scanned_parts.keys(), {Language.fromietf(language)},
-                                    providers=config.providers,
-                                    provider_configs=config.provider_settings)
-    print available_subs
+    video, plex_part = scanned_parts.items()[0]
+    available_subs = list_all_subtitles(scanned_parts, {Language.fromietf(language)},
+                                        providers=config.providers,
+                                        provider_configs=config.provider_settings)
+
+    use_hearing_impaired = Prefs['subtitles.search.hearingImpaired'] in ("prefer", "force HI")
+
+    # sort subtitles by score
+    unsorted_subtitles = []
+    for s in available_subs[video]:
+        Log.Debug("Starting score computation for %s", s)
+        try:
+            matches = s.get_matches(video, hearing_impaired=use_hearing_impaired)
+        except AttributeError:
+            Log.Error("Match computation failed for %s: %s", s, traceback.format_exc())
+            continue
+
+        unsorted_subtitles.append((s, compute_score(matches, video), matches))
+    scored_subtitles = sorted(unsorted_subtitles, key=operator.itemgetter(1), reverse=True)
+
+    subtitles = []
+    for subtitle, score, matches in scored_subtitles:
+        # check score
+        if score < min_score:
+            Log.Info('Score %d is below min_score (%d)', score, min_score)
+            continue
+        subtitle.score = score
+        subtitles.append(subtitle)
+
+    print subtitles
 
     return ItemDetailsMenu(rating_key, randomize=timestamp(), title=title, item_title=item_title)
 
