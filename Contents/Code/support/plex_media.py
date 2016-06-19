@@ -44,7 +44,7 @@ def media_to_videos(media, kind="series"):
                                               {"plex_part": part, "type": "episode", "title": ep.title,
                                                "series": media.title, "id": ep.id,
                                                "series_id": media.id, "season_id": season_object.id,
-                                               "season": plex_episode.season.index,
+                                               "episode": plex_episode.index, "season": plex_episode.season.index
                                                })
                         )
     else:
@@ -55,8 +55,7 @@ def media_to_videos(media, kind="series"):
                     get_metadata_dict(plex_item, part, {"plex_part": part, "type": "movie",
                                                         "title": media.title, "id": media.id,
                                                         "series_id": None,
-                                                        "season_id": None,
-                                                        "section": plex_item.section.title})
+                                                        "season_id": None})
                 )
     return videos
 

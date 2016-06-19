@@ -428,7 +428,7 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
         filename = os.path.basename(part.file)
 
         # get corresponding stored subtitle data for that media part (physical media item)
-        sub_part_data = current_subtitle_info.get(str(part.id), {})
+        sub_part_data = current_subtitle_info.get(str(part.id), {}) if current_subtitle_info else {}
 
         # iterate through all configured languages
         for lang_short in config.lang_list:

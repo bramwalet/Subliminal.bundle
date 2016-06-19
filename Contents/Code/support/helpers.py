@@ -89,7 +89,8 @@ def pad_title(value):
     return str_pad(value, 30, pad_char=' ')
 
 
-def format_item(item, kind, parent=None, parent_title=None, section_title=None, add_section_title=False):
+def get_plex_item_display_title(item, kind, parent=None, parent_title=None, section_title=None,
+                                add_section_title=False):
     """
     :param item: plex item
     :param kind: show or movie
@@ -97,17 +98,18 @@ def format_item(item, kind, parent=None, parent_title=None, section_title=None, 
     :param parent_title: parentTitle or None
     :return:
     """
-    return format_video(kind, item.title,
-                        section_title=(
-                            section_title or (parent.section.title if parent and getattr(parent, "section") else None)),
-                        parent_title=(parent_title or (parent.show.title if parent else None)),
-                        season=parent.index if parent else None,
-                        episode=item.index if kind == "show" else None,
-                        add_section_title=add_section_title)
+    return get_video_display_title(kind, item.title,
+                                   section_title=(
+                                       section_title or (parent.section.title if parent and getattr(parent, "section")
+                                                         else None)),
+                                   parent_title=(parent_title or (parent.show.title if parent else None)),
+                                   season=parent.index if parent else None,
+                                   episode=item.index if kind == "show" else None,
+                                   add_section_title=add_section_title)
 
 
-def format_video(kind, title, section_title=None, parent_title=None, season=None, episode=None,
-                 add_section_title=False):
+def get_video_display_title(kind, title, section_title=None, parent_title=None, season=None, episode=None,
+                            add_section_title=False):
     section_add = ""
     if add_section_title:
         section_add = ("%s: " % section_title) if section_title else ""
@@ -201,4 +203,3 @@ def notify_executable(exe_info, videos, subtitles, storage):
                 Log.Error(u"Calling %s failed: %s" % (exe, traceback.format_exc()))
             else:
                 Log.Debug(u"Process output: %s" % output)
-

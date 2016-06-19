@@ -2,7 +2,7 @@
 import traceback
 
 from support.config import config
-from support.helpers import format_item
+from support.helpers import get_plex_item_display_title
 from support.items import get_item
 from support.lib import Plex
 
@@ -14,9 +14,9 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
     item = get_item(rating_key)
 
     if kind == "show":
-        item_title = format_item(item, kind, parent=item.season, section_title=section_title, parent_title=item.show.title)
+        item_title = get_plex_item_display_title(item, kind, parent=item.season, section_title=section_title, parent_title=item.show.title)
     else:
-        item_title = format_item(item, kind, section_title=section_title)
+        item_title = get_plex_item_display_title(item, kind, section_title=section_title)
 
     video = item.media
 
