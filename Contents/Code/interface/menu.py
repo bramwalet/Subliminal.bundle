@@ -331,7 +331,8 @@ def FirstLetterMetadataMenu(rating_key, key, title=None, base_title=None, displa
 
 
 @route(PREFIX + '/section/contents', display_items=bool)
-def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, previous_item_type=None, previous_rating_key=None):
+def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, previous_item_type=None,
+                 previous_rating_key=None):
     """
     displays the contents of a section based on whether it has a deeper tree or not (movies->movie (item) list; series->series list)
     :param rating_key:
@@ -427,7 +428,8 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
 
 @route(PREFIX + '/item/{rating_key}')
 @debounce
-def RefreshItem(rating_key=None, came_from="/recent", item_title=None, force=False, refresh_kind=None, previous_rating_key=None, timeout=8000, randomize=None, trigger=True):
+def RefreshItem(rating_key=None, item_title=None, force=False, refresh_kind=None,
+                previous_rating_key=None, timeout=8000, randomize=None, trigger=True):
     assert rating_key
     header = " "
     if trigger:
