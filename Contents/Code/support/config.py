@@ -57,9 +57,9 @@ class Config(object):
         self.sections = list(Plex["library"].sections())
         self.missing_permissions = []
         self.ignore_paths = self.parse_ignore_paths()
+        self.enabled_sections = self.check_enabled_sections()
         self.permissions_ok = self.check_permissions()
         self.notify_executable = self.check_notify_executable()
-        self.enabled_sections = self.check_enabled_sections()
         self.initialized = True
 
     def check_permissions(self):
@@ -69,6 +69,9 @@ class Config(object):
         use_ignore_fs = Prefs["subtitles.ignore_fs"]
         all_permissions_ok = True
         for section in self.sections:
+            if section.key not in self.enabled_sections:
+                continue
+
             title = section.title
             for location in section:
                 path_str = location.path
