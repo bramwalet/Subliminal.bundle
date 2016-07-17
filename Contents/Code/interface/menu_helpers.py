@@ -58,8 +58,8 @@ def dig_tree(oc, items, menu_callback, menu_determination_callback=None, force_r
             add_kwargs.update(pass_kwargs)
 
         oc.add(DirectoryObject(
-            key=Callback(menu_callback or menu_determination_callback(kind, item), title=title, rating_key=force_rating_key or key,
-                         **add_kwargs),
+            key=Callback(menu_callback or menu_determination_callback(kind, item), title=title,
+                         rating_key=force_rating_key or key, **add_kwargs),
             title=title, thumb=thumb
         ))
     return oc
@@ -138,3 +138,5 @@ def debounce(func):
         return func(*args, **kwargs)
 
     return wrap
+
+

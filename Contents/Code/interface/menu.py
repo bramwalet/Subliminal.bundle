@@ -17,7 +17,8 @@ from support.background import scheduler
 from support.config import config
 from support.helpers import pad_title, timestamp
 from support.ignore import ignore_list
-from support.items import get_item, get_on_deck_items, refresh_item, get_all_items, get_recent_items, get_items_info, get_item_thumb
+from support.items import get_item, get_on_deck_items, refresh_item, get_all_items, get_recent_items, get_items_info, \
+    get_item_thumb, get_item_kind_from_rating_key
 from support.lib import Plex
 from support.missing_subtitles import items_get_all_missing_subs
 from support.storage import reset_storage, log_storage, get_subtitle_info
@@ -354,6 +355,8 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
     title = base_title + " > " + title
     oc = ObjectContainer(title2=title, no_cache=True, no_history=True)
 
+    current_kind = get_item_kind_from_rating_key(rating_key)
+
     if display_items:
         items = get_all_items(key="children", value=rating_key, base="library/metadata")
         kind, deeper = get_items_info(items)
@@ -363,16 +366,22 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
         if should_display_ignore(items, previous=previous_item_type):
             add_ignore_options(oc, "series", title=item_title, rating_key=rating_key, callback_menu=IgnoreMenu)
 
+        timeout = 8
+        if current_kind == "season":
+            timeout = 30
+        elif current_kind == "series":
+            timeout = 180
+
         # add refresh
         oc.add(DirectoryObject(
-            key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title, refresh_kind=kind, previous_rating_key=previous_rating_key,
-                         timeout=16000, randomize=timestamp()),
+            key=Callback(RefreshItem, rating_key=rating_key, item_title=title, refresh_kind=current_kind,
+                         previous_rating_key=previous_rating_key, timeout=timeout*1000, randomize=timestamp()),
             title=u"Refresh: %s" % item_title,
             summary="Refreshes the item, possibly picking up new subtitles on disk"
         ))
         oc.add(DirectoryObject(
-            key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title, force=True, refresh_kind=kind,
-                         previous_rating_key=previous_rating_key, timeout=16000),
+            key=Callback(RefreshItem, rating_key=rating_key, item_title=title, force=True,
+                         refresh_kind=current_kind, previous_rating_key=previous_rating_key, timeout=timeout*1000),
             title=u"Force-Refresh: %s" % item_title,
             summary="Issues a forced refresh, ignoring known subtitles and searching for new ones"
         ))
@@ -561,6 +570,7 @@ def RefreshItem(rating_key=None, came_from="/recent", item_title=None, force=Fal
     header = " "
     if trigger:
         set_refresh_menu_state(u"Triggering %sRefresh for %s" % ("Force-" if force else "", item_title))
+        Log.Info("Triggering %srefresh of item %s, \"%s\"", "" if not force else "force-", rating_key, item_title)
         Thread.Create(refresh_item, rating_key=rating_key, force=force, refresh_kind=refresh_kind, parent_rating_key=previous_rating_key,
                       timeout=int(timeout))
         header = u"%s of item %s triggered" % ("Refresh" if not force else "Forced-refresh", rating_key)
