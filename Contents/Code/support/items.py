@@ -29,6 +29,19 @@ def get_item_kind(item):
     return type(item).__name__
 
 
+PLEX_API_TYPE_MAP = {
+    "Show": "series",
+    "Season": "season",
+    "Episode": "episode",
+    "Movie": "movie",
+}
+
+
+def get_item_kind_from_rating_key(key):
+    item = get_item(key)
+    return PLEX_API_TYPE_MAP[get_item_kind(item)]
+
+
 def get_item_thumb(item):
     kind = get_item_kind(item)
     if kind == "Episode":
@@ -251,9 +264,12 @@ def refresh_item(rating_key, force=False, timeout=8000, refresh_kind=None, paren
     if force:
         intent.set("force", rating_key, timeout=timeout)
 
-    if refresh_kind == "episode":
-        # season refresh
-        rating_key = parent_rating_key
+    refresh = [rating_key]
 
-    Log.Info("%s item %s", "Refreshing" if not force else "Forced-refreshing", rating_key)
-    Plex["library/metadata"].refresh(rating_key)
+    if refresh_kind == "season":
+        # season refresh, needs explicit per-episode refresh
+        refresh = [item.rating_key for item in list(Plex["library/metadata"].children(int(rating_key)))]
+
+    for key in refresh:
+        Log.Info("%s item %s", "Refreshing" if not force else "Forced-refreshing", key)
+        Plex["library/metadata"].refresh(key)
