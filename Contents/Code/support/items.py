@@ -262,6 +262,7 @@ def is_ignored(rating_key, item=None):
 def refresh_item(rating_key, force=False, timeout=8000, refresh_kind=None, parent_rating_key=None):
     # timeout actually is the time for which the intent will be valid
     if force:
+        Log.Debug("Setting intent for force-refresh of %s to timeout: %s", rating_key, timeout)
         intent.set("force", rating_key, timeout=timeout)
 
     refresh = [rating_key]

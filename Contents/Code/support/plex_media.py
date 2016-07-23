@@ -8,24 +8,25 @@ from items import get_item
 from subzero import intent
 
 
-def flatten_media(media, kind="series"):
+def get_metadata_dict(item, part, add):
+    data = {
+        "section": item.section.title,
+        "path": part.file,
+        "folder": os.path.dirname(part.file),
+        "filename": os.path.basename(part.file)
+    }
+    data.update(add)
+    return data
+
+
+def media_to_videos(media, kind="series"):
     """
     iterates through media and returns the associated parts (videos)
     :param media:
     :param kind:
     :return:
     """
-    parts = []
-
-    def get_metadata_dict(item, part, add):
-        data = {
-            "section": item.section.title,
-            "path": part.file,
-            "folder": os.path.dirname(part.file),
-            "filename": os.path.basename(part.file)
-        }
-        data.update(add)
-        return data
+    videos = []
 
     if kind == "series":
         for season in media.seasons:
@@ -38,39 +39,28 @@ def flatten_media(media, kind="series"):
 
                 for item in media.seasons[season].episodes[episode].items:
                     for part in item.parts:
-                        parts.append(
+                        videos.append(
                             get_metadata_dict(plex_episode, part,
-                                              {"video": part, "type": "episode", "title": ep.title,
+                                              {"plex_part": part, "type": "episode", "title": ep.title,
                                                "series": media.title, "id": ep.id,
                                                "series_id": media.id, "season_id": season_object.id,
-                                               "season": plex_episode.season.index,
+                                               "episode": plex_episode.index, "season": plex_episode.season.index
                                                })
                         )
     else:
         plex_item = get_item(media.id)
         for item in media.items:
             for part in item.parts:
-                parts.append(
-                    get_metadata_dict(plex_item, part, {"video": part, "type": "movie",
+                videos.append(
+                    get_metadata_dict(plex_item, part, {"plex_part": part, "type": "movie",
                                                         "title": media.title, "id": media.id,
                                                         "series_id": None,
-                                                        "season_id": None,
-                                                        "section": plex_item.section.title})
+                                                        "season_id": None})
                 )
-    return parts
+    return videos
 
 
 IGNORE_FN = ("subzero.ignore", ".subzero.ignore", ".nosz")
-
-
-def convert_media_to_parts(media, kind="series"):
-    """
-    returns a list of parts to be used later on; ignores folders with an existing "subzero.ignore" file
-    :param media:
-    :param kind:
-    :return:
-    """
-    return flatten_media(media, kind=kind)
 
 
 def get_stream_fps(streams):
@@ -97,43 +87,44 @@ def get_media_item_ids(media, kind="series"):
     return ids
 
 
-def scan_video(plex_video, ignore_all=False, hints=None):
+def scan_video(plex_part, ignore_all=False, hints=None):
     embedded_subtitles = not ignore_all and Prefs['subtitles.scan.embedded']
     external_subtitles = not ignore_all and Prefs['subtitles.scan.external']
 
     if ignore_all:
         Log.Debug("Force refresh intended.")
 
-    Log.Debug("Scanning video: %s, subtitles=%s, embedded_subtitles=%s" % (plex_video.file, external_subtitles, embedded_subtitles))
+    Log.Debug("Scanning video: %s, subtitles=%s, embedded_subtitles=%s" % (plex_part.file, external_subtitles, embedded_subtitles))
 
     try:
-        return subliminal.video.scan_video(plex_video.file, subtitles=external_subtitles, embedded_subtitles=embedded_subtitles,
-                                           hints=hints or {}, video_fps=plex_video.fps)
+        return subliminal.video.scan_video(plex_part.file, subtitles=external_subtitles, embedded_subtitles=embedded_subtitles,
+                                           hints=hints or {}, video_fps=plex_part.fps)
 
     except ValueError:
         Log.Warn("File could not be guessed by subliminal")
 
 
-def scan_parts(parts, kind="series"):
+def scan_videos(videos, kind="series"):
     """
-    receives a list of parts containing dictionaries returned by flattenToParts
-    :param parts:
+    receives a list of videos containing dictionaries returned by media_to_videos
+    :param videos:
     :param kind: series or movies
     :return: dictionary of subliminal.video.scan_video, key=subliminal scanned video, value=plex file part
     """
     ret = {}
-    for part in parts:
-        force_refresh = intent.get("force", part["id"], part["series_id"], part["season_id"])
+    for video in videos:
+        force_refresh = intent.get("force", video["id"], video["series_id"], video["season_id"])
+        Log.Debug("Determining force-refresh, result: %s" % force_refresh)
 
-        hints = helpers.get_item_hints(part["title"], kind, series=part["series"] if kind == "series" else None)
-        part["video"].fps = get_stream_fps(part["video"].streams)
-        scanned_video = scan_video(part["video"], ignore_all=force_refresh, hints=hints)
+        hints = helpers.get_item_hints(video["title"], kind, series=video["series"] if kind == "series" else None)
+        video["plex_part"].fps = get_stream_fps(video["plex_part"].streams)
+        scanned_video = scan_video(video["plex_part"], ignore_all=force_refresh, hints=hints)
         if not scanned_video:
             continue
 
-        scanned_video.id = part["id"]
-        part_metadata = part.copy()
-        del part_metadata["video"]
+        scanned_video.id = video["id"]
+        part_metadata = video.copy()
+        del part_metadata["plex_part"]
         scanned_video.plexapi_metadata = part_metadata
-        ret[scanned_video] = part["video"]
+        ret[scanned_video] = video["plex_part"]
     return ret
