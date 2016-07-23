@@ -86,6 +86,8 @@ class PatchedSubtitle(Subtitle):
             encodings.extend(['gb18030', 'big5'])
         elif self.language.alpha3 == 'jpn':
             encodings.append('shift-jis')
+        elif self.language.alpha3 == 'tha':
+            encodings.append('tis-620')
         elif self.language.alpha3 == 'ara':
             encodings.append('windows-1256')
         elif self.language.alpha3 == 'heb':
