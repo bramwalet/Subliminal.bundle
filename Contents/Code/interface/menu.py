@@ -367,11 +367,11 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
         if should_display_ignore(items, previous=previous_item_type):
             add_ignore_options(oc, "series", title=item_title, rating_key=rating_key, callback_menu=IgnoreMenu)
 
-        timeout = 8
+        timeout = 30
         if current_kind == "season":
-            timeout = 30
+            timeout = 90
         elif current_kind == "series":
-            timeout = 180
+            timeout = 360
 
         # add refresh
         oc.add(DirectoryObject(
@@ -416,15 +416,19 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
     title = unicode(base_title) + " > " + unicode(title) if base_title else unicode(title)
     item = get_item(rating_key)
 
+    timeout = 30
+
     oc = ObjectContainer(title2=title, replace_parent=True)
     oc.add(DirectoryObject(
-        key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title, randomize=timestamp()),
+        key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title, randomize=timestamp(),
+                     timeout=timeout*1000),
         title=u"Refresh: %s" % item_title,
         summary="Refreshes the item, possibly picking up new subtitles on disk",
         thumb=item.thumb or default_thumb
     ))
     oc.add(DirectoryObject(
-        key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title, force=True, randomize=timestamp()),
+        key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title, force=True, randomize=timestamp(),
+                     timeout=timeout*1000),
         title=u"Force-Refresh: %s" % item_title,
         summary="Issues a forced refresh, ignoring known subtitles and searching for new ones",
         thumb=item.thumb or default_thumb
@@ -572,9 +576,10 @@ def RefreshItem(rating_key=None, item_title=None, force=False, refresh_kind=None
     header = " "
     if trigger:
         set_refresh_menu_state(u"Triggering %sRefresh for %s" % ("Force-" if force else "", item_title))
-        Log.Info("Triggering %srefresh of item %s, \"%s\"", "" if not force else "force-", rating_key, item_title)
-        Thread.Create(refresh_item, rating_key=rating_key, force=force, refresh_kind=refresh_kind, parent_rating_key=previous_rating_key,
-                      timeout=int(timeout))
+        Log.Info("Triggering %srefresh of item %s, \"%s\" (timeout: %s)", "" if not force else "force-", rating_key,
+                 item_title, timeout)
+        Thread.Create(refresh_item, rating_key=rating_key, force=force, refresh_kind=refresh_kind,
+                      parent_rating_key=previous_rating_key, timeout=int(timeout))
         header = u"%s of item %s triggered" % ("Refresh" if not force else "Forced-refresh", rating_key)
     return fatality(randomize=timestamp(), header=header, replace_parent=True)
 

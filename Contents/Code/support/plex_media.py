@@ -114,6 +114,7 @@ def scan_videos(videos, kind="series"):
     ret = {}
     for video in videos:
         force_refresh = intent.get("force", video["id"], video["series_id"], video["season_id"])
+        Log.Debug("Determining force-refresh, result: %s" % force_refresh)
 
         hints = helpers.get_item_hints(video["title"], kind, series=video["series"] if kind == "series" else None)
         video["plex_part"].fps = get_stream_fps(video["plex_part"].streams)

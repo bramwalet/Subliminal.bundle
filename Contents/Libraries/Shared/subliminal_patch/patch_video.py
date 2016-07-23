@@ -5,8 +5,8 @@ import logging
 import traceback
 
 from babelfish import Error as BabelfishError
-from subliminal.video import SUBTITLE_EXTENSIONS, VIDEO_EXTENSIONS, Language, Video, EnzymeError, MKV, guess_file_info, hash_opensubtitles, \
-    hash_thesubdb
+from subliminal.video import SUBTITLE_EXTENSIONS, VIDEO_EXTENSIONS, Language, Video, EnzymeError, MKV, \
+    guess_file_info, hash_opensubtitles, hash_thesubdb
 
 logger = logging.getLogger(__name__)
 

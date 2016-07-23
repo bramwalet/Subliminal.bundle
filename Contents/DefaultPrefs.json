@@ -255,10 +255,34 @@
     "default": "true"
   },
   {
-    "id": "provider.addic7ed.boost",
-    "label": "Addic7ed: prefer over other providers (if requirements met)",
-    "type": "bool",
-    "default": "false"
+    "id": "provider.addic7ed.boost_by",
+    "label": "Addic7ed: boost score (if requirements met)",
+    "type": "enum",
+    "values": [
+      "100",
+      "95",
+      "90",
+      "85",
+      "80",
+      "75",
+      "70",
+      "67",
+      "65",
+      "60",
+      "55",
+      "50",
+      "45",
+      "40",
+      "35",
+      "30",
+      "25",
+      "20",
+      "15",
+      "10",
+      "5",
+      "0"
+    ],
+    "default": "10"
   },
   {
     "id": "provider.tvsubtitles.enabled",

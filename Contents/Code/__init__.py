@@ -60,7 +60,7 @@ def init_subliminal_patches():
     dest_folder = config.subtitle_destination_folder
     subliminal_patch.patch_video.CUSTOM_PATHS = [dest_folder] if dest_folder else []
     subliminal_patch.patch_provider_pool.DOWNLOAD_TRIES = int(Prefs['subtitles.try_downloads'])
-    subliminal_patch.patch_providers.addic7ed.USE_BOOST = bool(Prefs['provider.addic7ed.boost'])
+    subliminal.video.Episode.scores["addic7ed_boost"] = int(Prefs['provider.addic7ed.boost_by'])
 
 
 def download_best_subtitles(video_part_map, min_score=0):

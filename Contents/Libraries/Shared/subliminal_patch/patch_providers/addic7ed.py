@@ -2,6 +2,7 @@
 
 import logging
 import re
+import subliminal
 from random import randint
 from subliminal.providers.addic7ed import Addic7edProvider, Addic7edSubtitle, ParserBeautifulSoup, Language
 from subliminal.cache import SHOW_EXPIRATION_TIME, region
@@ -21,12 +22,12 @@ class PatchedAddic7edSubtitle(Addic7edSubtitle):
 
     def get_matches(self, video, hearing_impaired=False):
         matches = super(PatchedAddic7edSubtitle, self).get_matches(video, hearing_impaired=hearing_impaired)
-        if not USE_BOOST:
+        if not subliminal.video.Episode.scores["addic7ed_boost"]:
             return matches
 
         if {"series", "season", "episode", "year"}.issubset(matches) and "format" in matches:
-            matches.add("boost")
-            logger.info("Boosting Addic7ed subtitle")
+            matches.add("addic7ed_boost")
+            logger.info("Boosting Addic7ed subtitle by %s" % subliminal.video.Episode.scores["addic7ed_boost"])
         return matches
 
 
