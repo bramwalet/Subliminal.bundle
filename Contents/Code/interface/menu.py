@@ -186,7 +186,7 @@ def determine_section_display(kind, item):
     :param item:
     :return:
     """
-    if item.size > 200:
+    if item.size > 80:
         return SectionFirstLetterMenu
     return SectionMenu
 
