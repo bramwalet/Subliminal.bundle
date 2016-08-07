@@ -68,6 +68,7 @@ def compute_score(matches, video, scores=None):
 
 class PatchedSubtitle(Subtitle):
     storage_path = None
+    subtitle_id = None
 
     def guess_encoding(self):
         """Guess encoding using the language, falling back on chardet.

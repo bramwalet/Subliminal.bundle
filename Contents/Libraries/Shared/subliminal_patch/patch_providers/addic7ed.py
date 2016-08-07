@@ -19,6 +19,7 @@ USE_BOOST = False
 class PatchedAddic7edSubtitle(Addic7edSubtitle):
     def __init__(self, *args, **kwargs):
         super(PatchedAddic7edSubtitle, self).__init__(*args, **kwargs)
+        self.subtitle_id = kwargs.get("download_link")
 
     def get_matches(self, video, hearing_impaired=False):
         matches = super(PatchedAddic7edSubtitle, self).get_matches(video, hearing_impaired=hearing_impaired)

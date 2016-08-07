@@ -2,6 +2,7 @@
 
 import datetime
 import pprint
+import copy
 
 from helpers import get_video_display_title
 
@@ -32,10 +33,13 @@ def whack_missing_parts(scanned_video_part_map, existing_parts=None):
         if video.id not in Dict["subs"]:
             continue
 
-        for part_id in Dict["subs"][video.id].keys():
+        parts = Dict["subs"][video.id].keys()
+
+        for part_id in parts:
             if part_id not in existing_parts:
+                Log.Info("Whacking part %s in internal storage of video %s (%s, %s)", part_id, video.id,
+                         repr(existing_parts), repr(parts))
                 del Dict["subs"][video.id][part_id]
-                Log.Info("Whacking part %s in internal storage of video %s", part_id, video.id)
                 whacked_parts = True
 
     if whacked_parts:
@@ -49,16 +53,14 @@ def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_ty
     if "subs" not in Dict:
         Dict["subs"] = {}
 
-    storage = Dict["subs"]
-
     existing_parts = []
     for video, video_subtitles in downloaded_subtitles.items():
         part = scanned_video_part_map[video]
 
-        if video.id not in storage:
-            storage[video.id] = {}
+        if video.id not in Dict["subs"]:
+            Dict["subs"][video.id] = {}
 
-        video_dict = storage[video.id]
+        video_dict = copy.deepcopy(Dict["subs"][video.id])
         if part.id not in video_dict:
             video_dict[part.id] = {}
 
@@ -87,8 +89,12 @@ def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_ty
                                       date_added=datetime.datetime.now(), title=title)
             lang_dict["current"] = sub_key
 
-    if existing_parts:
-        whack_missing_parts(scanned_video_part_map, existing_parts=existing_parts)
+        Dict["subs"][video.id] = video_dict
+
+    #Dict.Save()
+
+    #if existing_parts:
+    #    whack_missing_parts(scanned_video_part_map, existing_parts=existing_parts)
     Dict.Save()
 
 
