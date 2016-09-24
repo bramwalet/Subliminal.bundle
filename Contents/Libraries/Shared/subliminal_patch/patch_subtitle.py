@@ -95,6 +95,11 @@ class PatchedSubtitle(Subtitle):
         elif self.language.alpha3 == 'tur':
             encodings.extend(['iso-8859-9', 'windows-1254'])
 
+        # Greek
+        elif self.language.alpha3 in ('grc', 'gre'):
+            encodings.extend(['windows-1253', 'cp1253', 'cp737', 'iso8859_7', 'cp875', 'cp869', 'iso2022_jp_2',
+                              'mac_greek'])
+
         # Polish, Czech, Slovak, Hungarian, Slovene, Bosnian, Croatian, Serbian (Latin script),
         # Romanian (before 1993 spelling reform) and Albanian
         elif self.language.alpha3 in ('pol', 'cze', 'svk', 'hun', 'svn', 'bih', 'hrv', 'srb', 'rou', 'alb'):
