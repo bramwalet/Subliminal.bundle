@@ -76,7 +76,7 @@ class PatchedSubtitle(Subtitle):
         :rtype: str
 
         """
-        logger.info('Guessing encoding for language %s', self.language)
+        logger.info('Guessing encoding for language %s', self.language.alpha3)
 
         # always try utf-8 first
         encodings = ['utf-8']
@@ -96,7 +96,7 @@ class PatchedSubtitle(Subtitle):
             encodings.extend(['iso-8859-9', 'windows-1254'])
 
         # Greek
-        elif self.language.alpha3 in ('grc', 'gre'):
+        elif self.language.alpha3 in ('grc', 'gre', 'ell'):
             encodings.extend(['windows-1253', 'cp1253', 'cp737', 'iso8859_7', 'cp875', 'cp869', 'iso2022_jp_2',
                               'mac_greek'])
 
