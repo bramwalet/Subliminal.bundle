@@ -55,6 +55,15 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
             ))
         return oc
 
+    if not config.enabled_sections:
+        oc.add(DirectoryObject(
+            key=Callback(fatality, randomize=timestamp()),
+            title=pad_title("I'm not enabled!"),
+            summary="Please enable me for some of your libraries in your server settings, then restart your server; "
+                    "currently I do nothing",
+        ))
+        return oc
+
     if not only_refresh:
         if Dict["current_refresh_state"]:
             oc.add(DirectoryObject(
