@@ -65,8 +65,7 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
         oc.add(DirectoryObject(
             key=Callback(fatality, randomize=timestamp()),
             title=pad_title("I'm not enabled!"),
-            summary="Please enable me for some of your libraries in your server settings, then restart your server; "
-                    "currently I do nothing",
+            summary="Please enable me for some of your libraries in your server settings; currently I do nothing",
         ))
         return oc
 
