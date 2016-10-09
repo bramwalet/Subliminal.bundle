@@ -13,26 +13,20 @@ He has created **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/w
 
 ## Changelog
 
+1.3.49.630 (backported some changes of the develop-1.4 branch to 1.3)
+- core/menu: make addic7ed boost configurable; lower the default boost value massively (to 10)
+- core: fix force refreshing (hopefully)
+- core: add (thai) tis-620 subtitle encoding support
+- menu: lower letter based menu browsing from 200 to 80 items
+- core: support greek encodings (windows-1253, cp1253, cp737, iso8859_7, cp875, cp869, iso2022_jp_2, mac_greek); hopefully fixes badly saved greek subs
+- menu: add generic back-to-home button to the top of every container view
+- menu: warn the user when SZ isn't enabled for any sections/libraries
+- menu: always re-check permissions status and enabled sections when opening the main menu; no server restart necessary anymore
+
+
 1.3.46.606
 - core: hotfix for new users (who've never downloaded a subtitle with SZ before); fixes #169
 
-
-1.3.46.605
-
-- add wiki (thanks @ukdtom / @dane22)
-- core: remove necessity of Plex credentials; fixes #148
-- core: fix non-SRT subtitle support; fixes #138
-- core: generic source overhaul in preparation for release 1.4
-- core: better filesystem encoding detection; may fix #159
-- core: add encoding handling for windows-1250 and windows-1251 encoding (eastern europe); fixes #162
-- core: overhaul ignore handling; fixes #164
-- core: implement ignore by path setting; fixes #134
-- core: add setting for optional fallback to metadata storage, if filesystem storage failed; fixes #100
-- core: add setting for notifying an executable after a subtitle has been downloaded (see Wiki); fixes #65
-- core: only handle sections for which Sub-Zero is enabled (in PMS agent settings); fixes #167
-- menu: add series/season force-refresh
-- menu: show item thumbnail/art where applicable
-- menu: mitigate PlexWeb behaviour of calling our handlers twice; fixes #168
 
 [older changes](CHANGELOG.md)
 
