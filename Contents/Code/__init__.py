@@ -27,7 +27,7 @@ sys.modules["interface"] = interface
 from subzero.constants import OS_PLEX_USERAGENT, PERSONAL_MEDIA_IDENTIFIER
 from subzero import intent
 from interface.menu import *
-from support.plex_media import convert_media_to_parts, get_media_item_ids, scan_parts
+from support.plex_media import media_to_videos, get_media_item_ids, scan_videos
 from support.subtitlehelpers import get_subtitles_from_metadata, force_utf8
 from support.helpers import notify_executable
 from support.storage import store_subtitle_info, whack_missing_parts
@@ -217,7 +217,7 @@ class SubZeroAgent(object):
         item_ids = []
         try:
             init_subliminal_patches()
-            parts = convert_media_to_parts(media, kind=self.agent_type)
+            parts = media_to_videos(media, kind=self.agent_type)
 
             # media ignored?
             use_any_parts = False
@@ -232,7 +232,7 @@ class SubZeroAgent(object):
                 return
 
             use_score = Prefs[self.score_prefs_key]
-            scanned_parts = scan_parts(parts, kind=self.agent_type)
+            scanned_parts = scan_videos(parts, kind=self.agent_type)
             subtitles = download_best_subtitles(scanned_parts, min_score=int(use_score))
             item_ids = get_media_item_ids(media, kind=self.agent_type)
 

@@ -4,8 +4,6 @@ import datetime
 import pprint
 import copy
 
-from helpers import get_video_display_title
-
 
 def get_subtitle_info(rating_key):
     return Dict["subs"].get(rating_key)
@@ -72,21 +70,10 @@ def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_ty
             if lang not in part_dict:
                 part_dict[lang] = {}
             lang_dict = part_dict[lang]
-            sub_key = subtitle.provider_name, subtitle.id
-            metadata = video.plexapi_metadata
-
-            # compute title
-            title = get_video_display_title(
-                "show" if metadata["series_id"] else "movie",
-                metadata["title"],
-                parent_title=metadata.get("series", None),
-                season=metadata.get("season", None),
-                episode=metadata.get("episode", None),
-                section_title=metadata.get("section", None),
-                add_section_title=True
-            )
-            lang_dict[sub_key] = dict(score=subtitle.score, link=subtitle.page_link, storage=storage_type, hash=Hash.MD5(subtitle.content),
-                                      date_added=datetime.datetime.now(), title=title)
+            sub_key = (subtitle.provider_name, subtitle.id)
+            lang_dict[sub_key] = dict(score=subtitle.score, link=subtitle.page_link, storage=storage_type,
+                                      hash=Hash.MD5(subtitle.content),
+                                      date_added=datetime.datetime.now())
             lang_dict["current"] = sub_key
 
         Dict["subs"][video.id] = video_dict

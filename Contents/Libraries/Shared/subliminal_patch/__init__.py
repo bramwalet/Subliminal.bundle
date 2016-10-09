@@ -19,15 +19,13 @@ setattr(OpenSubtitlesSubtitle, "__bases__", (PatchedSubtitle,))
 from .patch_provider_pool import PatchedProviderPool
 from .patch_video import patched_search_external_subtitles, scan_video
 from .patch_providers import addic7ed, podnapisi, tvsubtitles, opensubtitles
-from .patch_api import save_subtitles, list_all_subtitles
+from .patch_api import save_subtitles
 
 # patch subliminal's ProviderPool
 subliminal.api.ProviderPool = PatchedProviderPool
 
 # patch subliminal's save_subtitles function
 subliminal.api.save_subtitles = save_subtitles
-
-subliminal.api.list_all_subtitles = list_all_subtitles
 
 # patch subliminal's subtitle classes
 def subtitleRepr(self):

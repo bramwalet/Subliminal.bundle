@@ -9,12 +9,8 @@ import traceback
 import subliminal
 import subliminal_patch
 
-from subliminal_patch.patch_api import list_all_subtitles
-from subliminal.api import download_subtitles
-from babelfish import Language
 from menu_helpers import add_ignore_options, dig_tree, set_refresh_menu_state, \
     should_display_ignore, enable_channel_wrapper, default_thumb, debounce, SZObjectContainer
-from subliminal_patch.patch_subtitle import compute_score
 from subzero.constants import TITLE, ART, ICON, PREFIX, PLUGIN_IDENTIFIER, DEPENDENCY_MODULE_NAMES
 from support.background import scheduler
 from support.config import config
@@ -24,8 +20,7 @@ from support.items import get_item, get_on_deck_items, refresh_item, get_all_ite
     get_item_thumb, get_item_kind_from_rating_key
 from support.lib import Plex
 from support.missing_subtitles import items_get_all_missing_subs
-from support.storage import reset_storage, log_storage, get_subtitle_info
-from support.plex_media import scan_videos, get_metadata_dict
+from support.storage import reset_storage, log_storage
 
 # init GUI
 ObjectContainer.art = R(ART)
@@ -439,157 +434,7 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
         thumb=item.thumb or default_thumb
     ))
 
-    # get stored subtitle info for item id
-    current_subtitle_info = get_subtitle_info(rating_key)
-
-    # get the plex item
-    plex_item = list(Plex["library"].metadata(rating_key))[0]
-
-    # get current media info for that item
-    media = plex_item.media
-
-    # look for subtitles for all available media parts and all of their languages
-    for part in media.parts:
-        filename = os.path.basename(part.file)
-
-        # get corresponding stored subtitle data for that media part (physical media item)
-        sub_part_data = current_subtitle_info.get(str(part.id), {}) if current_subtitle_info else {}
-
-        # iterate through all configured languages
-        for lang_short in config.lang_list:
-            sub_data_for_lang = sub_part_data.get(lang_short, {})
-
-            # try getting current subtitle information for that language
-            current_subtitle_key = sub_data_for_lang.get("current", (None, None))
-            current_sub_provider_name, current_sub_id = current_subtitle_key
-            current_sub_link = None
-
-            legacy_storage = False
-
-            # old storage version; take newest subtitle as current if available
-            if not current_sub_provider_name:
-                subtitle_keys = sorted([(sub["date_added"], key) for key, sub in sub_data_for_lang.iteritems()], None,
-                                       None, True)
-                current_subtitle_key = None, None
-                if subtitle_keys:
-                    current_subtitle_key = subtitle_keys[0][1]
-
-                current_sub_provider_name, current_sub_id = current_subtitle_key
-                legacy_storage = True
-
-            summary = u"No current subtitle in storage"
-            if current_sub_provider_name:
-                current_subtitle = sub_part_data[lang_short][current_subtitle_key]
-                current_sub_link = current_subtitle["link"]
-
-                summary = u"Current subtitle%s: %s (added: %s), Language: %s, Score: %i, Storage: %s, From: %s" % \
-                          (u" (legacy/inaccurate)" if legacy_storage else "", current_sub_provider_name,
-                           current_subtitle["date_added"].strftime("%Y-%m-%d %H:%M:%S"), lang_short,
-                           current_subtitle["score"], current_subtitle["storage"], current_subtitle["link"])
-
-            oc.add(DirectoryObject(
-                key=Callback(TriggerListAvailableSubsForItem, rating_key=rating_key, part_id=part.id, title=title,
-                             item_title=item_title, language=lang_short, current_link=current_sub_link,
-                             item_type=plex_item.type, filename=filename, randomize=timestamp()),
-                title=u"Available subtitles for: %s, %s" % (lang_short, filename),
-                summary=summary
-            ))
-
     add_ignore_options(oc, "videos", title=item_title, rating_key=rating_key, callback_menu=IgnoreMenu)
-
-    return oc
-
-
-MANUAL_SUB_SEARCH = {}
-
-
-@route(PREFIX + '/item/search/{rating_key}/{part_id}')
-@debounce
-def TriggerListAvailableSubsForItem(rating_key=None, part_id=None, title=None, item_title=None, filename=None,
-                                    item_type="episode", language=None, force=False, current_link=None,
-                                    randomize=None):
-    assert rating_key, part_id
-
-    #config.init_subliminal_patches()
-    plex_item = list(Plex["library"].metadata(rating_key))[0]
-
-    #fixme: woot
-    subliminal.video.Episode.scores["addic7ed_boost"] = int(Prefs['provider.addic7ed.boost_by'])
-
-    # find current part
-    current_part = None
-    for part in plex_item.media.parts:
-        if str(part.id) == part_id:
-            current_part = part
-
-    if not current_part:
-        raise ValueError("Part unknown")
-
-    # get normalized metadata
-    if item_type == "episode":
-        min_score = Prefs["subtitles.search.minimumTVScore"]
-        metadata = get_metadata_dict(plex_item, current_part,
-                                     {"plex_part": current_part, "type": "episode", "title": plex_item.title,
-                                      "series": plex_item.show.title, "id": plex_item.rating_key,
-                                      "series_id": plex_item.show.rating_key, "season_id": plex_item.season.rating_key,
-                                      "season": plex_item.season.index,
-                                      })
-    else:
-        min_score = Prefs["subtitles.search.minimumMovieScore"]
-        metadata = get_metadata_dict(plex_item, current_part, {"plex_part": current_part, "type": "movie",
-                                                               "title": plex_item.title, "id": plex_item.rating_key,
-                                                               "series_id": None,
-                                                               "season_id": None,
-                                                               "section": plex_item.section.title})
-
-    min_score = int(min_score)
-    scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie")
-    video, plex_part = scanned_parts.items()[0]
-    available_subs = list_all_subtitles(scanned_parts, {Language.fromietf(language)},
-                                        providers=config.providers,
-                                        provider_configs=config.provider_settings)
-
-    use_hearing_impaired = Prefs['subtitles.search.hearingImpaired'] in ("prefer", "force HI")
-
-    # sort subtitles by score
-    unsorted_subtitles = []
-    for s in available_subs[video]:
-        Log.Debug("Starting score computation for %s", s)
-        try:
-            matches = s.get_matches(video, hearing_impaired=use_hearing_impaired)
-        except AttributeError:
-            Log.Error("Match computation failed for %s: %s", s, traceback.format_exc())
-            continue
-
-        unsorted_subtitles.append((s, compute_score(matches, video), matches))
-    scored_subtitles = sorted(unsorted_subtitles, key=operator.itemgetter(1), reverse=True)
-
-    subtitles = []
-    for subtitle, score, matches in scored_subtitles:
-        # check score
-        if score < min_score:
-            Log.Info('Score %d is below min_score (%d)', score, min_score)
-            continue
-        subtitle.score = score
-        subtitles.append(subtitle)
-
-    print subtitles
-    oc = SZObjectContainer(title2=title, replace_parent=True)
-    oc.add(DirectoryObject(
-        key=Callback(ItemDetailsMenu, rating_key=rating_key, item_title=item_title, randomize=timestamp()),
-        title=u"Back to %s" % title,
-        summary="",
-        thumb=default_thumb
-    ))
-    print current_link
-    for subtitle in subtitles:
-        oc.add(DirectoryObject(
-            key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title, randomize=timestamp()),
-            title=u"%s: %s, score: %s; %s" % ("Available" if current_link != subtitle.page_link else "Current",
-                                    subtitle.provider_name, subtitle.score, subtitle.subtitle_id),
-            summary="Refreshes the item, possibly picking up new subtitles on disk",
-            thumb=default_thumb
-        ))
 
     return oc
 
