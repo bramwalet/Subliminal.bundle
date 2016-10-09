@@ -22,7 +22,8 @@ class PatchedPodnapisiSubtitle(PodnapisiSubtitle):
 
     def __init__(self, language, hearing_impaired, page_link, pid, releases, title, season=None, episode=None,
                  year=None):
-        super(PodnapisiSubtitle, self).__init__(language, hearing_impaired, page_link)
+        super(PatchedPodnapisiSubtitle, self).__init__(language, hearing_impaired, page_link, pid, releases, title,
+                                                       season=season, episode=episode, year=year)
         self.subtitle_id = pid
 
 
