@@ -51,6 +51,12 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
     oc = ObjectContainer(title1=title, title2=title, header=unicode(header) if header else title, message=message, no_history=no_history,
                          replace_parent=replace_parent, no_cache=True)
 
+    # always re-check permissions
+    config.refresh_permissions_status()
+
+    # always re-check enabled sections
+    config.refresh_enabled_sections()
+
     if not config.permissions_ok and config.missing_permissions:
         for title, path in config.missing_permissions:
             oc.add(DirectoryObject(
@@ -58,6 +64,14 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
                 title=pad_title("Insufficient permissions"),
                 summary="Insufficient permissions on library %s, folder: %s" % (title, path),
             ))
+        return oc
+
+    if not config.enabled_sections:
+        oc.add(DirectoryObject(
+            key=Callback(fatality, randomize=timestamp()),
+            title=pad_title("I'm not enabled!"),
+            summary="Please enable me for some of your libraries in your server settings; currently I do nothing",
+        ))
         return oc
 
     if not only_refresh:
@@ -596,15 +610,14 @@ def TriggerListAvailableSubsForItem(rating_key=None, part_id=None, title=None, i
 
 @route(PREFIX + '/item/{rating_key}')
 @debounce
-def RefreshItem(rating_key=None, item_title=None, force=False, refresh_kind=None,
-                previous_rating_key=None, timeout=8000, randomize=None):
+def RefreshItem(rating_key=None, came_from="/recent", item_title=None, force=False, refresh_kind=None, previous_rating_key=None, timeout=8000, randomize=None, trigger=True):
     assert rating_key
-    set_refresh_menu_state(u"Triggering %sRefresh for %s" % ("Force-" if force else "", item_title))
-    Log.Info("Triggering %srefresh of item %s, \"%s\" (timeout: %s)", "" if not force else "force-", rating_key,
-             item_title, timeout)
-    Thread.Create(refresh_item, rating_key=rating_key, force=force, refresh_kind=refresh_kind,
-                  parent_rating_key=previous_rating_key, timeout=int(timeout))
-    header = u"%s of item %s triggered" % ("Refresh" if not force else "Forced-refresh", rating_key)
+    header = " "
+    if trigger:
+        set_refresh_menu_state(u"Triggering %sRefresh for %s" % ("Force-" if force else "", item_title))
+        Thread.Create(refresh_item, rating_key=rating_key, force=force, refresh_kind=refresh_kind, parent_rating_key=previous_rating_key,
+                      timeout=int(timeout))
+        header = u"%s of item %s triggered" % ("Refresh" if not force else "Forced-refresh", rating_key)
     return fatality(randomize=timestamp(), header=header, replace_parent=True)
 
 
