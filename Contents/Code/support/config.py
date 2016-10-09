@@ -62,10 +62,14 @@ class Config(object):
         self.notify_executable = self.check_notify_executable()
         self.initialized = True
 
+    def refresh_permissions_status(self):
+        self.permissions_ok = self.check_permissions()
+
     def check_permissions(self):
         if not Prefs["subtitles.save.filesystem"] or not Prefs["check_permissions"]:
             return True
 
+        self.missing_permissions = []
         use_ignore_fs = Prefs["subtitles.ignore_fs"]
         all_permissions_ok = True
         for section in self.sections:
@@ -139,6 +143,9 @@ class Config(object):
         if os.path.isfile(exe_fn) and os.access(exe_fn, os.X_OK):
             return exe_fn, arguments
         Log.Error("Notify executable not existing or not executable: %s" % exe_fn)
+
+    def refresh_enabled_sections(self):
+        self.enabled_sections = self.check_enabled_sections()
 
     def check_enabled_sections(self):
         enabled_for_primary_agents = []

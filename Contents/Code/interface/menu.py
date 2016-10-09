@@ -46,6 +46,12 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
     oc = ObjectContainer(title1=title, title2=title, header=unicode(header) if header else title, message=message, no_history=no_history,
                          replace_parent=replace_parent, no_cache=True)
 
+    # always re-check permissions
+    config.refresh_permissions_status()
+
+    # always re-check enabled sections
+    config.refresh_enabled_sections()
+
     if not config.permissions_ok and config.missing_permissions:
         for title, path in config.missing_permissions:
             oc.add(DirectoryObject(
