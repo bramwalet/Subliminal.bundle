@@ -1,6 +1,7 @@
 # coding=utf-8
 import os
 import sys
+import datetime
 
 # just some slight modifications to support sum and iter again
 from subzero.sandbox import restore_builtins
@@ -45,6 +46,13 @@ def Start():
     # clear expired intents
     intent = get_intent()
     intent.cleanup()
+
+    # clear expired menu history items
+    now = datetime.datetime.now()
+    if "menu_history" in Dict:
+        for key, timeout in Dict["menu_history"].items():
+            if now > timeout:
+                del Dict["menu_history"][key]
 
     # init defaults; perhaps not the best idea to use ValidatePrefs here, but we'll see
     ValidatePrefs()
