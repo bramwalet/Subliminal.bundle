@@ -10,6 +10,7 @@ class DictProxy(object):
 
         if self.store not in self.Dict or not self.Dict[self.store]:
             self.Dict[self.store] = self.setup_defaults()
+        self.save()
 
     def __getattr__(self, name):
         if name in self.Dict[self.store]:
@@ -44,6 +45,9 @@ class DictProxy(object):
 
     def __delitem__(self, key):
         del self.Dict[self.store][key]
+
+    def save(self):
+        self.Dict.Save()
 
     def clear(self):
         del self.Dict[self.store]

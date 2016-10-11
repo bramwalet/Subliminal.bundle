@@ -1,7 +1,5 @@
 # coding=utf-8
 
-from intent import intent
-
 OS_PLEX_USERAGENT = 'plexapp.com v9.0'
 
 DEPENDENCY_MODULE_NAMES = ['subliminal', 'subliminal_patch', 'enzyme', 'guessit', 'requests']

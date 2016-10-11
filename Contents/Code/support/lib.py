@@ -1,6 +1,8 @@
 # coding=utf-8
 
 import plex
+from subzero.intent import TempIntent
+from subzero.lib.dict import DictProxy
 from subzero.lib.httpfake import PlexPyNativeResponseProxy
 
 
@@ -35,3 +37,18 @@ class PlexPyNativeRequestProxy(object):
 plex.request.Request = PlexPyNativeRequestProxy
 
 Plex = plex.Plex
+
+
+class IntentDictStorage(DictProxy):
+    store = "intent"
+
+    def setup_defaults(self):
+        return {"force": {}}
+
+
+def get_intent():
+    """
+    use this to get an intent from inside a separate thread
+    :return:
+    """
+    return TempIntent(store=IntentDictStorage(Dict))

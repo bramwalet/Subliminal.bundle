@@ -6,8 +6,7 @@ import types
 import os
 from ignore import ignore_list
 from helpers import is_recent, format_item, query_plex
-from subzero import intent
-from lib import Plex
+from lib import Plex, get_intent
 from config import config, IGNORE_FN
 
 logger = logging.getLogger(__name__)
@@ -260,10 +259,15 @@ def is_ignored(rating_key, item=None):
 
 
 def refresh_item(rating_key, force=False, timeout=8000, refresh_kind=None, parent_rating_key=None):
+    intent = get_intent()
+
     # timeout actually is the time for which the intent will be valid
     if force:
         Log.Debug("Setting intent for force-refresh of %s to timeout: %s", rating_key, timeout)
         intent.set("force", rating_key, timeout=timeout)
+
+        # force Dict.Save()
+        intent.store.save()
 
     refresh = [rating_key]
 
