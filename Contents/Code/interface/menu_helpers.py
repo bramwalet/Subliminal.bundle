@@ -1,12 +1,12 @@
 # coding=utf-8
 import types
+import datetime
 
 from support.items import get_kind, get_item_thumb
 from support.helpers import format_video
 from support.ignore import ignore_list
 from support.lib import get_intent
 from subzero.constants import ICON
-from subzero.func import debouncer
 
 default_thumb = R(ICON)
 
@@ -130,13 +130,22 @@ def debounce(func):
     :param func:
     :return:
     """
+    def get_lookup_key(args, kwargs):
+        func_name = list(args).pop(0).__name__
+        return tuple([func_name] + [(key, value) for key, value in kwargs.iteritems()])
+
     def wrap(*args, **kwargs):
         if "randomize" in kwargs:
-            if ([func] + list(args), kwargs) in debouncer:
+            if not "menu_history" in Dict:
+                Dict["menu_history"] = {}
+
+            key = get_lookup_key([func] + list(args), kwargs)
+            if key in Dict["menu_history"]:
                 Log.Debug("not triggering %s twice with %s, %s" % (func, args, kwargs))
                 return ObjectContainer()
             else:
-                debouncer.add([func] + list(args), kwargs)
+                Dict["menu_history"][key] = datetime.datetime.now() + datetime.timedelta(seconds=10)
+                Dict.Save()
         return func(*args, **kwargs)
 
     return wrap
