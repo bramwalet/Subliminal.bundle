@@ -5,7 +5,7 @@ import subliminal
 import helpers
 
 from items import get_item
-from subzero import intent
+from lib import get_intent
 
 
 def get_metadata_dict(item, part, add):
@@ -113,8 +113,10 @@ def scan_videos(videos, kind="series"):
     """
     ret = {}
     for video in videos:
+        intent = get_intent()
         force_refresh = intent.get("force", video["id"], video["series_id"], video["season_id"])
-        Log.Debug("Determining force-refresh, result: %s" % force_refresh)
+        Log.Debug("Determining force-refresh (video: %s, series: %s, season: %s), result: %s"
+                  % (video["id"], video["series_id"], video["season_id"], force_refresh))
 
         hints = helpers.get_item_hints(video["title"], kind, series=video["series"] if kind == "series" else None)
         video["plex_part"].fps = get_stream_fps(video["plex_part"].streams)
