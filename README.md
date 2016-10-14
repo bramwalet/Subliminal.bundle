@@ -13,6 +13,11 @@ He has created **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/w
 
 ## Changelog
 
+1.3.49.634
+- core/menu: fix force refreshing (again)
+- core/menu: fix redundant route calls
+
+
 1.3.49.630 (backported some changes of the develop-1.4 branch to 1.3)
 - core/menu: make addic7ed boost configurable; lower the default boost value massively (to 10)
 - core: fix force refreshing (hopefully)
@@ -22,10 +27,6 @@ He has created **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/w
 - menu: add generic back-to-home button to the top of every container view
 - menu: warn the user when SZ isn't enabled for any sections/libraries
 - menu: always re-check permissions status and enabled sections when opening the main menu; no server restart necessary anymore
-
-
-1.3.46.606
-- core: hotfix for new users (who've never downloaded a subtitle with SZ before); fixes #169
 
 
 [older changes](CHANGELOG.md)

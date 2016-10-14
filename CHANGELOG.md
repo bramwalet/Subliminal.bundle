@@ -1,3 +1,7 @@
+1.3.46.606
+- core: hotfix for new users (who've never downloaded a subtitle with SZ before); fixes #169
+
+
 1.3.46.605
 
 - add wiki (thanks @ukdtom / @dane22)
@@ -14,6 +18,7 @@
 - menu: add series/season force-refresh
 - menu: show item thumbnail/art where applicable
 - menu: mitigate PlexWeb behaviour of calling our handlers twice; fixes #168
+
 
 1.3.33.522
 
