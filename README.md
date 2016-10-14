@@ -13,7 +13,7 @@ He has created **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/w
 
 ## Changelog
 
-1.3.49.634
+1.3.49.636
 - core/menu: fix force refreshing (again)
 - core/menu: fix redundant route calls
 
