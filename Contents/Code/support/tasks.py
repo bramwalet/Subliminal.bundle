@@ -14,7 +14,7 @@ from babelfish import Language
 from subliminal_patch.patch_subtitle import compute_score
 from missing_subtitles import items_get_all_missing_subs, refresh_item
 from background import scheduler
-from storage import save_subtitles
+from storage import save_subtitles, whack_missing_parts
 from support.config import config
 from support.items import get_recent_items, is_ignored
 from support.lib import Plex
@@ -275,8 +275,6 @@ class DownloadSubtitleForItem(PlexItemMetadataMixin, Task):
         self.part_id = subtitle.part_id
 
     def run(self):
-        from support.storage import whack_missing_parts
-
         self.running = True
         metadata = self.get_plex_metadata()
         item_type = self.item_type
