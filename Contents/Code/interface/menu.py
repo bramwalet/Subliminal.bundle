@@ -531,7 +531,7 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
     oc = SZObjectContainer(title2=title, replace_parent=True)
     oc.add(DirectoryObject(
         key=Callback(ItemDetailsMenu, rating_key=rating_key, item_title=item_title, title=title, randomize=timestamp()),
-        title=u"Back to %s" % title,
+        title=u"Back to: %s" % title,
         summary=current_data,
         thumb=default_thumb
     ))
@@ -560,7 +560,8 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
 
     for subtitle in search_results:
         oc.add(DirectoryObject(
-            key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title, randomize=timestamp()),
+            key=Callback(TriggerDownloadSubtitle, rating_key=rating_key, randomize=timestamp(),
+                         subtitle_id=subtitle.subtitle_id),
             title=u"%s: %s, score: %s" % ("Available" if current_link != subtitle.page_link else "Current",
                                     subtitle.provider_name, subtitle.score),
             summary=u"Release: %s, Matches: %s" % (subtitle.release_info, ", ".join(subtitle.matches)),
@@ -570,15 +571,37 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
     return oc
 
 
+@route(PREFIX + '/download_subtitle/{rating_key}')
+@debounce
+def TriggerDownloadSubtitle(rating_key=None, subtitle_id=None, randomize=None):
+    set_refresh_menu_state("Downloading subtitle for %s" % rating_key)
+    task_data = scheduler.get_task_data("AvailableSubsForItem")
+    search_results = task_data.get(rating_key, None) if task_data else None
+    download_subtitle = None
+    for subtitle in search_results:
+        if subtitle.subtitle_id == subtitle_id:
+            download_subtitle = subtitle
+            break
+    if not download_subtitle:
+        Log.Error(u"Something went horribly wrong")
+
+    else:
+        scheduler.dispatch_task("DownloadSubtitleForItem", rating_key, download_subtitle)
+
+    return fatality(randomize=timestamp(), header=" ", replace_parent=True)
+
+
 @route(PREFIX + '/item/{rating_key}')
 @debounce
-def RefreshItem(rating_key=None, came_from="/recent", item_title=None, force=False, refresh_kind=None, previous_rating_key=None, timeout=8000, randomize=None, trigger=True):
+def RefreshItem(rating_key=None, came_from="/recent", item_title=None, force=False, refresh_kind=None,
+                previous_rating_key=None, timeout=8000, randomize=None, trigger=True):
     assert rating_key
     header = " "
     if trigger:
         set_refresh_menu_state(u"Triggering %sRefresh for %s" % ("Force-" if force else "", item_title))
-        Thread.Create(refresh_item, rating_key=rating_key, force=force, refresh_kind=refresh_kind, parent_rating_key=previous_rating_key,
-                      timeout=int(timeout))
+        Thread.Create(refresh_item, rating_key=rating_key, force=force, refresh_kind=refresh_kind,
+                      parent_rating_key=previous_rating_key, timeout=int(timeout))
+
         header = u"%s of item %s triggered" % ("Refresh" if not force else "Forced-refresh", rating_key)
     return fatality(randomize=timestamp(), header=header, replace_parent=True)
 
