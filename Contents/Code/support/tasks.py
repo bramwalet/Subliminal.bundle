@@ -9,11 +9,12 @@ import traceback
 import subliminal
 import subliminal_patch
 
-from subliminal_patch.patch_api import list_all_subtitles
+from subliminal_patch.patch_api import list_all_subtitles, download_subtitles
 from babelfish import Language
 from subliminal_patch.patch_subtitle import compute_score
 from missing_subtitles import items_get_all_missing_subs, refresh_item
 from background import scheduler
+from storage import save_subtitles
 from support.config import config
 from support.items import get_recent_items, is_ignored
 from support.lib import Plex
@@ -131,7 +132,8 @@ class SearchAllRecentlyAddedMissing(Task):
                         Log.Debug(u"Task: %s, item stalled for %s times: %s, skipping", self.name, tries, item_id)
                         break
 
-                    Log.Debug(u"Task: %s, item stalled for %s seconds: %s, retrying", self.name, self.stall_time, item_id)
+                    Log.Debug(u"Task: %s, item stalled for %s seconds: %s, retrying", self.name, self.stall_time,
+                              item_id)
                     tries += 1
                     refresh_item(item_id, title)
                     search_started = datetime.datetime.now()
@@ -156,7 +158,41 @@ class SearchAllRecentlyAddedMissing(Task):
         self.items_searching_ids = None
 
 
-class AvailableSubsForItem(Task):
+class PlexItemMetadataMixin(object):
+    def get_plex_metadata(self):
+        rating_key = self.rating_key
+        plex_item = list(Plex["library"].metadata(rating_key))[0]
+        part_id = self.part_id
+        item_type = self.item_type
+
+        # find current part
+        current_part = None
+        for part in plex_item.media.parts:
+            if str(part.id) == part_id:
+                current_part = part
+
+        if not current_part:
+            raise ValueError("Part unknown")
+
+        # get normalized metadata
+        if item_type == "episode":
+            metadata = get_metadata_dict(plex_item, current_part,
+                                         {"plex_part": current_part, "type": "episode", "title": plex_item.title,
+                                          "series": plex_item.show.title, "id": plex_item.rating_key,
+                                          "series_id": plex_item.show.rating_key,
+                                          "season_id": plex_item.season.rating_key,
+                                          "season": plex_item.season.index,
+                                          })
+        else:
+            metadata = get_metadata_dict(plex_item, current_part, {"plex_part": current_part, "type": "movie",
+                                                                   "title": plex_item.title, "id": plex_item.rating_key,
+                                                                   "series_id": None,
+                                                                   "season_id": None,
+                                                                   "section": plex_item.section.title})
+        return metadata
+
+
+class AvailableSubsForItem(PlexItemMetadataMixin, Task):
     name = "AvailableSubsForItem"
     rating_key = None
     item_type = None
@@ -171,45 +207,22 @@ class AvailableSubsForItem(Task):
 
     def run(self):
         self.running = True
-        rating_key = self.rating_key
-        plex_item = list(Plex["library"].metadata(rating_key))[0]
-        part_id = self.part_id
         item_type = self.item_type
+        metadata = self.get_plex_metadata()
         language = self.language
+        part_id = self.part_id
+
+        if item_type == "episode":
+            min_score = int(Prefs["subtitles.search.minimumTVScore"])
+        else:
+            min_score = int(Prefs["subtitles.search.minimumMovieScore"])
+
+        scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
+        video, plex_part = scanned_parts.items()[0]
 
         # fixme: woot
         subliminal.video.Episode.scores["addic7ed_boost"] = int(Prefs['provider.addic7ed.boost_by'])
 
-        # find current part
-        current_part = None
-        for part in plex_item.media.parts:
-            if str(part.id) == part_id:
-                current_part = part
-
-        if not current_part:
-            raise ValueError("Part unknown")
-
-        # get normalized metadata
-        if item_type == "episode":
-            min_score = Prefs["subtitles.search.minimumTVScore"]
-            metadata = get_metadata_dict(plex_item, current_part,
-                                         {"plex_part": current_part, "type": "episode", "title": plex_item.title,
-                                          "series": plex_item.show.title, "id": plex_item.rating_key,
-                                          "series_id": plex_item.show.rating_key,
-                                          "season_id": plex_item.season.rating_key,
-                                          "season": plex_item.season.index,
-                                          })
-        else:
-            min_score = Prefs["subtitles.search.minimumMovieScore"]
-            metadata = get_metadata_dict(plex_item, current_part, {"plex_part": current_part, "type": "movie",
-                                                                   "title": plex_item.title, "id": plex_item.rating_key,
-                                                                   "series_id": None,
-                                                                   "season_id": None,
-                                                                   "section": plex_item.section.title})
-
-        min_score = int(min_score)
-        scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
-        video, plex_part = scanned_parts.items()[0]
         available_subs = list_all_subtitles(scanned_parts, {Language.fromietf(language)},
                                             providers=config.providers,
                                             provider_configs=config.provider_settings)
@@ -237,6 +250,8 @@ class AvailableSubsForItem(Task):
                 continue
             subtitle.score = score
             subtitle.matches = matches
+            subtitle.part_id = part_id
+            subtitle.item_type = item_type
             subtitles.append(subtitle)
 
         self.data = subtitles
@@ -246,5 +261,44 @@ class AvailableSubsForItem(Task):
         task_data[self.rating_key] = self.data
 
 
+class DownloadSubtitleForItem(PlexItemMetadataMixin, Task):
+    name = "DownloadSubtitleForItem"
+    rating_key = None
+    subtitle = None
+    item_type = None
+    part_id = None
+
+    def prepare(self, rating_key, subtitle, *args, **kwargs):
+        self.rating_key = rating_key
+        self.subtitle = subtitle
+        self.item_type = subtitle.item_type
+        self.part_id = subtitle.part_id
+
+    def run(self):
+        from support.storage import whack_missing_parts
+
+        self.running = True
+        metadata = self.get_plex_metadata()
+        item_type = self.item_type
+        scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
+        video, plex_part = scanned_parts.items()[0]
+
+        # fixme: woot
+        subliminal.video.Episode.scores["addic7ed_boost"] = int(Prefs['provider.addic7ed.boost_by'])
+
+        # downloaded_subtitles = {subliminal.Video: [subtitle, subtitle, ...]}
+        download_subtitles([self.subtitle], providers=config.providers, provider_configs=config.provider_settings)
+
+        if self.subtitle.content:
+            whack_missing_parts(scanned_parts)
+
+            # fixme?
+            save_subtitles(scanned_parts, {video: [self.subtitle]})
+
+    def post_run(self, task_data):
+        self.running = False
+
+
 scheduler.register(SearchAllRecentlyAddedMissing)
 scheduler.register(AvailableSubsForItem)
+scheduler.register(DownloadSubtitleForItem)
