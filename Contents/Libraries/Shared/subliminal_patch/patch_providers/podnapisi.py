@@ -25,6 +25,7 @@ class PatchedPodnapisiSubtitle(PodnapisiSubtitle):
         super(PatchedPodnapisiSubtitle, self).__init__(language, hearing_impaired, page_link, pid, releases, title,
                                                        season=season, episode=episode, year=year)
         self.subtitle_id = pid
+        self.release_info = u", ".join(releases)
 
 
 class PatchedPodnapisiProvider(PodnapisiProvider):
