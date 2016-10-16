@@ -1,10 +1,15 @@
 # coding=utf-8
 
 import datetime
+import os
 import pprint
 import copy
 
-from helpers import get_video_display_title
+import subliminal
+
+from subtitlehelpers import force_utf8
+from config import config
+from helpers import get_video_display_title, notify_executable
 
 
 def get_subtitle_info(rating_key):
@@ -36,6 +41,7 @@ def whack_missing_parts(scanned_video_part_map, existing_parts=None):
         parts = Dict["subs"][video.id].keys()
 
         for part_id in parts:
+            part_id = int(part_id)
             if part_id not in existing_parts:
                 Log.Info("Whacking part %s in internal storage of video %s (%s, %s)", part_id, video.id,
                          repr(existing_parts), repr(parts))
@@ -113,3 +119,68 @@ def reset_storage(key):
 def log_storage(key):
     if key in Dict:
         Log.Debug(pprint.pformat(Dict[key]))
+
+
+def save_subtitles_to_file(subtitles):
+    fld_custom = Prefs["subtitles.save.subFolder.Custom"].strip() if bool(Prefs["subtitles.save.subFolder.Custom"]) else None
+
+    for video, video_subtitles in subtitles.items():
+        if not video_subtitles:
+            continue
+
+        fld = None
+        if fld_custom or Prefs["subtitles.save.subFolder"] != "current folder":
+            # specific subFolder requested, create it if it doesn't exist
+            fld_base = os.path.split(video.name)[0]
+            if fld_custom:
+                if fld_custom.startswith("/"):
+                    # absolute folder
+                    fld = fld_custom
+                else:
+                    fld = os.path.join(fld_base, fld_custom)
+            else:
+                fld = os.path.join(fld_base, Prefs["subtitles.save.subFolder"])
+            if not os.path.exists(fld):
+                os.makedirs(fld)
+        subliminal.api.save_subtitles(video, video_subtitles, directory=fld, single=Prefs['subtitles.only_one'],
+                                      encode_with=force_utf8 if Prefs['subtitles.enforce_encoding'] else None)
+    return True
+
+
+def save_subtitles_to_metadata(videos, subtitles):
+    for video, video_subtitles in subtitles.items():
+        mediaPart = videos[video]
+        for subtitle in video_subtitles:
+            content = force_utf8(subtitle.text) if Prefs['subtitles.enforce_encoding'] else subtitle.content
+            mediaPart.subtitles[Locale.Language.Match(subtitle.language.alpha2)][subtitle.page_link] = Proxy.Media(content, ext="srt")
+    return True
+
+
+def save_subtitles(scanned_video_part_map, downloaded_subtitles):
+    meta_fallback = False
+    save_successful = False
+    storage = "metadata"
+    if Prefs['subtitles.save.filesystem']:
+        storage = "filesystem"
+        try:
+            Log.Debug("Using filesystem as subtitle storage")
+            save_subtitles_to_file(downloaded_subtitles)
+        except OSError:
+            if Prefs["subtitles.save.metadata_fallback"]:
+                meta_fallback = True
+            else:
+                raise
+        else:
+            save_successful = True
+
+    if not Prefs['subtitles.save.filesystem'] or meta_fallback:
+        if meta_fallback:
+            Log.Debug("Using metadata as subtitle storage, because filesystem storage failed")
+        else:
+            Log.Debug("Using metadata as subtitle storage")
+        save_successful = save_subtitles_to_metadata(scanned_video_part_map, downloaded_subtitles)
+
+    if save_successful and config.notify_executable:
+        notify_executable(config.notify_executable, scanned_video_part_map, downloaded_subtitles, storage)
+
+    store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage)
