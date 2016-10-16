@@ -3,16 +3,30 @@
 import datetime
 import time
 
+import operator
+import traceback
+
+import subliminal
+import subliminal_patch
+
+from subliminal_patch.patch_api import list_all_subtitles
+from babelfish import Language
+from subliminal_patch.patch_subtitle import compute_score
 from missing_subtitles import items_get_all_missing_subs, refresh_item
 from background import scheduler
+from support.config import config
 from support.items import get_recent_items, is_ignored
+from support.lib import Plex
+from support.plex_media import scan_videos, get_metadata_dict
 
 
 class Task(object):
     name = None
     scheduler = None
+    periodic = False
     running = False
     time_start = None
+    data = None
 
     stored_attributes = ("last_run", "last_run_time")
 
@@ -44,7 +58,7 @@ class Task(object):
     def signal(self, *args, **kwargs):
         raise NotImplementedError
 
-    def prepare(self):
+    def prepare(self, *args, **kwargs):
         raise NotImplementedError
 
     def run(self):
@@ -53,6 +67,7 @@ class Task(object):
 
 class SearchAllRecentlyAddedMissing(Task):
     name = "searchAllRecentlyAddedMissing"
+    periodic = True
     items_done = None
     items_searching = None
     items_searching_ids = None
@@ -80,7 +95,7 @@ class SearchAllRecentlyAddedMissing(Task):
             self.items_done.append(item_id)
             return True
 
-    def prepare(self):
+    def prepare(self, *args, **kwargs):
         self.items_done = []
         recent_items = get_recent_items()
         missing = items_get_all_missing_subs(recent_items)
@@ -128,7 +143,7 @@ class SearchAllRecentlyAddedMissing(Task):
         Log.Debug("Task: %s, done. Failed items: %s", self.name, self.items_failed)
         self.running = False
 
-    def post_run(self):
+    def post_run(self, task_data):
         self.ready_for_display = False
         self.last_run = datetime.datetime.now()
         if self.time_start:
@@ -141,4 +156,95 @@ class SearchAllRecentlyAddedMissing(Task):
         self.items_searching_ids = None
 
 
+class AvailableSubsForItem(Task):
+    name = "AvailableSubsForItem"
+    rating_key = None
+    item_type = None
+    part_id = None
+    language = None
+
+    def prepare(self, rating_key, item_type, part_id, language, *args, **kwargs):
+        self.rating_key = rating_key
+        self.item_type = item_type
+        self.part_id = part_id
+        self.language = language
+
+    def run(self):
+        self.running = True
+        rating_key = self.rating_key
+        plex_item = list(Plex["library"].metadata(rating_key))[0]
+        part_id = self.part_id
+        item_type = self.item_type
+        language = self.language
+
+        # fixme: woot
+        subliminal.video.Episode.scores["addic7ed_boost"] = int(Prefs['provider.addic7ed.boost_by'])
+
+        # find current part
+        current_part = None
+        for part in plex_item.media.parts:
+            if str(part.id) == part_id:
+                current_part = part
+
+        if not current_part:
+            raise ValueError("Part unknown")
+
+        # get normalized metadata
+        if item_type == "episode":
+            min_score = Prefs["subtitles.search.minimumTVScore"]
+            metadata = get_metadata_dict(plex_item, current_part,
+                                         {"plex_part": current_part, "type": "episode", "title": plex_item.title,
+                                          "series": plex_item.show.title, "id": plex_item.rating_key,
+                                          "series_id": plex_item.show.rating_key,
+                                          "season_id": plex_item.season.rating_key,
+                                          "season": plex_item.season.index,
+                                          })
+        else:
+            min_score = Prefs["subtitles.search.minimumMovieScore"]
+            metadata = get_metadata_dict(plex_item, current_part, {"plex_part": current_part, "type": "movie",
+                                                                   "title": plex_item.title, "id": plex_item.rating_key,
+                                                                   "series_id": None,
+                                                                   "season_id": None,
+                                                                   "section": plex_item.section.title})
+
+        min_score = int(min_score)
+        scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
+        video, plex_part = scanned_parts.items()[0]
+        available_subs = list_all_subtitles(scanned_parts, {Language.fromietf(language)},
+                                            providers=config.providers,
+                                            provider_configs=config.provider_settings)
+
+        use_hearing_impaired = Prefs['subtitles.search.hearingImpaired'] in ("prefer", "force HI")
+
+        # sort subtitles by score
+        unsorted_subtitles = []
+        for s in available_subs[video]:
+            Log.Debug("Starting score computation for %s", s)
+            try:
+                matches = s.get_matches(video, hearing_impaired=use_hearing_impaired)
+            except AttributeError:
+                Log.Error("Match computation failed for %s: %s", s, traceback.format_exc())
+                continue
+
+            unsorted_subtitles.append((s, compute_score(matches, video), matches))
+        scored_subtitles = sorted(unsorted_subtitles, key=operator.itemgetter(1), reverse=True)
+
+        subtitles = []
+        for subtitle, score, matches in scored_subtitles:
+            # check score
+            if score < min_score:
+                Log.Info('Score %d is below min_score (%d)', score, min_score)
+                continue
+            subtitle.score = score
+            subtitle.matches = matches
+            subtitles.append(subtitle)
+
+        self.data = subtitles
+
+    def post_run(self, task_data):
+        self.running = False
+        task_data[self.rating_key] = self.data
+
+
 scheduler.register(SearchAllRecentlyAddedMissing)
+scheduler.register(AvailableSubsForItem)
