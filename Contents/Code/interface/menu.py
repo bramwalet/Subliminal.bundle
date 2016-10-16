@@ -6,15 +6,9 @@ import operator
 import logger
 import os
 import traceback
-import subliminal
-import subliminal_patch
 
-from subliminal_patch.patch_api import list_all_subtitles
-from subliminal.api import download_subtitles
-from babelfish import Language
 from menu_helpers import add_ignore_options, dig_tree, set_refresh_menu_state, \
     should_display_ignore, enable_channel_wrapper, default_thumb, debounce, SZObjectContainer
-from subliminal_patch.patch_subtitle import compute_score
 from subzero.constants import TITLE, ART, ICON, PREFIX, PLUGIN_IDENTIFIER, DEPENDENCY_MODULE_NAMES
 from support.background import scheduler
 from support.config import config
@@ -25,7 +19,7 @@ from support.items import get_item, get_on_deck_items, refresh_item, get_all_ite
 from support.lib import Plex
 from support.missing_subtitles import items_get_all_missing_subs
 from support.storage import reset_storage, log_storage, get_subtitle_info
-from support.plex_media import scan_videos, get_metadata_dict
+from subliminal.api import download_subtitles
 
 # init GUI
 ObjectContainer.art = R(ART)
@@ -502,9 +496,10 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                            current_subtitle["score"], current_subtitle["storage"], current_subtitle["link"])
 
             oc.add(DirectoryObject(
-                key=Callback(TriggerListAvailableSubsForItem, rating_key=rating_key, part_id=part.id, title=title,
+                key=Callback(ListAvailableSubsForItemMenu, rating_key=rating_key, part_id=part.id, title=title,
                              item_title=item_title, language=lang_short, current_link=current_sub_link,
-                             item_type=plex_item.type, filename=filename, randomize=timestamp()),
+                             item_type=plex_item.type, filename=filename, current_data=summary,
+                             randomize=timestamp()),
                 title=u"Available subtitles for: %s, %s" % (lang_short, filename),
                 summary=summary
             ))
@@ -519,89 +514,56 @@ MANUAL_SUB_SEARCH = {}
 
 @route(PREFIX + '/item/search/{rating_key}/{part_id}')
 @debounce
-def TriggerListAvailableSubsForItem(rating_key=None, part_id=None, title=None, item_title=None, filename=None,
-                                    item_type="episode", language=None, force=False, current_link=None,
-                                    randomize=None):
+def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item_title=None, filename=None,
+                                 item_type="episode", language=None, force=False, current_link=None, current_data=None,
+                                 randomize=None):
     assert rating_key, part_id
 
     #config.init_subliminal_patches()
-    plex_item = list(Plex["library"].metadata(rating_key))[0]
 
-    #fixme: woot
-    subliminal.video.Episode.scores["addic7ed_boost"] = int(Prefs['provider.addic7ed.boost_by'])
+    running = scheduler.is_task_running("AvailableSubsForItem")
+    task_data = scheduler.get_task_data("AvailableSubsForItem")
+    search_results = task_data.get(rating_key, None) if task_data else None
+    if (not search_results or force) and not running:
+        scheduler.dispatch_task("AvailableSubsForItem", rating_key, item_type, part_id, language)
+        running = True
 
-    # find current part
-    current_part = None
-    for part in plex_item.media.parts:
-        if str(part.id) == part_id:
-            current_part = part
-
-    if not current_part:
-        raise ValueError("Part unknown")
-
-    # get normalized metadata
-    if item_type == "episode":
-        min_score = Prefs["subtitles.search.minimumTVScore"]
-        metadata = get_metadata_dict(plex_item, current_part,
-                                     {"plex_part": current_part, "type": "episode", "title": plex_item.title,
-                                      "series": plex_item.show.title, "id": plex_item.rating_key,
-                                      "series_id": plex_item.show.rating_key, "season_id": plex_item.season.rating_key,
-                                      "season": plex_item.season.index,
-                                      })
-    else:
-        min_score = Prefs["subtitles.search.minimumMovieScore"]
-        metadata = get_metadata_dict(plex_item, current_part, {"plex_part": current_part, "type": "movie",
-                                                               "title": plex_item.title, "id": plex_item.rating_key,
-                                                               "series_id": None,
-                                                               "season_id": None,
-                                                               "section": plex_item.section.title})
-
-    min_score = int(min_score)
-    scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie")
-    video, plex_part = scanned_parts.items()[0]
-    available_subs = list_all_subtitles(scanned_parts, {Language.fromietf(language)},
-                                        providers=config.providers,
-                                        provider_configs=config.provider_settings)
-
-    use_hearing_impaired = Prefs['subtitles.search.hearingImpaired'] in ("prefer", "force HI")
-
-    # sort subtitles by score
-    unsorted_subtitles = []
-    for s in available_subs[video]:
-        Log.Debug("Starting score computation for %s", s)
-        try:
-            matches = s.get_matches(video, hearing_impaired=use_hearing_impaired)
-        except AttributeError:
-            Log.Error("Match computation failed for %s: %s", s, traceback.format_exc())
-            continue
-
-        unsorted_subtitles.append((s, compute_score(matches, video), matches))
-    scored_subtitles = sorted(unsorted_subtitles, key=operator.itemgetter(1), reverse=True)
-
-    subtitles = []
-    for subtitle, score, matches in scored_subtitles:
-        # check score
-        if score < min_score:
-            Log.Info('Score %d is below min_score (%d)', score, min_score)
-            continue
-        subtitle.score = score
-        subtitles.append(subtitle)
-
-    print subtitles
     oc = SZObjectContainer(title2=title, replace_parent=True)
     oc.add(DirectoryObject(
-        key=Callback(ItemDetailsMenu, rating_key=rating_key, item_title=item_title, randomize=timestamp()),
+        key=Callback(ItemDetailsMenu, rating_key=rating_key, item_title=item_title, title=title, randomize=timestamp()),
         title=u"Back to %s" % title,
-        summary="",
+        summary=current_data,
         thumb=default_thumb
     ))
-    print current_link
-    for subtitle in subtitles:
+
+    if not running:
+        oc.add(DirectoryObject(
+            key=Callback(ListAvailableSubsForItemMenu, rating_key=rating_key, item_title=item_title, language=language,
+                         filename=filename, part_id=part_id, title=title, current_link=current_link, force=True,
+                         current_data=current_data, randomize=timestamp()),
+            title=u"Available subtitles (click for new search)",
+            summary=u"Filename: %s" % filename,
+            thumb=default_thumb
+        ))
+    else:
+        oc.add(DirectoryObject(
+            key=Callback(ListAvailableSubsForItemMenu, rating_key=rating_key, item_title=item_title,
+                         language=language, filename=filename, current_data=current_data,
+                         part_id=part_id, title=title, current_link=current_link, randomize=timestamp()),
+            title=u"Searching, refresh here ...",
+            summary="",
+            thumb=default_thumb
+        ))
+
+    if not search_results:
+        return oc
+
+    for subtitle in search_results:
         oc.add(DirectoryObject(
             key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title, randomize=timestamp()),
-            title=u"%s: %s, score: %s; %s" % ("Available" if current_link != subtitle.page_link else "Current",
-                                    subtitle.provider_name, subtitle.score, subtitle.subtitle_id),
-            summary="Refreshes the item, possibly picking up new subtitles on disk",
+            title=u"%s: %s, score: %s" % ("Available" if current_link != subtitle.page_link else "Current",
+                                    subtitle.provider_name, subtitle.score),
+            summary=u"Release: %s, Matches: %s" % (subtitle.release_info, ", ".join(subtitle.matches)),
             thumb=default_thumb
         ))
 
