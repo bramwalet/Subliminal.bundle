@@ -104,7 +104,7 @@ def scan_video(plex_part, ignore_all=False, hints=None):
         Log.Warn("File could not be guessed by subliminal")
 
 
-def scan_videos(videos, kind="series"):
+def scan_videos(videos, kind="series", ignore_all=False):
     """
     receives a list of videos containing dictionaries returned by media_to_videos
     :param videos:
@@ -120,7 +120,7 @@ def scan_videos(videos, kind="series"):
 
         hints = helpers.get_item_hints(video["title"], kind, series=video["series"] if kind == "series" else None)
         video["plex_part"].fps = get_stream_fps(video["plex_part"].streams)
-        scanned_video = scan_video(video["plex_part"], ignore_all=force_refresh, hints=hints)
+        scanned_video = scan_video(video["plex_part"], ignore_all=force_refresh or ignore_all, hints=hints)
         if not scanned_video:
             continue
 
