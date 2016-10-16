@@ -283,9 +283,6 @@ class DownloadSubtitleForItem(PlexItemMetadataMixin, Task):
         scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
         video, plex_part = scanned_parts.items()[0]
 
-        # fixme: woot
-        subliminal.video.Episode.scores["addic7ed_boost"] = int(Prefs['provider.addic7ed.boost_by'])
-
         # downloaded_subtitles = {subliminal.Video: [subtitle, subtitle, ...]}
         download_subtitles([self.subtitle], providers=config.providers, provider_configs=config.provider_settings)
 
