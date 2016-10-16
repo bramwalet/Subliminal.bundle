@@ -8,6 +8,21 @@ from subliminal_patch.patch_provider_pool import PatchedProviderPool
 logger = logging.getLogger(__name__)
 
 
+def download_subtitles(subtitles, **kwargs):
+    """Download :attr:`~subliminal.subtitle.Subtitle.content` of `subtitles`.
+
+    All other parameters are passed onwards to the :class:`ProviderPool` constructor.
+
+    :param subtitles: subtitles to download.
+    :type subtitles: list of :class:`~subliminal.subtitle.Subtitle`
+
+    """
+    with PatchedProviderPool(**kwargs) as pool:
+        for subtitle in subtitles:
+            logger.info('Downloading subtitle %r', subtitle)
+            pool.download_subtitle(subtitle)
+
+
 def list_all_subtitles(videos, languages, **kwargs):
     """List all available subtitles.
 
