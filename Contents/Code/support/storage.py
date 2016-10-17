@@ -31,7 +31,7 @@ def whack_missing_parts(scanned_video_part_map, existing_parts=None):
     if not existing_parts:
         existing_parts = []
         for part in scanned_video_part_map.viewvalues():
-            existing_parts.append(part.id)
+            existing_parts.append(int(part.id))
 
     whacked_parts = False
     for video in scanned_video_part_map.keys():
@@ -62,17 +62,24 @@ def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_ty
     existing_parts = []
     for video, video_subtitles in downloaded_subtitles.items():
         part = scanned_video_part_map[video]
+        part_id = int(part.id)
 
         if video.id not in Dict["subs"]:
             Dict["subs"][video.id] = {}
 
         video_dict = copy.deepcopy(Dict["subs"][video.id])
-        if part.id not in video_dict:
-            video_dict[part.id] = {}
 
-        existing_parts.append(part.id)
+        # old data cleanup
+        if str(part_id) in video_dict:
+            del video_dict[str(part_id)]
+            Log.Info("deleting obsolete data from subtitle storage for %s, %s", video.id, part_id)
 
-        part_dict = video_dict[part.id]
+        if part_id not in video_dict:
+            video_dict[part_id] = {}
+
+        existing_parts.append(int(part_id))
+
+        part_dict = video_dict[part_id]
         for subtitle in video_subtitles:
             lang = Locale.Language.Match(subtitle.language.alpha2)
             if lang not in part_dict:

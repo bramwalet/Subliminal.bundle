@@ -282,13 +282,14 @@ class DownloadSubtitleForItem(PlexItemMetadataMixin, Task):
         video, plex_part = scanned_parts.items()[0]
 
         # downloaded_subtitles = {subliminal.Video: [subtitle, subtitle, ...]}
-        download_subtitles([self.subtitle], providers=config.providers, provider_configs=config.provider_settings)
+        subtitle = self.subtitle
+        download_subtitles([subtitle], providers=config.providers, provider_configs=config.provider_settings)
 
-        if self.subtitle.content:
+        if subtitle.content:
             whack_missing_parts(scanned_parts)
 
             # fixme?
-            save_subtitles(scanned_parts, {video: [self.subtitle]})
+            save_subtitles(scanned_parts, {video: [subtitle]})
 
     def post_run(self, task_data):
         self.running = False
