@@ -459,9 +459,10 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
     # look for subtitles for all available media parts and all of their languages
     for part in media.parts:
         filename = os.path.basename(part.file)
+        part_id = str(part.id)
 
         # get corresponding stored subtitle data for that media part (physical media item)
-        sub_part_data = current_subtitle_info.get(int(part.id), {}) if current_subtitle_info else {}
+        sub_part_data = current_subtitle_info.get(part_id, {}) if current_subtitle_info else {}
 
         # iterate through all configured languages
         for lang_short in config.lang_list:
@@ -496,7 +497,7 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                            current_subtitle["score"], current_subtitle["storage"], current_subtitle["link"])
 
             oc.add(DirectoryObject(
-                key=Callback(ListAvailableSubsForItemMenu, rating_key=rating_key, part_id=part.id, title=title,
+                key=Callback(ListAvailableSubsForItemMenu, rating_key=rating_key, part_id=part_id, title=title,
                              item_title=item_title, language=lang_short, current_link=current_sub_link,
                              item_type=plex_item.type, filename=filename, current_data=summary,
                              randomize=timestamp()),
@@ -559,9 +560,10 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
         return oc
 
     for subtitle in search_results:
+        print subtitle.subtitle_id
         oc.add(DirectoryObject(
             key=Callback(TriggerDownloadSubtitle, rating_key=rating_key, randomize=timestamp(),
-                         subtitle_id=subtitle.subtitle_id),
+                         subtitle_id=str(subtitle.subtitle_id)),
             title=u"%s: %s, score: %s" % ("Available" if current_link != subtitle.page_link else "Current",
                                     subtitle.provider_name, subtitle.score),
             summary=u"Release: %s, Matches: %s" % (subtitle.release_info, ", ".join(subtitle.matches)),
@@ -579,7 +581,7 @@ def TriggerDownloadSubtitle(rating_key=None, subtitle_id=None, randomize=None):
     search_results = task_data.get(rating_key, None) if task_data else None
     download_subtitle = None
     for subtitle in search_results:
-        if subtitle.subtitle_id == subtitle_id:
+        if str(subtitle.subtitle_id) == subtitle_id:
             download_subtitle = subtitle
             break
     if not download_subtitle:
