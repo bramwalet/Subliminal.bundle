@@ -38,7 +38,7 @@ class PatchedOpenSubtitlesSubtitle(OpenSubtitlesSubtitle):
             return set()
 
         # matched by tag?
-        if self.matched_by in "tag":
+        if self.matched_by == "tag":
             # treat a tag match equally to a hash match
             logger.debug("Subtitle matched by tag, treating it as a hash-match. Tag: '%s'", self.query_parameters.get("tag", None))
             matches.add("hash")
