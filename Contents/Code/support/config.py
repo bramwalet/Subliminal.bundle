@@ -233,7 +233,8 @@ class Config(object):
 
     def init_subliminal_patches(self):
         # configure custom subtitle destination folders for scanning pre-existing subs
-        dest_folder = config.subtitle_destination_folder
+        Log.Debug("Patching subliminal ...")
+        dest_folder = self.subtitle_destination_folder
         subliminal_patch.patch_video.CUSTOM_PATHS = [dest_folder] if dest_folder else []
         subliminal_patch.patch_provider_pool.DOWNLOAD_TRIES = int(Prefs['subtitles.try_downloads'])
         subliminal_patch.patch_providers.opensubtitles.PatchedOpenSubtitlesSubtitle.verify_hashes = \
