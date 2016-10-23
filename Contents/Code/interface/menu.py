@@ -560,7 +560,6 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
         return oc
 
     for subtitle in search_results:
-        print subtitle.subtitle_id
         oc.add(DirectoryObject(
             key=Callback(TriggerDownloadSubtitle, rating_key=rating_key, randomize=timestamp(),
                          subtitle_id=str(subtitle.subtitle_id)),
