@@ -11,6 +11,8 @@ logger = logging.getLogger(__name__)
 
 
 class PatchedOpenSubtitlesSubtitle(OpenSubtitlesSubtitle):
+    verify_hashes = False
+
     def __init__(self, language, hearing_impaired, page_link, subtitle_id, matched_by, movie_kind, hash, movie_name,
                  movie_release_name, movie_year, movie_imdb_id, series_season, series_episode, query_parameters, fps):
         super(PatchedOpenSubtitlesSubtitle, self).__init__(language, hearing_impaired, page_link, subtitle_id, matched_by, movie_kind, hash,
@@ -36,10 +38,16 @@ class PatchedOpenSubtitlesSubtitle(OpenSubtitlesSubtitle):
             return set()
 
         # matched by tag?
-        if self.matched_by == "tag":
+        if self.matched_by in "tag":
             # treat a tag match equally to a hash match
             logger.debug("Subtitle matched by tag, treating it as a hash-match. Tag: '%s'", self.query_parameters.get("tag", None))
             matches.add("hash")
+
+        # hash match - is the format correct?
+        if self.verify_hashes and "hash" in matches and "format" not in matches:
+            logger.info("Skipping tag/hash match because format's wrong")
+            matches.remove("hash")
+
         return matches
 
 

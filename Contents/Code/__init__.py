@@ -17,7 +17,6 @@ import logger
 sys.modules["logger"] = logger
 
 import subliminal
-import subliminal_patch
 import support
 
 import interface
@@ -62,14 +61,6 @@ def Start():
         return
 
     scheduler.run()
-
-
-def init_subliminal_patches():
-    # configure custom subtitle destination folders for scanning pre-existing subs
-    dest_folder = config.subtitle_destination_folder
-    subliminal_patch.patch_video.CUSTOM_PATHS = [dest_folder] if dest_folder else []
-    subliminal_patch.patch_provider_pool.DOWNLOAD_TRIES = int(Prefs['subtitles.try_downloads'])
-    subliminal.video.Episode.scores["addic7ed_boost"] = int(Prefs['provider.addic7ed.boost_by'])
 
 
 def download_best_subtitles(video_part_map, min_score=0):
@@ -161,7 +152,7 @@ class SubZeroAgent(object):
 
         item_ids = []
         try:
-            init_subliminal_patches()
+            config.init_subliminal_patches()
             videos = media_to_videos(media, kind=self.agent_type)
 
             # media ignored?

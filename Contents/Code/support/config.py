@@ -3,6 +3,9 @@
 import os
 import re
 import inspect
+
+import subliminal
+import subliminal_patch
 from babelfish import Language
 from subzero.lib.io import FileIO, get_viable_encoding
 from subzero.constants import PLUGIN_NAME, PLUGIN_IDENTIFIER, MOVIE, SHOW
@@ -227,6 +230,15 @@ class Config(object):
                              }
 
         return provider_settings
+
+    def init_subliminal_patches(self):
+        # configure custom subtitle destination folders for scanning pre-existing subs
+        dest_folder = config.subtitle_destination_folder
+        subliminal_patch.patch_video.CUSTOM_PATHS = [dest_folder] if dest_folder else []
+        subliminal_patch.patch_provider_pool.DOWNLOAD_TRIES = int(Prefs['subtitles.try_downloads'])
+        subliminal_patch.patch_providers.opensubtitles.PatchedOpenSubtitlesSubtitle.verify_hashes = \
+            bool(Prefs['provider.opensubtitles.verify_hashes'])
+        subliminal.video.Episode.scores["addic7ed_boost"] = int(Prefs['provider.addic7ed.boost_by'])
 
 
 config = Config()
