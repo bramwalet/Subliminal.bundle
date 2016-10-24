@@ -237,8 +237,6 @@ class Config(object):
         dest_folder = self.subtitle_destination_folder
         subliminal_patch.patch_video.CUSTOM_PATHS = [dest_folder] if dest_folder else []
         subliminal_patch.patch_provider_pool.DOWNLOAD_TRIES = int(Prefs['subtitles.try_downloads'])
-        subliminal_patch.patch_providers.opensubtitles.PatchedOpenSubtitlesSubtitle.verify_hashes = \
-            bool(Prefs['provider.opensubtitles.verify_hashes'])
         subliminal.video.Episode.scores["addic7ed_boost"] = int(Prefs['provider.addic7ed.boost_by'])
 
 

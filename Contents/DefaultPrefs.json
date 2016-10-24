@@ -237,12 +237,6 @@
     "default": "true"
   },
   {
-    "id": "provider.opensubtitles.verify_hashes",
-    "label": "OpenSubtitles: verify hash matches",
-    "type": "bool",
-    "default": "true"
-  },
-  {
     "id": "provider.thesubdb.enabled",
     "label": "Provider: Enable TheSubDB",
     "type": "bool",
