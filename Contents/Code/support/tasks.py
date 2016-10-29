@@ -258,6 +258,8 @@ class DownloadSubtitleForItem(Task):
             try:
                 whack_missing_parts(scanned_parts)
                 save_subtitles(scanned_parts, {video: [subtitle]})
+            except:
+                Log.Error("Something went wrong when downloading specific subtitle: %s", traceback.format_exc())
             finally:
                 set_refresh_menu_state(None)
 
