@@ -1,9 +1,12 @@
 # coding=utf-8
 
+import struct
+import binascii
+
 from pyga.requests import Event, Page, Tracker, Session, Visitor, Config
 
 
-def track_event(category=None, action=None, label=None, value=None, uuid=None, first_use=None, add=None,
+def track_event(category=None, action=None, label=None, value=None, identifier=None, first_use=None, add=None,
                 noninteraction=True):
     anonymousConfig = Config()
     anonymousConfig.anonimize_ip_address = True
@@ -11,9 +14,8 @@ def track_event(category=None, action=None, label=None, value=None, uuid=None, f
     tracker = Tracker('UA-86466078-1', 'none', conf=anonymousConfig)
     visitor = Visitor()
 
-    if uuid:
-        # convert a random uuid to an even more insignificant integer
-        visitor.unique_id = uuid.int & (1 << 32)-1
+    # convert the last 8 bytes of the machine identifier to an integer to get a "unique" user
+    visitor.unique_id = struct.unpack("!I", binascii.unhexlify(identifier[32:]))[0]
 
     if add:
         # add visitor's ip address (will be anonymized)
