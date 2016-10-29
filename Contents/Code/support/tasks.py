@@ -18,6 +18,7 @@ from storage import save_subtitles, whack_missing_parts
 from support.config import config
 from support.items import get_recent_items, is_ignored
 from support.lib import Plex
+from support.helpers import track_usage
 from support.plex_media import scan_videos, get_plex_metadata
 
 
@@ -258,6 +259,7 @@ class DownloadSubtitleForItem(Task):
             try:
                 whack_missing_parts(scanned_parts)
                 save_subtitles(scanned_parts, {video: [subtitle]})
+                track_usage("Subtitle", "manual", "download", 1)
             except:
                 Log.Error("Something went wrong when downloading specific subtitle: %s", traceback.format_exc())
             finally:

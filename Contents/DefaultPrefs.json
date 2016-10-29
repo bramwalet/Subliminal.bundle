@@ -497,5 +497,11 @@
     "label": "Log to console (for development/debugging)",
     "type": "bool",
     "default": "false"
+  },
+  {
+    "id": "track_usage",
+    "label": "Collect anonymous usage statistics",
+    "type": "bool",
+    "default": "true"
   }
 ]

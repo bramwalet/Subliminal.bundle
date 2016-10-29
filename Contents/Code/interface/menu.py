@@ -391,7 +391,7 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
         oc.add(DirectoryObject(
             key=Callback(RefreshItem, rating_key=rating_key, item_title=title, force=True,
                          refresh_kind=current_kind, previous_rating_key=previous_rating_key, timeout=timeout*1000),
-            title=u"Auto-Search: %s" % item_title,
+            title=u"Auto-Find subtitles: %s" % item_title,
             summary="Issues a forced refresh, ignoring known subtitles and searching for new ones"
         ))
     else:
@@ -497,7 +497,7 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                              item_title=item_title, language=lang, current_link=current_sub_link,
                              item_type=plex_item.type, filename=filename, current_data=summary,
                              randomize=timestamp()),
-                title=u"Search for %s subtitles" % lang.name,
+                title=u"List %s subtitles" % lang.name,
                 summary=summary
             ))
 

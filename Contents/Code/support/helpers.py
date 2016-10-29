@@ -9,6 +9,8 @@ import re
 import platform
 import subprocess
 
+from subzero.analytics import track_event
+
 # Unicode control characters can appear in ID3v2 tags but are not legal in XML.
 RE_UNICODE_CONTROL = u'([\u0000-\u0008\u000b-\u000c\u000e-\u001f\ufffe-\uffff])' + \
                      u'|' + \
@@ -203,3 +205,17 @@ def notify_executable(exe_info, videos, subtitles, storage):
                 Log.Error(u"Calling %s failed: %s" % (exe, traceback.format_exc()))
             else:
                 Log.Debug(u"Process output: %s" % output)
+
+
+def track_usage(category=None, action=None, label=None, value=None):
+    if not bool(Prefs["track_usage"]):
+        return
+
+    Thread.Create(dispatch_track_usage, category=category, action=action, label=label, value=value)
+
+
+def dispatch_track_usage(*args, **kwargs):
+    try:
+        track_event(*[str(a) for a in args], **dict((str(k), str(v)) for k, v in kwargs.iteritems()))
+    except:
+        Log.Debug("Something went wrong when reporting anonymous user statistics: %s", traceback.format_exc())

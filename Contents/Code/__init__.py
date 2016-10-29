@@ -30,6 +30,7 @@ from support.storage import whack_missing_parts, save_subtitles
 from support.items import is_ignored
 from support.config import config
 from support.lib import get_intent
+from support.helpers import track_usage
 
 
 def Start():
@@ -60,7 +61,17 @@ def Start():
             Log.Error("Insufficient permissions on library %s, folder: %s" % (title, path))
         return
 
+    # run task scheduler
     scheduler.run()
+
+    # track usage
+    if bool(Prefs["track_usage"]):
+        if "first_use" not in Dict:
+            track_usage("General", "plugin", "first_start", 1)
+        else:
+            Dict["first_use"] = datetime.datetime.now()
+            track_usage("General", "plugin", "start", 1)
+            Dict.Save()
 
 
 def download_best_subtitles(video_part_map, min_score=0):
@@ -180,6 +191,7 @@ class SubZeroAgent(object):
 
             if downloaded_subtitles:
                 save_subtitles(scanned_video_part_map, downloaded_subtitles)
+                track_usage("Subtitle", "refreshed", "download", 1)
 
             update_local_media(metadata, media, media_type=self.agent_type)
 
