@@ -211,8 +211,9 @@ def track_usage(category=None, action=None, label=None, value=None):
     if not bool(Prefs["track_usage"]):
         return
 
-    Thread.Create(dispatch_track_usage, category, action, label, value, identifier=Platform.MachineIdentifier,
-                  first_use=Dict["first_use"], add=Network.PublicAddress)
+    Thread.Create(dispatch_track_usage, category, action, label, value,
+                  identifier=Hash.SHA1(Platform.MachineIdentifier + "SUBZEROOOOOOOOOO"), first_use=Dict["first_use"],
+                  add=Network.PublicAddress)
 
 
 def dispatch_track_usage(*args, **kwargs):
