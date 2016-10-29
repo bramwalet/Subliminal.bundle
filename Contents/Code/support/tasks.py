@@ -222,6 +222,8 @@ class AvailableSubsForItem(Task):
             subtitle.item_type = item_type
             subtitles.append(subtitle)
 
+        track_usage("Subtitle", "manual", "list", 1)
+
         self.data = subtitles
 
     def post_run(self, task_data):
