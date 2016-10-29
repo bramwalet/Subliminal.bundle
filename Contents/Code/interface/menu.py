@@ -566,7 +566,7 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
 
     for subtitle in search_results:
         oc.add(DirectoryObject(
-            key=Callback(TriggerDownloadSubtitle, rating_key=rating_key, randomize=timestamp(),
+            key=Callback(TriggerDownloadSubtitle, rating_key=rating_key, randomize=timestamp(), item_title=item_title,
                          subtitle_id=str(subtitle.subtitle_id)),
             title=u"%s: %s, score: %s" % ("Available" if current_link != subtitle.page_link else "Current",
                                     subtitle.provider_name, subtitle.score),
@@ -579,8 +579,8 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
 
 @route(PREFIX + '/download_subtitle/{rating_key}')
 @debounce
-def TriggerDownloadSubtitle(rating_key=None, subtitle_id=None, randomize=None):
-    set_refresh_menu_state("Downloading subtitle for %s" % rating_key)
+def TriggerDownloadSubtitle(rating_key=None, subtitle_id=None, item_title=None, randomize=None):
+    set_refresh_menu_state("Downloading subtitle for %s" % item_title or rating_key)
     task_data = scheduler.get_task_data("AvailableSubsForItem")
     search_results = task_data.get(rating_key, None) if task_data else None
     download_subtitle = None

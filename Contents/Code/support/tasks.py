@@ -243,6 +243,8 @@ class DownloadSubtitleForItem(Task):
 
     def run(self):
         self.running = True
+        from interface.menu_helpers import set_refresh_menu_state
+
         metadata = get_plex_metadata(self.rating_key, self.part_id, self.item_type)
         item_type = self.item_type
         scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
@@ -253,10 +255,11 @@ class DownloadSubtitleForItem(Task):
         download_subtitles([subtitle], providers=config.providers, provider_configs=config.provider_settings)
 
         if subtitle.content:
-            whack_missing_parts(scanned_parts)
-
-            # fixme?
-            save_subtitles(scanned_parts, {video: [subtitle]})
+            try:
+                whack_missing_parts(scanned_parts)
+                save_subtitles(scanned_parts, {video: [subtitle]})
+            finally:
+                set_refresh_menu_state(None)
 
     def post_run(self, task_data):
         self.running = False
