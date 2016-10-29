@@ -1,11 +1,7 @@
 # coding=utf-8
 import logging
-
-import operator
-
 import logger
 import os
-import traceback
 
 from menu_helpers import add_ignore_options, dig_tree, set_refresh_menu_state, \
     should_display_ignore, enable_channel_wrapper, default_thumb, debounce, SZObjectContainer
@@ -20,7 +16,6 @@ from support.lib import Plex
 from support.missing_subtitles import items_get_all_missing_subs
 from support.plex_media import get_plex_metadata, scan_videos
 from support.storage import reset_storage, log_storage, get_subtitle_info
-from subliminal.api import download_subtitles
 
 # init GUI
 ObjectContainer.art = R(ART)
@@ -466,8 +461,8 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
         sub_part_data = current_subtitle_info.get(part_id, {}) if current_subtitle_info else {}
 
         # iterate through all configured languages
-        for lang_short in config.lang_list:
-            sub_data_for_lang = sub_part_data.get(lang_short, {})
+        for lang in config.lang_list:
+            sub_data_for_lang = sub_part_data.get(lang, {})
 
             # try getting current subtitle information for that language
             current_subtitle_key = sub_data_for_lang.get("current", (None, None))
@@ -489,20 +484,20 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
 
             summary = u"No current subtitle in storage"
             if current_sub_provider_name:
-                current_subtitle = sub_part_data[lang_short][current_subtitle_key]
+                current_subtitle = sub_part_data[lang][current_subtitle_key]
                 current_sub_link = current_subtitle["link"]
 
                 summary = u"Current subtitle%s: %s (added: %s), Language: %s, Score: %i, Storage: %s, From: %s" % \
                           (u" (legacy/inaccurate)" if legacy_storage else "", current_sub_provider_name,
-                           current_subtitle["date_added"].strftime("%Y-%m-%d %H:%M:%S"), lang_short,
+                           current_subtitle["date_added"].strftime("%Y-%m-%d %H:%M:%S"), lang,
                            current_subtitle["score"], current_subtitle["storage"], current_subtitle["link"])
 
             oc.add(DirectoryObject(
                 key=Callback(ListAvailableSubsForItemMenu, rating_key=rating_key, part_id=part_id, title=title,
-                             item_title=item_title, language=lang_short, current_link=current_sub_link,
+                             item_title=item_title, language=lang, current_link=current_sub_link,
                              item_type=plex_item.type, filename=filename, current_data=summary,
                              randomize=timestamp()),
-                title=u"Search subtitles for: %s" % lang_short,
+                title=u"Search for %s subtitles" % lang.name,
                 summary=summary
             ))
 
@@ -561,7 +556,7 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
             key=Callback(ListAvailableSubsForItemMenu, rating_key=rating_key, item_title=item_title,
                          language=language, filename=filename, current_data=current_data,
                          part_id=part_id, title=title, current_link=current_link, randomize=timestamp()),
-            title=u"Searching, refresh here ...",
+            title=u"Searching (%s), refresh here ..." % video_display_data,
             summary=u"Current: %s; Filename: %s" % (video_display_data, filename),
             thumb=default_thumb
         ))
