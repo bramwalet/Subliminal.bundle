@@ -67,11 +67,13 @@ def Start():
     # track usage
     if bool(Prefs["track_usage"]):
         if "first_use" not in Dict:
+            if "uuid" not in Dict:
+                Dict["uuid"] = String.UUID()
+            Dict["first_use"] = datetime.datetime.utcnow()
+            Dict.Save()
             track_usage("General", "plugin", "first_start", 1)
         else:
-            Dict["first_use"] = datetime.datetime.now()
             track_usage("General", "plugin", "start", 1)
-            Dict.Save()
 
 
 def download_best_subtitles(video_part_map, min_score=0):

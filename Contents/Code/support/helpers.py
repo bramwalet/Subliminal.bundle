@@ -211,11 +211,15 @@ def track_usage(category=None, action=None, label=None, value=None):
     if not bool(Prefs["track_usage"]):
         return
 
-    Thread.Create(dispatch_track_usage, category=category, action=action, label=label, value=value)
+    Thread.Create(dispatch_track_usage, category, action, label, value, uuid=Dict["uuid"], first_use=Dict["first_use"],
+                  add=Network.PublicAddress)
 
 
 def dispatch_track_usage(*args, **kwargs):
+    uuid = kwargs.pop("uuid")
+    first_use = kwargs.pop("first_use")
+    add = kwargs.pop("add")
     try:
-        track_event(*[str(a) for a in args], **dict((str(k), str(v)) for k, v in kwargs.iteritems()))
+        track_event(uuid=uuid, first_use=first_use, add=add, *[str(a) for a in args])
     except:
         Log.Debug("Something went wrong when reporting anonymous user statistics: %s", traceback.format_exc())
