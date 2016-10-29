@@ -5,11 +5,12 @@ import subliminal
 import helpers
 
 from items import get_item
-from lib import get_intent
+from lib import get_intent, Plex
 
 
 def get_metadata_dict(item, part, add):
     data = {
+        "item": item,
         "section": item.section.title,
         "path": part.file,
         "folder": os.path.dirname(part.file),
@@ -130,3 +131,33 @@ def scan_videos(videos, kind="series", ignore_all=False):
         scanned_video.plexapi_metadata = part_metadata
         ret[scanned_video] = video["plex_part"]
     return ret
+
+
+def get_plex_metadata(rating_key, part_id, item_type):
+    plex_item = list(Plex["library"].metadata(rating_key))[0]
+
+    # find current part
+    current_part = None
+    for part in plex_item.media.parts:
+        if str(part.id) == part_id:
+            current_part = part
+
+    if not current_part:
+        raise ValueError("Part unknown")
+
+    # get normalized metadata
+    if item_type == "episode":
+        metadata = get_metadata_dict(plex_item, current_part,
+                                     {"plex_part": current_part, "type": "episode", "title": plex_item.title,
+                                      "series": plex_item.show.title, "id": plex_item.rating_key,
+                                      "series_id": plex_item.show.rating_key,
+                                      "season_id": plex_item.season.rating_key,
+                                      "season": plex_item.season.index,
+                                      })
+    else:
+        metadata = get_metadata_dict(plex_item, current_part, {"plex_part": current_part, "type": "movie",
+                                                               "title": plex_item.title, "id": plex_item.rating_key,
+                                                               "series_id": None,
+                                                               "season_id": None,
+                                                               "section": plex_item.section.title})
+    return metadata

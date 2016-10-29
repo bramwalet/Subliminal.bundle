@@ -18,7 +18,7 @@ from storage import save_subtitles, whack_missing_parts
 from support.config import config
 from support.items import get_recent_items, is_ignored
 from support.lib import Plex
-from support.plex_media import scan_videos, get_metadata_dict
+from support.plex_media import scan_videos, get_plex_metadata
 
 
 class Task(object):
@@ -158,41 +158,7 @@ class SearchAllRecentlyAddedMissing(Task):
         self.items_searching_ids = None
 
 
-class PlexItemMetadataMixin(object):
-    def get_plex_metadata(self):
-        rating_key = self.rating_key
-        plex_item = list(Plex["library"].metadata(rating_key))[0]
-        part_id = self.part_id
-        item_type = self.item_type
-
-        # find current part
-        current_part = None
-        for part in plex_item.media.parts:
-            if str(part.id) == part_id:
-                current_part = part
-
-        if not current_part:
-            raise ValueError("Part unknown")
-
-        # get normalized metadata
-        if item_type == "episode":
-            metadata = get_metadata_dict(plex_item, current_part,
-                                         {"plex_part": current_part, "type": "episode", "title": plex_item.title,
-                                          "series": plex_item.show.title, "id": plex_item.rating_key,
-                                          "series_id": plex_item.show.rating_key,
-                                          "season_id": plex_item.season.rating_key,
-                                          "season": plex_item.season.index,
-                                          })
-        else:
-            metadata = get_metadata_dict(plex_item, current_part, {"plex_part": current_part, "type": "movie",
-                                                                   "title": plex_item.title, "id": plex_item.rating_key,
-                                                                   "series_id": None,
-                                                                   "season_id": None,
-                                                                   "section": plex_item.section.title})
-        return metadata
-
-
-class AvailableSubsForItem(PlexItemMetadataMixin, Task):
+class AvailableSubsForItem(Task):
     name = "AvailableSubsForItem"
     rating_key = None
     item_type = None
@@ -208,7 +174,7 @@ class AvailableSubsForItem(PlexItemMetadataMixin, Task):
     def run(self):
         self.running = True
         item_type = self.item_type
-        metadata = self.get_plex_metadata()
+        metadata = get_plex_metadata(self.rating_key, self.part_id, self.item_type)
         language = self.language
         part_id = self.part_id
 
@@ -262,7 +228,7 @@ class AvailableSubsForItem(PlexItemMetadataMixin, Task):
         task_data[self.rating_key] = self.data
 
 
-class DownloadSubtitleForItem(PlexItemMetadataMixin, Task):
+class DownloadSubtitleForItem(Task):
     name = "DownloadSubtitleForItem"
     rating_key = None
     subtitle = None
@@ -277,7 +243,7 @@ class DownloadSubtitleForItem(PlexItemMetadataMixin, Task):
 
     def run(self):
         self.running = True
-        metadata = self.get_plex_metadata()
+        metadata = get_plex_metadata(self.rating_key, self.part_id, self.item_type)
         item_type = self.item_type
         scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
         video, plex_part = scanned_parts.items()[0]

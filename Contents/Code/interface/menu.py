@@ -18,6 +18,7 @@ from support.items import get_item, get_on_deck_items, refresh_item, get_all_ite
     get_item_thumb, get_item_kind_from_rating_key
 from support.lib import Plex
 from support.missing_subtitles import items_get_all_missing_subs
+from support.plex_media import get_plex_metadata, scan_videos
 from support.storage import reset_storage, log_storage, get_subtitle_info
 from subliminal.api import download_subtitles
 
@@ -537,12 +538,21 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
         thumb=default_thumb
     ))
 
+    metadata = get_plex_metadata(rating_key, part_id, item_type)
+    scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
+    video, plex_part = scanned_parts.items()[0]
+
+    video_display_data = [video.format]
+    if video.release_group:
+        video_display_data.append(u"by %s" % video.release_group)
+    video_display_data = " ".join(video_display_data)
+
     if not running:
         oc.add(DirectoryObject(
             key=Callback(ListAvailableSubsForItemMenu, rating_key=rating_key, item_title=item_title, language=language,
                          filename=filename, part_id=part_id, title=title, current_link=current_link, force=True,
                          current_data=current_data, randomize=timestamp()),
-            title=u"Available subtitles (click for new search)",
+            title=u"Search for subtitles (%s)" % video_display_data,
             summary=u"Filename: %s" % filename,
             thumb=default_thumb
         ))
@@ -552,7 +562,7 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
                          language=language, filename=filename, current_data=current_data,
                          part_id=part_id, title=title, current_link=current_link, randomize=timestamp()),
             title=u"Searching, refresh here ...",
-            summary="",
+            summary=u"Current: %s; Filename: %s" % (video_display_data, filename),
             thumb=default_thumb
         ))
 
