@@ -48,7 +48,8 @@ class DefaultScheduler(object):
                 task_frequency = None
 
             self.tasks[task.name] = {"task": task, "frequency": parse_frequency(task_frequency)}
-            Dict["tasks"][task.name] = {"data": {}}
+            if task.name not in Dict["tasks"]:
+                Dict["tasks"][task.name] = {"data": {}}
 
     def run(self):
         self.running = True
