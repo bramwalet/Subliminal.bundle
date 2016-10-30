@@ -207,6 +207,8 @@ class SubZeroAgent(object):
 
                 # resolve existing intent for that id
                 intent.resolve("force", item_id)
+
+
             Dict.Save()
 
 
