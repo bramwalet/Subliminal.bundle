@@ -559,7 +559,7 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
     scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
     video, plex_part = scanned_parts.items()[0]
 
-    video_display_data = [video.format]
+    video_display_data = [video.format] if video.format else []
     if video.release_group:
         video_display_data.append(u"by %s" % video.release_group)
     video_display_data = " ".join(video_display_data)
