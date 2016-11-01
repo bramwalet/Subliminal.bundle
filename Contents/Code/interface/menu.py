@@ -115,6 +115,12 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
             summary="Show the current ignore list (mainly used for the automatic tasks)"
         ))
 
+        oc.add(DirectoryObject(
+            key=Callback(HistoryMenu),
+            title="History",
+            summary="Show the last %i downloaded subtitles" % int(Prefs["history_size"])
+        ))
+
     oc.add(DirectoryObject(
         key=Callback(fatality, force_title=" ", randomize=timestamp()),
         title=pad_title("Refresh"),
@@ -407,6 +413,22 @@ def IgnoreListMenu():
         values = ignore_list[key]
         for value in values:
             add_ignore_options(oc, key, title=ignore_list.get_title(key, value), rating_key=value, callback_menu=IgnoreMenu)
+    return oc
+
+
+@route(PREFIX + '/history')
+def HistoryMenu():
+    from support.history import get_history
+    history = get_history()
+    oc = SZObjectContainer(title2="History", replace_parent=True)
+
+    for item in history.history_items:
+        oc.add(DirectoryObject(
+            key=Callback(ItemDetailsMenu, title=item.title, item_title=item.item_title,
+                         rating_key=item.rating_key),
+            title=unicode(item)
+        ))
+
     return oc
 
 

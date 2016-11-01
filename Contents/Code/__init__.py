@@ -200,8 +200,9 @@ class SubZeroAgent(object):
                     # store item(s) in history
                     for subtitle in video_subtitles:
                         title = get_title_for_video_metadata(video.plexapi_metadata)
+                        item_title = get_title_for_video_metadata(video.plexapi_metadata, add_section_title=False)
                         history = get_history()
-                        history.add(title, video.id, subtitle.score)
+                        history.add(title, item_title, video.id, subtitle.score)
 
             update_local_media(metadata, media, media_type=self.agent_type)
 

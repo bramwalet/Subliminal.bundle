@@ -5,11 +5,13 @@ from subzero.lib.dict import DictProxy
 
 class SubtitleHistoryItem(object):
     title = None
+    item_title = None
     rating_key = None
     score = None
 
-    def __init__(self, title, rating_key, score):
+    def __init__(self, title, item_title, rating_key, score):
         self.title = title
+        self.item_title = item_title
         self.rating_key = str(rating_key)
         self.score = score
 
@@ -45,10 +47,10 @@ class SubtitleHistory(DictProxy):
     def setup_defaults(self):
         return {"history_items": []}
 
-    def add(self, title, rating_key, score):
+    def add(self, title, item_title, rating_key, score):
         # create copy
         items = self.history_items[:]
-        item = SubtitleHistoryItem(title, rating_key, score)
+        item = SubtitleHistoryItem(title, item_title, rating_key, score)
 
         # remove duplicates
         if item in items:

@@ -153,11 +153,14 @@ def get_plex_metadata(rating_key, part_id, item_type):
                                       "series_id": plex_item.show.rating_key,
                                       "season_id": plex_item.season.rating_key,
                                       "season": plex_item.season.index,
+                                      "episode": plex_item.index
                                       })
     else:
         metadata = get_metadata_dict(plex_item, current_part, {"plex_part": current_part, "type": "movie",
                                                                "title": plex_item.title, "id": plex_item.rating_key,
                                                                "series_id": None,
                                                                "season_id": None,
+                                                               "season": None,
+                                                               "episode": None,
                                                                "section": plex_item.section.title})
     return metadata
