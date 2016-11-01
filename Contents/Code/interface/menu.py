@@ -653,6 +653,10 @@ def AdvancedMenu(randomize=None, header=None, message=None):
         key=Callback(ResetStorage, key="ignore", randomize=timestamp()),
         title=pad_title("Reset the plugin's internal ignorelist storage"),
     ))
+    oc.add(DirectoryObject(
+        key=Callback(ResetStorage, key="history", randomize=timestamp()),
+        title=pad_title("Reset the plugin's internal history storage"),
+    ))
     return oc
 
 

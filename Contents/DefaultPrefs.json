@@ -474,6 +474,19 @@
     "default": "200"
   },
   {
+    "id": "history_size",
+    "label": "History: amount of items to store historical data for",
+    "type": "enum",
+    "values": [
+      "50",
+      "100",
+      "150",
+      "250",
+      "500",
+    ],
+    "default": "100"
+  },
+  {
     "id": "check_permissions",
     "label": "Check for correct folder permissions of every library on plugin start",
     "type": "bool",
