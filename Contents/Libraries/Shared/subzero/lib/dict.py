@@ -11,11 +11,25 @@ class DictProxy(object):
         if self.store not in self.Dict or not self.Dict[self.store]:
             self.Dict[self.store] = self.setup_defaults()
         self.save()
+        self.__initialized = True
 
     def __getattr__(self, name):
         if name in self.Dict[self.store]:
             return self.Dict[self.store][name]
-        return getattr(super(self.DictProxy, self), name)
+        return getattr(super(DictProxy, self), name)
+
+    def __setattr__(self, name, value):
+        if not self.__dict__.has_key(
+                '_DictProxy__initialized'):  # this test allows attributes to be set in the __init__ method
+            return dict.__setattr__(self, name, value)
+
+        elif self.__dict__.has_key(name):  # any normal attributes are handled normally
+            dict.__setattr__(self, name, value)
+
+        else:
+            if name in self.Dict[self.store]:
+                self.Dict[self.store][name] = value
+                return
 
     def __cmp__(self, d):
         return cmp(self.Dict[self.store], d)
@@ -24,6 +38,7 @@ class DictProxy(object):
         return item in self.Dict[self.store]
 
     def __setitem__(self, key, item):
+        print "SETITEM", key, item
         self.Dict[self.store][key] = item
         self.Dict.Save()
 
