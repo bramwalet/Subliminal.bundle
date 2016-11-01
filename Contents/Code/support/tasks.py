@@ -31,6 +31,7 @@ class Task(object):
     data = None
 
     stored_attributes = ("last_run", "last_run_time")
+    default_data = {"last_run": None, "last_run_time": None, "data": {}}
 
     # task ready for being status-displayed?
     ready_for_display = False
@@ -40,8 +41,7 @@ class Task(object):
         self.running = False
         self.time_start = None
         self.scheduler = scheduler
-        if self.name not in Dict["tasks"]:
-            Dict["tasks"][self.name] = {"last_run": None, "last_run_time": None}
+        self.setup_defaults()
 
     def __getattribute__(self, name):
         if name in object.__getattribute__(self, "stored_attributes"):
@@ -56,6 +56,19 @@ class Task(object):
             return
 
         object.__setattr__(self, name, value)
+
+    def setup_defaults(self):
+        if self.name not in Dict["tasks"]:
+            Dict["tasks"][self.name] = self.default_data.copy()
+            return
+
+        sd = Dict["tasks"][self.name]
+
+        # forward-migration
+        for key, def_value in self.default_data.iteritems():
+            hasval = key in sd
+            if not hasval:
+                sd[key] = def_value
 
     def signal(self, *args, **kwargs):
         raise NotImplementedError
