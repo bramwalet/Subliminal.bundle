@@ -123,6 +123,24 @@ def get_video_display_title(kind, title, section_title=None, parent_title=None, 
     return "%s%s" % (section_add, title)
 
 
+def get_title_for_video_metadata(metadata, add_section_title=True):
+
+    # compute title
+    return get_video_display_title(
+        "show" if metadata["series_id"] else "movie",
+        metadata["title"],
+        parent_title=metadata.get("series", None),
+        season=metadata.get("season", None),
+        episode=metadata.get("episode", None),
+        section_title=metadata.get("section", None),
+        add_section_title=add_section_title
+    )
+
+
+def get_identifier():
+    return Hash.SHA1(Platform.MachineIdentifier + "SUBZEROOOOOOOOOO")
+
+
 def encode_message(base, s):
     return "%s?message=%s" % (base, urllib.quote_plus(s))
 
@@ -212,7 +230,7 @@ def track_usage(category=None, action=None, label=None, value=None):
         return
 
     Thread.Create(dispatch_track_usage, category, action, label, value,
-                  identifier=Hash.SHA1(Platform.MachineIdentifier + "SUBZEROOOOOOOOOO"), first_use=Dict["first_use"],
+                  identifier=get_identifier(), first_use=Dict["first_use"],
                   add=Network.PublicAddress)
 
 

@@ -9,7 +9,7 @@ import subliminal
 
 from subtitlehelpers import force_utf8
 from config import config
-from helpers import get_video_display_title, notify_executable
+from helpers import notify_executable, get_title_for_video_metadata
 
 
 def get_subtitle_info(rating_key):
@@ -87,15 +87,7 @@ def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_ty
             metadata = video.plexapi_metadata
 
             # compute title
-            title = get_video_display_title(
-                "show" if metadata["series_id"] else "movie",
-                metadata["title"],
-                parent_title=metadata.get("series", None),
-                season=metadata.get("season", None),
-                episode=metadata.get("episode", None),
-                section_title=metadata.get("section", None),
-                add_section_title=True
-            )
+            title = get_title_for_video_metadata(metadata)
             lang_dict[sub_key] = dict(score=subtitle.score, link=subtitle.page_link, storage=storage_type, hash=Hash.MD5(subtitle.content),
                                       date_added=datetime.datetime.now(), title=title)
             lang_dict["current"] = sub_key

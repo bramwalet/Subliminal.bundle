@@ -18,7 +18,7 @@ from storage import save_subtitles, whack_missing_parts
 from support.config import config
 from support.items import get_recent_items, is_ignored
 from support.lib import Plex
-from support.helpers import track_usage
+from support.helpers import track_usage, get_title_for_video_metadata
 from support.plex_media import scan_videos, get_plex_metadata
 
 
@@ -279,6 +279,12 @@ class DownloadSubtitleForItem(Task):
                 Log.Error("Something went wrong when downloading specific subtitle: %s", traceback.format_exc())
             finally:
                 set_refresh_menu_state(None)
+
+                # store item in history
+                from support.history import get_history
+                title = get_title_for_video_metadata(metadata)
+                history = get_history()
+                history.add(title, video.id)
 
     def post_run(self, task_data):
         self.running = False
