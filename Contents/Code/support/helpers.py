@@ -118,17 +118,24 @@ def get_video_display_title(kind, title, section_title=None, parent_title=None, 
 
     if kind == "show" and parent_title:
         if season and episode:
-            return '%s%s S%02dE%02d, %s' % (section_add, parent_title, season or 0, episode or 0, title)
-        return '%s%s, %s' % (section_add, parent_title, title)
+            return '%s%s S%02dE%02d%s' % (section_add, parent_title, season or 0, episode or 0,
+                                          (", %s" % title if title else ""))
+        return '%s%s%s' % (section_add, parent_title, (", %s" % title if title else ""))
     return "%s%s" % (section_add, title)
 
 
-def get_title_for_video_metadata(metadata, add_section_title=True):
+def get_title_for_video_metadata(metadata, add_section_title=True, add_item_title=False):
+    """
 
+    :param metadata:
+    :param add_section_title:
+    :param add_item_title: add the item's title (episode or movie title)
+    :return:
+    """
     # compute title
     return get_video_display_title(
         "show" if metadata["series_id"] else "movie",
-        metadata["title"],
+        metadata["title"] if add_item_title else "",
         parent_title=metadata.get("series", None),
         season=metadata.get("season", None),
         episode=metadata.get("episode", None),

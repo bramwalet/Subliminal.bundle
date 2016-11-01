@@ -284,7 +284,7 @@ class DownloadSubtitleForItem(Task):
                 from support.history import get_history
                 title = get_title_for_video_metadata(metadata)
                 history = get_history()
-                history.add(title, video.id)
+                history.add(title, video.id, subtitle.score)
 
     def post_run(self, task_data):
         self.running = False

@@ -34,7 +34,6 @@ from support.helpers import track_usage, get_title_for_video_metadata, get_ident
 from support.history import get_history
 
 
-
 def Start():
     HTTP.CacheTime = 0
     HTTP.Headers['User-agent'] = OS_PLEX_USERAGENT
@@ -198,10 +197,11 @@ class SubZeroAgent(object):
                 track_usage("Subtitle", "refreshed", "download", 1)
 
                 for video, video_subtitles in downloaded_subtitles.items():
-                    # store item in history
-                    title = get_title_for_video_metadata(video.plexapi_metadata)
-                    history = get_history()
-                    history.add(title, video.id)
+                    # store item(s) in history
+                    for subtitle in video_subtitles:
+                        title = get_title_for_video_metadata(video.plexapi_metadata)
+                        history = get_history()
+                        history.add(title, video.id, subtitle.score)
 
             update_local_media(metadata, media, media_type=self.agent_type)
 
