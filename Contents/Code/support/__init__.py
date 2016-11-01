@@ -47,3 +47,7 @@ sys.modules["support.storage"] = storage
 import ignore
 
 sys.modules["support.ignore"] = ignore
+
+import history
+
+sys.modules["support.history"] = history

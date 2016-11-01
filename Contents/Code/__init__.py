@@ -30,7 +30,9 @@ from support.storage import whack_missing_parts, save_subtitles
 from support.items import is_ignored
 from support.config import config
 from support.lib import get_intent
-from support.helpers import track_usage
+from support.helpers import track_usage, get_title_for_video_metadata, get_identifier
+from support.history import get_history
+
 
 
 def Start():
@@ -68,7 +70,7 @@ def Start():
     if bool(Prefs["track_usage"]):
         if "first_use" not in Dict:
             if "uuid" not in Dict:
-                Dict["uuid"] = String.UUID()
+                Dict["uuid"] = get_identifier()
             Dict["first_use"] = datetime.datetime.utcnow()
             Dict.Save()
             track_usage("General", "plugin", "first_start", 1)
@@ -194,6 +196,12 @@ class SubZeroAgent(object):
             if downloaded_subtitles:
                 save_subtitles(scanned_video_part_map, downloaded_subtitles)
                 track_usage("Subtitle", "refreshed", "download", 1)
+
+                for video, video_subtitles in downloaded_subtitles.items():
+                    # store item in history
+                    title = get_title_for_video_metadata(video.plexapi_metadata)
+                    history = get_history()
+                    history.add(title, video.id)
 
             update_local_media(metadata, media, media_type=self.agent_type)
 
