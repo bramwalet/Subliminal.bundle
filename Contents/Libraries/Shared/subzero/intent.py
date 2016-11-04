@@ -30,6 +30,7 @@ class TempIntent(object):
                 # valid kind?
                 if kind in self.store:
                     now = datetime.datetime.now()
+                    key = str(key)
 
                     # iter all known kinds (previously created)
                     for known_key in self.store[kind].keys():
@@ -68,6 +69,8 @@ class TempIntent(object):
         with lock:
             if kind not in self.store:
                 self.store[kind] = {}
+
+            key = str(key)
             self.store[kind][key] = {
                 "data": data,
                 "timeout": datetime.datetime.now() + datetime.timedelta(milliseconds=timeout or self.timeout)
