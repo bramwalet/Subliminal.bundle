@@ -8,7 +8,7 @@ from menu_helpers import add_ignore_options, dig_tree, set_refresh_menu_state, \
 from subzero.constants import TITLE, ART, ICON, PREFIX, PLUGIN_IDENTIFIER, DEPENDENCY_MODULE_NAMES
 from support.background import scheduler
 from support.config import config
-from support.helpers import pad_title, timestamp, get_language
+from support.helpers import pad_title, timestamp, get_language, df
 from support.ignore import ignore_list
 from support.items import get_item, get_on_deck_items, refresh_item, get_all_items, get_recent_items, get_items_info, \
     get_item_thumb, get_item_kind_from_rating_key
@@ -99,8 +99,8 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
         if task.ready_for_display:
             task_state = "Running: %s/%s (%s%%)" % (len(task.items_done), len(task.items_searching), task.percentage)
         else:
-            task_state = "Last scheduler run: %s; Next scheduled run: %s; Last runtime: %s" % (scheduler.last_run(task_name) or "never",
-                                                                                               scheduler.next_run(task_name) or "never",
+            task_state = "Last scheduler run: %s; Next scheduled run: %s; Last runtime: %s" % (df(scheduler.last_run(task_name)) or "never",
+                                                                                               df(scheduler.next_run(task_name)) or "never",
                                                                                                str(task.last_run_time).split(".")[0])
 
         oc.add(DirectoryObject(
@@ -428,7 +428,7 @@ def HistoryMenu():
                          rating_key=item.rating_key),
             title=u"%s" % item.item_title,
             summary=u"%s in %s (%s, score: %s), %s" % (item.lang_name, item.section_title, item.provider_name,
-                                                       item.score, item.time)
+                                                       item.score, df(item.time))
         ))
 
     return oc

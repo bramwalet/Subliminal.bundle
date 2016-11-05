@@ -163,6 +163,10 @@ def timestamp():
     return int(time.time())
 
 
+def df(d):
+    return d.strftime("%Y-%m-%d %H:%M:%S") if d else "legacy data"
+
+
 def query_plex(url, args):
     """
     simple http query to the plex API without parsing anything too complicated
