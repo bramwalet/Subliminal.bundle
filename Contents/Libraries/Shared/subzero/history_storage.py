@@ -1,5 +1,7 @@
 # coding=utf-8
 
+import datetime
+
 from subzero.lib.dict import DictProxy
 
 
@@ -8,12 +10,14 @@ class SubtitleHistoryItem(object):
     section_title = None
     rating_key = None
     subtitle = None
+    time = None
 
     def __init__(self, item_title, rating_key, section_title=None, subtitle=subtitle):
         self.item_title = item_title
         self.section_title = section_title
         self.rating_key = str(rating_key)
         self.subtitle = subtitle
+        self.time = datetime.datetime.now()
 
     @property
     def title(self):
