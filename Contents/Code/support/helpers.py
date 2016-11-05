@@ -9,6 +9,8 @@ import re
 import platform
 import subprocess
 
+from babelfish import Language
+
 from subzero.analytics import track_event
 
 # Unicode control characters can appear in ID3v2 tags but are not legal in XML.
@@ -250,3 +252,7 @@ def dispatch_track_usage(*args, **kwargs):
         track_event(identifier=identifier, first_use=first_use, add=add, *[str(a) for a in args])
     except:
         Log.Debug("Something went wrong when reporting anonymous user statistics: %s", traceback.format_exc())
+
+
+def get_language(lang_short):
+    return Language.fromietf(lang_short)

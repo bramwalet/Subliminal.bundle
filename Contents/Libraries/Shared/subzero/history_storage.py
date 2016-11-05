@@ -4,31 +4,47 @@ from subzero.lib.dict import DictProxy
 
 
 class SubtitleHistoryItem(object):
-    title = None
     item_title = None
+    section_title = None
     rating_key = None
-    score = None
+    subtitle = None
 
-    def __init__(self, title, item_title, rating_key, score):
-        self.title = title
+    def __init__(self, item_title, rating_key, section_title=None, subtitle=subtitle):
         self.item_title = item_title
+        self.section_title = section_title
         self.rating_key = str(rating_key)
-        self.score = score
+        self.subtitle = subtitle
+
+    @property
+    def title(self):
+        return u"%s: %s" % (self.section_title, self.item_title)
+
+    @property
+    def score(self):
+        return self.subtitle.score
+
+    @property
+    def provider_name(self):
+        return self.subtitle.provider_name
+
+    @property
+    def lang_name(self):
+        return self.subtitle.language.name
 
     def __repr__(self):
         return unicode(self)
 
     def __unicode__(self):
-        return u"%s (Score: %s)" % (unicode(self.title), self.score)
+        return u"%s (Score: %s)" % (unicode(self.item_title), self.score)
 
     def __str__(self):
         return str(self.rating_key)
 
     def __hash__(self):
-        return hash((self.title, self.rating_key, self.score))
+        return hash((self.rating_key, self.score))
 
     def __eq__(self, other):
-        return (self.title, self.rating_key, self.score) == (other.title, other.rating_key, other.score)
+        return (self.rating_key, self.score) == (other.rating_key, other.score)
 
     def __ne__(self, other):
         # Not strictly necessary, but to avoid having both x==y and x!=y
@@ -47,10 +63,10 @@ class SubtitleHistory(DictProxy):
     def setup_defaults(self):
         return {"history_items": []}
 
-    def add(self, title, item_title, rating_key, score):
+    def add(self, item_title, rating_key, section_title=None, subtitle=None):
         # create copy
         items = self.history_items[:]
-        item = SubtitleHistoryItem(title, item_title, rating_key, score)
+        item = SubtitleHistoryItem(item_title, rating_key, section_title=section_title, subtitle=subtitle)
 
         # remove duplicates
         if item in items:

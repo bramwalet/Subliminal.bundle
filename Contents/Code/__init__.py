@@ -199,10 +199,10 @@ class SubZeroAgent(object):
                 for video, video_subtitles in downloaded_subtitles.items():
                     # store item(s) in history
                     for subtitle in video_subtitles:
-                        title = get_title_for_video_metadata(video.plexapi_metadata)
                         item_title = get_title_for_video_metadata(video.plexapi_metadata, add_section_title=False)
                         history = get_history()
-                        history.add(title, item_title, video.id, subtitle.score)
+                        history.add(item_title, video.id, section_title=video.plexapi_metadata["section"],
+                                    subtitle=subtitle)
 
             update_local_media(metadata, media, media_type=self.agent_type)
 
@@ -216,7 +216,6 @@ class SubZeroAgent(object):
 
                 # resolve existing intent for that id
                 intent.resolve("force", item_id)
-
 
             Dict.Save()
 
