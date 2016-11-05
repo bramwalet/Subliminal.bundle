@@ -6,7 +6,7 @@ from babelfish import Language
 from subliminal.providers import ParserBeautifulSoup
 from subliminal.cache import SHOW_EXPIRATION_TIME, region
 from subliminal.providers.tvsubtitles import TVsubtitlesProvider, TVsubtitlesSubtitle
-from .mixins import PunctuationMixin
+from .mixins import PunctuationMixin, ProviderRetryMixin
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +22,7 @@ class PatchedTVsubtitlesSubtitle(TVsubtitlesSubtitle):
         self.release_info = u"%s, %s" % (rip, release)
 
 
-class PatchedTVsubtitlesProvider(PunctuationMixin, TVsubtitlesProvider):
+class PatchedTVsubtitlesProvider(PunctuationMixin, ProviderRetryMixin, TVsubtitlesProvider):
     @region.cache_on_arguments(expiration_time=SHOW_EXPIRATION_TIME)
     def search_show_id(self, series, year=None):
         """Search the show id from the `series` and `year`.
@@ -35,7 +35,7 @@ class PatchedTVsubtitlesProvider(PunctuationMixin, TVsubtitlesProvider):
         # make the search
         series_clean = self.clean_punctuation(series).lower()
         logger.info('Searching show id for %r', series_clean)
-        r = self.session.post(self.server_url + 'search.php', data={'q': series_clean}, timeout=10)
+        r = self.retry(lambda: self.session.post(self.server_url + 'search.php', data={'q': series_clean}, timeout=10))
         r.raise_for_status()
 
         # get the series out of the suggestions
@@ -65,14 +65,14 @@ class PatchedTVsubtitlesProvider(PunctuationMixin, TVsubtitlesProvider):
             return []
 
         # get the episode ids
-        episode_ids = self.get_episode_ids(show_id, season)
+        episode_ids = self.retry(lambda: self.get_episode_ids(show_id, season))
         if episode not in episode_ids:
             logger.error('Episode %d not found', episode)
             return []
 
         # get the episode page
         logger.info('Getting the page for episode %d', episode_ids[episode])
-        r = self.session.get(self.server_url + 'episode-%d.html' % episode_ids[episode], timeout=10)
+        r = self.retry(lambda: self.session.get(self.server_url + 'episode-%d.html' % episode_ids[episode], timeout=10))
         soup = ParserBeautifulSoup(r.content, ['lxml', 'html.parser'])
 
         # loop over subtitles rows

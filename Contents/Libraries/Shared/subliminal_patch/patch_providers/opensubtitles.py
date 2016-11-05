@@ -5,7 +5,9 @@ import os
 
 from babelfish import Language
 from subliminal.exceptions import ConfigurationError
-from subliminal.providers.opensubtitles import OpenSubtitlesProvider, checked, get_version, __version__, OpenSubtitlesSubtitle, Episode
+from subliminal.providers.opensubtitles import OpenSubtitlesProvider, checked, get_version, __version__, \
+    OpenSubtitlesSubtitle, Episode
+from mixins import ProviderRetryMixin
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +46,7 @@ class PatchedOpenSubtitlesSubtitle(OpenSubtitlesSubtitle):
         return matches
 
 
-class PatchedOpenSubtitlesProvider(OpenSubtitlesProvider):
+class PatchedOpenSubtitlesProvider(ProviderRetryMixin, OpenSubtitlesProvider):
     def __init__(self, username=None, password=None, use_tag_search=False):
         if username is not None and password is None or username is None and password is not None:
             raise ConfigurationError('Username and password must be specified')
@@ -61,7 +63,11 @@ class PatchedOpenSubtitlesProvider(OpenSubtitlesProvider):
     def initialize(self):
         logger.info('Logging in')
         # fixme: retry on SSLError
-        response = checked(self.server.LogIn(self.username, self.password, 'eng', 'subliminal v%s' % get_version(__version__)))
+        response = self.retry(
+            lambda: checked(
+                self.server.LogIn(self.username, self.password, 'eng', 'subliminal v%s' % get_version(__version__))
+            )
+        )
         self.token = response['token']
         logger.debug('Logged in with token %r', self.token)
 
@@ -108,7 +114,7 @@ class PatchedOpenSubtitlesProvider(OpenSubtitlesProvider):
 
         # query the server
         logger.info('Searching subtitles %r', criteria)
-        response = checked(self.server.SearchSubtitles(self.token, criteria))
+        response = self.retry(lambda: checked(self.server.SearchSubtitles(self.token, criteria)))
         subtitles = []
 
         # exit if no data
