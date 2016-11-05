@@ -68,10 +68,6 @@ class SubtitleHistory(DictProxy):
         items = self.history_items[:]
         item = SubtitleHistoryItem(item_title, rating_key, section_title=section_title, subtitle=subtitle)
 
-        # remove duplicates
-        if item in items:
-            items.remove(item)
-
         # insert item
         items.insert(0, item)
 
