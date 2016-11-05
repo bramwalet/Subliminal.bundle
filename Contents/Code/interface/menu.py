@@ -8,7 +8,7 @@ from menu_helpers import add_ignore_options, dig_tree, set_refresh_menu_state, \
 from subzero.constants import TITLE, ART, ICON, PREFIX, PLUGIN_IDENTIFIER, DEPENDENCY_MODULE_NAMES
 from support.background import scheduler
 from support.config import config
-from support.helpers import pad_title, timestamp
+from support.helpers import pad_title, timestamp, get_language
 from support.ignore import ignore_list
 from support.items import get_item, get_on_deck_items, refresh_item, get_all_items, get_recent_items, get_items_info, \
     get_item_thumb, get_item_kind_from_rating_key
@@ -570,7 +570,7 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
             key=Callback(ListAvailableSubsForItemMenu, rating_key=rating_key, item_title=item_title, language=language,
                          filename=filename, part_id=part_id, title=title, current_link=current_link, force=True,
                          current_data=current_data, randomize=timestamp()),
-            title=u"Search for subtitles (%s)" % video_display_data,
+            title=u"Search for %s subs (%s)" % (get_language(language).name, video_display_data),
             summary=u"Filename: %s" % filename,
             thumb=default_thumb
         ))
@@ -579,7 +579,7 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
             key=Callback(ListAvailableSubsForItemMenu, rating_key=rating_key, item_title=item_title,
                          language=language, filename=filename, current_data=current_data,
                          part_id=part_id, title=title, current_link=current_link, randomize=timestamp()),
-            title=u"Searching (%s), refresh here ..." % video_display_data,
+            title=u"Searching for %s subs (%s), refresh here ..." % (get_language(language).name, video_display_data),
             summary=u"Current: %s; Filename: %s" % (video_display_data, filename),
             thumb=default_thumb
         ))
