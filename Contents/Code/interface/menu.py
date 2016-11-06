@@ -511,10 +511,10 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                 current_subtitle = sub_part_data[lang][current_subtitle_key]
                 current_sub_link = current_subtitle["link"]
 
-                summary = u"Current subtitle%s: %s (added: %s), Language: %s, Score: %i, Storage: %s, From: %s" % \
+                summary = u"Current subtitle%s: %s (added: %s), Language: %s, Score: %i, Storage: %s" % \
                           (u" (legacy/inaccurate)" if legacy_storage else "", current_sub_provider_name,
                            current_subtitle["date_added"].strftime("%Y-%m-%d %H:%M:%S"), lang,
-                           current_subtitle["score"], current_subtitle["storage"], current_subtitle["link"])
+                           current_subtitle["score"], current_subtitle["storage"])
 
             oc.add(DirectoryObject(
                 key=Callback(ListAvailableSubsForItemMenu, rating_key=rating_key, part_id=part_id, title=title,
