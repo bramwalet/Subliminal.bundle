@@ -570,7 +570,7 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
         oc.add(DirectoryObject(
             key=Callback(ListAvailableSubsForItemMenu, rating_key=rating_key, item_title=item_title, language=language,
                          filename=filename, part_id=part_id, title=title, current_link=current_link, force=True,
-                         current_data=current_data, randomize=timestamp()),
+                         current_data=current_data, item_type=item_type, randomize=timestamp()),
             title=u"Search for %s subs (%s)" % (get_language(language).name, video_display_data),
             summary=u"Filename: %s" % filename,
             thumb=default_thumb
@@ -579,7 +579,8 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
         oc.add(DirectoryObject(
             key=Callback(ListAvailableSubsForItemMenu, rating_key=rating_key, item_title=item_title,
                          language=language, filename=filename, current_data=current_data,
-                         part_id=part_id, title=title, current_link=current_link, randomize=timestamp()),
+                         part_id=part_id, title=title, current_link=current_link, item_type=item_type,
+                         randomize=timestamp()),
             title=u"Searching for %s subs (%s), refresh here ..." % (get_language(language).name, video_display_data),
             summary=u"Current: %s; Filename: %s" % (video_display_data, filename),
             thumb=default_thumb
