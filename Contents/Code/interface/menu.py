@@ -486,7 +486,12 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
 
         # iterate through all configured languages
         for lang in config.lang_list:
-            sub_data_for_lang = sub_part_data.get(lang, {})
+            lang_a2 = lang.alpha2
+            # ietf lang?
+            if bool(Prefs["subtitles.language.ietf"]) and "-" in lang_a2:
+                lang_a2 = lang_a2.split("-")[0]
+
+            sub_data_for_lang = sub_part_data.get(lang_a2, {})
 
             # try getting current subtitle information for that language
             current_subtitle_key = sub_data_for_lang.get("current", (None, None))
@@ -508,7 +513,7 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
 
             summary = u"No current subtitle in storage"
             if current_sub_provider_name:
-                current_subtitle = sub_part_data[lang][current_subtitle_key]
+                current_subtitle = sub_part_data[lang_a2][current_subtitle_key]
                 current_sub_link = current_subtitle.get("link")
 
                 summary = u"Current subtitle%s: %s (added: %s), Language: %s, Score: %i, Storage: %s" % \
