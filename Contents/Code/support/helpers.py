@@ -148,7 +148,16 @@ def get_title_for_video_metadata(metadata, add_section_title=True, add_episode_t
 
 
 def get_identifier():
-    return Hash.SHA1(Platform.MachineIdentifier + "SUBZEROOOOOOOOOO")
+    identifier = None
+    try:
+        identifier = Platform.MachineIdentifier
+    except:
+        pass
+
+    if not identifier:
+        identifier = String.UUID()
+
+    return Hash.SHA1(identifier + "SUBZEROOOOOOOOOO")
 
 
 def encode_message(base, s):
@@ -244,7 +253,7 @@ def track_usage(category=None, action=None, label=None, value=None):
         return
 
     Thread.Create(dispatch_track_usage, category, action, label, value,
-                  identifier=get_identifier(), first_use=Dict["first_use"],
+                  identifier=Dict["anon_id"], first_use=Dict["first_use"],
                   add=Network.PublicAddress)
 
 

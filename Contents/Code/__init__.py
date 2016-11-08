@@ -65,11 +65,12 @@ def Start():
     # run task scheduler
     scheduler.run()
 
+    if "anon_id" not in Dict:
+        Dict["anon_id"] = get_identifier()
+
     # track usage
     if bool(Prefs["track_usage"]):
         if "first_use" not in Dict:
-            if "uuid" not in Dict:
-                Dict["uuid"] = get_identifier()
             Dict["first_use"] = datetime.datetime.utcnow()
             Dict.Save()
             track_usage("General", "plugin", "first_start", 1)
