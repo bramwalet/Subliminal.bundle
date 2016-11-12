@@ -124,6 +124,7 @@ def scan_videos(videos, kind="series", ignore_all=False):
         hints = helpers.get_item_hints(video["title"], kind, series=video["series"] if kind == "series" else None)
         video["plex_part"].fps = get_stream_fps(video["plex_part"].streams)
         scanned_video = scan_video(video["plex_part"], ignore_all=force_refresh or ignore_all, hints=hints)
+
         if not scanned_video:
             continue
 

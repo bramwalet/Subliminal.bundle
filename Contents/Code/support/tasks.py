@@ -210,6 +210,10 @@ class AvailableSubsForItem(Task):
             min_score = int(Prefs["subtitles.search.minimumMovieScore"])
 
         scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
+        if not scanned_parts:
+            Log.Error("Couldn't list available subtitles for %s", self.rating_key)
+            return
+
         video, plex_part = scanned_parts.items()[0]
 
         # fixme: woot

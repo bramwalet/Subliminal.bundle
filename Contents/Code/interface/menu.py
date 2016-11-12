@@ -578,6 +578,11 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
 
     metadata = get_plex_metadata(rating_key, part_id, item_type)
     scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
+
+    if not scanned_parts:
+        Log.Error("Couldn't list available subtitles for %s", rating_key)
+        return oc
+
     video, plex_part = scanned_parts.items()[0]
 
     video_display_data = [video.format] if video.format else []

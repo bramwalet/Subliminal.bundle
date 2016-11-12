@@ -97,29 +97,26 @@ def scan_video(path, subtitles=True, embedded_subtitles=True, hints=None, video_
     logger.info('Scanning video (hints: %s) %r', hints, guess_from)
 
     # guess
-    try:
-        video = Video.fromguess(path, guess_file_info(guess_from, options=hints))
-        video.fps = video_fps
+    video = Video.fromguess(path, guess_file_info(guess_from, options=hints))
+    video.fps = video_fps
 
-        if dont_use_actual_file:
-            return video
+    if dont_use_actual_file:
+        return video
 
-        # size and hashes
-        video.size = os.path.getsize(path)
-        if video.size > 10485760:
-            logger.debug('Size is %d', video.size)
-            video.hashes['opensubtitles'] = hash_opensubtitles(path)
-            video.hashes['thesubdb'] = hash_thesubdb(path)
-            logger.debug('Computed hashes %r', video.hashes)
-        else:
-            logger.warning('Size is lower than 10MB: hashes not computed')
+    # size and hashes
+    video.size = os.path.getsize(path)
+    if video.size > 10485760:
+        logger.debug('Size is %d', video.size)
+        video.hashes['opensubtitles'] = hash_opensubtitles(path)
+        video.hashes['thesubdb'] = hash_thesubdb(path)
+        logger.debug('Computed hashes %r', video.hashes)
+    else:
+        logger.warning('Size is lower than 10MB: hashes not computed')
 
-        # external subtitles
-        if subtitles:
-            video.subtitle_languages |= set(patched_search_external_subtitles(path).values())
-    except Exception:
-        logger.error("Something went wrong when running guessit: %s", traceback.format_exc())
-        return
+    # external subtitles
+    if subtitles:
+        video.subtitle_languages |= set(patched_search_external_subtitles(path).values())
+
 
     # video metadata with enzyme
     try:
