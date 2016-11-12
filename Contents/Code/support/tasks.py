@@ -37,11 +37,15 @@ class Task(object):
     ready_for_display = False
 
     def __init__(self, scheduler):
+        self.name = self.get_class_name()
         self.ready_for_display = False
         self.running = False
         self.time_start = None
         self.scheduler = scheduler
         self.setup_defaults()
+
+    def get_class_name(self):
+        return getattr(getattr(self, "__class__"), "__name__")
 
     def __getattribute__(self, name):
         if name in object.__getattribute__(self, "stored_attributes"):
@@ -74,14 +78,16 @@ class Task(object):
         raise NotImplementedError
 
     def prepare(self, *args, **kwargs):
-        raise NotImplementedError
+        return
 
     def run(self):
         raise NotImplementedError
 
+    def post_run(self, data_holder):
+        self.running = False
+
 
 class SearchAllRecentlyAddedMissing(Task):
-    name = "searchAllRecentlyAddedMissing"
     periodic = True
     items_done = None
     items_searching = None
@@ -160,6 +166,7 @@ class SearchAllRecentlyAddedMissing(Task):
         self.running = False
 
     def post_run(self, task_data):
+        super(SearchAllRecentlyAddedMissing, self).post_run(task_data)
         self.ready_for_display = False
         self.last_run = datetime.datetime.now()
         if self.time_start:
@@ -173,11 +180,16 @@ class SearchAllRecentlyAddedMissing(Task):
 
 
 class AvailableSubsForItem(Task):
-    name = "AvailableSubsForItem"
     rating_key = None
     item_type = None
     part_id = None
     language = None
+
+    def setup_defaults(self):
+        super(AvailableSubsForItem, self).setup_defaults()
+
+        # reset any previous data
+        Dict["tasks"][self.name]["data"] = {}
 
     def prepare(self, rating_key, item_type, part_id, language, *args, **kwargs):
         self.rating_key = rating_key
@@ -240,12 +252,11 @@ class AvailableSubsForItem(Task):
         self.data = subtitles
 
     def post_run(self, task_data):
-        self.running = False
+        super(AvailableSubsForItem, self).post_run(task_data)
         task_data[self.rating_key] = self.data
 
 
 class DownloadSubtitleForItem(Task):
-    name = "DownloadSubtitleForItem"
     rating_key = None
     subtitle = None
     item_type = None
@@ -286,10 +297,26 @@ class DownloadSubtitleForItem(Task):
                 history = get_history()
                 history.add(item_title, video.id, section_title=video.plexapi_metadata["section"], subtitle=subtitle)
 
+
+class MissingSubtitles(Task):
+    rating_key = None
+    item_type = None
+    part_id = None
+    language = None
+
+    def run(self):
+        self.running = True
+        self.data = []
+        recent_items = get_recent_items()
+        if recent_items:
+            self.data = items_get_all_missing_subs(recent_items)
+
     def post_run(self, task_data):
-        self.running = False
+        super(MissingSubtitles, self).post_run(task_data)
+        task_data["missing_subtitles"] = self.data
 
 
 scheduler.register(SearchAllRecentlyAddedMissing)
 scheduler.register(AvailableSubsForItem)
 scheduler.register(DownloadSubtitleForItem)
+scheduler.register(MissingSubtitles)

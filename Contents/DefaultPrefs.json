@@ -436,7 +436,7 @@
       "default": ""
   },
   {
-    "id": "scheduler.tasks.searchAllRecentlyAddedMissing",
+    "id": "scheduler.tasks.SearchAllRecentlyAddedMissing",
     "label": "Scheduler: Periodically search for recent items with missing subtitles",
     "type": "enum",
     "values": [
@@ -471,7 +471,7 @@
     "id": "scheduler.max_recent_items_per_library",
     "label": "Scheduler: Recent items to consider per library",
     "type": "text",
-    "default": "200"
+    "default": "2000"
   },
   {
     "id": "history_size",
