@@ -31,8 +31,19 @@ class DefaultScheduler(object):
             Dict.Save()
 
     def get_task_data(self, name):
+        if name not in Dict["tasks"]:
+            raise NotImplementedError("Task missing! %s" % name)
+
         if "data" in Dict["tasks"][name]:
             return Dict["tasks"][name]["data"]
+
+    def clear_task_data(self, name):
+        if name not in Dict["tasks"]:
+            raise NotImplementedError("Task missing! %s" % name)
+
+        Dict["tasks"][name]["data"] = {}
+        Dict.Save()
+        Log.Debug("Task data cleared: %s", name)
 
     def register(self, task):
         self.registry.append(task)
@@ -63,7 +74,8 @@ class DefaultScheduler(object):
 
     def is_task_running(self, name):
         task = self.task(name)
-        return task.running
+        if task:
+            return task.running
 
     def last_run(self, task):
         if task not in self.tasks:

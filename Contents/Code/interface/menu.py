@@ -81,7 +81,7 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
             summary="Shows the current on deck items and allows you to individually (force-) refresh their metadata/subtitles."
         ))
         oc.add(DirectoryObject(
-            key=Callback(RecentlyAddedMenu, randomize=timestamp()),
+            key=Callback(RecentMissingSubtitlesMenu, randomize=timestamp()),
             title="Items with missing subtitles",
             summary="Shows the items honoring the configured 'Item age to be considered recent'-setting (%s)"
                     " and allowing you to individually (force-) refresh their metadata/subtitles. " % Prefs["scheduler.item_is_recent_age"]
@@ -93,7 +93,7 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
                     "(force-) refresh the metadata/subtitles of individual items."
         ))
 
-        task_name = "searchAllRecentlyAddedMissing"
+        task_name = "SearchAllRecentlyAddedMissing"
         task = scheduler.task(task_name)
 
         if task.ready_for_display:
@@ -150,29 +150,43 @@ def OnDeckMenu(message=None):
     return mergedItemsMenu(title="Items On Deck", base_title="Items On Deck", itemGetter=get_on_deck_items)
 
 
-@route(PREFIX + '/recent')
+@route(PREFIX + '/recent', force=bool)
 @debounce
-def RecentlyAddedMenu(message=None, randomize=None):
-    """
-    displays the recently added items with missing subtitles
-    :param message:
-    :return:
-    """
-    return recentItemsMenu(title="Missing Subtitles", base_title="Missing Subtitles")
-
-
-def recentItemsMenu(title, base_title=None):
+def RecentMissingSubtitlesMenu(force=False, randomize=None):
+    title="Items with missing subtitles"
     oc = SZObjectContainer(title2=title, no_cache=True, no_history=True)
-    recent_items = get_recent_items()
-    if recent_items:
-        missing_items = items_get_all_missing_subs(recent_items)
-        if missing_items:
-            for added_at, item_id, title, item in missing_items:
-                oc.add(DirectoryObject(
-                    key=Callback(ItemDetailsMenu, title=base_title + " > " + title, item_title=title, rating_key=item_id),
-                    title=title,
-                    thumb=get_item_thumb(item) or default_thumb
-                ))
+
+    running = scheduler.is_task_running("MissingSubtitles")
+    task_data = scheduler.get_task_data("MissingSubtitles")
+    missing_items = task_data["missing_subtitles"] if task_data else None
+
+    if ((missing_items is None) or force) and not running:
+        scheduler.dispatch_task("MissingSubtitles")
+        running = True
+
+    if not running:
+        oc.add(DirectoryObject(
+            key=Callback(RecentMissingSubtitlesMenu, force=True, randomize=timestamp()),
+            title=u"Get items with missing subtitles",
+            thumb=default_thumb
+        ))
+    else:
+        oc.add(DirectoryObject(
+            key=Callback(RecentMissingSubtitlesMenu, force=False, randomize=timestamp()),
+            title=u"Updating, refresh here ...",
+            thumb=default_thumb
+        ))
+
+    if missing_items is not None:
+        for added_at, item_id, item_title, item, missing_languages in missing_items:
+            oc.add(DirectoryObject(
+                key=Callback(ItemDetailsMenu, title=title + " > " + item_title, item_title=item_title, rating_key=item_id),
+                title=item_title,
+                summary="Missing: %s" % ", ".join(l.name for l in missing_languages),
+                thumb=get_item_thumb(item) or default_thumb
+            ))
+
+        scheduler.clear_task_data("MissingSubtitles")
 
     return oc
 
@@ -645,7 +659,7 @@ def RefreshItem(rating_key=None, came_from="/recent", item_title=None, force=Fal
 @route(PREFIX + '/missing/refresh')
 @debounce
 def RefreshMissing(randomize=None):
-    Thread.CreateTimer(1.0, lambda: scheduler.run_task("searchAllRecentlyAddedMissing"))
+    Thread.CreateTimer(1.0, lambda: scheduler.run_task("SearchAllRecentlyAddedMissing"))
     header = "Refresh of recently added items with missing subtitles triggered"
     return fatality(header=header, replace_parent=True)
 

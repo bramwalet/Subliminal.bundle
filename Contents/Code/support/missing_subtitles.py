@@ -44,7 +44,7 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
         Log.Info(u"Subs still missing for '%s': %s", item_title, missing)
 
     if missing:
-        return added_at, item_id, item_title, item
+        return added_at, item_id, item_title, item, missing
 
 
 def items_get_all_missing_subs(items):
@@ -61,7 +61,7 @@ def items_get_all_missing_subs(items):
                 external=bool(Prefs["subtitles.scan.external"])
             )
             if state:
-                # (added_at, item_id, title)
+                # (added_at, item_id, title, item, missing_languages)
                 missing.append(state)
         except:
             Log.Error("Something went wrong when getting the state of item %s: %s", key, traceback.format_exc())
