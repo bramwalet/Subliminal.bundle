@@ -56,7 +56,7 @@ class Config(object):
         self.subtitle_destination_folder = self.get_subtitle_destination_folder()
         self.providers = self.get_providers()
         self.provider_settings = self.get_provider_settings()
-        self.max_recent_items_per_library = int_or_default(Prefs["scheduler.max_recent_items_per_library"], 200)
+        self.max_recent_items_per_library = int_or_default(Prefs["scheduler.max_recent_items_per_library"], 2000)
         self.sections = list(Plex["library"].sections())
         self.missing_permissions = []
         self.ignore_paths = self.parse_ignore_paths()
