@@ -205,9 +205,9 @@ class AvailableSubsForItem(Task):
         part_id = self.part_id
 
         if item_type == "episode":
-            min_score = int(Prefs["subtitles.search.minimumTVScore"])
+            min_score = int(Prefs["subtitles.search.minimumTVScore1"])
         else:
-            min_score = int(Prefs["subtitles.search.minimumMovieScore"])
+            min_score = int(Prefs["subtitles.search.minimumMovieScore1"])
 
         scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
         if not scanned_parts:
