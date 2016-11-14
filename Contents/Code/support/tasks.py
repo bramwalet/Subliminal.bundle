@@ -133,7 +133,7 @@ class SearchAllRecentlyAddedMissing(Task):
         missing_count = len(self.items_searching)
         items_done_count = 0
 
-        for added_at, item_id, title, item in self.items_searching:
+        for added_at, item_id, title, item, missing_languages in self.items_searching:
             Log.Debug(u"Task: %s, triggering refresh for %s (%s)", self.name, title, item_id)
             refresh_item(item_id, title)
             search_started = datetime.datetime.now()
