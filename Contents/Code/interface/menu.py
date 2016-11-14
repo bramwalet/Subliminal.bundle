@@ -526,9 +526,11 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                 legacy_storage = True
 
             summary = u"No current subtitle in storage"
+            current_score = None
             if current_sub_provider_name:
                 current_subtitle = sub_part_data[lang_a2][current_subtitle_key]
                 current_sub_link = current_subtitle.get("link")
+                current_score = current_subtitle["score"]
 
                 summary = u"Current subtitle%s: %s (added: %s), Language: %s, Score: %i, Storage: %s" % \
                           (u" (legacy/inaccurate)" if legacy_storage else "", current_sub_provider_name,
@@ -539,7 +541,8 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                 key=Callback(ListAvailableSubsForItemMenu, rating_key=rating_key, part_id=part_id, title=title,
                              item_title=item_title, language=lang, current_link=current_sub_link,
                              item_type=plex_item.type, filename=filename, current_data=summary,
-                             randomize=timestamp()),
+                             randomize=timestamp(), current_provider=current_sub_provider_name,
+                             current_score=current_score),
                 title=u"List %s subtitles" % lang.name,
                 summary=summary
             ))
@@ -552,19 +555,18 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
 MANUAL_SUB_SEARCH = {}
 
 
-@route(PREFIX + '/item/search/{rating_key}/{part_id}')
+@route(PREFIX + '/item/search/{rating_key}/{part_id}', force=bool)
 @debounce
 def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item_title=None, filename=None,
                                  item_type="episode", language=None, force=False, current_link=None, current_data=None,
-                                 randomize=None):
+                                 current_provider=None, current_score=None, randomize=None):
     assert rating_key, part_id
 
     #config.init_subliminal_patches()
-
     running = scheduler.is_task_running("AvailableSubsForItem")
     task_data = scheduler.get_task_data("AvailableSubsForItem")
     search_results = task_data.get(rating_key, None) if task_data else None
-    if (not search_results or force) and not running:
+    if (search_results is None or force) and not running:
         scheduler.dispatch_task("AvailableSubsForItem", rating_key, item_type, part_id, language)
         running = True
 
@@ -590,13 +592,15 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
         video_display_data.append(u"by %s" % video.release_group)
     video_display_data = " ".join(video_display_data)
 
+    current_display = (u"Current: %s (%s) " % (current_provider, current_score) if current_provider else "")
     if not running:
         oc.add(DirectoryObject(
             key=Callback(ListAvailableSubsForItemMenu, rating_key=rating_key, item_title=item_title, language=language,
                          filename=filename, part_id=part_id, title=title, current_link=current_link, force=True,
+                         current_provider=current_provider, current_score=current_score,
                          current_data=current_data, item_type=item_type, randomize=timestamp()),
             title=u"Search for %s subs (%s)" % (get_language(language).name, video_display_data),
-            summary=u"Filename: %s" % filename,
+            summary=u"%sFilename: %s" % (current_display, filename),
             thumb=default_thumb
         ))
     else:
@@ -604,9 +608,10 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
             key=Callback(ListAvailableSubsForItemMenu, rating_key=rating_key, item_title=item_title,
                          language=language, filename=filename, current_data=current_data,
                          part_id=part_id, title=title, current_link=current_link, item_type=item_type,
+                         current_provider=current_provider, current_score=current_score,
                          randomize=timestamp()),
             title=u"Searching for %s subs (%s), refresh here ..." % (get_language(language).name, video_display_data),
-            summary=u"Current: %s; Filename: %s" % (video_display_data, filename),
+            summary=u"%sFilename: %s" % (current_display, filename),
             thumb=default_thumb
         ))
 
