@@ -120,7 +120,7 @@ class SearchAllRecentlyAddedMissing(Task):
         self.items_done = []
         recent_items = get_recent_items()
         missing = items_get_all_missing_subs(recent_items)
-        ids = set([id for added_at, id, title, item in missing if not is_ignored(id, item=item)])
+        ids = set([id for added_at, id, title, item, missing_languages in missing if not is_ignored(id, item=item)])
         self.items_searching = missing
         self.items_searching_ids = ids
         self.items_failed = []
