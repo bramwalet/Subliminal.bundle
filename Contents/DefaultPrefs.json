@@ -312,7 +312,7 @@
     "id": "subtitles.search.minimumTVScore1",
     "label": "Minimum score for TV (min: 77, sane: 110; see Wiki)",
     "type": "text",
-    "default": "77"
+    "default": "110"
   },
   {
     "id": "subtitles.search.minimumMovieScore1",
