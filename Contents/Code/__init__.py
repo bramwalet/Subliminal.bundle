@@ -182,13 +182,17 @@ class SubZeroAgent(object):
                 Log.Debug(u"Nothing to do.")
                 return
 
-            use_score = Prefs[self.score_prefs_key]
+            try:
+                use_score = int(Prefs[self.score_prefs_key].strip())
+            except ValueError:
+                Log.Error("Please only put numbers into the scores setting. Exiting")
+                return
 
             # scanned_video_part_map = {subliminal.Video: plex_part, ...}
             scanned_video_part_map = scan_videos(videos, kind=self.agent_type)
 
             # downloaded_subtitles = {subliminal.Video: [subtitle, subtitle, ...]}
-            downloaded_subtitles = download_best_subtitles(scanned_video_part_map, min_score=int(use_score))
+            downloaded_subtitles = download_best_subtitles(scanned_video_part_map, min_score=use_score)
             item_ids = get_media_item_ids(media, kind=self.agent_type)
 
             whack_missing_parts(scanned_video_part_map)
