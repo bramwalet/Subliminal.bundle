@@ -91,7 +91,9 @@ class PatchedSubtitle(Subtitle):
             encodings.append('shift-jis')
         elif self.language.alpha3 == 'tha':
             encodings.append('tis-620')
-        elif self.language.alpha3 == 'ara':
+
+        # arabian/farsi
+        elif self.language.alpha3 in ('ara', 'fas', 'per'):
             encodings.append('windows-1256')
         elif self.language.alpha3 == 'heb':
             encodings.append('windows-1255')
