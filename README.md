@@ -13,7 +13,7 @@ He has created **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/w
 
 ## Changelog
 
-1.4.5.779
+1.4.5.742
 - core: fix force-refresh in certain situations
 - menu: add history
 - menu: add manual subtitle selection
