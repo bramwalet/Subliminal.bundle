@@ -13,6 +13,9 @@ from helpers import notify_executable, get_title_for_video_metadata
 
 
 def get_subtitle_info(rating_key):
+    if "subs" not in Dict:
+        Dict["subs"] = {}
+
     return Dict["subs"].get(rating_key)
 
 
