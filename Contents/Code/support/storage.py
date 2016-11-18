@@ -56,7 +56,7 @@ def whack_missing_parts(scanned_video_part_map, existing_parts=None):
         Dict.Save()
 
 
-def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_type):
+def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_type, manually=False):
     """
     stores information about downloaded subtitles in plex's Dict()
     """
@@ -92,7 +92,7 @@ def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_ty
             # compute title
             title = get_title_for_video_metadata(metadata)
             lang_dict[sub_key] = dict(score=subtitle.score, link=subtitle.page_link, storage=storage_type, hash=Hash.MD5(subtitle.content),
-                                      date_added=datetime.datetime.now(), title=title)
+                                      date_added=datetime.datetime.now(), title=title, manually=manually)
             lang_dict["current"] = sub_key
 
         Dict["subs"][video_id] = video_dict
@@ -155,7 +155,7 @@ def save_subtitles_to_metadata(videos, subtitles):
     return True
 
 
-def save_subtitles(scanned_video_part_map, downloaded_subtitles):
+def save_subtitles(scanned_video_part_map, downloaded_subtitles, manually=False):
     meta_fallback = False
     save_successful = False
     storage = "metadata"
@@ -182,4 +182,4 @@ def save_subtitles(scanned_video_part_map, downloaded_subtitles):
     if save_successful and config.notify_executable:
         notify_executable(config.notify_executable, scanned_video_part_map, downloaded_subtitles, storage)
 
-    store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage)
+    store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage, manually=manually)

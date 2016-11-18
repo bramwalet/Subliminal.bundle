@@ -288,7 +288,7 @@ class DownloadSubtitleForItem(Task):
         if subtitle.content:
             try:
                 whack_missing_parts(scanned_parts)
-                save_subtitles(scanned_parts, {video: [subtitle]})
+                save_subtitles(scanned_parts, {video: [subtitle]}, manually=True)
                 refresh_item(self.rating_key)
                 track_usage("Subtitle", "manual", "download", 1)
             except:
