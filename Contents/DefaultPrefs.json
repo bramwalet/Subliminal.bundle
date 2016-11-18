@@ -388,7 +388,7 @@
       "default": ""
   },
   {
-    "id": "scheduler.tasks.SearchAllRecentlyAddedMissing",
+    "id": "scheduler.tasks.SearchAllRecentlyAddedMissing.frequency",
     "label": "Scheduler: Periodically search for recent items with missing subtitles",
     "type": "enum",
     "values": [
@@ -426,7 +426,7 @@
     "default": "2000"
   },
   {
-    "id": "scheduler.tasks.SearchBetterSubtitles",
+    "id": "scheduler.tasks.SearchBetterSubtitles.frequency",
     "label": "Scheduler: Periodically search for better subtitles",
     "type": "enum",
     "values": [

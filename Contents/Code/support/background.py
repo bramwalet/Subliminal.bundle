@@ -54,7 +54,7 @@ class DefaultScheduler(object):
         for cls in self.registry:
             task = cls(self)
             try:
-                task_frequency = Prefs["scheduler.tasks.%s" % task.name]
+                task_frequency = Prefs["scheduler.tasks.%s.frequency" % task.name]
             except KeyError:
                 task_frequency = None
 
