@@ -1,26 +1,21 @@
 # coding=utf-8
 import logging
-
-import operator
-
 import logger
 import os
-import traceback
-import subliminal
-import subliminal_patch
 
 from menu_helpers import add_ignore_options, dig_tree, set_refresh_menu_state, \
     should_display_ignore, enable_channel_wrapper, default_thumb, debounce, SZObjectContainer
 from subzero.constants import TITLE, ART, ICON, PREFIX, PLUGIN_IDENTIFIER, DEPENDENCY_MODULE_NAMES
 from support.background import scheduler
 from support.config import config
-from support.helpers import pad_title, timestamp
+from support.helpers import pad_title, timestamp, get_language, df
 from support.ignore import ignore_list
 from support.items import get_item, get_on_deck_items, refresh_item, get_all_items, get_recent_items, get_items_info, \
     get_item_thumb, get_item_kind_from_rating_key
 from support.lib import Plex
 from support.missing_subtitles import items_get_all_missing_subs
-from support.storage import reset_storage, log_storage
+from support.plex_media import get_plex_metadata, scan_videos
+from support.storage import reset_storage, log_storage, get_subtitle_info
 
 # init GUI
 ObjectContainer.art = R(ART)
@@ -86,7 +81,7 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
             summary="Shows the current on deck items and allows you to individually (force-) refresh their metadata/subtitles."
         ))
         oc.add(DirectoryObject(
-            key=Callback(RecentlyAddedMenu, randomize=timestamp()),
+            key=Callback(RecentMissingSubtitlesMenu, randomize=timestamp()),
             title="Items with missing subtitles",
             summary="Shows the items honoring the configured 'Item age to be considered recent'-setting (%s)"
                     " and allowing you to individually (force-) refresh their metadata/subtitles. " % Prefs["scheduler.item_is_recent_age"]
@@ -98,14 +93,14 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
                     "(force-) refresh the metadata/subtitles of individual items."
         ))
 
-        task_name = "searchAllRecentlyAddedMissing"
+        task_name = "SearchAllRecentlyAddedMissing"
         task = scheduler.task(task_name)
 
         if task.ready_for_display:
             task_state = "Running: %s/%s (%s%%)" % (len(task.items_done), len(task.items_searching), task.percentage)
         else:
-            task_state = "Last scheduler run: %s; Next scheduled run: %s; Last runtime: %s" % (scheduler.last_run(task_name) or "never",
-                                                                                               scheduler.next_run(task_name) or "never",
+            task_state = "Last scheduler run: %s; Next scheduled run: %s; Last runtime: %s" % (df(scheduler.last_run(task_name)) or "never",
+                                                                                               df(scheduler.next_run(task_name)) or "never",
                                                                                                str(task.last_run_time).split(".")[0])
 
         oc.add(DirectoryObject(
@@ -118,6 +113,12 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
             key=Callback(IgnoreListMenu),
             title="Display ignore list (%d)" % len(ignore_list),
             summary="Show the current ignore list (mainly used for the automatic tasks)"
+        ))
+
+        oc.add(DirectoryObject(
+            key=Callback(HistoryMenu),
+            title="History",
+            summary="Show the last %i downloaded subtitles" % int(Prefs["history_size"])
         ))
 
     oc.add(DirectoryObject(
@@ -149,29 +150,43 @@ def OnDeckMenu(message=None):
     return mergedItemsMenu(title="Items On Deck", base_title="Items On Deck", itemGetter=get_on_deck_items)
 
 
-@route(PREFIX + '/recent')
+@route(PREFIX + '/recent', force=bool)
 @debounce
-def RecentlyAddedMenu(message=None, randomize=None):
-    """
-    displays the recently added items with missing subtitles
-    :param message:
-    :return:
-    """
-    return recentItemsMenu(title="Missing Subtitles", base_title="Missing Subtitles")
-
-
-def recentItemsMenu(title, base_title=None):
+def RecentMissingSubtitlesMenu(force=False, randomize=None):
+    title="Items with missing subtitles"
     oc = SZObjectContainer(title2=title, no_cache=True, no_history=True)
-    recent_items = get_recent_items()
-    if recent_items:
-        missing_items = items_get_all_missing_subs(recent_items)
-        if missing_items:
-            for added_at, item_id, title, item in missing_items:
-                oc.add(DirectoryObject(
-                    key=Callback(ItemDetailsMenu, title=base_title + " > " + title, item_title=title, rating_key=item_id),
-                    title=title,
-                    thumb=get_item_thumb(item) or default_thumb
-                ))
+
+    running = scheduler.is_task_running("MissingSubtitles")
+    task_data = scheduler.get_task_data("MissingSubtitles")
+    missing_items = task_data["missing_subtitles"] if task_data else None
+
+    if ((missing_items is None) or force) and not running:
+        scheduler.dispatch_task("MissingSubtitles")
+        running = True
+
+    if not running:
+        oc.add(DirectoryObject(
+            key=Callback(RecentMissingSubtitlesMenu, force=True, randomize=timestamp()),
+            title=u"Get items with missing subtitles",
+            thumb=default_thumb
+        ))
+    else:
+        oc.add(DirectoryObject(
+            key=Callback(RecentMissingSubtitlesMenu, force=False, randomize=timestamp()),
+            title=u"Updating, refresh here ...",
+            thumb=default_thumb
+        ))
+
+    if missing_items is not None:
+        for added_at, item_id, item_title, item, missing_languages in missing_items:
+            oc.add(DirectoryObject(
+                key=Callback(ItemDetailsMenu, title=title + " > " + item_title, item_title=item_title, rating_key=item_id),
+                title=item_title,
+                summary="Missing: %s" % ", ".join(l.name for l in missing_languages),
+                thumb=get_item_thumb(item) or default_thumb
+            ))
+
+        scheduler.clear_task_data("MissingSubtitles")
 
     return oc
 
@@ -207,7 +222,7 @@ def determine_section_display(kind, item):
     :param item:
     :return:
     """
-    if item.size > 200:
+    if item.size > 80:
         return SectionFirstLetterMenu
     return SectionMenu
 
@@ -396,7 +411,7 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
         oc.add(DirectoryObject(
             key=Callback(RefreshItem, rating_key=rating_key, item_title=title, force=True,
                          refresh_kind=current_kind, previous_rating_key=previous_rating_key, timeout=timeout*1000),
-            title=u"Force-Refresh: %s" % item_title,
+            title=u"Auto-Find subtitles: %s" % item_title,
             summary="Issues a forced refresh, ignoring known subtitles and searching for new ones"
         ))
     else:
@@ -412,6 +427,24 @@ def IgnoreListMenu():
         values = ignore_list[key]
         for value in values:
             add_ignore_options(oc, key, title=ignore_list.get_title(key, value), rating_key=value, callback_menu=IgnoreMenu)
+    return oc
+
+
+@route(PREFIX + '/history')
+def HistoryMenu():
+    from support.history import get_history
+    history = get_history()
+    oc = SZObjectContainer(title2="History", replace_parent=True)
+
+    for item in history.history_items:
+        oc.add(DirectoryObject(
+            key=Callback(ItemDetailsMenu, title=item.title, item_title=item.item_title,
+                         rating_key=item.rating_key),
+            title=u"%s" % item.item_title,
+            summary=u"%s in %s (%s, score: %s), %s" % (item.lang_name, item.section_title, item.provider_name,
+                                                       item.score, df(item.time))
+        ))
+
     return oc
 
 
@@ -443,34 +476,200 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
     oc.add(DirectoryObject(
         key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title, force=True, randomize=timestamp(),
                      timeout=timeout*1000),
-        title=u"Force-Refresh: %s" % item_title,
+        title=u"Auto-search: %s" % item_title,
         summary="Issues a forced refresh, ignoring known subtitles and searching for new ones",
         thumb=item.thumb or default_thumb
     ))
+
+    # get stored subtitle info for item id
+    current_subtitle_info = get_subtitle_info(rating_key)
+
+    # get the plex item
+    plex_item = list(Plex["library"].metadata(rating_key))[0]
+
+    # get current media info for that item
+    media = plex_item.media
+
+    # look for subtitles for all available media parts and all of their languages
+    for part in media.parts:
+        filename = os.path.basename(part.file)
+        part_id = str(part.id)
+
+        # get corresponding stored subtitle data for that media part (physical media item)
+        sub_part_data = current_subtitle_info.get(part_id, {}) if current_subtitle_info else {}
+
+        # iterate through all configured languages
+        for lang in config.lang_list:
+            lang_a2 = lang.alpha2
+            # ietf lang?
+            if bool(Prefs["subtitles.language.ietf"]) and "-" in lang_a2:
+                lang_a2 = lang_a2.split("-")[0]
+
+            sub_data_for_lang = sub_part_data.get(lang_a2, {})
+
+            # try getting current subtitle information for that language
+            current_subtitle_key = sub_data_for_lang.get("current", (None, None))
+            current_sub_provider_name, current_sub_id = current_subtitle_key
+            current_sub_link = None
+
+            legacy_storage = False
+
+            # old storage version; take newest subtitle as current if available
+            if not current_sub_provider_name:
+                subtitle_keys = sorted([(sub["date_added"], key) for key, sub in sub_data_for_lang.iteritems()], None,
+                                       None, True)
+                current_subtitle_key = None, None
+                if subtitle_keys:
+                    current_subtitle_key = subtitle_keys[0][1]
+
+                current_sub_provider_name, current_sub_id = current_subtitle_key
+                legacy_storage = True
+
+            summary = u"No current subtitle in storage"
+            current_score = None
+            if current_sub_provider_name:
+                current_subtitle = sub_part_data[lang_a2][current_subtitle_key]
+                current_sub_link = current_subtitle.get("link")
+                current_score = current_subtitle["score"]
+
+                summary = u"Current subtitle%s: %s (added: %s), Language: %s, Score: %i, Storage: %s" % \
+                          (u" (legacy/inaccurate)" if legacy_storage else "", current_sub_provider_name,
+                           df(current_subtitle["date_added"]), lang,
+                           current_subtitle["score"], current_subtitle["storage"])
+
+            oc.add(DirectoryObject(
+                key=Callback(ListAvailableSubsForItemMenu, rating_key=rating_key, part_id=part_id, title=title,
+                             item_title=item_title, language=lang, current_link=current_sub_link,
+                             item_type=plex_item.type, filename=filename, current_data=summary,
+                             randomize=timestamp(), current_provider=current_sub_provider_name,
+                             current_score=current_score),
+                title=u"List %s subtitles" % lang.name,
+                summary=summary
+            ))
 
     add_ignore_options(oc, "videos", title=item_title, rating_key=rating_key, callback_menu=IgnoreMenu)
 
     return oc
 
 
+MANUAL_SUB_SEARCH = {}
+
+
+@route(PREFIX + '/item/search/{rating_key}/{part_id}', force=bool)
+@debounce
+def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item_title=None, filename=None,
+                                 item_type="episode", language=None, force=False, current_link=None, current_data=None,
+                                 current_provider=None, current_score=None, randomize=None):
+    assert rating_key, part_id
+
+    #config.init_subliminal_patches()
+    running = scheduler.is_task_running("AvailableSubsForItem")
+    task_data = scheduler.get_task_data("AvailableSubsForItem")
+    search_results = task_data.get(rating_key, None) if task_data else None
+    if (search_results is None or force) and not running:
+        scheduler.dispatch_task("AvailableSubsForItem", rating_key, item_type, part_id, language)
+        running = True
+
+    oc = SZObjectContainer(title2=title, replace_parent=True)
+    oc.add(DirectoryObject(
+        key=Callback(ItemDetailsMenu, rating_key=rating_key, item_title=item_title, title=title, randomize=timestamp()),
+        title=u"Back to: %s" % title,
+        summary=current_data,
+        thumb=default_thumb
+    ))
+
+    metadata = get_plex_metadata(rating_key, part_id, item_type)
+    scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
+
+    if not scanned_parts:
+        Log.Error("Couldn't list available subtitles for %s", rating_key)
+        return oc
+
+    video, plex_part = scanned_parts.items()[0]
+
+    video_display_data = [video.format] if video.format else []
+    if video.release_group:
+        video_display_data.append(u"by %s" % video.release_group)
+    video_display_data = " ".join(video_display_data)
+
+    current_display = (u"Current: %s (%s) " % (current_provider, current_score) if current_provider else "")
+    if not running:
+        oc.add(DirectoryObject(
+            key=Callback(ListAvailableSubsForItemMenu, rating_key=rating_key, item_title=item_title, language=language,
+                         filename=filename, part_id=part_id, title=title, current_link=current_link, force=True,
+                         current_provider=current_provider, current_score=current_score,
+                         current_data=current_data, item_type=item_type, randomize=timestamp()),
+            title=u"Search for %s subs (%s)" % (get_language(language).name, video_display_data),
+            summary=u"%sFilename: %s" % (current_display, filename),
+            thumb=default_thumb
+        ))
+    else:
+        oc.add(DirectoryObject(
+            key=Callback(ListAvailableSubsForItemMenu, rating_key=rating_key, item_title=item_title,
+                         language=language, filename=filename, current_data=current_data,
+                         part_id=part_id, title=title, current_link=current_link, item_type=item_type,
+                         current_provider=current_provider, current_score=current_score,
+                         randomize=timestamp()),
+            title=u"Searching for %s subs (%s), refresh here ..." % (get_language(language).name, video_display_data),
+            summary=u"%sFilename: %s" % (current_display, filename),
+            thumb=default_thumb
+        ))
+
+    if not search_results:
+        return oc
+
+    for subtitle in search_results:
+        oc.add(DirectoryObject(
+            key=Callback(TriggerDownloadSubtitle, rating_key=rating_key, randomize=timestamp(), item_title=item_title,
+                         subtitle_id=str(subtitle.subtitle_id)),
+            title=u"%s: %s, score: %s" % ("Available" if current_link != subtitle.page_link else "Current",
+                                    subtitle.provider_name, subtitle.score),
+            summary=u"Release: %s, Matches: %s" % (subtitle.release_info, ", ".join(subtitle.matches)),
+            thumb=default_thumb
+        ))
+
+    return oc
+
+
+@route(PREFIX + '/download_subtitle/{rating_key}')
+@debounce
+def TriggerDownloadSubtitle(rating_key=None, subtitle_id=None, item_title=None, randomize=None):
+    set_refresh_menu_state("Downloading subtitle for %s" % item_title or rating_key)
+    task_data = scheduler.get_task_data("AvailableSubsForItem")
+    search_results = task_data.get(rating_key, None) if task_data else None
+    download_subtitle = None
+    for subtitle in search_results:
+        if str(subtitle.subtitle_id) == subtitle_id:
+            download_subtitle = subtitle
+            break
+    if not download_subtitle:
+        Log.Error(u"Something went horribly wrong")
+
+    else:
+        scheduler.dispatch_task("DownloadSubtitleForItem", rating_key, download_subtitle)
+
+    return fatality(randomize=timestamp(), header=" ", replace_parent=True)
+
+
 @route(PREFIX + '/item/{rating_key}')
 @debounce
-def RefreshItem(rating_key=None, item_title=None, force=False, refresh_kind=None,
-                previous_rating_key=None, timeout=8000, randomize=None):
+def RefreshItem(rating_key=None, came_from="/recent", item_title=None, force=False, refresh_kind=None,
+                previous_rating_key=None, timeout=8000, randomize=None, trigger=True):
     assert rating_key
-    set_refresh_menu_state(u"Triggering %sRefresh for %s" % ("Force-" if force else "", item_title))
-    Log.Info("Triggering %srefresh of item %s, \"%s\" (timeout: %s)", "" if not force else "force-", rating_key,
-             item_title, timeout)
-    Thread.Create(refresh_item, rating_key=rating_key, force=force, refresh_kind=refresh_kind,
-                  parent_rating_key=previous_rating_key, timeout=int(timeout))
-    header = u"%s of item %s triggered" % ("Refresh" if not force else "Forced-refresh", rating_key)
+    header = " "
+    if trigger:
+        set_refresh_menu_state(u"Triggering %sRefresh for %s" % ("Force-" if force else "", item_title))
+        Thread.Create(refresh_item, rating_key=rating_key, force=force, refresh_kind=refresh_kind,
+                      parent_rating_key=previous_rating_key, timeout=int(timeout))
+
+        header = u"%s of item %s triggered" % ("Refresh" if not force else "Forced-refresh", rating_key)
     return fatality(randomize=timestamp(), header=header, replace_parent=True)
 
 
 @route(PREFIX + '/missing/refresh')
 @debounce
 def RefreshMissing(randomize=None):
-    Thread.CreateTimer(1.0, lambda: scheduler.run_task("searchAllRecentlyAddedMissing"))
+    Thread.CreateTimer(1.0, lambda: scheduler.run_task("SearchAllRecentlyAddedMissing"))
     header = "Refresh of recently added items with missing subtitles triggered"
     return fatality(header=header, replace_parent=True)
 
@@ -497,6 +696,10 @@ def AdvancedMenu(randomize=None, header=None, message=None):
         title=pad_title("Log the plugin's internal ignorelist storage"),
     ))
     oc.add(DirectoryObject(
+        key=Callback(LogStorage, key="history", randomize=timestamp()),
+        title=pad_title("Log the plugin's internal history storage"),
+    ))
+    oc.add(DirectoryObject(
         key=Callback(ResetStorage, key="tasks", randomize=timestamp()),
         title=pad_title("Reset the plugin's scheduled tasks state storage"),
     ))
@@ -507,6 +710,10 @@ def AdvancedMenu(randomize=None, header=None, message=None):
     oc.add(DirectoryObject(
         key=Callback(ResetStorage, key="ignore", randomize=timestamp()),
         title=pad_title("Reset the plugin's internal ignorelist storage"),
+    ))
+    oc.add(DirectoryObject(
+        key=Callback(ResetStorage, key="history", randomize=timestamp()),
+        title=pad_title("Reset the plugin's internal history storage"),
     ))
     return oc
 

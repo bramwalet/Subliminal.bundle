@@ -9,6 +9,10 @@ import re
 import platform
 import subprocess
 
+from babelfish import Language
+
+from subzero.analytics import track_event
+
 # Unicode control characters can appear in ID3v2 tags but are not legal in XML.
 RE_UNICODE_CONTROL = u'([\u0000-\u0008\u000b-\u000c\u000e-\u001f\ufffe-\uffff])' + \
                      u'|' + \
@@ -89,7 +93,8 @@ def pad_title(value):
     return str_pad(value, 30, pad_char=' ')
 
 
-def format_item(item, kind, parent=None, parent_title=None, section_title=None, add_section_title=False):
+def get_plex_item_display_title(item, kind, parent=None, parent_title=None, section_title=None,
+                                add_section_title=False):
     """
     :param item: plex item
     :param kind: show or movie
@@ -97,26 +102,62 @@ def format_item(item, kind, parent=None, parent_title=None, section_title=None, 
     :param parent_title: parentTitle or None
     :return:
     """
-    return format_video(kind, item.title,
-                        section_title=(
-                            section_title or (parent.section.title if parent and getattr(parent, "section") else None)),
-                        parent_title=(parent_title or (parent.show.title if parent else None)),
-                        season=parent.index if parent else None,
-                        episode=item.index if kind == "show" else None,
-                        add_section_title=add_section_title)
+    return get_video_display_title(kind, item.title,
+                                   section_title=(
+                                       section_title or (parent.section.title if parent and getattr(parent, "section")
+                                                         else None)),
+                                   parent_title=(parent_title or (parent.show.title if parent else None)),
+                                   season=parent.index if parent else None,
+                                   episode=item.index if kind == "show" else None,
+                                   add_section_title=add_section_title)
 
 
-def format_video(kind, title, section_title=None, parent_title=None, season=None, episode=None,
-                 add_section_title=False):
+def get_video_display_title(kind, title, section_title=None, parent_title=None, season=None, episode=None,
+                            add_section_title=False):
     section_add = ""
     if add_section_title:
         section_add = ("%s: " % section_title) if section_title else ""
 
     if kind == "show" and parent_title:
         if season and episode:
-            return '%s%s S%02dE%02d, %s' % (section_add, parent_title, season or 0, episode or 0, title)
-        return '%s%s, %s' % (section_add, parent_title, title)
+            return '%s%s S%02dE%02d%s' % (section_add, parent_title, season or 0, episode or 0,
+                                          (", %s" % title if title else ""))
+        return '%s%s%s' % (section_add, parent_title, (", %s" % title if title else ""))
     return "%s%s" % (section_add, title)
+
+
+def get_title_for_video_metadata(metadata, add_section_title=True, add_episode_title=False):
+    """
+
+    :param metadata:
+    :param add_section_title:
+    :param add_episode_title: add the episode's title if its an episode else always add title
+    :return:
+    """
+    # compute item title
+    add_title = (add_episode_title and metadata["series_id"]) or not metadata["series_id"]
+    return get_video_display_title(
+        "show" if metadata["series_id"] else "movie",
+        metadata["title"] if add_title else "",
+        parent_title=metadata.get("series", None),
+        season=metadata.get("season", None),
+        episode=metadata.get("episode", None),
+        section_title=metadata.get("section", None),
+        add_section_title=add_section_title
+    )
+
+
+def get_identifier():
+    identifier = None
+    try:
+        identifier = Platform.MachineIdentifier
+    except:
+        pass
+
+    if not identifier:
+        identifier = String.UUID()
+
+    return Hash.SHA1(identifier + "SUBZEROOOOOOOOOO")
 
 
 def encode_message(base, s):
@@ -129,6 +170,10 @@ def decode_message(s):
 
 def timestamp():
     return int(time.time())
+
+
+def df(d):
+    return d.strftime("%Y-%m-%d %H:%M:%S") if d else "legacy data"
 
 
 def query_plex(url, args):
@@ -202,3 +247,25 @@ def notify_executable(exe_info, videos, subtitles, storage):
             else:
                 Log.Debug(u"Process output: %s" % output)
 
+
+def track_usage(category=None, action=None, label=None, value=None):
+    if not bool(Prefs["track_usage"]):
+        return
+
+    Thread.Create(dispatch_track_usage, category, action, label, value,
+                  identifier=Dict["anon_id"], first_use=Dict["first_use"],
+                  add=Network.PublicAddress)
+
+
+def dispatch_track_usage(*args, **kwargs):
+    identifier = kwargs.pop("identifier")
+    first_use = kwargs.pop("first_use")
+    add = kwargs.pop("add")
+    try:
+        track_event(identifier=identifier, first_use=first_use, add=add, *[str(a) for a in args])
+    except:
+        Log.Debug("Something went wrong when reporting anonymous user statistics: %s", traceback.format_exc())
+
+
+def get_language(lang_short):
+    return Language.fromietf(lang_short)

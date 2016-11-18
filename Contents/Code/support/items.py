@@ -5,7 +5,7 @@ import re
 import types
 import os
 from ignore import ignore_list
-from helpers import is_recent, format_item, query_plex
+from helpers import is_recent, get_plex_item_display_title, query_plex
 from lib import Plex, get_intent
 from config import config, IGNORE_FN
 
@@ -116,7 +116,7 @@ def get_items(key="recently_added", base="library", value=None, flat=False, add_
             if flat:
                 # return episodes
                 for child in item.children():
-                    items.append(("episode", format_item(child, "show", parent=item, add_section_title=add_section_title), int(item.rating_key),
+                    items.append(("episode", get_plex_item_display_title(child, "show", parent=item, add_section_title=add_section_title), int(item.rating_key),
                                   False, child))
             else:
                 # return seasons
@@ -132,16 +132,16 @@ def get_items(key="recently_added", base="library", value=None, flat=False, add_
 
         elif kind == "episode":
             items.append(
-                (kind, format_item(item, "show", parent=item.season, parent_title=item.show.title, section_title=item.section.title,
-                                   add_section_title=add_section_title), int(item.rating_key), False, item))
+                (kind, get_plex_item_display_title(item, "show", parent=item.season, parent_title=item.show.title, section_title=item.section.title,
+                                                   add_section_title=add_section_title), int(item.rating_key), False, item))
 
         elif kind in ("movie", "artist", "photo"):
-            items.append((kind, format_item(item, kind, section_title=item.section.title, add_section_title=add_section_title),
+            items.append((kind, get_plex_item_display_title(item, kind, section_title=item.section.title, add_section_title=add_section_title),
                           int(item.rating_key), False, item))
 
         elif kind == "show":
             items.append((
-                kind, format_item(item, kind, section_title=item.section.title, add_section_title=add_section_title), int(item.rating_key), True,
+                kind, get_plex_item_display_title(item, kind, section_title=item.section.title, add_section_title=add_section_title), int(item.rating_key), True,
                 item))
 
     return items

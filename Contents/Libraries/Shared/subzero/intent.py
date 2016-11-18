@@ -30,11 +30,13 @@ class TempIntent(object):
                 # valid kind?
                 if kind in self.store:
                     now = datetime.datetime.now()
+                    key = str(key)
 
                     # iter all known kinds (previously created)
                     for known_key in self.store[kind].keys():
                         # may need locking, for now just play it safe
-                        ends = self.store[kind].get(known_key, None)
+                        data = self.store[kind].get(known_key, {})
+                        ends = data.get("timeout")
                         if not ends:
                             continue
 
@@ -63,11 +65,16 @@ class TempIntent(object):
                 return True
             return False
 
-    def set(self, kind, key, timeout=None):
+    def set(self, kind, key, data=None, timeout=None):
         with lock:
             if kind not in self.store:
                 self.store[kind] = {}
-            self.store[kind][key] = datetime.datetime.now() + datetime.timedelta(milliseconds=timeout or self.timeout)
+
+            key = str(key)
+            self.store[kind][key] = {
+                "data": data,
+                "timeout": datetime.datetime.now() + datetime.timedelta(milliseconds=timeout or self.timeout)
+            }
 
     def has(self, kind, key):
         with lock:
@@ -77,9 +84,9 @@ class TempIntent(object):
 
     def cleanup(self):
         now = datetime.datetime.now()
-        for kind, data in self.store.items():
-            for key, timeout in data.items():
-                if now > timeout:
+        for kind, info in self.store.items():
+            for key, intent_data in info.items():
+                if now > intent_data["timeout"]:
                     del self.store[kind][key]
         self.store.save()
 

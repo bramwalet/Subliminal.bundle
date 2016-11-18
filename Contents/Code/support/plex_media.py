@@ -5,11 +5,12 @@ import subliminal
 import helpers
 
 from items import get_item
-from lib import get_intent
+from lib import get_intent, Plex
 
 
 def get_metadata_dict(item, part, add):
     data = {
+        "item": item,
         "section": item.section.title,
         "path": part.file,
         "folder": os.path.dirname(part.file),
@@ -44,7 +45,8 @@ def media_to_videos(media, kind="series"):
                                               {"plex_part": part, "type": "episode", "title": ep.title,
                                                "series": media.title, "id": ep.id,
                                                "series_id": media.id, "season_id": season_object.id,
-                                               "episode": plex_episode.index, "season": plex_episode.season.index
+                                               "episode": plex_episode.index, "season": plex_episode.season.index,
+                                               "section": plex_episode.section.title
                                                })
                         )
     else:
@@ -55,7 +57,8 @@ def media_to_videos(media, kind="series"):
                     get_metadata_dict(plex_item, part, {"plex_part": part, "type": "movie",
                                                         "title": media.title, "id": media.id,
                                                         "series_id": None,
-                                                        "season_id": None})
+                                                        "season_id": None,
+                                                        "section": plex_item.section.title})
                 )
     return videos
 
@@ -104,7 +107,7 @@ def scan_video(plex_part, ignore_all=False, hints=None):
         Log.Warn("File could not be guessed by subliminal")
 
 
-def scan_videos(videos, kind="series"):
+def scan_videos(videos, kind="series", ignore_all=False):
     """
     receives a list of videos containing dictionaries returned by media_to_videos
     :param videos:
@@ -120,7 +123,8 @@ def scan_videos(videos, kind="series"):
 
         hints = helpers.get_item_hints(video["title"], kind, series=video["series"] if kind == "series" else None)
         video["plex_part"].fps = get_stream_fps(video["plex_part"].streams)
-        scanned_video = scan_video(video["plex_part"], ignore_all=force_refresh, hints=hints)
+        scanned_video = scan_video(video["plex_part"], ignore_all=force_refresh or ignore_all, hints=hints)
+
         if not scanned_video:
             continue
 
@@ -130,3 +134,36 @@ def scan_videos(videos, kind="series"):
         scanned_video.plexapi_metadata = part_metadata
         ret[scanned_video] = video["plex_part"]
     return ret
+
+
+def get_plex_metadata(rating_key, part_id, item_type):
+    plex_item = list(Plex["library"].metadata(rating_key))[0]
+
+    # find current part
+    current_part = None
+    for part in plex_item.media.parts:
+        if str(part.id) == part_id:
+            current_part = part
+
+    if not current_part:
+        raise ValueError("Part unknown")
+
+    # get normalized metadata
+    if item_type == "episode":
+        metadata = get_metadata_dict(plex_item, current_part,
+                                     {"plex_part": current_part, "type": "episode", "title": plex_item.title,
+                                      "series": plex_item.show.title, "id": plex_item.rating_key,
+                                      "series_id": plex_item.show.rating_key,
+                                      "season_id": plex_item.season.rating_key,
+                                      "season": plex_item.season.index,
+                                      "episode": plex_item.index
+                                      })
+    else:
+        metadata = get_metadata_dict(plex_item, current_part, {"plex_part": current_part, "type": "movie",
+                                                               "title": plex_item.title, "id": plex_item.rating_key,
+                                                               "series_id": None,
+                                                               "season_id": None,
+                                                               "season": None,
+                                                               "episode": None,
+                                                               "section": plex_item.section.title})
+    return metadata

@@ -79,6 +79,16 @@ class VobSubSubtitleHelper(SubtitleHelper):
 
 #####################################################################################################################
 
+
+def match_ietf_language(s):
+    language_match = re.match(".+\.([^\.]+)$" if not bool(Prefs["subtitles.language.ietf"])
+                              else ".+\.([^-.]+)(?:-[A-Za-z]+)?$", s)
+    if language_match and len(language_match.groups()) == 1:
+        language = language_match.groups()[0]
+        return language
+    return s
+
+
 class DefaultSubtitleHelper(SubtitleHelper):
     @classmethod
     def is_helper_for(cls, filename):
@@ -99,10 +109,7 @@ class DefaultSubtitleHelper(SubtitleHelper):
         language = ""
 
         # IETF support thanks to https://github.com/hpsbranco/LocalMedia.bundle/commit/4fad9aefedece78a1fa96401304351347f644369
-        language_match = re.match(".+\.([^\.]+)$" if not Prefs["subtitles.language.ietf"] else ".+\.([^-.]+)(?:-[A-Za-z]+)?$", file)
-        if language_match and len(language_match.groups()) == 1:
-            language = language_match.groups()[0]
-        language = Locale.Language.Match(language)
+        language = Locale.Language.Match(match_ietf_language(file))
 
         codec = None
         format = None

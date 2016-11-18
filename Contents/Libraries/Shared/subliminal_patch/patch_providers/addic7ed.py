@@ -6,7 +6,7 @@ import subliminal
 from random import randint
 from subliminal.providers.addic7ed import Addic7edProvider, Addic7edSubtitle, ParserBeautifulSoup, Language
 from subliminal.cache import SHOW_EXPIRATION_TIME, region
-from .mixins import PunctuationMixin
+from .mixins import PunctuationMixin, ProviderRetryMixin
 
 logger = logging.getLogger(__name__)
 
@@ -17,9 +17,12 @@ USE_BOOST = False
 
 
 class PatchedAddic7edSubtitle(Addic7edSubtitle):
-    def __init__(self, *args, **kwargs):
-        super(PatchedAddic7edSubtitle, self).__init__(*args, **kwargs)
-        self.subtitle_id = kwargs.get("download_link")
+    def __init__(self, language, hearing_impaired, page_link, series, season, episode, title, year, version,
+                 download_link):
+        super(PatchedAddic7edSubtitle, self).__init__(language, hearing_impaired, page_link, series, season, episode,
+                                                      title, year, version, download_link)
+        self.subtitle_id = download_link
+        self.release_info = version
 
     def get_matches(self, video, hearing_impaired=False):
         matches = super(PatchedAddic7edSubtitle, self).get_matches(video, hearing_impaired=hearing_impaired)
@@ -32,7 +35,7 @@ class PatchedAddic7edSubtitle(Addic7edSubtitle):
         return matches
 
 
-class PatchedAddic7edProvider(PunctuationMixin, Addic7edProvider):
+class PatchedAddic7edProvider(PunctuationMixin, ProviderRetryMixin, Addic7edProvider):
     USE_ADDICTED_RANDOM_AGENTS = False
 
     def __init__(self, username=None, password=None, use_random_agents=False):
@@ -60,7 +63,7 @@ class PatchedAddic7edProvider(PunctuationMixin, Addic7edProvider):
         """
         # get the show page
         logger.info('Getting show ids')
-        r = self.session.get(self.server_url + 'shows.php', timeout=10)
+        r = self.retry(lambda: self.session.get(self.server_url + 'shows.php', timeout=10))
         r.raise_for_status()
         soup = ParserBeautifulSoup(r.content, ['lxml', 'html.parser'])
 
@@ -142,7 +145,7 @@ class PatchedAddic7edProvider(PunctuationMixin, Addic7edProvider):
 
         # make the search
         logger.info('Searching show ids with %r', params)
-        r = self.session.get(self.server_url + 'search.php', params=params, timeout=10)
+        r = self.retry(lambda: self.session.get(self.server_url + 'search.php', params=params, timeout=10))
         r.raise_for_status()
         soup = ParserBeautifulSoup(r.content, ['lxml', 'html.parser'])
 
@@ -169,7 +172,8 @@ class PatchedAddic7edProvider(PunctuationMixin, Addic7edProvider):
 
         # get the page of the season of the show
         logger.info('Getting the page of show id %d, season %d', show_id, season)
-        r = self.session.get(self.server_url + 'show/%d' % show_id, params={'season': season}, timeout=10)
+        r = self.retry(lambda: self.session.get(self.server_url + 'show/%d' % show_id,
+                                                params={'season': season}, timeout=10))
         r.raise_for_status()
         soup = ParserBeautifulSoup(r.content, ['lxml', 'html.parser'])
 

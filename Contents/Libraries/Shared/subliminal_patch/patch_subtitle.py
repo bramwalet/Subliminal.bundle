@@ -35,8 +35,8 @@ def compute_score(matches, video, scores=None):
 
     is_episode = isinstance(video, Episode)
 
-    episode_hash_valid_if = {"series", "season", "episode"}
-    movie_hash_valid_if = {"title", "video_codec"}
+    episode_hash_valid_if = {"series", "season", "episode", "format"}
+    movie_hash_valid_if = {"video_codec", "format"}
 
     # remove equivalent match combinations
     if 'hash' in final_matches:
@@ -69,6 +69,8 @@ def compute_score(matches, video, scores=None):
 class PatchedSubtitle(Subtitle):
     storage_path = None
     subtitle_id = None
+    release_info = None
+    matches = None
 
     def guess_encoding(self):
         """Guess encoding using the language, falling back on chardet.
@@ -89,7 +91,9 @@ class PatchedSubtitle(Subtitle):
             encodings.append('shift-jis')
         elif self.language.alpha3 == 'tha':
             encodings.append('tis-620')
-        elif self.language.alpha3 == 'ara':
+
+        # arabian/farsi
+        elif self.language.alpha3 in ('ara', 'fas', 'per'):
             encodings.append('windows-1256')
         elif self.language.alpha3 == 'heb':
             encodings.append('windows-1255')

@@ -309,63 +309,15 @@
     "default": "true"
   },
   {
-    "id": "subtitles.search.minimumTVScore",
-    "label": "Minimum score for TV subtitles to download",
-    "type": "enum",
-    "values": [
-      "100",
-      "95",
-      "90",
-      "85",
-      "80",
-      "75",
-      "70",
-      "67",
-      "65",
-      "60",
-      "55",
-      "50",
-      "45",
-      "40",
-      "35",
-      "30",
-      "25",
-      "20",
-      "15",
-      "10",
-      "5",
-      "0"
-    ],
-    "default": "85"
+    "id": "subtitles.search.minimumTVScore1",
+    "label": "Minimum score for TV (min: 77, sane: 110; see http://v.ht/szscores)",
+    "type": "text",
+    "default": "110"
   },
   {
-    "id": "subtitles.search.minimumMovieScore",
-    "label": "Minimum score for movie subtitles to download",
-    "type": "enum",
-    "values": [
-      "100",
-      "95",
-      "90",
-      "85",
-      "80",
-      "75",
-      "70",
-      "65",
-      "60",
-      "55",
-      "50",
-      "45",
-      "40",
-      "35",
-      "30",
-      "25",
-      "23",
-      "20",
-      "15",
-      "10",
-      "5",
-      "0"
-    ],
+    "id": "subtitles.search.minimumMovieScore1",
+    "label": "Minimum score for movies (def: 23, sane: 33; see http://v.ht/szscores)",
+    "type": "text",
     "default": "23"
   },
   {
@@ -436,7 +388,7 @@
       "default": ""
   },
   {
-    "id": "scheduler.tasks.searchAllRecentlyAddedMissing",
+    "id": "scheduler.tasks.SearchAllRecentlyAddedMissing",
     "label": "Scheduler: Periodically search for recent items with missing subtitles",
     "type": "enum",
     "values": [
@@ -471,7 +423,20 @@
     "id": "scheduler.max_recent_items_per_library",
     "label": "Scheduler: Recent items to consider per library",
     "type": "text",
-    "default": "200"
+    "default": "2000"
+  },
+  {
+    "id": "history_size",
+    "label": "History: amount of items to store historical data for",
+    "type": "enum",
+    "values": [
+      "50",
+      "100",
+      "150",
+      "250",
+      "500",
+    ],
+    "default": "100"
   },
   {
     "id": "check_permissions",
@@ -497,5 +462,11 @@
     "label": "Log to console (for development/debugging)",
     "type": "bool",
     "default": "false"
+  },
+  {
+    "id": "track_usage",
+    "label": "Collect anonymous usage statistics",
+    "type": "bool",
+    "default": "true"
   }
 ]

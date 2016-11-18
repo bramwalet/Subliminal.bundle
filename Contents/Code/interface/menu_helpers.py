@@ -3,7 +3,7 @@ import types
 import datetime
 
 from support.items import get_kind, get_item_thumb
-from support.helpers import format_video
+from support.helpers import get_video_display_title
 from support.ignore import ignore_list
 from support.lib import get_intent
 from subzero.constants import ICON
@@ -90,9 +90,9 @@ def set_refresh_menu_state(state_or_media, media_type="movies"):
             for episode in media.seasons[season].episodes:
                 ep = media.seasons[season].episodes[episode]
                 media_id = ep.id
-                title = format_video("show", ep.title, parent_title=media.title, season=int(season), episode=int(episode))
+                title = get_video_display_title("show", ep.title, parent_title=media.title, season=int(season), episode=int(episode))
     else:
-        title = format_video("movie", media.title)
+        title = get_video_display_title("movie", media.title)
 
     intent = get_intent()
     force_refresh = intent.get("force", media_id)

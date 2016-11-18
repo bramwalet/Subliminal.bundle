@@ -1,8 +1,15 @@
 # coding=utf-8
 
 import datetime
+import os
 import pprint
 import copy
+
+import subliminal
+
+from subtitlehelpers import force_utf8
+from config import config
+from helpers import notify_executable, get_title_for_video_metadata
 
 
 def get_subtitle_info(rating_key):
@@ -24,20 +31,22 @@ def whack_missing_parts(scanned_video_part_map, existing_parts=None):
     if not existing_parts:
         existing_parts = []
         for part in scanned_video_part_map.viewvalues():
-            existing_parts.append(part.id)
+            existing_parts.append(str(part.id))
 
     whacked_parts = False
     for video in scanned_video_part_map.keys():
-        if video.id not in Dict["subs"]:
+        video_id = str(video.id)
+        if video_id not in Dict["subs"]:
             continue
 
-        parts = Dict["subs"][video.id].keys()
+        parts = Dict["subs"][video_id].keys()
 
         for part_id in parts:
+            part_id = str(part_id)
             if part_id not in existing_parts:
-                Log.Info("Whacking part %s in internal storage of video %s (%s, %s)", part_id, video.id,
+                Log.Info("Whacking part %s in internal storage of video %s (%s, %s)", part_id, video_id,
                          repr(existing_parts), repr(parts))
-                del Dict["subs"][video.id][part_id]
+                del Dict["subs"][video_id][part_id]
                 whacked_parts = True
 
     if whacked_parts:
@@ -54,34 +63,40 @@ def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_ty
     existing_parts = []
     for video, video_subtitles in downloaded_subtitles.items():
         part = scanned_video_part_map[video]
+        part_id = str(part.id)
+        video_id = str(video.id)
 
-        if video.id not in Dict["subs"]:
-            Dict["subs"][video.id] = {}
+        if video_id not in Dict["subs"]:
+            Dict["subs"][video_id] = {}
 
-        video_dict = copy.deepcopy(Dict["subs"][video.id])
-        if part.id not in video_dict:
-            video_dict[part.id] = {}
+        video_dict = copy.deepcopy(Dict["subs"][video_id])
 
-        existing_parts.append(part.id)
+        if part_id not in video_dict:
+            video_dict[part_id] = {}
 
-        part_dict = video_dict[part.id]
+        existing_parts.append(part_id)
+
+        part_dict = video_dict[part_id]
         for subtitle in video_subtitles:
             lang = Locale.Language.Match(subtitle.language.alpha2)
-            if lang not in part_dict:
-                part_dict[lang] = {}
+            # always overwrite the old subtitle
+            part_dict[lang] = {}
+
             lang_dict = part_dict[lang]
-            sub_key = (subtitle.provider_name, subtitle.id)
-            lang_dict[sub_key] = dict(score=subtitle.score, link=subtitle.page_link, storage=storage_type,
-                                      hash=Hash.MD5(subtitle.content),
-                                      date_added=datetime.datetime.now())
+            sub_key = subtitle.provider_name, subtitle.id
+            metadata = video.plexapi_metadata
+
+            # compute title
+            title = get_title_for_video_metadata(metadata)
+            lang_dict[sub_key] = dict(score=subtitle.score, link=subtitle.page_link, storage=storage_type, hash=Hash.MD5(subtitle.content),
+                                      date_added=datetime.datetime.now(), title=title)
             lang_dict["current"] = sub_key
 
-        Dict["subs"][video.id] = video_dict
+        Dict["subs"][video_id] = video_dict
 
-    #Dict.Save()
+    if existing_parts:
+        whack_missing_parts(scanned_video_part_map, existing_parts=existing_parts)
 
-    #if existing_parts:
-    #    whack_missing_parts(scanned_video_part_map, existing_parts=existing_parts)
     Dict.Save()
 
 
@@ -100,3 +115,68 @@ def reset_storage(key):
 def log_storage(key):
     if key in Dict:
         Log.Debug(pprint.pformat(Dict[key]))
+
+
+def save_subtitles_to_file(subtitles):
+    fld_custom = Prefs["subtitles.save.subFolder.Custom"].strip() if bool(Prefs["subtitles.save.subFolder.Custom"]) else None
+
+    for video, video_subtitles in subtitles.items():
+        if not video_subtitles:
+            continue
+
+        fld = None
+        if fld_custom or Prefs["subtitles.save.subFolder"] != "current folder":
+            # specific subFolder requested, create it if it doesn't exist
+            fld_base = os.path.split(video.name)[0]
+            if fld_custom:
+                if fld_custom.startswith("/"):
+                    # absolute folder
+                    fld = fld_custom
+                else:
+                    fld = os.path.join(fld_base, fld_custom)
+            else:
+                fld = os.path.join(fld_base, Prefs["subtitles.save.subFolder"])
+            if not os.path.exists(fld):
+                os.makedirs(fld)
+        subliminal.api.save_subtitles(video, video_subtitles, directory=fld, single=Prefs['subtitles.only_one'],
+                                      encode_with=force_utf8 if Prefs['subtitles.enforce_encoding'] else None)
+    return True
+
+
+def save_subtitles_to_metadata(videos, subtitles):
+    for video, video_subtitles in subtitles.items():
+        mediaPart = videos[video]
+        for subtitle in video_subtitles:
+            content = force_utf8(subtitle.text) if Prefs['subtitles.enforce_encoding'] else subtitle.content
+            mediaPart.subtitles[Locale.Language.Match(subtitle.language.alpha2)][subtitle.page_link] = Proxy.Media(content, ext="srt")
+    return True
+
+
+def save_subtitles(scanned_video_part_map, downloaded_subtitles):
+    meta_fallback = False
+    save_successful = False
+    storage = "metadata"
+    if Prefs['subtitles.save.filesystem']:
+        storage = "filesystem"
+        try:
+            Log.Debug("Using filesystem as subtitle storage")
+            save_subtitles_to_file(downloaded_subtitles)
+        except OSError:
+            if Prefs["subtitles.save.metadata_fallback"]:
+                meta_fallback = True
+            else:
+                raise
+        else:
+            save_successful = True
+
+    if not Prefs['subtitles.save.filesystem'] or meta_fallback:
+        if meta_fallback:
+            Log.Debug("Using metadata as subtitle storage, because filesystem storage failed")
+        else:
+            Log.Debug("Using metadata as subtitle storage")
+        save_successful = save_subtitles_to_metadata(scanned_video_part_map, downloaded_subtitles)
+
+    if save_successful and config.notify_executable:
+        notify_executable(config.notify_executable, scanned_video_part_map, downloaded_subtitles, storage)
+
+    store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage)

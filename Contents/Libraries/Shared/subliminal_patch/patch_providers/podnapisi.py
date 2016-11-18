@@ -13,6 +13,7 @@ except ImportError:
 from babelfish import Language
 from zipfile import ZipFile
 from subliminal.providers.podnapisi import PodnapisiProvider, PodnapisiSubtitle, fix_line_ending, ProviderError
+from mixins import ProviderRetryMixin
 
 logger = logging.getLogger(__name__)
 
@@ -25,13 +26,15 @@ class PatchedPodnapisiSubtitle(PodnapisiSubtitle):
         super(PatchedPodnapisiSubtitle, self).__init__(language, hearing_impaired, page_link, pid, releases, title,
                                                        season=season, episode=episode, year=year)
         self.subtitle_id = pid
+        self.release_info = u", ".join(releases)
 
 
-class PatchedPodnapisiProvider(PodnapisiProvider):
+class PatchedPodnapisiProvider(ProviderRetryMixin, PodnapisiProvider):
     def download_subtitle(self, subtitle):
         # download as a zip
         logger.info('Downloading subtitle %r', subtitle)
-        r = self.session.get(self.server_url + subtitle.pid + '/download', params={'container': 'zip'}, timeout=10)
+        r = self.retry(lambda: self.session.get(self.server_url + subtitle.pid + '/download',
+                                                params={'container': 'zip'}, timeout=10))
         r.raise_for_status()
 
         # open the zip
@@ -40,7 +43,6 @@ class PatchedPodnapisiProvider(PodnapisiProvider):
                 raise ProviderError('More than one file to unzip')
 
             subtitle.content = fix_line_ending(zf.read(zf.namelist()[0]))
-
 
     def query(self, language, keyword, season=None, episode=None, year=None):
         # set parameters, see http://www.podnapisi.net/forum/viewtopic.php?f=62&t=26164#p212652
@@ -59,7 +61,8 @@ class PatchedPodnapisiProvider(PodnapisiProvider):
         pids = set()
         while True:
             # query the server
-            xml = etree.fromstring(self.session.get(self.server_url + 'search/old', params=params, timeout=10).content)
+            xml = etree.fromstring(self.retry(lambda: self.session.get(self.server_url + 'search/old',
+                                                                       params=params, timeout=10).content))
 
             # exit if no results
             if not int(xml.find('pagination/results').text):

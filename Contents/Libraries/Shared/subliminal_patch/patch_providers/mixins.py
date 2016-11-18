@@ -1,6 +1,10 @@
 # coding=utf-8
 
 import re
+import time
+import logging
+
+logger = logging.getLogger(__name__)
 
 clean_whitespace_re = re.compile(r'\s+')
 
@@ -20,3 +24,18 @@ class PunctuationMixin(object):
 
     def full_clean(self, s):
         return self.clean_whitespace(self.clean_punctuation(s))
+
+
+class ProviderRetryMixin(object):
+    def retry(self, f, amount=3, exc=Exception, retry_timeout=1):
+        i = 0
+        while i <= amount:
+            try:
+                return f()
+            except exc, e:
+                i += 1
+                if i == amount:
+                    raise
+
+            logger.debug(u"Retrying %s, try: %i/%i, exception: %s" % (self.__class__.__name__, i, amount, e))
+            time.sleep(retry_timeout)

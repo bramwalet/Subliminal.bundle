@@ -5,7 +5,9 @@ import os
 
 from babelfish import Language
 from subliminal.exceptions import ConfigurationError
-from subliminal.providers.opensubtitles import OpenSubtitlesProvider, checked, get_version, __version__, OpenSubtitlesSubtitle, Episode
+from subliminal.providers.opensubtitles import OpenSubtitlesProvider, checked, get_version, __version__, \
+    OpenSubtitlesSubtitle, Episode
+from mixins import ProviderRetryMixin
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +20,7 @@ class PatchedOpenSubtitlesSubtitle(OpenSubtitlesSubtitle):
                                                            movie_release_name, movie_year, movie_imdb_id, series_season, series_episode)
         self.query_parameters = query_parameters or {}
         self.fps = fps
+        self.release_info = movie_release_name
 
     def get_matches(self, video, hearing_impaired=False):
         matches = super(PatchedOpenSubtitlesSubtitle, self).get_matches(video, hearing_impaired=hearing_impaired)
@@ -39,10 +42,11 @@ class PatchedOpenSubtitlesSubtitle(OpenSubtitlesSubtitle):
             # treat a tag match equally to a hash match
             logger.debug("Subtitle matched by tag, treating it as a hash-match. Tag: '%s'", self.query_parameters.get("tag", None))
             matches.add("hash")
+
         return matches
 
 
-class PatchedOpenSubtitlesProvider(OpenSubtitlesProvider):
+class PatchedOpenSubtitlesProvider(ProviderRetryMixin, OpenSubtitlesProvider):
     def __init__(self, username=None, password=None, use_tag_search=False):
         if username is not None and password is None or username is None and password is not None:
             raise ConfigurationError('Username and password must be specified')
@@ -58,7 +62,12 @@ class PatchedOpenSubtitlesProvider(OpenSubtitlesProvider):
 
     def initialize(self):
         logger.info('Logging in')
-        response = checked(self.server.LogIn(self.username, self.password, 'eng', 'subliminal v%s' % get_version(__version__)))
+        # fixme: retry on SSLError
+        response = self.retry(
+            lambda: checked(
+                self.server.LogIn(self.username, self.password, 'eng', 'subliminal v%s' % get_version(__version__))
+            )
+        )
         self.token = response['token']
         logger.debug('Logged in with token %r', self.token)
 
@@ -105,7 +114,7 @@ class PatchedOpenSubtitlesProvider(OpenSubtitlesProvider):
 
         # query the server
         logger.info('Searching subtitles %r', criteria)
-        response = checked(self.server.SearchSubtitles(self.token, criteria))
+        response = self.retry(lambda: checked(self.server.SearchSubtitles(self.token, criteria)))
         subtitles = []
 
         # exit if no data

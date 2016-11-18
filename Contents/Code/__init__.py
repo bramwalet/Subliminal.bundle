@@ -1,9 +1,7 @@
 # coding=utf-8
-import os
-import sys
 import datetime
+import sys
 
-# just some slight modifications to support sum and iter again
 from subzero.sandbox import restore_builtins
 
 module = sys.modules['__main__']
@@ -19,7 +17,6 @@ import logger
 sys.modules["logger"] = logger
 
 import subliminal
-import subliminal_patch
 import support
 
 import interface
@@ -28,12 +25,13 @@ sys.modules["interface"] = interface
 from subzero.constants import OS_PLEX_USERAGENT, PERSONAL_MEDIA_IDENTIFIER
 from interface.menu import *
 from support.plex_media import media_to_videos, get_media_item_ids, scan_videos
-from support.subtitlehelpers import get_subtitles_from_metadata, force_utf8
-from support.helpers import notify_executable
-from support.storage import store_subtitle_info, whack_missing_parts
+from support.subtitlehelpers import get_subtitles_from_metadata
+from support.storage import whack_missing_parts, save_subtitles
 from support.items import is_ignored
 from support.config import config
 from support.lib import get_intent
+from support.helpers import track_usage, get_title_for_video_metadata, get_identifier
+from support.history import get_history
 
 
 def Start():
@@ -64,15 +62,20 @@ def Start():
             Log.Error("Insufficient permissions on library %s, folder: %s" % (title, path))
         return
 
+    # run task scheduler
     scheduler.run()
 
+    if "anon_id" not in Dict:
+        Dict["anon_id"] = get_identifier()
 
-def init_subliminal_patches():
-    # configure custom subtitle destination folders for scanning pre-existing subs
-    dest_folder = config.subtitle_destination_folder
-    subliminal_patch.patch_video.CUSTOM_PATHS = [dest_folder] if dest_folder else []
-    subliminal_patch.patch_provider_pool.DOWNLOAD_TRIES = int(Prefs['subtitles.try_downloads'])
-    subliminal.video.Episode.scores["addic7ed_boost"] = int(Prefs['provider.addic7ed.boost_by'])
+    # track usage
+    if bool(Prefs["track_usage"]):
+        if "first_use" not in Dict:
+            Dict["first_use"] = datetime.datetime.utcnow()
+            Dict.Save()
+            track_usage("General", "plugin", "first_start", 1)
+        else:
+            track_usage("General", "plugin", "start", 1)
 
 
 def download_best_subtitles(video_part_map, min_score=0):
@@ -111,71 +114,6 @@ def download_best_subtitles(video_part_map, min_score=0):
         return subliminal.api.download_best_subtitles(video_part_map.keys(), languages, min_score, hearing_impaired, providers=config.providers,
                                                       provider_configs=config.provider_settings)
     Log.Debug("All languages for all requested videos exist. Doing nothing.")
-
-
-def save_subtitles(videos, subtitles):
-    meta_fallback = False
-    save_successful = False
-    storage = "metadata"
-    if Prefs['subtitles.save.filesystem']:
-        storage = "filesystem"
-        try:
-            Log.Debug("Using filesystem as subtitle storage")
-            save_subtitles_to_file(subtitles)
-        except OSError:
-            if Prefs["subtitles.save.metadata_fallback"]:
-                meta_fallback = True
-            else:
-                raise
-        else:
-            save_successful = True
-
-    if not Prefs['subtitles.save.filesystem'] or meta_fallback:
-        if meta_fallback:
-            Log.Debug("Using metadata as subtitle storage, because filesystem storage failed")
-        else:
-            Log.Debug("Using metadata as subtitle storage")
-        save_successful = save_subtitles_to_metadata(videos, subtitles)
-
-    if save_successful and config.notify_executable:
-        notify_executable(config.notify_executable, videos, subtitles, storage)
-
-    store_subtitle_info(videos, subtitles, storage)
-
-
-def save_subtitles_to_file(subtitles):
-    fld_custom = Prefs["subtitles.save.subFolder.Custom"].strip() if bool(Prefs["subtitles.save.subFolder.Custom"]) else None
-
-    for video, video_subtitles in subtitles.items():
-        if not video_subtitles:
-            continue
-
-        fld = None
-        if fld_custom or Prefs["subtitles.save.subFolder"] != "current folder":
-            # specific subFolder requested, create it if it doesn't exist
-            fld_base = os.path.split(video.name)[0]
-            if fld_custom:
-                if fld_custom.startswith("/"):
-                    # absolute folder
-                    fld = fld_custom
-                else:
-                    fld = os.path.join(fld_base, fld_custom)
-            else:
-                fld = os.path.join(fld_base, Prefs["subtitles.save.subFolder"])
-            if not os.path.exists(fld):
-                os.makedirs(fld)
-        subliminal.api.save_subtitles(video, video_subtitles, directory=fld, single=Prefs['subtitles.only_one'],
-                                      encode_with=force_utf8 if Prefs['subtitles.enforce_encoding'] else None)
-    return True
-
-
-def save_subtitles_to_metadata(videos, subtitles):
-    for video, video_subtitles in subtitles.items():
-        mediaPart = videos[video]
-        for subtitle in video_subtitles:
-            content = force_utf8(subtitle.text) if Prefs['subtitles.enforce_encoding'] else subtitle.content
-            mediaPart.subtitles[Locale.Language.Match(subtitle.language.alpha2)][subtitle.page_link] = Proxy.Media(content, ext="srt")
-    return True
 
 
 def update_local_media(metadata, media, media_type="movies"):
@@ -229,14 +167,14 @@ class SubZeroAgent(object):
 
         item_ids = []
         try:
-            init_subliminal_patches()
-            parts = media_to_videos(media, kind=self.agent_type)
+            config.init_subliminal_patches()
+            videos = media_to_videos(media, kind=self.agent_type)
 
             # media ignored?
             use_any_parts = False
-            for part in parts:
-                if is_ignored(part["id"]):
-                    Log.Debug(u"Ignoring %s" % part)
+            for video in videos:
+                if is_ignored(video["id"]):
+                    Log.Debug(u"Ignoring %s" % video)
                     continue
                 use_any_parts = True
 
@@ -244,15 +182,32 @@ class SubZeroAgent(object):
                 Log.Debug(u"Nothing to do.")
                 return
 
-            use_score = Prefs[self.score_prefs_key]
-            scanned_parts = scan_videos(parts, kind=self.agent_type)
-            subtitles = download_best_subtitles(scanned_parts, min_score=int(use_score))
+            try:
+                use_score = int(Prefs[self.score_prefs_key].strip())
+            except ValueError:
+                Log.Error("Please only put numbers into the scores setting. Exiting")
+                return
+
+            # scanned_video_part_map = {subliminal.Video: plex_part, ...}
+            scanned_video_part_map = scan_videos(videos, kind=self.agent_type)
+
+            # downloaded_subtitles = {subliminal.Video: [subtitle, subtitle, ...]}
+            downloaded_subtitles = download_best_subtitles(scanned_video_part_map, min_score=use_score)
             item_ids = get_media_item_ids(media, kind=self.agent_type)
 
-            whack_missing_parts(scanned_parts)
+            whack_missing_parts(scanned_video_part_map)
 
-            if subtitles:
-                save_subtitles(scanned_parts, subtitles)
+            if downloaded_subtitles:
+                save_subtitles(scanned_video_part_map, downloaded_subtitles)
+                track_usage("Subtitle", "refreshed", "download", 1)
+
+                for video, video_subtitles in downloaded_subtitles.items():
+                    # store item(s) in history
+                    for subtitle in video_subtitles:
+                        item_title = get_title_for_video_metadata(video.plexapi_metadata, add_section_title=False)
+                        history = get_history()
+                        history.add(item_title, video.id, section_title=video.plexapi_metadata["section"],
+                                    subtitle=subtitle)
 
             update_local_media(metadata, media, media_type=self.agent_type)
 
@@ -266,17 +221,18 @@ class SubZeroAgent(object):
 
                 # resolve existing intent for that id
                 intent.resolve("force", item_id)
+
             Dict.Save()
 
 
 class SubZeroSubtitlesAgentMovies(SubZeroAgent, Agent.Movies):
     contributes_to = ['com.plexapp.agents.imdb', 'com.plexapp.agents.xbmcnfo', 'com.plexapp.agents.themoviedb', 'com.plexapp.agents.hama']
-    score_prefs_key = "subtitles.search.minimumMovieScore"
+    score_prefs_key = "subtitles.search.minimumMovieScore1"
     agent_type_verbose = "Movies"
 
 
 class SubZeroSubtitlesAgentTvShows(SubZeroAgent, Agent.TV_Shows):
     contributes_to = ['com.plexapp.agents.thetvdb', 'com.plexapp.agents.themoviedb',
                       'com.plexapp.agents.thetvdbdvdorder', 'com.plexapp.agents.xbmcnfotv', 'com.plexapp.agents.hama']
-    score_prefs_key = "subtitles.search.minimumTVScore"
+    score_prefs_key = "subtitles.search.minimumTVScore1"
     agent_type_verbose = "TV"

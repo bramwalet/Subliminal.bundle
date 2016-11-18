@@ -3,6 +3,9 @@
 import os
 import re
 import inspect
+
+import subliminal
+import subliminal_patch
 from babelfish import Language
 from subzero.lib.io import FileIO, get_viable_encoding
 from subzero.constants import PLUGIN_NAME, PLUGIN_IDENTIFIER, MOVIE, SHOW
@@ -53,7 +56,7 @@ class Config(object):
         self.subtitle_destination_folder = self.get_subtitle_destination_folder()
         self.providers = self.get_providers()
         self.provider_settings = self.get_provider_settings()
-        self.max_recent_items_per_library = int_or_default(Prefs["scheduler.max_recent_items_per_library"], 200)
+        self.max_recent_items_per_library = int_or_default(Prefs["scheduler.max_recent_items_per_library"], 2000)
         self.sections = list(Plex["library"].sections())
         self.missing_permissions = []
         self.ignore_paths = self.parse_ignore_paths()
@@ -227,6 +230,14 @@ class Config(object):
                              }
 
         return provider_settings
+
+    def init_subliminal_patches(self):
+        # configure custom subtitle destination folders for scanning pre-existing subs
+        Log.Debug("Patching subliminal ...")
+        dest_folder = self.subtitle_destination_folder
+        subliminal_patch.patch_video.CUSTOM_PATHS = [dest_folder] if dest_folder else []
+        subliminal_patch.patch_provider_pool.DOWNLOAD_TRIES = int(Prefs['subtitles.try_downloads'])
+        subliminal.video.Episode.scores["addic7ed_boost"] = int(Prefs['provider.addic7ed.boost_by'])
 
 
 config = Config()
