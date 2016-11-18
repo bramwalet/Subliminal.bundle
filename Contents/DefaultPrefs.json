@@ -426,6 +426,30 @@
     "default": "2000"
   },
   {
+    "id": "scheduler.tasks.SearchBetterSubtitles",
+    "label": "Scheduler: Periodically search for better subtitles",
+    "type": "enum",
+    "values": [
+      "never",
+      "every 6 hours",
+      "every 12 hours",
+      "every 24 hours"
+    ],
+    "default": "every 6 hours"
+  },
+  {
+    "id": "scheduler.tasks.SearchBetterSubtitles.max_days_after_added",
+    "label": "Scheduler: Days to search for better subtitles",
+    "type": "text",
+    "default": "7"
+  },
+  {
+    "id": "scheduler.tasks.SearchBetterSubtitles.overwrite_manually_selected",
+    "label": "Scheduler: Overwride manually selected subtitles when better found",
+    "type": "bool",
+    "default": "true"
+  },
+  {
     "id": "history_size",
     "label": "History: amount of items to store historical data for",
     "type": "enum",
