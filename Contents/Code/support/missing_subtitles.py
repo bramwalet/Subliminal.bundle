@@ -68,10 +68,10 @@ def items_get_all_missing_subs(items):
     return missing
 
 
-def refresh_item(item, title):
+def refresh_item(item):
     Plex["library/metadata"].refresh(item)
 
 
 def refresh_items(items):
     for item, title in items:
-        refresh_item(item, title)
+        refresh_item(item)

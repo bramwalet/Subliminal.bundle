@@ -135,7 +135,7 @@ class SearchAllRecentlyAddedMissing(Task):
 
         for added_at, item_id, title, item, missing_languages in self.items_searching:
             Log.Debug(u"Task: %s, triggering refresh for %s (%s)", self.name, title, item_id)
-            refresh_item(item_id, title)
+            refresh_item(item_id)
             search_started = datetime.datetime.now()
             tries = 1
             while 1:
@@ -155,7 +155,7 @@ class SearchAllRecentlyAddedMissing(Task):
                     Log.Debug(u"Task: %s, item stalled for %s seconds: %s, retrying", self.name, self.stall_time,
                               item_id)
                     tries += 1
-                    refresh_item(item_id, title)
+                    refresh_item(item_id)
                     search_started = datetime.datetime.now()
                     time.sleep(1)
                 time.sleep(0.1)
