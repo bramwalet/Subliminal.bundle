@@ -24,6 +24,10 @@ RE_UNICODE_CONTROL = u'([\u0000-\u0008\u000b-\u000c\u000e-\u001f\ufffe-\uffff])'
                      )
 
 
+def cast_bool(value):
+    return str(value) in ("true", "True")
+
+
 # A platform independent way to split paths which might come in with different separators.
 def split_path(str):
     if str.find('\\') != -1:
@@ -249,7 +253,7 @@ def notify_executable(exe_info, videos, subtitles, storage):
 
 
 def track_usage(category=None, action=None, label=None, value=None):
-    if not bool(Prefs["track_usage"]):
+    if not cast_bool(Prefs["track_usage"]):
         return
 
     Thread.Create(dispatch_track_usage, category, action, label, value,

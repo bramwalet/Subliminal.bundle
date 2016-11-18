@@ -8,7 +8,7 @@ from menu_helpers import add_ignore_options, dig_tree, set_refresh_menu_state, \
 from subzero.constants import TITLE, ART, ICON, PREFIX, PLUGIN_IDENTIFIER, DEPENDENCY_MODULE_NAMES
 from support.background import scheduler
 from support.config import config
-from support.helpers import pad_title, timestamp, get_language, df
+from support.helpers import pad_title, timestamp, get_language, df, cast_bool
 from support.ignore import ignore_list
 from support.items import get_item, get_on_deck_items, refresh_item, get_all_items, get_recent_items, get_items_info, \
     get_item_thumb, get_item_kind_from_rating_key
@@ -502,7 +502,7 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
         for lang in config.lang_list:
             lang_a2 = lang.alpha2
             # ietf lang?
-            if bool(Prefs["subtitles.language.ietf"]) and "-" in lang_a2:
+            if cast_bool(Prefs["subtitles.language.ietf"]) and "-" in lang_a2:
                 lang_a2 = lang_a2.split("-")[0]
 
             sub_data_for_lang = sub_part_data.get(lang_a2, {})

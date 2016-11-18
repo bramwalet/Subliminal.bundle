@@ -2,7 +2,7 @@
 import traceback
 
 from support.config import config
-from support.helpers import get_plex_item_display_title
+from support.helpers import get_plex_item_display_title, cast_bool
 from support.items import get_item
 from support.lib import Plex
 
@@ -57,8 +57,8 @@ def items_get_all_missing_subs(items):
                 added_at=added_at,
                 section_title=section_title,
                 languages=config.lang_list,
-                internal=bool(Prefs["subtitles.scan.embedded"]),
-                external=bool(Prefs["subtitles.scan.external"])
+                internal=cast_bool(Prefs["subtitles.scan.embedded"]),
+                external=cast_bool(Prefs["subtitles.scan.external"])
             )
             if state:
                 # (added_at, item_id, title, item, missing_languages)

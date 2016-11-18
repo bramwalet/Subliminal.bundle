@@ -12,7 +12,7 @@ def find_subtitles(part):
     lang_sub_map = {}
     part_filename = helpers.unicodize(part.file)
     part_basename = os.path.splitext(os.path.basename(part_filename))[0]
-    use_filesystem = bool(Prefs["subtitles.save.filesystem"])
+    use_filesystem = helpers.cast_bool(Prefs["subtitles.save.filesystem"])
     paths = [os.path.dirname(part_filename)] if use_filesystem else []
 
     global_subtitle_folder = None
@@ -27,7 +27,7 @@ def find_subtitles(part):
             # got selected subfolder
             sub_dir_list.append(os.path.join(sub_dir_base, Prefs["subtitles.save.subFolder"]))
 
-        sub_dir_custom = Prefs["subtitles.save.subFolder.Custom"].strip() if bool(Prefs["subtitles.save.subFolder.Custom"]) else None
+        sub_dir_custom = Prefs["subtitles.save.subFolder.Custom"].strip() if helpers.cast_bool(Prefs["subtitles.save.subFolder.Custom"]) else None
         if sub_dir_custom:
             # got custom subfolder
             if sub_dir_custom.startswith("/"):
