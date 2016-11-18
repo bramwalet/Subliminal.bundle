@@ -13,20 +13,25 @@ He has created **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/w
 
 ## Changelog
 
+1.4.5.779
+- core: fix force-refresh in certain situations
+- menu: add history
+- menu: add manual subtitle selection
+- menu: run Items with missing subtitles in separate thread for big libraries
+- settings: add history list size option (default: 100)
+- settings: add new default scores (TV: 110); use input instead of dropdown
+- settings: increase default missing subtitles amount per library to 2000
+- core: generic rewrites and optimizations
+- core: better hash verification
+- core: add anonymous usage data (opt-out in settings)
+- core: fix pt-BR display (IETF) again
+- wiki: update (thanks @dane22!) - quick URL: http://v.ht/szwiki
+- wiki: add score explanation - quick URL: http://v.ht/szscores
+- core: add persian/farsi encoding support
+
 1.3.49.636
 - core/menu: fix force refreshing (again)
 - core/menu: fix redundant route calls
-
-
-1.3.49.630 (backported some changes of the develop-1.4 branch to 1.3)
-- core/menu: make addic7ed boost configurable; lower the default boost value massively (to 10)
-- core: fix force refreshing (hopefully)
-- core: add (thai) tis-620 subtitle encoding support
-- menu: lower letter based menu browsing from 200 to 80 items
-- core: support greek encodings (windows-1253, cp1253, cp737, iso8859_7, cp875, cp869, iso2022_jp_2, mac_greek); hopefully fixes badly saved greek subs
-- menu: add generic back-to-home button to the top of every container view
-- menu: warn the user when SZ isn't enabled for any sections/libraries
-- menu: always re-check permissions status and enabled sections when opening the main menu; no server restart necessary anymore
 
 
 [older changes](CHANGELOG.md)
