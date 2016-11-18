@@ -426,7 +426,7 @@
     "default": "2000"
   },
   {
-    "id": "scheduler.tasks.SearchBetterSubtitles.frequency",
+    "id": "scheduler.tasks.FindBetterSubtitles.frequency",
     "label": "Scheduler: Periodically search for better subtitles",
     "type": "enum",
     "values": [
@@ -438,13 +438,13 @@
     "default": "every 6 hours"
   },
   {
-    "id": "scheduler.tasks.SearchBetterSubtitles.max_days_after_added",
-    "label": "Scheduler: Days to search for better subtitles",
+    "id": "scheduler.tasks.FindBetterSubtitles.max_days_after_added",
+    "label": "Scheduler: Days to search for better subtitles (max: 30 days)",
     "type": "text",
     "default": "7"
   },
   {
-    "id": "scheduler.tasks.SearchBetterSubtitles.overwrite_manually_selected",
+    "id": "scheduler.tasks.FindBetterSubtitles.overwrite_manually_selected",
     "label": "Scheduler: Overwride manually selected subtitles when better found",
     "type": "bool",
     "default": "true"
