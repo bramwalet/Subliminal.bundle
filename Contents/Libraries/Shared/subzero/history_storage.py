@@ -5,19 +5,28 @@ import datetime
 from subzero.lib.dict import DictProxy
 
 
+mode_map = {
+    "a": "auto",
+    "m": "manual",
+    "b": "auto-better"
+}
+
+
 class SubtitleHistoryItem(object):
     item_title = None
     section_title = None
     rating_key = None
     subtitle = None
     time = None
+    mode = "a"
 
-    def __init__(self, item_title, rating_key, section_title=None, subtitle=subtitle):
+    def __init__(self, item_title, rating_key, section_title=None, subtitle=subtitle, mode="a"):
         self.item_title = item_title
         self.section_title = section_title
         self.rating_key = str(rating_key)
         self.subtitle = subtitle
         self.time = datetime.datetime.now()
+        self.mode = mode
 
     @property
     def title(self):
@@ -34,6 +43,10 @@ class SubtitleHistoryItem(object):
     @property
     def lang_name(self):
         return self.subtitle.language.name
+
+    @property
+    def mode_verbose(self):
+        return mode_map.get(self.mode, "Unknown")
 
     def __repr__(self):
         return unicode(self)
@@ -67,10 +80,10 @@ class SubtitleHistory(DictProxy):
     def setup_defaults(self):
         return {"history_items": []}
 
-    def add(self, item_title, rating_key, section_title=None, subtitle=None):
+    def add(self, item_title, rating_key, section_title=None, subtitle=None, mode="auto"):
         # create copy
         items = self.history_items[:]
-        item = SubtitleHistoryItem(item_title, rating_key, section_title=section_title, subtitle=subtitle)
+        item = SubtitleHistoryItem(item_title, rating_key, section_title=section_title, subtitle=subtitle, mode=mode)
 
         # insert item
         items.insert(0, item)

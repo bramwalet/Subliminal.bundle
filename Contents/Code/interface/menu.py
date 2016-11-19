@@ -6,6 +6,7 @@ import os
 from menu_helpers import add_ignore_options, dig_tree, set_refresh_menu_state, \
     should_display_ignore, enable_channel_wrapper, default_thumb, debounce, SZObjectContainer
 from subzero.constants import TITLE, ART, ICON, PREFIX, PLUGIN_IDENTIFIER, DEPENDENCY_MODULE_NAMES
+from subzero.history_storage import mode_map
 from support.background import scheduler
 from support.config import config
 from support.helpers import pad_title, timestamp, get_language, df, cast_bool
@@ -440,9 +441,9 @@ def HistoryMenu():
         oc.add(DirectoryObject(
             key=Callback(ItemDetailsMenu, title=item.title, item_title=item.item_title,
                          rating_key=item.rating_key),
-            title=u"%s" % item.item_title,
-            summary=u"%s in %s (%s, score: %s), %s" % (item.lang_name, item.section_title, item.provider_name,
-                                                       item.score, df(item.time))
+            title=u"%s (%s)" % (item.item_title, item.mode_verbose),
+            summary=u"%s in %s (%s, score: %s), %s" % (item.lang_name, item.section_title,
+                                                       item.provider_name, item.score, df(item.time))
         ))
 
     return oc
@@ -532,9 +533,9 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                 current_sub_link = current_subtitle.get("link")
                 current_score = current_subtitle["score"]
 
-                summary = u"Current subtitle%s: %s (added: %s), Language: %s, Score: %i, Storage: %s" % \
+                summary = u"Current subtitle%s: %s (added: %s, %s), Language: %s, Score: %i, Storage: %s" % \
                           (u" (legacy/inaccurate)" if legacy_storage else "", current_sub_provider_name,
-                           df(current_subtitle["date_added"]), lang,
+                           df(current_subtitle["date_added"]), mode_map.get(current_subtitle.get("mode", "a")), lang,
                            current_subtitle["score"], current_subtitle["storage"])
 
             oc.add(DirectoryObject(

@@ -288,7 +288,7 @@ class DownloadSubtitleForItem(Task):
         if subtitle.content:
             try:
                 whack_missing_parts(scanned_parts)
-                save_subtitles(scanned_parts, {video: [subtitle]}, manually=True)
+                save_subtitles(scanned_parts, {video: [subtitle]}, mode="m")
                 refresh_item(self.rating_key)
                 track_usage("Subtitle", "manual", "download", 1)
             except:
@@ -300,7 +300,8 @@ class DownloadSubtitleForItem(Task):
                 from support.history import get_history
                 item_title = get_title_for_video_metadata(metadata, add_section_title=False)
                 history = get_history()
-                history.add(item_title, video.id, section_title=video.plexapi_metadata["section"], subtitle=subtitle)
+                history.add(item_title, video.id, section_title=video.plexapi_metadata["section"], subtitle=subtitle,
+                            mode="m")
 
 
 class MissingSubtitles(Task):
