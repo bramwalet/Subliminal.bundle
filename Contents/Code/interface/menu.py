@@ -563,12 +563,12 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
                                  current_provider=None, current_score=None, randomize=None):
     assert rating_key, part_id
 
-    #config.init_subliminal_patches()
     running = scheduler.is_task_running("AvailableSubsForItem")
     task_data = scheduler.get_task_data("AvailableSubsForItem")
     search_results = task_data.get(rating_key, None) if task_data else None
     if (search_results is None or force) and not running:
-        scheduler.dispatch_task("AvailableSubsForItem", rating_key, item_type, part_id, language)
+        scheduler.dispatch_task("AvailableSubsForItem", rating_key=rating_key, item_type=item_type, part_id=part_id,
+                                language=language)
         running = True
 
     oc = SZObjectContainer(title2=title, replace_parent=True)
@@ -647,7 +647,7 @@ def TriggerDownloadSubtitle(rating_key=None, subtitle_id=None, item_title=None, 
         Log.Error(u"Something went horribly wrong")
 
     else:
-        scheduler.dispatch_task("DownloadSubtitleForItem", rating_key, download_subtitle)
+        scheduler.dispatch_task("DownloadSubtitleForItem", rating_key=rating_key, subtitle=download_subtitle)
 
     return fatality(randomize=timestamp(), header=" ", replace_parent=True)
 
