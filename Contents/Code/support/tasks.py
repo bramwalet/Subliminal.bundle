@@ -215,9 +215,6 @@ class AvailableSubsForItem(Task):
             return
 
         video, plex_part = scanned_parts.items()[0]
-
-        # fixme: woot
-        #subliminal.video.Episode.scores["addic7ed_boost"] = int(Prefs['provider.addic7ed.boost_by'])
         config.init_subliminal_patches()
 
         available_subs = list_all_subtitles(scanned_parts, {Language.fromietf(language)},
