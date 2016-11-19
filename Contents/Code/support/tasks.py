@@ -263,11 +263,13 @@ class AvailableSubsForItem(SubtitleListingMixin, Task):
     item_type = None
     part_id = None
     language = None
+    rating_key = None
 
     def prepare(self, *args, **kwargs):
         self.item_type = kwargs.get("item_type")
         self.part_id = kwargs.get("part_id")
         self.language = kwargs.get("language")
+        self.rating_key = kwargs.get("rating_key")
 
     def setup_defaults(self):
         super(AvailableSubsForItem, self).setup_defaults()
