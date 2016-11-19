@@ -163,8 +163,6 @@ class SubZeroAgent(object):
             Log.Error("Called with empty media, something is really wrong with your setup!")
             return
 
-        set_refresh_menu_state(media, media_type=self.agent_type)
-
         item_ids = []
         try:
             config.init_subliminal_patches()
@@ -181,6 +179,8 @@ class SubZeroAgent(object):
             if not use_any_parts:
                 Log.Debug(u"Nothing to do.")
                 return
+
+            set_refresh_menu_state(media, media_type=self.agent_type)
 
             try:
                 use_score = int(Prefs[self.score_prefs_key].strip())
