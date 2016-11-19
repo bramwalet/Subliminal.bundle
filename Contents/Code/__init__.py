@@ -180,13 +180,13 @@ class SubZeroAgent(object):
                 Log.Debug(u"Nothing to do.")
                 return
 
-            set_refresh_menu_state(media, media_type=self.agent_type)
-
             try:
                 use_score = int(Prefs[self.score_prefs_key].strip())
             except ValueError:
                 Log.Error("Please only put numbers into the scores setting. Exiting")
                 return
+
+            set_refresh_menu_state(media, media_type=self.agent_type)
 
             # scanned_video_part_map = {subliminal.Video: plex_part, ...}
             scanned_video_part_map = scan_videos(videos, kind=self.agent_type)
