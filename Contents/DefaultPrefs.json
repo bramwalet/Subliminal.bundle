@@ -431,11 +431,12 @@
     "type": "enum",
     "values": [
       "never",
+      "every 3 hours",
       "every 6 hours",
       "every 12 hours",
       "every 24 hours"
     ],
-    "default": "every 6 hours"
+    "default": "every 3 hours"
   },
   {
     "id": "scheduler.tasks.FindBetterSubtitles.max_days_after_added",
