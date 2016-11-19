@@ -179,17 +179,11 @@ class SearchAllRecentlyAddedMissing(Task):
         self.items_searching_ids = None
 
 
-class AvailableSubsForItem(Task):
+class SubtitleListingMixin(object):
     rating_key = None
     item_type = None
     part_id = None
     language = None
-
-    def setup_defaults(self):
-        super(AvailableSubsForItem, self).setup_defaults()
-
-        # reset any previous data
-        Dict["tasks"][self.name]["data"] = {}
 
     def prepare(self, rating_key, item_type, part_id, language, *args, **kwargs):
         self.rating_key = rating_key
@@ -197,8 +191,7 @@ class AvailableSubsForItem(Task):
         self.part_id = part_id
         self.language = language
 
-    def run(self):
-        self.running = True
+    def list_subtitles(self):
         item_type = self.item_type
         metadata = get_plex_metadata(self.rating_key, self.part_id, self.item_type)
         language = self.language
@@ -247,10 +240,20 @@ class AvailableSubsForItem(Task):
             subtitle.part_id = part_id
             subtitle.item_type = item_type
             subtitles.append(subtitle)
+        return subtitles
 
+
+class AvailableSubsForItem(SubtitleListingMixin, Task):
+    def setup_defaults(self):
+        super(AvailableSubsForItem, self).setup_defaults()
+
+        # reset any previous data
+        Dict["tasks"][self.name]["data"] = {}
+
+    def run(self):
+        self.running = True
         track_usage("Subtitle", "manual", "list", 1)
-
-        self.data = subtitles
+        self.data = self.list_subtitles()
 
     def post_run(self, task_data):
         super(AvailableSubsForItem, self).post_run(task_data)
