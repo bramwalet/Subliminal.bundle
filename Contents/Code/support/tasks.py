@@ -243,24 +243,7 @@ class SubtitleListingMixin(object):
         return subtitles
 
 
-class AvailableSubsForItem(SubtitleListingMixin, Task):
-    def setup_defaults(self):
-        super(AvailableSubsForItem, self).setup_defaults()
-
-        # reset any previous data
-        Dict["tasks"][self.name]["data"] = {}
-
-    def run(self):
-        self.running = True
-        track_usage("Subtitle", "manual", "list", 1)
-        self.data = self.list_subtitles()
-
-    def post_run(self, task_data):
-        super(AvailableSubsForItem, self).post_run(task_data)
-        task_data[self.rating_key] = self.data
-
-
-class DownloadSubtitleForItem(Task):
+class DownloadSubtitleMixin(object):
     rating_key = None
     subtitle = None
     item_type = None
@@ -272,8 +255,7 @@ class DownloadSubtitleForItem(Task):
         self.item_type = subtitle.item_type
         self.part_id = subtitle.part_id
 
-    def run(self):
-        self.running = True
+    def download_subtitle(self, subtitle):
         from interface.menu_helpers import set_refresh_menu_state
 
         metadata = get_plex_metadata(self.rating_key, self.part_id, self.item_type)
@@ -282,7 +264,6 @@ class DownloadSubtitleForItem(Task):
         video, plex_part = scanned_parts.items()[0]
 
         # downloaded_subtitles = {subliminal.Video: [subtitle, subtitle, ...]}
-        subtitle = self.subtitle
         download_subtitles([subtitle], providers=config.providers, provider_configs=config.provider_settings)
 
         if subtitle.content:
@@ -304,6 +285,36 @@ class DownloadSubtitleForItem(Task):
                             mode="m")
 
 
+class AvailableSubsForItem(SubtitleListingMixin, Task):
+    def setup_defaults(self):
+        super(AvailableSubsForItem, self).setup_defaults()
+
+        # reset any previous data
+        Dict["tasks"][self.name]["data"] = {}
+
+    def run(self):
+        self.running = True
+        track_usage("Subtitle", "manual", "list", 1)
+        self.data = self.list_subtitles()
+
+    def post_run(self, task_data):
+        super(AvailableSubsForItem, self).post_run(task_data)
+        task_data[self.rating_key] = self.data
+
+
+class DownloadSubtitleForItem(DownloadSubtitleMixin, Task):
+    def prepare(self, rating_key, subtitle, *args, **kwargs):
+        self.rating_key = rating_key
+        self.subtitle = subtitle
+        self.item_type = subtitle.item_type
+        self.part_id = subtitle.part_id
+
+    def run(self):
+        self.running = True
+        self.download_subtitle(self.subtitle)
+        self.running = False
+
+
 class MissingSubtitles(Task):
     rating_key = None
     item_type = None
@@ -320,6 +331,16 @@ class MissingSubtitles(Task):
     def post_run(self, task_data):
         super(MissingSubtitles, self).post_run(task_data)
         task_data["missing_subtitles"] = self.data
+
+
+class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
+    periodic = True
+
+    def run(self):
+        self.running = True
+
+        Log.Debug("Task: %s, done. Failed items: %s", self.name, self.items_failed)
+        self.running = False
 
 
 scheduler.register(SearchAllRecentlyAddedMissing)
