@@ -169,7 +169,6 @@ class SearchAllRecentlyAddedMissing(Task):
     def post_run(self, task_data):
         super(SearchAllRecentlyAddedMissing, self).post_run(task_data)
         self.ready_for_display = False
-        self.time_start = None
         self.percentage = 0
         self.items_done = None
         self.items_failed = None

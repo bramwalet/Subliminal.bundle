@@ -110,6 +110,7 @@ class DefaultScheduler(object):
             Log.Error("Scheduler: Something went wrong when running %s: %s", name, traceback.format_exc())
         finally:
             task.last_run = datetime.datetime.now()
+            task.time_start = None
             task.post_run(Dict["tasks"][name]["data"])
 
     def dispatch_task(self, *args, **kwargs):
