@@ -376,8 +376,8 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
 
                     # late cutoff met? skip
                     if current_score >= cutoff:
-                        Log.Debug("Skipping finding better subs, score for %s is enough (current: %s, cutoff: %s)",
-                                  current["title"], current_score, cutoff)
+                        Log.Debug("Skipping finding better subs, cutoff met (current: %s, cutoff: %s): %s",
+                                  current_score, cutoff, current["title"])
                         continue
 
                     # got manual subtitle but don't want to touch those?
