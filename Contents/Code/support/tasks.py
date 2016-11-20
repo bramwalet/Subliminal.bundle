@@ -349,41 +349,50 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
                 Log.Error("Couldn't get item info for %s", video_id)
                 continue
             cutoff = self.series_cutoff if plex_item.type == "episode" else self.movies_cutoff
-            current_date = datetime.datetime.fromtimestamp(plex_item.added_at)
+            added_date = datetime.datetime.fromtimestamp(plex_item.added_at)
 
+            # don't search for better subtitles until at least 30 minutes have passed
+            if added_date + datetime.timedelta(minutes=30) > now:
+                Log.Debug("Item %s too new, skipping", video_id)
+                continue
+
+            # added_date <= max_search_days?
+            if added_date + datetime.timedelta(days=max_search_days) <= now:
+                continue
+
+            # look through all stored subtitle data
             for part_id, languages in parts.iteritems():
+
+                # all languages
                 for language, current_subs in languages.iteritems():
                     current_key = current_subs.get("current")
                     current = current_subs.get(current_key)
+
+                    # currently got subtitle?
                     if not current:
                         continue
                     current_score = int(current["score"])
                     current_mode = current.get("mode", "a")
 
+                    # late cutoff met? skip
                     if current_score >= cutoff:
                         Log.Debug("Skipping, score for %s is enough (current: %s, cutoff: %s)", current["title"],
                                   current_score, cutoff)
                         continue
 
-                    # should search for better subtitle?
+                    # got manual subtitle but don't want to touch those?
                     if current_mode == "m" and \
                             not cast_bool(Prefs["scheduler.tasks.FindBetterSubtitles.overwrite_manually_selected"]):
                         continue
 
-                    # don't search for better subtitles until at least 30 minutes have passed
-                    if current_date + datetime.timedelta(minutes=30) > now:
-                        Log.Debug("Item %s too new, skipping", video_id)
-                        continue
-
-                    if current_date + datetime.timedelta(days=max_search_days) > now:
-                        subs = self.list_subtitles(str(video_id), plex_item.type, str(part_id), language)
-                        if subs:
-                            # subs are already sorted by score
-                            sub = subs[0]
-                            if sub.score > current_score:
-                                Log.Debug("Better subtitle found for %s, downloading", video_id)
-                                self.download_subtitle(sub, video_id, mode="b")
-                                better_found += 1
+                    subs = self.list_subtitles(str(video_id), plex_item.type, str(part_id), language)
+                    if subs:
+                        # subs are already sorted by score
+                        sub = subs[0]
+                        if sub.score > current_score:
+                            Log.Debug("Better subtitle found for %s, downloading", video_id)
+                            self.download_subtitle(sub, video_id, mode="b")
+                            better_found += 1
 
         if better_found:
             Log.Debug("Task: %s, done. Better subtitles found for %s items", self.name, better_found)
