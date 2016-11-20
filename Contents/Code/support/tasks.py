@@ -321,6 +321,12 @@ class MissingSubtitles(Task):
 class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
     periodic = True
 
+    # TV: episode, format, series, year, season, video_codec, release_group, hearing_impaired
+    series_cutoff = 132
+
+    # movies: format, title, release_group, year, video_codec, resolution, hearing_impaired
+    movies_cutoff = 61
+
     def run(self):
         self.running = True
         better_found = 0
@@ -337,6 +343,14 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
         now = datetime.datetime.now()
 
         for video_id, parts in Dict["subs"].iteritems():
+            try:
+                plex_item = get_item(video_id)
+            except:
+                Log.Error("Couldn't get item info for %s", video_id)
+                continue
+            cutoff = self.series_cutoff if plex_item.type == "episode" else self.movies_cutoff
+            current_date = datetime.datetime.fromtimestamp(plex_item.added_at)
+
             for part_id, languages in parts.iteritems():
                 for language, current_subs in languages.iteritems():
                     current_key = current_subs.get("current")
@@ -345,13 +359,11 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
                         continue
                     current_score = int(current["score"])
                     current_mode = current.get("mode", "a")
-                    try:
-                        plex_item = get_item(video_id)
-                    except:
-                        Log.Error("Couldn't get item info for %s", video_id)
-                        continue
 
-                    current_date = datetime.datetime.fromtimestamp(plex_item.added_at)
+                    if current_score >= cutoff:
+                        Log.Debug("Skipping, score for %s is enough (current: %s, cutoff: %s)", current["title"],
+                                  current_score, cutoff)
+                        continue
 
                     # should search for better subtitle?
                     if current_mode == "m" and \
