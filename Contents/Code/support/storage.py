@@ -121,7 +121,8 @@ def log_storage(key):
 
 
 def save_subtitles_to_file(subtitles):
-    fld_custom = Prefs["subtitles.save.subFolder.Custom"].strip() if cast_bool(Prefs["subtitles.save.subFolder.Custom"]) else None
+    fld_custom = Prefs["subtitles.save.subFolder.Custom"].strip() \
+        if cast_bool(Prefs["subtitles.save.subFolder.Custom"]) else None
 
     for video, video_subtitles in subtitles.items():
         if not video_subtitles:
@@ -142,7 +143,8 @@ def save_subtitles_to_file(subtitles):
             if not os.path.exists(fld):
                 os.makedirs(fld)
         subliminal.api.save_subtitles(video, video_subtitles, directory=fld, single=Prefs['subtitles.only_one'],
-                                      encode_with=force_utf8 if Prefs['subtitles.enforce_encoding'] else None)
+                                      encode_with=force_utf8 if Prefs['subtitles.enforce_encoding'] else None,
+                                      chmod=config.chmod)
     return True
 
 

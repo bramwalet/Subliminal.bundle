@@ -243,6 +243,7 @@ class DownloadSubtitleMixin(object):
             try:
                 whack_missing_parts(scanned_parts)
                 save_subtitles(scanned_parts, {video: [subtitle]}, mode=mode)
+                Log.Debug("Manually downloaded subtitle for: %s", rating_key)
                 refresh_item(rating_key)
                 track_usage("Subtitle", "manual", "download", 1)
             except:

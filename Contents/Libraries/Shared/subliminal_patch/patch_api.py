@@ -55,7 +55,7 @@ def list_all_subtitles(videos, languages, **kwargs):
     return listed_subtitles
 
 
-def save_subtitles(video, subtitles, single=False, directory=None, encoding=None, encode_with=None):
+def save_subtitles(video, subtitles, single=False, directory=None, encoding=None, encode_with=None, chmod=None):
     """Save subtitles on filesystem.
 
     Subtitles are saved in the order of the list. If a subtitle with a language has already been saved, other subtitles
@@ -111,6 +111,10 @@ def save_subtitles(video, subtitles, single=False, directory=None, encoding=None
             with io.open(subtitle_path, 'wb') as f:
                 f.write(content)
 
+            # change chmod if requested
+            if chmod:
+                os.chmod(subtitle_path, chmod)
+
             if single:
                 break
             continue
@@ -119,6 +123,10 @@ def save_subtitles(video, subtitles, single=False, directory=None, encoding=None
         if encoding is not None:
             with io.open(subtitle_path, 'w', encoding=encoding) as f:
                 f.write(subtitle.text)
+
+        # change chmod if requested
+        if chmod:
+            os.chmod(subtitle_path, chmod)
 
         saved_subtitles.append(subtitle)
 

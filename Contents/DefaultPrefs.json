@@ -339,6 +339,12 @@
     "default": "true"
   },
   {
+    "id": "subtitles.save.chmod",
+      "label": "Set file permissions to (integer, e.g.: 0775)",
+      "type": "text",
+      "default": ""
+  },
+  {
     "id": "subtitles.save.subFolder",
     "label": "Subtitle Folder (\"current folder\" is the folder the current media file lives in)",
     "type": "enum",

@@ -63,6 +63,7 @@ class Config(object):
         self.enabled_sections = self.check_enabled_sections()
         self.permissions_ok = self.check_permissions()
         self.notify_executable = self.check_notify_executable()
+        self.chmod = self.check_chmod()
         self.initialized = True
 
     def refresh_permissions_status(self):
@@ -230,6 +231,23 @@ class Config(object):
                              }
 
         return provider_settings
+
+    def check_chmod(self):
+        val = Prefs["subtitles.save.chmod"]
+        if not val or not len(val):
+            return
+
+        wrong_chmod = False
+        if len(val) != 4:
+            wrong_chmod = True
+
+        try:
+            return int(val, 8)
+        except ValueError:
+            wrong_chmod = True
+
+        if wrong_chmod:
+            Log.Warning("Chmod setting ignored, please use only 4-digit integers with leading 0 (e.g.: 775)")
 
     def init_subliminal_patches(self):
         # configure custom subtitle destination folders for scanning pre-existing subs
