@@ -87,6 +87,7 @@ class TempIntent(object):
         clear_all = False
         for kind, info in self.store.items():
             for key, intent_data in info.items():
+                # legacy intent data, clear everything
                 if not isinstance(intent_data, dict):
                     clear_all = True
                     continue
