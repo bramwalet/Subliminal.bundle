@@ -15,7 +15,7 @@ He has created **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/w
 
 1.4.10.768
 - core: automatically find better subtitles (configurable)
-- menu: display how the subtitle was downloaded (auto, manual, auto-better)
+- menu: display how the subtitle was downloaded (auto, manual, auto-better), in history menu
 - menu/core: correctly handle subtitle list for multiple languages
 - core: lower minimum series score to list subtitles for to 66
 - core: better matching of garbage filenames; we trust Plex now for the series name/movie title fully
