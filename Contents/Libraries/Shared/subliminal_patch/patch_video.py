@@ -80,6 +80,7 @@ def scan_video(path, subtitles=True, embedded_subtitles=True, hints=None, video_
     # patch: suggest video type to guessit beforehand
     """
     hints = hints or {}
+    video_type = hints.get("type")
 
     # check for non-existing path
     if not dont_use_actual_file and not os.path.exists(path):
@@ -92,13 +93,21 @@ def scan_video(path, subtitles=True, embedded_subtitles=True, hints=None, video_
     dirpath, filename = os.path.split(path)
 
     # hint guessit the filename itself and its 2 parent directories if we're an episode (most likely Series name/Season/filename), else only one
-    guess_from = os.path.join(*os.path.normpath(path).split(os.path.sep)[-3 if hints.get("type") == "episode" else -2:])
+    guess_from = os.path.join(*os.path.normpath(path).split(os.path.sep)[-3 if video_type == "episode" else -2:])
     hints = hints or {}
     logger.info('Scanning video (hints: %s) %r', hints, guess_from)
 
     # guess
     video = Video.fromguess(path, guess_file_info(guess_from, options=hints))
     video.fps = video_fps
+
+    # trust plex's series name
+    if video_type == "episode" and hints.get("expected_series"):
+        video.series = hints.get("expected_series")[0]
+
+    # trust plex's movie name
+    if video_type == "movie" and hints.get("expected_title"):
+        video.title = hints.get("expected_title")[0]
 
     if dont_use_actual_file:
         return video

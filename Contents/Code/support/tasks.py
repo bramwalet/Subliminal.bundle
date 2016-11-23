@@ -181,7 +181,7 @@ class SubtitleListingMixin(object):
         metadata = get_plex_metadata(rating_key, part_id, item_type)
 
         if item_type == "episode":
-            min_score = 77
+            min_score = 66
         else:
             min_score = 23
 
