@@ -283,7 +283,10 @@ class AvailableSubsForItem(SubtitleListingMixin, Task):
 
     def post_run(self, task_data):
         super(AvailableSubsForItem, self).post_run(task_data)
-        task_data[self.rating_key] = self.data
+        if self.rating_key not in task_data:
+            task_data[self.rating_key] = {}
+
+        task_data[self.rating_key][self.language] = self.data
 
 
 class DownloadSubtitleForItem(DownloadSubtitleMixin, Task):

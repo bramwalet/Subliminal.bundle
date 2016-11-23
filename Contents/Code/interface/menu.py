@@ -553,7 +553,10 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
     return oc
 
 
-MANUAL_SUB_SEARCH = {}
+def get_item_task_data(task_name, rating_key, language):
+    task_data = scheduler.get_task_data(task_name)
+    search_results = task_data.get(rating_key, {}) if task_data else {}
+    return search_results.get(language)
 
 
 @route(PREFIX + '/item/search/{rating_key}/{part_id}', force=bool)
@@ -564,8 +567,8 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
     assert rating_key, part_id
 
     running = scheduler.is_task_running("AvailableSubsForItem")
-    task_data = scheduler.get_task_data("AvailableSubsForItem")
-    search_results = task_data.get(rating_key, None) if task_data else None
+    search_results = get_item_task_data("AvailableSubsForItem", rating_key, language)
+
     if (search_results is None or force) and not running:
         scheduler.dispatch_task("AvailableSubsForItem", rating_key=rating_key, item_type=item_type, part_id=part_id,
                                 language=language)
@@ -622,7 +625,7 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
     for subtitle in search_results:
         oc.add(DirectoryObject(
             key=Callback(TriggerDownloadSubtitle, rating_key=rating_key, randomize=timestamp(), item_title=item_title,
-                         subtitle_id=str(subtitle.subtitle_id)),
+                         subtitle_id=str(subtitle.subtitle_id), language=language),
             title=u"%s: %s, score: %s" % ("Available" if current_link != subtitle.page_link else "Current",
                                     subtitle.provider_name, subtitle.score),
             summary=u"Release: %s, Matches: %s" % (subtitle.release_info, ", ".join(subtitle.matches)),
@@ -634,10 +637,10 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
 
 @route(PREFIX + '/download_subtitle/{rating_key}')
 @debounce
-def TriggerDownloadSubtitle(rating_key=None, subtitle_id=None, item_title=None, randomize=None):
+def TriggerDownloadSubtitle(rating_key=None, subtitle_id=None, item_title=None, language=None, randomize=None):
     set_refresh_menu_state("Downloading subtitle for %s" % item_title or rating_key)
-    task_data = scheduler.get_task_data("AvailableSubsForItem")
-    search_results = task_data.get(rating_key, None) if task_data else None
+    search_results = get_item_task_data("AvailableSubsForItem", rating_key, language)
+
     download_subtitle = None
     for subtitle in search_results:
         if str(subtitle.subtitle_id) == subtitle_id:
