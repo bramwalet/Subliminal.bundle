@@ -1,3 +1,8 @@
+1.3.49.636
+- core/menu: fix force refreshing (again)
+- core/menu: fix redundant route calls
+
+
 1.3.49.630 (backported some changes of the develop-1.4 branch to 1.3)
 - core/menu: make addic7ed boost configurable; lower the default boost value massively (to 10)
 - core: fix force refreshing (hopefully)

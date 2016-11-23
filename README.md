@@ -13,6 +13,15 @@ He has created **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/w
 
 ## Changelog
 
+1.4.10.768
+- core: automatically find better subtitles (configurable)
+- menu: display how the subtitle was downloaded (auto, manual, auto-better)
+- menu/core: correctly handle subtitle list for multiple languages
+- core: lower minimum series score to list subtitles for to 66
+- core: better matching of garbage filenames; we trust Plex now for the series name/movie title fully
+- core: add setting to specifically set the file permissions (chmod)
+
+
 1.4.5.742
 - core: fix force-refresh in certain situations
 - menu: add history
@@ -28,10 +37,6 @@ He has created **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/w
 - wiki: update (thanks @dane22!) - quick URL: http://v.ht/szwiki
 - wiki: add score explanation - quick URL: http://v.ht/szscores
 - core: add persian/farsi encoding support
-
-1.3.49.636
-- core/menu: fix force refreshing (again)
-- core/menu: fix redundant route calls
 
 
 [older changes](CHANGELOG.md)
