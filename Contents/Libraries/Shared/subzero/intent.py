@@ -84,9 +84,17 @@ class TempIntent(object):
 
     def cleanup(self):
         now = datetime.datetime.now()
+        clear_all = False
         for kind, info in self.store.items():
             for key, intent_data in info.items():
+                if not isinstance(intent_data, dict):
+                    clear_all = True
+                    continue
+
                 if now > intent_data["timeout"]:
                     del self.store[kind][key]
+        if clear_all:
+            self.store.clear()
+
         self.store.save()
 
