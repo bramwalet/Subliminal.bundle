@@ -12,6 +12,8 @@ I've been receiving great support by [@ukdtom](https://github.com/ukdtom) recent
 He has created **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)**. Please have a look in case of any questions.
 
 ## Changelog
+1.4.10.769
+- core: hotfix for legacy intent storage regression
 
 1.4.10.768
 - core: automatically find better subtitles (configurable)
