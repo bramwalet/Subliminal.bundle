@@ -1,3 +1,20 @@
+1.4.5.742
+- core: fix force-refresh in certain situations
+- menu: add history
+- menu: add manual subtitle selection
+- menu: run Items with missing subtitles in separate thread for big libraries
+- settings: add history list size option (default: 100)
+- settings: add new default scores (TV: 110); use input instead of dropdown
+- settings: increase default missing subtitles amount per library to 2000
+- core: generic rewrites and optimizations
+- core: better hash verification
+- core: add anonymous usage data (opt-out in settings)
+- core: fix pt-BR display (IETF) again
+- wiki: update (thanks @dane22!) - quick URL: http://v.ht/szwiki
+- wiki: add score explanation - quick URL: http://v.ht/szscores
+- core: add persian/farsi encoding support
+
+
 1.3.49.636
 - core/menu: fix force refreshing (again)
 - core/menu: fix redundant route calls

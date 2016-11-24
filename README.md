@@ -12,6 +12,13 @@ I've been receiving great support by [@ukdtom](https://github.com/ukdtom) recent
 He has created **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)**. Please have a look in case of any questions.
 
 ## Changelog
+1.4.11.781
+- core: cleanup, logging
+- core/menu: fix addic7ed display in manual subtitle list
+- core: use HTTP for OpenSubtitles instead of HTTPS because of current certificate errors
+- core: find better subtitles should now run smoothly even with replaced files (newer parts)
+
+
 1.4.10.769
 - core: hotfix for legacy intent storage regression
 
@@ -22,23 +29,6 @@ He has created **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/w
 - core: lower minimum series score to list subtitles for to 66
 - core: better matching of garbage filenames; we trust Plex now for the series name/movie title fully
 - core: add setting to specifically set the file permissions (chmod)
-
-
-1.4.5.742
-- core: fix force-refresh in certain situations
-- menu: add history
-- menu: add manual subtitle selection
-- menu: run Items with missing subtitles in separate thread for big libraries
-- settings: add history list size option (default: 100)
-- settings: add new default scores (TV: 110); use input instead of dropdown
-- settings: increase default missing subtitles amount per library to 2000
-- core: generic rewrites and optimizations
-- core: better hash verification
-- core: add anonymous usage data (opt-out in settings)
-- core: fix pt-BR display (IETF) again
-- wiki: update (thanks @dane22!) - quick URL: http://v.ht/szwiki
-- wiki: add score explanation - quick URL: http://v.ht/szscores
-- core: add persian/farsi encoding support
 
 
 [older changes](CHANGELOG.md)
