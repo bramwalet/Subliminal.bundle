@@ -380,13 +380,14 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
 
                     # late cutoff met? skip
                     if current_score >= cutoff:
-                        Log.Debug("Skipping finding better subs, cutoff met (current: %s, cutoff: %s): %s",
+                        Log.Debug(u"Skipping finding better subs, cutoff met (current: %s, cutoff: %s): %s",
                                   current_score, cutoff, current["title"])
                         continue
 
                     # got manual subtitle but don't want to touch those?
                     if current_mode == "m" and \
                             not cast_bool(Prefs["scheduler.tasks.FindBetterSubtitles.overwrite_manually_selected"]):
+                        Log.Debug(u"Skipping finding better subs, had manual: %s", current["title"])
                         continue
 
                     subs = self.list_subtitles(str(video_id), plex_item.type, str(part_id), language)
