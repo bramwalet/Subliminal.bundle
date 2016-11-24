@@ -237,12 +237,6 @@
     "default": "true"
   },
   {
-    "id": "provider.thesubdb.enabled",
-    "label": "Provider: Enable TheSubDB",
-    "type": "bool",
-    "default": "true"
-  },
-  {
     "id": "provider.podnapisi.enabled",
     "label": "Provider: Enable Podnapisi.NET",
     "type": "bool",
