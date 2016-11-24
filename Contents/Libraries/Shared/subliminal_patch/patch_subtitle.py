@@ -80,7 +80,6 @@ class PatchedSubtitle(Subtitle):
         """
         logger.info('Guessing encoding for language %s', self.language.alpha3)
 
-        # always try utf-8 first
         encodings = ['utf-8']
 
         # add language-specific encodings
@@ -108,12 +107,12 @@ class PatchedSubtitle(Subtitle):
         # Romanian (before 1993 spelling reform) and Albanian
         elif self.language.alpha3 in ('pol', 'cze', 'svk', 'hun', 'svn', 'bih', 'hrv', 'srb', 'rou', 'alb'):
             # Eastern European Group 1
-            encodings.extend(['windows-1250'])
+            encodings.append('windows-1250')
 
         # Bulgarian, Serbian and Macedonian
         elif self.language.alpha3 in ('bul', 'srb', 'mkd'):
             # Eastern European Group 2
-            encodings.extend(['windows-1251'])
+            encodings.append('windows-1251')
         else:
             # Western European (windows-1252)
             encodings.append('latin-1')

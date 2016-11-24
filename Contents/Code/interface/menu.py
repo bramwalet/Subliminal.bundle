@@ -559,7 +559,7 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
                                 language=language)
         running = True
 
-    oc = SZObjectContainer(title2=title, replace_parent=True)
+    oc = SZObjectContainer(title2=unicode(title), replace_parent=True)
     oc.add(DirectoryObject(
         key=Callback(ItemDetailsMenu, rating_key=rating_key, item_title=item_title, title=title, randomize=timestamp()),
         title=u"Back to: %s" % title,
