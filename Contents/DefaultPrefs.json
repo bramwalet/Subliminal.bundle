@@ -451,7 +451,7 @@
   },
   {
     "id": "scheduler.tasks.FindBetterSubtitles.overwrite_manually_selected",
-    "label": "Scheduler: Overwride manually selected subtitles when better found",
+    "label": "Scheduler: Overwrite manually selected subtitles when better found",
     "type": "bool",
     "default": "true"
   },
