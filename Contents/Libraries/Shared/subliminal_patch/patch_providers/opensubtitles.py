@@ -6,8 +6,9 @@ import os
 from babelfish import Language
 from subliminal.exceptions import ConfigurationError
 from subliminal.providers.opensubtitles import OpenSubtitlesProvider, checked, get_version, __version__, \
-    OpenSubtitlesSubtitle, Episode
+    OpenSubtitlesSubtitle, Episode, ServerProxy
 from mixins import ProviderRetryMixin
+from six.moves.xmlrpc_client import Transport
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +47,19 @@ class PatchedOpenSubtitlesSubtitle(OpenSubtitlesSubtitle):
         return matches
 
 
+class TimeoutTransport(Transport):
+    """Timeout support for ``xmlrpc.client.SafeTransport``."""
+    def __init__(self, timeout, *args, **kwargs):
+        Transport.__init__(self, *args, **kwargs)
+        self.timeout = timeout
+
+    def make_connection(self, host):
+        c = Transport.make_connection(self, host)
+        c.timeout = self.timeout
+
+        return c
+
+
 class PatchedOpenSubtitlesProvider(ProviderRetryMixin, OpenSubtitlesProvider):
     def __init__(self, username=None, password=None, use_tag_search=False):
         if username is not None and password is None or username is None and password is not None:
@@ -59,6 +73,7 @@ class PatchedOpenSubtitlesProvider(ProviderRetryMixin, OpenSubtitlesProvider):
             logger.info("Using tag/exact filename search")
 
         super(PatchedOpenSubtitlesProvider, self).__init__()
+        self.server = ServerProxy('http://api.opensubtitles.org/xml-rpc', TimeoutTransport(10))
 
     def initialize(self):
         logger.info('Logging in')
@@ -79,6 +94,7 @@ class PatchedOpenSubtitlesProvider(ProviderRetryMixin, OpenSubtitlesProvider):
 
          patch: query movies even if hash is known; add tag parameter
         """
+
         season = episode = None
         if isinstance(video, Episode):
             query = video.series
