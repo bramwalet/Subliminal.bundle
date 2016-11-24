@@ -19,7 +19,7 @@ from support.config import config
 from support.items import get_recent_items, is_ignored, get_item
 from support.lib import Plex
 from support.helpers import track_usage, get_title_for_video_metadata, cast_bool
-from support.plex_media import scan_videos, get_plex_metadata
+from support.plex_media import scan_videos, get_plex_metadata, PartUnknownException
 
 
 class Task(object):
@@ -347,6 +347,7 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
         now = datetime.datetime.now()
 
         for video_id, parts in Dict["subs"].iteritems():
+            video_id = str(video_id)
             try:
                 plex_item = get_item(video_id)
             except:
@@ -364,8 +365,11 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
             if added_date + datetime.timedelta(days=max_search_days) <= now:
                 continue
 
+            ditch_parts = []
+
             # look through all stored subtitle data
             for part_id, languages in parts.iteritems():
+                part_id = str(part_id)
 
                 # all languages
                 for language, current_subs in languages.iteritems():
@@ -390,7 +394,13 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
                         Log.Debug(u"Skipping finding better subs, had manual: %s", current["title"])
                         continue
 
-                    subs = self.list_subtitles(str(video_id), plex_item.type, str(part_id), language)
+                    try:
+                        subs = self.list_subtitles(video_id, plex_item.type, part_id, language)
+                    except PartUnknownException:
+                        Log.Info("Part %s unknown/gone; ditching subtitle info", part_id)
+                        ditch_parts.append(part_id)
+                        continue
+
                     if subs:
                         # subs are already sorted by score
                         sub = subs[0]
@@ -398,6 +408,13 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
                             Log.Debug("Better subtitle found for %s, downloading", video_id)
                             self.download_subtitle(sub, video_id, mode="b")
                             better_found += 1
+
+            if ditch_parts:
+                for part_id in ditch_parts:
+                    try:
+                        del parts[part_id]
+                    except KeyError:
+                        pass
 
         if better_found:
             Log.Debug("Task: %s, done. Better subtitles found for %s items", self.name, better_found)

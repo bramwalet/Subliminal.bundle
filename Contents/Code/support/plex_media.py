@@ -136,6 +136,10 @@ def scan_videos(videos, kind="series", ignore_all=False):
     return ret
 
 
+class PartUnknownException(Exception):
+    pass
+
+
 def get_plex_metadata(rating_key, part_id, item_type):
     plex_item = list(Plex["library"].metadata(rating_key))[0]
 
@@ -146,7 +150,7 @@ def get_plex_metadata(rating_key, part_id, item_type):
             current_part = part
 
     if not current_part:
-        raise ValueError("Part unknown")
+        raise PartUnknownException("Part unknown")
 
     # get normalized metadata
     if item_type == "episode":
