@@ -511,36 +511,21 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
             # try getting current subtitle information for that language
             current_subtitle_key = sub_data_for_lang.get("current", (None, None))
             current_sub_provider_name, current_sub_id = current_subtitle_key
-            current_sub_link = None
-
-            legacy_storage = False
-
-            # old storage version; take newest subtitle as current if available
-            if not current_sub_provider_name:
-                subtitle_keys = sorted([(sub["date_added"], key) for key, sub in sub_data_for_lang.iteritems()], None,
-                                       None, True)
-                current_subtitle_key = None, None
-                if subtitle_keys:
-                    current_subtitle_key = subtitle_keys[0][1]
-
-                current_sub_provider_name, current_sub_id = current_subtitle_key
-                legacy_storage = True
 
             summary = u"No current subtitle in storage"
             current_score = None
             if current_sub_provider_name:
                 current_subtitle = sub_part_data[lang_a2][current_subtitle_key]
-                current_sub_link = current_subtitle.get("link")
                 current_score = current_subtitle["score"]
 
-                summary = u"Current subtitle%s: %s (added: %s, %s), Language: %s, Score: %i, Storage: %s" % \
-                          (u" (legacy/inaccurate)" if legacy_storage else "", current_sub_provider_name,
+                summary = u"Current subtitle: %s (added: %s, %s), Language: %s, Score: %i, Storage: %s" % \
+                          (current_sub_provider_name,
                            df(current_subtitle["date_added"]), mode_map.get(current_subtitle.get("mode", "a")), lang,
                            current_subtitle["score"], current_subtitle["storage"])
 
             oc.add(DirectoryObject(
                 key=Callback(ListAvailableSubsForItemMenu, rating_key=rating_key, part_id=part_id, title=title,
-                             item_title=item_title, language=lang, current_link=current_sub_link,
+                             item_title=item_title, language=lang, current_id=current_sub_id,
                              item_type=plex_item.type, filename=filename, current_data=summary,
                              randomize=timestamp(), current_provider=current_sub_provider_name,
                              current_score=current_score),
@@ -562,7 +547,7 @@ def get_item_task_data(task_name, rating_key, language):
 @route(PREFIX + '/item/search/{rating_key}/{part_id}', force=bool)
 @debounce
 def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item_title=None, filename=None,
-                                 item_type="episode", language=None, force=False, current_link=None, current_data=None,
+                                 item_type="episode", language=None, force=False, current_id=None, current_data=None,
                                  current_provider=None, current_score=None, randomize=None):
     assert rating_key, part_id
 
@@ -600,7 +585,7 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
     if not running:
         oc.add(DirectoryObject(
             key=Callback(ListAvailableSubsForItemMenu, rating_key=rating_key, item_title=item_title, language=language,
-                         filename=filename, part_id=part_id, title=title, current_link=current_link, force=True,
+                         filename=filename, part_id=part_id, title=title, current_id=current_id, force=True,
                          current_provider=current_provider, current_score=current_score,
                          current_data=current_data, item_type=item_type, randomize=timestamp()),
             title=u"Search for %s subs (%s)" % (get_language(language).name, video_display_data),
@@ -611,7 +596,7 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
         oc.add(DirectoryObject(
             key=Callback(ListAvailableSubsForItemMenu, rating_key=rating_key, item_title=item_title,
                          language=language, filename=filename, current_data=current_data,
-                         part_id=part_id, title=title, current_link=current_link, item_type=item_type,
+                         part_id=part_id, title=title, current_id=current_id, item_type=item_type,
                          current_provider=current_provider, current_score=current_score,
                          randomize=timestamp()),
             title=u"Searching for %s subs (%s), refresh here ..." % (get_language(language).name, video_display_data),
@@ -625,8 +610,8 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
     for subtitle in search_results:
         oc.add(DirectoryObject(
             key=Callback(TriggerDownloadSubtitle, rating_key=rating_key, randomize=timestamp(), item_title=item_title,
-                         subtitle_id=str(subtitle.subtitle_id), language=language),
-            title=u"%s: %s, score: %s" % ("Available" if current_link != subtitle.page_link else "Current",
+                         subtitle_id=str(subtitle.id), language=language),
+            title=u"%s: %s, score: %s" % ("Available" if current_id != subtitle.id else "Current",
                                     subtitle.provider_name, subtitle.score),
             summary=u"Release: %s, Matches: %s" % (subtitle.release_info, ", ".join(subtitle.matches)),
             thumb=default_thumb
@@ -643,7 +628,7 @@ def TriggerDownloadSubtitle(rating_key=None, subtitle_id=None, item_title=None, 
 
     download_subtitle = None
     for subtitle in search_results:
-        if str(subtitle.subtitle_id) == subtitle_id:
+        if str(subtitle.id) == subtitle_id:
             download_subtitle = subtitle
             break
     if not download_subtitle:

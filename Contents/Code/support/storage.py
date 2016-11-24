@@ -86,12 +86,12 @@ def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_ty
             part_dict[lang] = {}
 
             lang_dict = part_dict[lang]
-            sub_key = subtitle.provider_name, subtitle.id
+            sub_key = subtitle.provider_name, str(subtitle.id)
             metadata = video.plexapi_metadata
 
             # compute title
             title = get_title_for_video_metadata(metadata)
-            lang_dict[sub_key] = dict(score=subtitle.score, link=subtitle.page_link, storage=storage_type, hash=Hash.MD5(subtitle.content),
+            lang_dict[sub_key] = dict(score=subtitle.score, storage=storage_type, hash=Hash.MD5(subtitle.content),
                                       date_added=datetime.datetime.now(), title=title, mode=mode)
             lang_dict["current"] = sub_key
 
@@ -153,7 +153,7 @@ def save_subtitles_to_metadata(videos, subtitles):
         mediaPart = videos[video]
         for subtitle in video_subtitles:
             content = force_utf8(subtitle.text) if Prefs['subtitles.enforce_encoding'] else subtitle.content
-            mediaPart.subtitles[Locale.Language.Match(subtitle.language.alpha2)][subtitle.page_link] = Proxy.Media(content, ext="srt")
+            mediaPart.subtitles[Locale.Language.Match(subtitle.language.alpha2)][subtitle.id] = Proxy.Media(content, ext="srt")
     return True
 
 

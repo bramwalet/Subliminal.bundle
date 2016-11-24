@@ -68,7 +68,6 @@ def compute_score(matches, video, scores=None):
 
 class PatchedSubtitle(Subtitle):
     storage_path = None
-    subtitle_id = None
     release_info = None
     matches = None
 
