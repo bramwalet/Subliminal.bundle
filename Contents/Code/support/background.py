@@ -27,7 +27,7 @@ class DefaultScheduler(object):
 
     def init_storage(self):
         if "tasks" not in Dict:
-            Dict["tasks"] = {}
+            Dict["tasks"] = {"queue": []}
             Dict.Save()
 
     def get_task_data(self, name):
@@ -114,8 +114,10 @@ class DefaultScheduler(object):
             task.post_run(Dict["tasks"][name]["data"])
 
     def dispatch_task(self, *args, **kwargs):
-        Thread.Create(self.run_task, True, *args, **kwargs)
-        Log.Debug("Dispatching single task: %s, %s", args, kwargs)
+        if "queue" not in Dict["tasks"]:
+            Dict["tasks"]["queue"] = []
+
+        Dict["tasks"]["queue"].append((args, kwargs))
 
     def signal(self, name, *args, **kwargs):
         for task_name, info in self.tasks.iteritems():
@@ -139,6 +141,16 @@ class DefaultScheduler(object):
             if not self.running:
                 break
 
+            # single dispatch requested?
+            if Dict["tasks"]["queue"]:
+                # work queue off
+                queue = Dict["tasks"]["queue"][:]
+                Dict["tasks"]["queue"] = []
+                for args, kwargs in queue:
+                    Log.Debug("Dispatching single task: %s, %s", args, kwargs)
+                    Thread.Create(self.run_task, True, *args, **kwargs)
+
+            # scheduled tasks
             for name, info in self.tasks.iteritems():
                 now = datetime.datetime.now()
                 task = info["task"]
@@ -156,7 +168,7 @@ class DefaultScheduler(object):
                 if not task.last_run or task.last_run + datetime.timedelta(**{frequency_key: frequency_num}) <= now:
                     self.run_task(name)
 
-            Thread.Sleep(10.0)
+            Thread.Sleep(5.0)
 
 
 scheduler = DefaultScheduler()

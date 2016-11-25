@@ -658,7 +658,7 @@ def RefreshItem(rating_key=None, came_from="/recent", item_title=None, force=Fal
 @route(PREFIX + '/missing/refresh')
 @debounce
 def RefreshMissing(randomize=None):
-    Thread.CreateTimer(1.0, lambda: scheduler.run_task("SearchAllRecentlyAddedMissing"))
+    scheduler.dispatch_task("SearchAllRecentlyAddedMissing")
     header = "Refresh of recently added items with missing subtitles triggered"
     return fatality(header=header, replace_parent=True)
 
