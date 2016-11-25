@@ -73,9 +73,9 @@ def Start():
         if "first_use" not in Dict:
             Dict["first_use"] = datetime.datetime.utcnow()
             Dict.Save()
-            track_usage("General", "plugin", "first_start", 1)
+            track_usage("General", "plugin", "first_start", config.version)
         else:
-            track_usage("General", "plugin", "start", 1)
+            track_usage("General", "plugin", "start", config.version)
 
 
 def download_best_subtitles(video_part_map, min_score=0):
