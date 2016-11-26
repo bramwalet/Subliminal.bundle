@@ -1,23 +1,5 @@
 [
   {
-    "id": "enable_channel",
-    "label": "Enable Sub-Zero channel (disabling doesn't affect the subtitle features)?",
-    "type": "bool",
-    "default": "true"
-  },
-  {
-    "id": "subtitles.try_downloads",
-    "label": "How many download tries per subtitle (on timeout or error)",
-    "type": "enum",
-    "values": [
-      "1",
-      "2",
-      "3",
-      "4"
-    ],
-    "default": "2"
-  },
-  {
     "id": "provider.addic7ed.username",
     "label": "Addic7ed Username",
     "type": "text",
@@ -44,12 +26,6 @@
     "option": "hidden",
     "default": "",
     "secure": "true"
-  },
-  {
-    "id": "provider.addic7ed.use_random_agents",
-    "label": "Addic7ed: Use random user agents (should not be necessary)",
-    "type": "bool",
-    "default": "false"
   },
   {
     "id": "langPref1",
@@ -225,12 +201,6 @@
     "default": "false"
   },
   {
-    "id": "subtitles.enforce_encoding",
-    "label": "Normalize subtitle encoding to UTF-8",
-    "type": "bool",
-    "default": "true"
-  },
-  {
     "id": "provider.opensubtitles.enabled",
     "label": "Provider: Enable OpenSubtitles",
     "type": "bool",
@@ -277,6 +247,12 @@
       "0"
     ],
     "default": "10"
+  },
+  {
+    "id": "provider.addic7ed.use_random_agents",
+    "label": "Addic7ed: Use random user agents",
+    "type": "bool",
+    "default": "false"
   },
   {
     "id": "provider.tvsubtitles.enabled",
@@ -364,10 +340,34 @@
     "default": "false"
   },
   {
+    "id": "subtitles.autoclean",
+    "label": "Automatically delete leftover (externally saved) subtitles (.srt/.ass/.ssa)",
+    "type": "bool",
+    "default": "true"
+  },
+  {
+    "id": "subtitles.enforce_encoding",
+    "label": "Normalize subtitle encoding to UTF-8",
+    "type": "bool",
+    "default": "true"
+  },
+  {
     "id": "subtitles.language.ietf",
     "label": "Treat IETF language tags as ISO 639-1 (e.g. pt-BR = pt)",
     "type": "bool",
     "default": "true"
+  },
+  {
+    "id": "subtitles.try_downloads",
+    "label": "How many download tries per subtitle (on timeout or error)",
+    "type": "enum",
+    "values": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "default": "2"
   },
   {
     "id": "subtitles.ignore_fs",
@@ -376,16 +376,22 @@
     "default": "false"
   },
   {
-      "id": "subtitles.ignore_paths",
-      "label": "Ignore anything in the following paths (comma-separated)",
-      "type": "text",
-      "default": ""
+    "id": "subtitles.ignore_paths",
+    "label": "Ignore anything in the following paths (comma-separated)",
+    "type": "text",
+    "default": ""
   },
   {
-      "id": "notify_executable",
-      "label": "Call this executable upon successful subtitle download",
-      "type": "text",
-      "default": ""
+    "id": "enable_channel",
+    "label": "Enable Sub-Zero channel (disabling doesn't affect the subtitle features)?",
+    "type": "bool",
+    "default": "true"
+  },
+  {
+    "id": "notify_executable",
+    "label": "Call this executable upon successful subtitle download",
+    "type": "text",
+    "default": ""
   },
   {
     "id": "scheduler.tasks.SearchAllRecentlyAddedMissing.frequency",
