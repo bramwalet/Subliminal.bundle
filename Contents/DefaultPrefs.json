@@ -195,6 +195,12 @@
     "default": "None"
   },
   {
+    "id": "subtitles.language.ietf",
+    "label": "Treat IETF language tags as ISO 639-1 (e.g. pt-BR = pt)",
+    "type": "bool",
+    "default": "true"
+  },
+  {
     "id": "subtitles.only_one",
     "label": "Restrict to one language (skips adding \".lang.\" to the subtitle filename; only uses \"Subtitle Language (1)\")",
     "type": "bool",
@@ -341,7 +347,7 @@
   },
   {
     "id": "subtitles.autoclean",
-    "label": "Automatically delete leftover (externally saved) subtitles (.srt/.ass/.ssa)",
+    "label": "Automatically delete leftover (externally saved) subtitles",
     "type": "bool",
     "default": "true"
   },
@@ -350,48 +356,6 @@
     "label": "Normalize subtitle encoding to UTF-8",
     "type": "bool",
     "default": "true"
-  },
-  {
-    "id": "subtitles.language.ietf",
-    "label": "Treat IETF language tags as ISO 639-1 (e.g. pt-BR = pt)",
-    "type": "bool",
-    "default": "true"
-  },
-  {
-    "id": "subtitles.try_downloads",
-    "label": "How many download tries per subtitle (on timeout or error)",
-    "type": "enum",
-    "values": [
-      "1",
-      "2",
-      "3",
-      "4"
-    ],
-    "default": "2"
-  },
-  {
-    "id": "subtitles.ignore_fs",
-    "label": "Ignore folders (with \"subzero.ignore/.subzero.ignore/.nosz\" files in them)",
-    "type": "bool",
-    "default": "false"
-  },
-  {
-    "id": "subtitles.ignore_paths",
-    "label": "Ignore anything in the following paths (comma-separated)",
-    "type": "text",
-    "default": ""
-  },
-  {
-    "id": "enable_channel",
-    "label": "Enable Sub-Zero channel (disabling doesn't affect the subtitle features)?",
-    "type": "bool",
-    "default": "true"
-  },
-  {
-    "id": "notify_executable",
-    "label": "Call this executable upon successful subtitle download",
-    "type": "text",
-    "default": ""
   },
   {
     "id": "scheduler.tasks.SearchAllRecentlyAddedMissing.frequency",
@@ -467,6 +431,42 @@
       "500"
     ],
     "default": "100"
+  },
+  {
+    "id": "subtitles.try_downloads",
+    "label": "How many download tries per subtitle (on timeout or error)",
+    "type": "enum",
+    "values": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "default": "2"
+  },
+  {
+    "id": "subtitles.ignore_fs",
+    "label": "Ignore folders (with \"subzero.ignore/.subzero.ignore/.nosz\" files in them)",
+    "type": "bool",
+    "default": "false"
+  },
+  {
+    "id": "subtitles.ignore_paths",
+    "label": "Ignore anything in the following paths (comma-separated)",
+    "type": "text",
+    "default": ""
+  },
+  {
+    "id": "enable_channel",
+    "label": "Enable Sub-Zero channel (disabling doesn't affect the subtitle features)?",
+    "type": "bool",
+    "default": "true"
+  },
+  {
+    "id": "notify_executable",
+    "label": "Call this executable upon successful subtitle download",
+    "type": "text",
+    "default": ""
   },
   {
     "id": "check_permissions",
