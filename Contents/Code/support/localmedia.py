@@ -18,6 +18,8 @@ def find_subtitles(part):
 
     global_subtitle_folder = None
 
+    global_folders = []
+
     if use_filesystem:
         # Check for local subtitles subdirectory
         sub_dir_base = paths[0]
@@ -28,15 +30,20 @@ def find_subtitles(part):
             # got selected subfolder
             sub_dir_list.append(os.path.join(sub_dir_base, Prefs["subtitles.save.subFolder"]))
 
-        sub_dir_custom = Prefs["subtitles.save.subFolder.Custom"].strip() if helpers.cast_bool(Prefs["subtitles.save.subFolder.Custom"]) else None
+        sub_dir_custom = Prefs["subtitles.save.subFolder.Custom"].strip() \
+            if Prefs["subtitles.save.subFolder.Custom"] else None
+
         if sub_dir_custom:
             # got custom subfolder
-            if sub_dir_custom.startswith("/"):
+            if sub_dir_custom.startswith(os.path.sep):
                 # absolute folder
                 sub_dir_list.append(sub_dir_custom)
+                global_folders.append(sub_dir_custom)
             else:
                 # relative folder
-                sub_dir_list.append(os.path.join(sub_dir_base, sub_dir_custom))
+                fld = os.path.join(sub_dir_base, sub_dir_custom)
+                sub_dir_list.append(fld)
+                global_folders.append(fld)
 
         for sub_dir in sub_dir_list:
             if os.path.isdir(sub_dir):
@@ -46,6 +53,7 @@ def find_subtitles(part):
         global_subtitle_folder = os.path.join(Core.app_support_path, 'Subtitles')
         if os.path.exists(global_subtitle_folder):
             paths.append(global_subtitle_folder)
+            global_folders.append(global_subtitle_folder)
 
     # We start by building a dictionary of files to their absolute paths. We also need to know
     # the number of media files that are actually present, in case the found local media asset
@@ -78,6 +86,14 @@ def find_subtitles(part):
     if helpers.cast_bool(Prefs["subtitles.autoclean"]):
         for path in paths:
             path = helpers.unicodize(path)
+
+            # we can't housekeep the global subtitle folders as we don't know about *all* media files
+            # in a library; skip them
+            for fld in global_folders:
+                if path.startswith(fld):
+                    Log.Info("Skipping housekeeping of folder: %s", path)
+                    continue
+
             for file_path_listing in os.listdir(path.encode(sz_config.fs_encoding)):
                 file_path_listing = helpers.unicodize(file_path_listing)
                 enc_fn = os.path.join(path, file_path_listing).encode(sz_config.fs_encoding)
