@@ -103,6 +103,9 @@ class DefaultSubtitleHelper(SubtitleHelper):
 
         lang_sub_map = {}
 
+        if not os.path.exists(self.filename):
+            return lang_sub_map
+
         basename = os.path.basename(self.filename)
         (file, ext) = os.path.splitext(self.filename)
 
