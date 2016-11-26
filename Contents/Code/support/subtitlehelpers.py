@@ -80,9 +80,13 @@ class VobSubSubtitleHelper(SubtitleHelper):
 #####################################################################################################################
 
 
+IETF_MATCH = ".+\.([^-.]+)(?:-[A-Za-z]+)?$"
+ENDSWITH_LANGUAGECODE_RE = re.compile("\.([^-.]{2,3})(?:-[A-Za-z]{2})?$")
+
+
 def match_ietf_language(s):
     language_match = re.match(".+\.([^\.]+)$" if not helpers.cast_bool(Prefs["subtitles.language.ietf"])
-                              else ".+\.([^-.]+)(?:-[A-Za-z]+)?$", s)
+                              else IETF_MATCH, s)
     if language_match and len(language_match.groups()) == 1:
         language = language_match.groups()[0]
         return language

@@ -1,6 +1,7 @@
 # coding=utf-8
 
 import os
+
 import config
 import helpers
 import subtitlehelpers
@@ -52,6 +53,7 @@ def find_subtitles(part):
     #
     file_paths = {}
     total_media_files = 0
+    media_files = []
     for path in paths:
         path = helpers.unicodize(path)
         for file_path_listing in os.listdir(path.encode(sz_config.fs_encoding)):
@@ -68,6 +70,33 @@ def find_subtitles(part):
             (root, ext) = os.path.splitext(file_path_listing)
             if ext.lower()[1:] in config.VIDEO_EXTS:
                 total_media_files += 1
+
+                # collect found media files
+                media_files.append(root)
+
+    # cleanup any leftover subtitle if no associated media file was found
+    if helpers.cast_bool(Prefs["subtitles.autoclean"]):
+        for path in paths:
+            path = helpers.unicodize(path)
+            for file_path_listing in os.listdir(path.encode(sz_config.fs_encoding)):
+                file_path_listing = helpers.unicodize(file_path_listing)
+                enc_fn = os.path.join(path, file_path_listing).encode(sz_config.fs_encoding)
+
+                if os.path.isfile(enc_fn):
+                    (root, ext) = os.path.splitext(file_path_listing)
+                    # it's a subtitle file
+                    if ext.lower()[1:] in config.SUBTITLE_EXTS:
+                        # get associated media file name without language
+                        sub_fn = subtitlehelpers.ENDSWITH_LANGUAGECODE_RE.sub("", root)
+
+                        # subtitle basename and basename without possible language tag  not found in collected
+                        # media files? kill.
+                        if root not in media_files and sub_fn not in media_files:
+                            Log.Info("Removing leftover subtitle: %s", os.path.join(path, file_path_listing))
+                            try:
+                                os.remove(enc_fn)
+                            except (OSError, IOError):
+                                Log.Error("Removing failed")
 
     Log('Looking for subtitle media in %d paths with %d media files.', len(paths), total_media_files)
     Log('Paths: %s', ", ".join([helpers.unicodize(p) for p in paths]))
