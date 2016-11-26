@@ -1,33 +1,5 @@
 [
   {
-    "id": "provider.addic7ed.username",
-    "label": "Addic7ed Username",
-    "type": "text",
-    "default": ""
-  },
-  {
-    "id": "provider.addic7ed.password",
-    "label": "Addic7ed Password",
-    "type": "text",
-    "option": "hidden",
-    "default": "",
-    "secure": "true"
-  },
-  {
-    "id": "provider.opensubtitles.username",
-    "label": "Opensubtitles Username (VIP)",
-    "type": "text",
-    "default": ""
-  },
-  {
-    "id": "provider.opensubtitles.password",
-    "label": "Opensubtitles Password",
-    "type": "text",
-    "option": "hidden",
-    "default": "",
-    "secure": "true"
-  },
-  {
     "id": "langPref1",
     "label": "Subtitle Language (1)",
     "type": "enum",
@@ -213,6 +185,20 @@
     "default": "true"
   },
   {
+    "id": "provider.opensubtitles.username",
+    "label": "Opensubtitles Username (VIP)",
+    "type": "text",
+    "default": ""
+  },
+  {
+    "id": "provider.opensubtitles.password",
+    "label": "Opensubtitles Password",
+    "type": "text",
+    "option": "hidden",
+    "default": "",
+    "secure": "true"
+  },
+  {
     "id": "provider.podnapisi.enabled",
     "label": "Provider: Enable Podnapisi.NET",
     "type": "bool",
@@ -223,6 +209,20 @@
     "label": "Provider: Enable Addic7ed",
     "type": "bool",
     "default": "true"
+  },
+  {
+    "id": "provider.addic7ed.username",
+    "label": "Addic7ed Username",
+    "type": "text",
+    "default": ""
+  },
+  {
+    "id": "provider.addic7ed.password",
+    "label": "Addic7ed Password",
+    "type": "text",
+    "option": "hidden",
+    "default": "",
+    "secure": "true"
   },
   {
     "id": "provider.addic7ed.boost_by",
