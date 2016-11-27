@@ -6,17 +6,23 @@ import logging
 
 # patch subliminal's subtitle and provider base
 from .patch_subtitle import PatchedSubtitle
+from .patch_providers import PatchedProvider
 subliminal.subtitle.Subtitle = PatchedSubtitle
-from subliminal.providers.addic7ed import Addic7edSubtitle
-from subliminal.providers.podnapisi import PodnapisiSubtitle
-from subliminal.providers.tvsubtitles import TVsubtitlesSubtitle
-from subliminal.providers.opensubtitles import OpenSubtitlesSubtitle
+subliminal.providers.Provider = PatchedProvider
+from subliminal.providers.addic7ed import Addic7edSubtitle, Addic7edProvider
+from subliminal.providers.podnapisi import PodnapisiSubtitle, PodnapisiProvider
+from subliminal.providers.tvsubtitles import TVsubtitlesSubtitle, TVsubtitlesProvider
+from subliminal.providers.opensubtitles import OpenSubtitlesSubtitle, OpenSubtitlesProvider
 
-# add our patched subtitle base classes
+# add our patched base classes
 setattr(Addic7edSubtitle, "__bases__", (PatchedSubtitle,))
 setattr(PodnapisiSubtitle, "__bases__", (PatchedSubtitle,))
 setattr(TVsubtitlesSubtitle, "__bases__", (PatchedSubtitle,))
 setattr(OpenSubtitlesSubtitle, "__bases__", (PatchedSubtitle,))
+setattr(Addic7edProvider, "__bases__", (PatchedProvider,))
+setattr(PodnapisiProvider, "__bases__", (PatchedProvider,))
+setattr(TVsubtitlesProvider, "__bases__", (PatchedProvider,))
+setattr(OpenSubtitlesProvider, "__bases__", (PatchedProvider,))
 
 from .patch_provider_pool import PatchedProviderPool
 from .patch_video import patched_search_external_subtitles, scan_video
