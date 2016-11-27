@@ -400,7 +400,7 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
         if current_kind == "season":
             timeout = 360
         elif current_kind == "series":
-            timeout = 720
+            timeout = 1800
 
         # add refresh
         oc.add(DirectoryObject(
