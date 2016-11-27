@@ -211,12 +211,18 @@ class Config(object):
         return fld_custom or (Prefs["subtitles.save.subFolder"] if Prefs["subtitles.save.subFolder"] != "current folder" else None)
 
     def get_providers(self):
-        providers = {'opensubtitles': Prefs['provider.opensubtitles.enabled'],
+        providers = {'opensubtitles': cast_bool(Prefs['provider.opensubtitles.enabled']),
                      #'thesubdb': Prefs['provider.thesubdb.enabled'],
-                     'podnapisi': Prefs['provider.podnapisi.enabled'],
-                     'addic7ed': Prefs['provider.addic7ed.enabled'],
-                     'tvsubtitles': Prefs['provider.tvsubtitles.enabled']
+                     'podnapisi': cast_bool(Prefs['provider.podnapisi.enabled']),
+                     'addic7ed': cast_bool(Prefs['provider.addic7ed.enabled']),
+                     'tvsubtitles': cast_bool(Prefs['provider.tvsubtitles.enabled'])
                      }
+
+        # ditch non-forced-subtitles-reporting providers
+        if cast_bool(Prefs['subtitles.only_foreign']):
+            providers["addic7ed"] = False
+            providers["tvsubtitles"] = False
+
         return filter(lambda prov: providers[prov], providers)
 
     def get_provider_settings(self):
