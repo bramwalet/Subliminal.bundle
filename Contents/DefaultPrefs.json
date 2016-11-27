@@ -315,12 +315,6 @@
     "default": "true"
   },
   {
-    "id": "subtitles.save.chmod",
-      "label": "Set file permissions to (integer, e.g.: 0775)",
-      "type": "text",
-      "default": ""
-  },
-  {
     "id": "subtitles.save.subFolder",
     "label": "Subtitle Folder (\"current folder\" is the folder the current media file lives in)",
     "type": "enum",
@@ -346,8 +340,14 @@
     "default": "false"
   },
   {
+    "id": "subtitles.save.chmod",
+      "label": "Set subtitle file permissions to (integer, e.g.: 0775)",
+      "type": "text",
+      "default": ""
+  },
+  {
     "id": "subtitles.autoclean",
-    "label": "Automatically delete leftover (externally saved) subtitles",
+    "label": "Automatically delete leftover/unused (externally saved) subtitles",
     "type": "bool",
     "default": "true"
   },
