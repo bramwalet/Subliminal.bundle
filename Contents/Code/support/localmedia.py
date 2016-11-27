@@ -55,6 +55,9 @@ def find_subtitles(part):
             paths.append(global_subtitle_folder)
             global_folders.append(global_subtitle_folder)
 
+    # normalize all paths
+    paths = [os.path.normcase(os.path.normpath(os.path.realpath(helpers.unicodize(path)))) for path in paths]
+
     # We start by building a dictionary of files to their absolute paths. We also need to know
     # the number of media files that are actually present, in case the found local media asset
     # is limited to a single instance per media file.
@@ -63,9 +66,7 @@ def find_subtitles(part):
     total_media_files = 0
     media_files = []
     for path in paths:
-        path = helpers.unicodize(path)
         for file_path_listing in os.listdir(path.encode(sz_config.fs_encoding)):
-
             # When using os.listdir with a unicode path, it will always return a string using the
             # NFD form. However, we internally are using the form NFC and therefore need to convert
             # it to allow correct regex / comparisons to be performed.
@@ -85,8 +86,6 @@ def find_subtitles(part):
     # cleanup any leftover subtitle if no associated media file was found
     if helpers.cast_bool(Prefs["subtitles.autoclean"]):
         for path in paths:
-            path = helpers.unicodize(path)
-
             # we can't housekeep the global subtitle folders as we don't know about *all* media files
             # in a library; skip them
             for fld in global_folders:
@@ -136,7 +135,7 @@ def find_subtitles(part):
             continue
 
         subtitle_helper = subtitlehelpers.subtitle_helpers(file_path)
-        if subtitle_helper != None:
+        if subtitle_helper is not None:
             local_lang_map = subtitle_helper.process_subtitles(part)
             for new_language, subtitles in local_lang_map.items():
 
