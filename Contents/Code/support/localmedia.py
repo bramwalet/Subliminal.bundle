@@ -35,7 +35,7 @@ def find_subtitles(part):
 
         if sub_dir_custom:
             # got custom subfolder
-            if sub_dir_custom.startswith(os.path.sep):
+            if os.path.isabs(sub_dir_custom):
                 # absolute folder
                 sub_dir_list.append(sub_dir_custom)
                 global_folders.append(sub_dir_custom)
