@@ -226,8 +226,12 @@ class Config(object):
                                           },
                              'opensubtitles': {'username': Prefs['provider.opensubtitles.username'],
                                                'password': Prefs['provider.opensubtitles.password'],
-                                               'use_tag_search': Prefs['provider.opensubtitles.use_tags']
+                                               'use_tag_search': cast_bool(Prefs['provider.opensubtitles.use_tags']),
+                                               'only_foreign': cast_bool(Prefs['subtitles.only_foreign'])
                                                },
+                             'podnapisi': {
+                                 'only_foreign': cast_bool(Prefs['subtitles.only_foreign'])
+                             },
                              }
 
         return provider_settings

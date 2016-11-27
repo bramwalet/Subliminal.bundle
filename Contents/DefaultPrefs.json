@@ -167,6 +167,12 @@
     "default": "None"
   },
   {
+    "id": "subtitles.only_foreign",
+    "label": "Only download foreign/forced subtitles",
+    "type": "bool",
+    "default": "false"
+  },
+  {
     "id": "subtitles.language.ietf",
     "label": "Treat IETF language tags as ISO 639-1 (e.g. pt-BR = pt)",
     "type": "bool",
