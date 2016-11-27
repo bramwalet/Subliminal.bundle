@@ -398,16 +398,16 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
 
         timeout = 30
         if current_kind == "season":
-            timeout = 180
+            timeout = 360
         elif current_kind == "series":
-            timeout = 520
+            timeout = 720
 
         # add refresh
         oc.add(DirectoryObject(
             key=Callback(RefreshItem, rating_key=rating_key, item_title=title, refresh_kind=current_kind,
                          previous_rating_key=previous_rating_key, timeout=timeout*1000, randomize=timestamp()),
             title=u"Refresh: %s" % item_title,
-            summary="Refreshes the item, possibly picking up new subtitles on disk"
+            summary="Refreshes the %s, possibly searching for missing and picking up new subtitles on disk" % current_kind
         ))
         oc.add(DirectoryObject(
             key=Callback(RefreshItem, rating_key=rating_key, item_title=title, force=True,
@@ -464,6 +464,7 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
     """
     title = unicode(base_title) + " > " + unicode(title) if base_title else unicode(title)
     item = get_item(rating_key)
+    current_kind = get_item_kind_from_rating_key(rating_key)
 
     timeout = 30
 
@@ -472,7 +473,7 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
         key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title, randomize=timestamp(),
                      timeout=timeout*1000),
         title=u"Refresh: %s" % item_title,
-        summary="Refreshes the item, possibly picking up new subtitles on disk",
+        summary="Refreshes the %s, possibly searching for missing and picking up new subtitles on disk" % current_kind,
         thumb=item.thumb or default_thumb
     ))
     oc.add(DirectoryObject(
