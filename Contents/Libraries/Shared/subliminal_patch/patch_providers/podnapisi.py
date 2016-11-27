@@ -3,6 +3,7 @@
 import logging
 import io
 import re
+
 try:
     from lxml import etree
 except ImportError:
@@ -12,6 +13,8 @@ except ImportError:
         import xml.etree.ElementTree as etree
 from babelfish import Language
 from zipfile import ZipFile
+from subliminal import Episode
+from subliminal import Movie
 from subliminal.providers.podnapisi import PodnapisiProvider, PodnapisiSubtitle, fix_line_ending, ProviderError
 from mixins import ProviderRetryMixin
 
@@ -29,7 +32,24 @@ class PatchedPodnapisiSubtitle(PodnapisiSubtitle):
 
 
 class PatchedPodnapisiProvider(ProviderRetryMixin, PodnapisiProvider):
-    can_find_forced = True
+    only_foreign = False
+
+    def __init__(self, only_foreign=False):
+        self.only_foreign = only_foreign
+
+        if only_foreign:
+            logger.info("Only searching for foreign/forced subtitles")
+
+        super(PatchedPodnapisiProvider, self).__init__()
+
+    def list_subtitles(self, video, languages):
+        if isinstance(video, Episode):
+            return [s for l in languages for s in self.query(l, video.series, season=video.season,
+                                                             episode=video.episode, year=video.year,
+                                                             only_foreign=self.only_foreign)]
+        elif isinstance(video, Movie):
+            return [s for l in languages for s in self.query(l, video.title, year=video.year,
+                                                             only_foreign=self.only_foreign)]
 
     def download_subtitle(self, subtitle):
         # download as a zip

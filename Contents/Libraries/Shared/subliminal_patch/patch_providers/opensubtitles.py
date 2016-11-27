@@ -61,18 +61,22 @@ class TimeoutTransport(Transport):
 
 
 class PatchedOpenSubtitlesProvider(ProviderRetryMixin, OpenSubtitlesProvider):
-    can_find_forced = True
+    only_foreign = True
 
-    def __init__(self, username=None, password=None, use_tag_search=False):
+    def __init__(self, username=None, password=None, use_tag_search=False, only_foreign=False):
         if username is not None and password is None or username is None and password is not None:
             raise ConfigurationError('Username and password must be specified')
 
         self.username = username or ''
         self.password = password or ''
         self.use_tag_search = use_tag_search
+        self.only_foreign = only_foreign
 
         if use_tag_search:
             logger.info("Using tag/exact filename search")
+
+        if only_foreign:
+            logger.info("Only searching for foreign/forced subtitles")
 
         super(PatchedOpenSubtitlesProvider, self).__init__()
         self.server = ServerProxy('http://api.opensubtitles.org/xml-rpc', TimeoutTransport(10))
@@ -108,7 +112,8 @@ class PatchedOpenSubtitlesProvider(ProviderRetryMixin, OpenSubtitlesProvider):
             query = video.title
 
         return self.query(languages, hash=video.hashes.get('opensubtitles'), size=video.size, imdb_id=video.imdb_id,
-                          query=query, season=season, episode=episode, tag=os.path.basename(video.name), use_tag_search=self.use_tag_search)
+                          query=query, season=season, episode=episode, tag=os.path.basename(video.name),
+                          use_tag_search=self.use_tag_search, only_foreign=self.only_foreign)
 
     def query(self, languages, hash=None, size=None, imdb_id=None, query=None, season=None, episode=None, tag=None,
               use_tag_search=False, only_foreign=False):
