@@ -61,6 +61,8 @@ class TimeoutTransport(Transport):
 
 
 class PatchedOpenSubtitlesProvider(ProviderRetryMixin, OpenSubtitlesProvider):
+    can_find_forced = True
+
     def __init__(self, username=None, password=None, use_tag_search=False):
         if username is not None and password is None or username is None and password is not None:
             raise ConfigurationError('Username and password must be specified')
@@ -108,7 +110,8 @@ class PatchedOpenSubtitlesProvider(ProviderRetryMixin, OpenSubtitlesProvider):
         return self.query(languages, hash=video.hashes.get('opensubtitles'), size=video.size, imdb_id=video.imdb_id,
                           query=query, season=season, episode=episode, tag=os.path.basename(video.name), use_tag_search=self.use_tag_search)
 
-    def query(self, languages, hash=None, size=None, imdb_id=None, query=None, season=None, episode=None, tag=None, use_tag_search=False):
+    def query(self, languages, hash=None, size=None, imdb_id=None, query=None, season=None, episode=None, tag=None,
+              use_tag_search=False, only_foreign=False):
         # fill the search criteria
         criteria = []
         if hash and size:
@@ -155,6 +158,17 @@ class PatchedOpenSubtitlesProvider(ProviderRetryMixin, OpenSubtitlesProvider):
             movie_fps = subtitle_item.get('MovieFPS')
             series_season = int(subtitle_item['SeriesSeason']) if subtitle_item['SeriesSeason'] else None
             series_episode = int(subtitle_item['SeriesEpisode']) if subtitle_item['SeriesEpisode'] else None
+            sub_file_name = subtitle_item.get('SubFileName')
+
+            # foreign/forced subtitles only
+            if only_foreign:
+                found_foreign = False
+                for fn in (sub_file_name.lower(), movie_release_name.lower()):
+                    if "forced" in fn or "foreign" in fn:
+                        found_foreign = True
+                if not found_foreign:
+                    continue
+
             query_parameters = subtitle_item.get("QueryParameters")
 
             subtitle = PatchedOpenSubtitlesSubtitle(language, hearing_impaired, page_link, subtitle_id, matched_by, movie_kind,

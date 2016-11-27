@@ -29,6 +29,8 @@ class PatchedPodnapisiSubtitle(PodnapisiSubtitle):
 
 
 class PatchedPodnapisiProvider(ProviderRetryMixin, PodnapisiProvider):
+    can_find_forced = True
+
     def download_subtitle(self, subtitle):
         # download as a zip
         logger.info('Downloading subtitle %r', subtitle)
@@ -43,7 +45,7 @@ class PatchedPodnapisiProvider(ProviderRetryMixin, PodnapisiProvider):
 
             subtitle.content = fix_line_ending(zf.read(zf.namelist()[0]))
 
-    def query(self, language, keyword, season=None, episode=None, year=None):
+    def query(self, language, keyword, season=None, episode=None, year=None, only_foreign=False):
         # set parameters, see http://www.podnapisi.net/forum/viewtopic.php?f=62&t=26164#p212652
         params = {'sXML': 1, 'sL': str(language), 'sK': keyword}
         is_episode = False
@@ -73,6 +75,10 @@ class PatchedPodnapisiProvider(ProviderRetryMixin, PodnapisiProvider):
                 # read xml elements
                 language = Language.fromietf(subtitle_xml.find('language').text)
                 hearing_impaired = 'n' in (subtitle_xml.find('flags').text or '')
+                foreign = 'f' in (subtitle_xml.find('flags').text or '')
+                if only_foreign and not foreign:
+                    continue
+
                 page_link = subtitle_xml.find('url').text
                 pid = subtitle_xml.find('pid').text
                 releases = []
