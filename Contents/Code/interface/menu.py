@@ -411,7 +411,8 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
         ))
         oc.add(DirectoryObject(
             key=Callback(RefreshItem, rating_key=rating_key, item_title=title, force=True,
-                         refresh_kind=current_kind, previous_rating_key=previous_rating_key, timeout=timeout*1000),
+                         refresh_kind=current_kind, previous_rating_key=previous_rating_key, timeout=timeout*1000,
+                         randomize=timestamp()),
             title=u"Auto-Find subtitles: %s" % item_title,
             summary="Issues a forced refresh, ignoring known subtitles and searching for new ones"
         ))
@@ -648,8 +649,8 @@ def RefreshItem(rating_key=None, came_from="/recent", item_title=None, force=Fal
     header = " "
     if trigger:
         set_refresh_menu_state(u"Triggering %sRefresh for %s" % ("Force-" if force else "", item_title))
-        Thread.Create(refresh_item, rating_key=rating_key, force=force, refresh_kind=refresh_kind,
-                      parent_rating_key=previous_rating_key, timeout=int(timeout))
+        #Thread.Create(refresh_item, rating_key=rating_key, force=force, refresh_kind=refresh_kind,
+        #              parent_rating_key=previous_rating_key, timeout=int(timeout))
 
         header = u"%s of item %s triggered" % ("Refresh" if not force else "Forced-refresh", rating_key)
     return fatality(randomize=timestamp(), header=header, replace_parent=True)
