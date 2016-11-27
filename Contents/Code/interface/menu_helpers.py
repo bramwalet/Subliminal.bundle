@@ -46,8 +46,8 @@ def add_ignore_options(oc, kind, callback_menu=None, title=None, rating_key=None
     )
 
 
-def dig_tree(oc, items, menu_callback, menu_determination_callback=None, force_rating_key=None, fill_args=None, pass_kwargs=None,
-             thumb=default_thumb):
+def dig_tree(oc, items, menu_callback, menu_determination_callback=None, force_rating_key=None, fill_args=None,
+             pass_kwargs=None, thumb=default_thumb):
     for kind, title, key, dig_deeper, item in items:
         thumb = get_item_thumb(item) or thumb
 
@@ -57,10 +57,13 @@ def dig_tree(oc, items, menu_callback, menu_determination_callback=None, force_r
         if pass_kwargs:
             add_kwargs.update(pass_kwargs)
 
+        # force details view for show/season
+        summary = " " if kind in ("show", "season") else None
+
         oc.add(DirectoryObject(
             key=Callback(menu_callback or menu_determination_callback(kind, item), title=title,
                          rating_key=force_rating_key or key, **add_kwargs),
-            title=title, thumb=thumb
+            title=title, thumb=thumb, summary=summary
         ))
     return oc
 
