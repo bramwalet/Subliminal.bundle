@@ -122,7 +122,7 @@ def log_storage(key):
 
 def save_subtitles_to_file(subtitles):
     fld_custom = Prefs["subtitles.save.subFolder.Custom"].strip() \
-        if cast_bool(Prefs["subtitles.save.subFolder.Custom"]) else None
+        if Prefs["subtitles.save.subFolder.Custom"] else None
 
     for video, video_subtitles in subtitles.items():
         if not video_subtitles:
