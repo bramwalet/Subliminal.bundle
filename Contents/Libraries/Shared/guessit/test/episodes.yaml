@@ -376,6 +376,7 @@
   releaseGroup: Fov
   year: 2008
   other: Proper
+  properCount: 1
 
 ? "Da Vinci's Demons - 1x04 - The Magician.mkv"
 : series: "Da Vinci's Demons"
@@ -590,6 +591,7 @@
   videoCodec: XviD
   releaseGroup: GIGGITY
   other: proper
+  properCount: 1
   episodeDetails: [Unaired, Pilot]
   title: Unaired Pilot
 
@@ -1172,3 +1174,15 @@
   releaseGroup: AFG
   series: Real Time With Bill Maher
   videoCodec: XviD
+
+? Arrow.S03E21.Al.Sah-Him.1080p.WEB-DL.DD5.1.H.264-BS.mkv
+: series: Arrow
+  season: 3
+  episodeNumber: 21
+  title: Al Sah-Him
+  screenSize: 1080p
+  audioCodec: DolbyDigital
+  audioChannels: "5.1"
+  videoCodec: h264
+  releaseGroup: BS
+  format: WEB-DL

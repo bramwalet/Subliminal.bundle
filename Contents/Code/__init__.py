@@ -136,7 +136,7 @@ class SubliminalSubtitlesAgentTvShows(Agent.TV_Shows):
     name = 'Subliminal TV Subtitles'
     languages = [Locale.Language.English]
     primary_provider = False
-    contributes_to = ['com.plexapp.agents.thetvdb']
+    contributes_to = ['com.plexapp.agents.thetvdb', 'com.plexapp.agents.thetvdbdvdorder']
 
     def search(self, results, media, lang):
         Log.Debug("TV SEARCH CALLED")
