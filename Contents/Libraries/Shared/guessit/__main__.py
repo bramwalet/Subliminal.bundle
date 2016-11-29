@@ -24,7 +24,7 @@ from collections import defaultdict
 import logging
 import os
 
-from guessit import PY2, u, guess_file_info, __version__
+from guessit import PY2, u, guess_file_info
 from guessit.options import get_opts
 from guessit.__version__ import __version__
 
@@ -52,7 +52,7 @@ def guess_file(filename, info='filename', options=None, **kwargs):
         for k, v in guess.items():
             if isinstance(v, list) and len(v) == 1:
                 guess[k] = v[0]
-        ystr = yaml.safe_dump({filename: dict(guess)}, default_flow_style=False)
+        ystr = yaml.safe_dump({filename: dict(guess)}, default_flow_style=False, allow_unicode=True)
         i = 0
         for yline in ystr.splitlines():
             if i == 0:
@@ -213,6 +213,7 @@ def main(args=None, setup_logging=True):
         # Wrap sys.stdout into a StreamWriter to allow writing unicode.
         sys.stdout = codecs.getwriter(locale.getpreferredencoding())(sys.stdout)
 
+    # Needed for guessit.plugins.transformers.reload() to be called.
     from guessit.plugins import transformers
 
     if args:
@@ -266,12 +267,13 @@ def main(args=None, setup_logging=True):
     filenames = filter(lambda f: f, filenames)
 
     if filenames:
-        help_required = False
         if options.submit_bug:
             for filename in filenames:
+                help_required = False
                 submit_bug(filename, options)
         else:
             for filename in filenames:
+                help_required = False
                 guess_file(filename,
                            info=options.info.split(','),
                            options=vars(options))
