@@ -101,10 +101,6 @@ def scan_video(path, subtitles=True, embedded_subtitles=True, hints=None, video_
     video = Video.fromguess(path, guess_file_info(guess_from, options=hints))
     video.fps = video_fps
 
-    # trust plex's series name
-    if video_type == "episode" and hints.get("expected_series"):
-        video.series = hints.get("expected_series")[0]
-
     # trust plex's movie name
     if video_type == "movie" and hints.get("expected_title"):
         video.title = hints.get("expected_title")[0]
