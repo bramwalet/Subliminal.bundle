@@ -164,15 +164,11 @@ class PatchedOpenSubtitlesProvider(ProviderRetryMixin, OpenSubtitlesProvider):
             series_season = int(subtitle_item['SeriesSeason']) if subtitle_item['SeriesSeason'] else None
             series_episode = int(subtitle_item['SeriesEpisode']) if subtitle_item['SeriesEpisode'] else None
             sub_file_name = subtitle_item.get('SubFileName')
+            foreign_parts_only = bool(int(subtitle_item.get('SubForeignPartsOnly', 0)))
 
             # foreign/forced subtitles only
-            if only_foreign:
-                found_foreign = False
-                for fn in (sub_file_name.lower(), movie_release_name.lower()):
-                    if "forced" in fn or "foreign" in fn:
-                        found_foreign = True
-                if not found_foreign:
-                    continue
+            if only_foreign and not foreign_parts_only:
+                continue
 
             query_parameters = subtitle_item.get("QueryParameters")
 
