@@ -147,11 +147,6 @@ def get_items(key="recently_added", base="library", value=None, flat=False, add_
     return items
 
 
-def get_recently_added_items():
-    items = get_items(key="recently_added")
-    return filter(lambda x: is_recent(x[MI_ITEM].added_at), items)
-
-
 def get_recent_items():
     """
     actually get the recent items, not limited like /library/recentlyAdded
@@ -205,6 +200,10 @@ def get_recent_items():
 
 def get_on_deck_items():
     return get_items(key="on_deck", add_section_title=True)
+
+
+def get_recently_added_items():
+    return get_items(key="recently_added", add_section_title=True, flat=False)
 
 
 def get_all_items(key, base="library", value=None, flat=False):

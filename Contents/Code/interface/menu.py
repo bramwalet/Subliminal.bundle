@@ -11,7 +11,7 @@ from support.background import scheduler
 from support.config import config
 from support.helpers import pad_title, timestamp, get_language, df, cast_bool
 from support.ignore import ignore_list
-from support.items import get_item, get_on_deck_items, refresh_item, get_all_items, get_recent_items, get_items_info, \
+from support.items import get_item, get_on_deck_items, refresh_item, get_all_items, get_items_info, \
     get_item_thumb, get_item_kind_from_rating_key
 from support.lib import Plex
 from support.missing_subtitles import items_get_all_missing_subs
@@ -79,13 +79,20 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
         oc.add(DirectoryObject(
             key=Callback(OnDeckMenu),
             title="On Deck items",
-            summary="Shows the current on deck items and allows you to individually (force-) refresh their metadata/subtitles."
+            summary="Shows the current on deck items and allows you to individually (force-) refresh their metadata/"
+                    "subtitles."
+        ))
+        oc.add(DirectoryObject(
+            key=Callback(RecentlyAddedMenu),
+            title="Recently Added items",
+            summary="Shows the recently added items per section."
         ))
         oc.add(DirectoryObject(
             key=Callback(RecentMissingSubtitlesMenu, randomize=timestamp()),
             title="Items with missing subtitles",
             summary="Shows the items honoring the configured 'Item age to be considered recent'-setting (%s)"
-                    " and allowing you to individually (force-) refresh their metadata/subtitles. " % Prefs["scheduler.item_is_recent_age"]
+                    " and allowing you to individually (force-) refresh their metadata/subtitles. " %
+                    Prefs["scheduler.item_is_recent_age"]
         ))
         oc.add(DirectoryObject(
             key=Callback(SectionsMenu),
@@ -149,6 +156,16 @@ def OnDeckMenu(message=None):
     :return:
     """
     return mergedItemsMenu(title="Items On Deck", base_title="Items On Deck", itemGetter=get_on_deck_items)
+
+
+@route(PREFIX + '/recently_added')
+def RecentlyAddedMenu(message=None):
+    """
+    displays the items recently added per section
+    :param message:
+    :return:
+    """
+    return SectionsMenu(base_title="Recently added", section_items_key="recently_added", ignore_options=False)
 
 
 @route(PREFIX + '/recent', force=bool)
@@ -216,13 +233,15 @@ def mergedItemsMenu(title, itemGetter, itemGetterKwArgs=None, base_title=None, *
     return oc
 
 
-def determine_section_display(kind, item):
+def determine_section_display(kind, item, pass_kwargs=None):
     """
     returns the menu function for a section based on the size of it (amount of items)
     :param kind:
     :param item:
     :return:
     """
+    if pass_kwargs and pass_kwargs.get("section_items_key", "all") != "all":
+        return SectionMenu
     if item.size > 80:
         return SectionFirstLetterMenu
     return SectionMenu
@@ -279,7 +298,7 @@ def IgnoreMenu(kind, rating_key, title=None, sure=False, todo="not_set"):
 
 
 @route(PREFIX + '/sections')
-def SectionsMenu():
+def SectionsMenu(base_title="Sections", section_items_key="all", ignore_options=True):
     """
     displays the menu for all sections
     :return:
@@ -287,14 +306,18 @@ def SectionsMenu():
     items = get_all_items("sections")
 
     return dig_tree(SZObjectContainer(title2="Sections", no_cache=True, no_history=True), items, None,
-                    menu_determination_callback=determine_section_display, pass_kwargs={"base_title": "Sections"},
+                    menu_determination_callback=determine_section_display, pass_kwargs={"base_title": base_title,
+                                                                                        "section_items_key": section_items_key,
+                                                                                        "ignore_options": ignore_options},
                     fill_args={"title": "section_title"})
 
 
 @route(PREFIX + '/section', ignore_options=bool)
-def SectionMenu(rating_key, title=None, base_title=None, section_title=None, ignore_options=True):
+def SectionMenu(rating_key, title=None, base_title=None, section_title=None, ignore_options=True,
+                section_items_key="all"):
     """
     displays the contents of a section
+    :param section_items_key:
     :param rating_key:
     :param title:
     :param base_title:
@@ -302,7 +325,7 @@ def SectionMenu(rating_key, title=None, base_title=None, section_title=None, ign
     :param ignore_options:
     :return:
     """
-    items = get_all_items(key="all", value=rating_key, base="library/sections")
+    items = get_all_items(key=section_items_key, value=rating_key, base="library/sections")
 
     kind, deeper = get_items_info(items)
     title = unicode(title)
@@ -319,9 +342,12 @@ def SectionMenu(rating_key, title=None, base_title=None, section_title=None, ign
 
 
 @route(PREFIX + '/section/firstLetter', deeper=bool)
-def SectionFirstLetterMenu(rating_key, title=None, base_title=None, section_title=None):
+def SectionFirstLetterMenu(rating_key, title=None, base_title=None, section_title=None, ignore_options=True,
+                           section_items_key="all"):
     """
     displays the contents of a section indexed by its first char (A-Z, 0-9...)
+    :param ignore_options: ignored
+    :param section_items_key: ignored
     :param rating_key:
     :param title:
     :param base_title:

@@ -61,7 +61,7 @@ def dig_tree(oc, items, menu_callback, menu_determination_callback=None, force_r
         summary = " " if kind in ("show", "season") else None
 
         oc.add(DirectoryObject(
-            key=Callback(menu_callback or menu_determination_callback(kind, item), title=title,
+            key=Callback(menu_callback or menu_determination_callback(kind, item, pass_kwargs=pass_kwargs), title=title,
                          rating_key=force_rating_key or key, **add_kwargs),
             title=title, thumb=thumb, summary=summary
         ))
