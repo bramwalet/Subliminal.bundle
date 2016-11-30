@@ -137,6 +137,9 @@ class DefaultSubtitleHelper(SubtitleHelper):
         codec = None
         format = None
         if ext in ['txt', 'sub']:
+            if not helpers.cast_bool(Prefs["subtitles.scan.vobsub"]):
+                return lang_sub_map
+
             try:
 
                 file_contents = Core.storage.load(self.filename)
