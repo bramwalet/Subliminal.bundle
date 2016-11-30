@@ -291,6 +291,12 @@
     "default": "true"
   },
   {
+    "id": "subtitles.scan.vobsub",
+    "label": "Scan: include external VobSub subtitles (.idx/.sub)",
+    "type": "bool",
+    "default": "false"
+  },
+  {
     "id": "subtitles.search.minimumTVScore1",
     "label": "Minimum score for TV (min: 77, sane: 110; see http://v.ht/szscores)",
     "type": "text",

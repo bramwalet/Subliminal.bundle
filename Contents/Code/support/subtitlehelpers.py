@@ -14,7 +14,12 @@ class SubtitleHelper(object):
 
 def subtitle_helpers(filename):
     filename = helpers.unicodize(filename)
-    for cls in [VobSubSubtitleHelper, DefaultSubtitleHelper]:
+    helper_classes = [DefaultSubtitleHelper]
+
+    if helpers.cast_bool(Prefs["subtitles.scan.vobsub"]):
+        helper_classes.insert(0, VobSubSubtitleHelper)
+
+    for cls in helper_classes:
         if cls.is_helper_for(filename):
             return cls(filename)
     return None
