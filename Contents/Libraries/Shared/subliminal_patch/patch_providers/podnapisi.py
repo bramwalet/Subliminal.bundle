@@ -99,6 +99,9 @@ class PatchedPodnapisiProvider(ProviderRetryMixin, PodnapisiProvider):
                 if only_foreign and not foreign:
                     continue
 
+                if not only_foreign and foreign:
+                    continue
+
                 page_link = subtitle_xml.find('url').text
                 pid = subtitle_xml.find('pid').text
                 releases = []

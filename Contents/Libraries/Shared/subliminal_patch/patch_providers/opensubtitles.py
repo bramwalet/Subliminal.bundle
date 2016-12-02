@@ -166,8 +166,12 @@ class PatchedOpenSubtitlesProvider(ProviderRetryMixin, OpenSubtitlesProvider):
             sub_file_name = subtitle_item.get('SubFileName')
             foreign_parts_only = bool(int(subtitle_item.get('SubForeignPartsOnly', 0)))
 
-            # foreign/forced subtitles only
+            # foreign/forced subtitles only wanted
             if only_foreign and not foreign_parts_only:
+                continue
+
+            # foreign/forced not wanted
+            if not only_foreign and foreign_parts_only:
                 continue
 
             query_parameters = subtitle_item.get("QueryParameters")
