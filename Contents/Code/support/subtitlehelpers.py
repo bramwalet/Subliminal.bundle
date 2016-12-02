@@ -14,7 +14,10 @@ class SubtitleHelper(object):
 
 def subtitle_helpers(filename):
     filename = helpers.unicodize(filename)
-    helper_classes = [VobSubSubtitleHelper, DefaultSubtitleHelper]
+    helper_classes = [DefaultSubtitleHelper]
+
+    if helpers.cast_bool(Prefs["subtitles.scan.exotic_ext"]):
+        helper_classes.insert(0, VobSubSubtitleHelper)
 
     for cls in helper_classes:
         if cls.is_helper_for(filename):
@@ -130,6 +133,10 @@ class DefaultSubtitleHelper(SubtitleHelper):
 
         # IETF support thanks to https://github.com/hpsbranco/LocalMedia.bundle/commit/4fad9aefedece78a1fa96401304351347f644369
         language = Locale.Language.Match(match_ietf_language(file))
+
+        # skip non-SRT if wanted
+        if not helpers.cast_bool(Prefs["subtitles.scan.exotic_ext"]) and ext not in ["srt", "ass", "ssa"]:
+            return lang_sub_map
 
         codec = None
         format = None

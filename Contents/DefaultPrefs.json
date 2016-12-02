@@ -291,6 +291,12 @@
     "default": "true"
   },
   {
+    "id": "subtitles.scan.exotic_ext",
+    "label": "Scan: include \"exotic\" external subtitle formats (anything else than .srt/.ssa/.ass)",
+    "type": "bool",
+    "default": "false"
+  },
+  {
     "id": "subtitles.search.minimumTVScore1",
     "label": "Minimum score for TV (min: 77, sane: 110; see http://v.ht/szscores)",
     "type": "text",
