@@ -29,8 +29,14 @@ def _search_external_subtitles(path):
         if not INCLUDE_EXOTIC_SUBS and p_ext not in (".srt", ".ass", ".ssa"):
             continue
 
+        # extract potential forced/normal/default tag
+        # fixme: duplicate from subtitlehelpers
+        split_tag = p_root.rsplit('.', 1)
+        if len(split_tag) > 1 and split_tag[1].lower() in ['forced', 'normal', 'default']:
+            p_root = split_tag[0]
+
         # extract the potential language code
-        language_code = p[len(fileroot):-len(p_ext)].replace(fileext, '').replace('_', '-')[1:]
+        language_code = p_root[len(fileroot):].replace('_', '-')[1:]
 
         # default language is undefined
         language = Language('und')

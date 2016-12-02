@@ -101,6 +101,11 @@ def find_subtitles(part):
                     (root, ext) = os.path.splitext(file_path_listing)
                     # it's a subtitle file
                     if ext.lower()[1:] in config.SUBTITLE_EXTS:
+                        # get fn without forced/default/normal tag
+                        split_tag = root.rsplit(".", 1)
+                        if len(split_tag) > 1 and split_tag[1].lower() in ['forced', 'normal', 'default']:
+                            root = split_tag[0]
+
                         # get associated media file name without language
                         sub_fn = subtitlehelpers.ENDSWITH_LANGUAGECODE_RE.sub("", root)
 
@@ -119,6 +124,12 @@ def find_subtitles(part):
     for file_path in file_paths.values():
 
         local_basename = helpers.unicodize(os.path.splitext(os.path.basename(file_path))[0])
+
+        # get fn without forced/default/normal tag
+        split_tag = local_basename.rsplit(".", 1)
+        if len(split_tag) > 1 and split_tag[1].lower() in ['forced', 'normal', 'default']:
+            local_basename = split_tag[0]
+
         local_basename2 = local_basename.rsplit('.', 1)[0]
         filename_matches_part = local_basename == part_basename or local_basename2 == part_basename
 
