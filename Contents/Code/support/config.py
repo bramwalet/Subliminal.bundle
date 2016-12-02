@@ -264,6 +264,7 @@ class Config(object):
         Log.Debug("Patching subliminal ...")
         dest_folder = self.subtitle_destination_folder
         subliminal_patch.patch_video.CUSTOM_PATHS = [dest_folder] if dest_folder else []
+        subliminal_patch.patch_video.INCLUDE_EXOTIC_SUBS = cast_bool(Prefs["subtitles.scan.exotic_ext"])
         subliminal_patch.patch_provider_pool.DOWNLOAD_TRIES = int(Prefs['subtitles.try_downloads'])
         subliminal.video.Episode.scores["addic7ed_boost"] = int(Prefs['provider.addic7ed.boost_by'])
 

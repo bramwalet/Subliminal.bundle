@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 # may be absolute or relative paths; set to selected options
 CUSTOM_PATHS = []
+INCLUDE_EXOTIC_SUBS = True
 
 
 def _search_external_subtitles(path):
@@ -24,8 +25,12 @@ def _search_external_subtitles(path):
         if not p.startswith(fileroot) or not p.endswith(SUBTITLE_EXTENSIONS):
             continue
 
+        p_root, p_ext = os.path.splitext(p)
+        if not INCLUDE_EXOTIC_SUBS and p_ext not in (".srt", ".ass", ".ssa"):
+            continue
+
         # extract the potential language code
-        language_code = p[len(fileroot):-len(os.path.splitext(p)[1])].replace(fileext, '').replace('_', '-')[1:]
+        language_code = p[len(fileroot):-len(p_ext)].replace(fileext, '').replace('_', '-')[1:]
 
         # default language is undefined
         language = Language('und')
