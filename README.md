@@ -12,23 +12,27 @@ I've been receiving great support by [@ukdtom](https://github.com/ukdtom) recent
 He has created **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)**. Please have a look in case of any questions.
 
 ## Changelog
+
+1.4.16.822
+- menu: add per-section recently added menu
+- menu: fix accidentally double-triggering a just triggered force-refresh
+- core: add simple automatic filesystem/external leftover subtitle cleaning (#133, #152)
+- core: fix force-refresh for big seasons/series
+- core: add setting to only look for forced/foreign-only subtitles only (only works for opensubtitles and podnapisi)
+- core: fix custom subtitle folder was being ignored (#211)
+- core: only trust PMS for its movie name, not the series title (fixes #210)
+- core: full support (in filesystem/external mode) for forced/default/normal subtitle tags
+- core: ignore "non-standard" external subtitle files when scanning by default (everything but .srt, .ass, .ssa, fixes #192)
+- core: lower default max_recent_items_per_library to 500
+- core: skip forced/foreign-only subtitles if not specifically wanted
+- core: modify the task queue, hopefully helping #206
+- core: update anonymous usage collection
+
 1.4.11.781
 - core: cleanup, logging
 - core/menu: fix addic7ed display in manual subtitle list
 - core: use HTTP for OpenSubtitles instead of HTTPS because of current certificate errors
 - core: find better subtitles should now run smoothly even with replaced files (newer parts)
-
-
-1.4.10.769
-- core: hotfix for legacy intent storage regression
-
-1.4.10.768
-- core: automatically find better subtitles (configurable)
-- menu: display how the subtitle was downloaded (auto, manual, auto-better), in history menu
-- menu/core: correctly handle subtitle list for multiple languages
-- core: lower minimum series score to list subtitles for to 66
-- core: better matching of garbage filenames; we trust Plex now for the series name/movie title fully
-- core: add setting to specifically set the file permissions (chmod)
 
 
 [older changes](CHANGELOG.md)
