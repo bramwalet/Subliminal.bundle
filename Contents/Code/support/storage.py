@@ -142,9 +142,9 @@ def save_subtitles_to_file(subtitles):
                 fld = os.path.join(fld_base, Prefs["subtitles.save.subFolder"])
             if not os.path.exists(fld):
                 os.makedirs(fld)
-        subliminal.api.save_subtitles(video, video_subtitles, directory=fld, single=Prefs['subtitles.only_one'],
-                                      encode_with=force_utf8 if Prefs['subtitles.enforce_encoding'] else None,
-                                      chmod=config.chmod)
+        subliminal.api.save_subtitles(video, video_subtitles, directory=fld, single=cast_bool(Prefs['subtitles.only_one']),
+                                      encode_with=force_utf8 if cast_bool(Prefs['subtitles.enforce_encoding']) else None,
+                                      chmod=config.chmod, forced_tag=cast_bool(Prefs["subtitles.only_foreign"]))
     return True
 
 

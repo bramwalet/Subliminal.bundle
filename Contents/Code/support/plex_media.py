@@ -101,7 +101,8 @@ def scan_video(plex_part, ignore_all=False, hints=None):
 
     try:
         return subliminal.video.scan_video(plex_part.file, subtitles=external_subtitles, embedded_subtitles=embedded_subtitles,
-                                           hints=hints or {}, video_fps=plex_part.fps)
+                                           hints=hints or {}, video_fps=plex_part.fps,
+                                           forced_tag=helpers.cast_bool(Prefs["subtitles.only_foreign"]))
 
     except ValueError:
         Log.Warn("File could not be guessed by subliminal")

@@ -15,7 +15,7 @@ CUSTOM_PATHS = []
 INCLUDE_EXOTIC_SUBS = True
 
 
-def _search_external_subtitles(path):
+def _search_external_subtitles(path, forced_tag=False):
     dirpath, filename = os.path.split(path)
     dirpath = dirpath or '.'
     fileroot, fileext = os.path.splitext(filename)
@@ -32,8 +32,15 @@ def _search_external_subtitles(path):
         # extract potential forced/normal/default tag
         # fixme: duplicate from subtitlehelpers
         split_tag = p_root.rsplit('.', 1)
-        if len(split_tag) > 1 and split_tag[1].lower() in ['forced', 'normal', 'default']:
-            p_root = split_tag[0]
+        adv_tag = None
+        if len(split_tag) > 1:
+            adv_tag = split_tag[1].lower()
+            if adv_tag in ['forced', 'normal', 'default']:
+                p_root = split_tag[0]
+
+        # forced wanted but NIL
+        if forced_tag and adv_tag != "forced":
+            continue
 
         # extract the potential language code
         language_code = p_root[len(fileroot):].replace('_', '-')[1:]
@@ -55,7 +62,7 @@ def _search_external_subtitles(path):
     return subtitles
 
 
-def patched_search_external_subtitles(path):
+def patched_search_external_subtitles(path, forced_tag=False):
     """
     wrap original search_external_subtitles function to search multiple paths for one given video
     # todo: cleanup and merge with _search_external_subtitles
@@ -73,12 +80,13 @@ def patched_search_external_subtitles(path):
         logger.debug("external subs: scanning path %s", abspath)
 
         if os.path.isdir(os.path.dirname(abspath)):
-            subtitles.update(_search_external_subtitles(abspath))
+            subtitles.update(_search_external_subtitles(abspath, forced_tag=forced_tag))
     logger.debug("external subs: found %s", subtitles)
     return subtitles
 
 
-def scan_video(path, subtitles=True, embedded_subtitles=True, hints=None, video_fps=None, dont_use_actual_file=False):
+def scan_video(path, subtitles=True, embedded_subtitles=True, hints=None, video_fps=None, dont_use_actual_file=False,
+               forced_tag=False):
     """Scan a video and its subtitle languages from a video `path`.
     :param dont_use_actual_file: guess on filename, but don't use the actual file itself
     :param str path: existing path to the video.
@@ -131,7 +139,7 @@ def scan_video(path, subtitles=True, embedded_subtitles=True, hints=None, video_
 
     # external subtitles
     if subtitles:
-        video.subtitle_languages |= set(patched_search_external_subtitles(path).values())
+        video.subtitle_languages |= set(patched_search_external_subtitles(path, forced_tag=forced_tag).values())
 
 
     # video metadata with enzyme

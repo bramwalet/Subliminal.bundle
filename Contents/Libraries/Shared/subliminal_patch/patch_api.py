@@ -2,7 +2,7 @@
 import os
 import logging
 from bs4 import UnicodeDammit
-from subliminal.api import get_subtitle_path, io, defaultdict
+from subliminal.api import io, defaultdict
 from subliminal_patch.patch_provider_pool import PatchedProviderPool
 
 logger = logging.getLogger(__name__)
@@ -55,7 +55,30 @@ def list_all_subtitles(videos, languages, **kwargs):
     return listed_subtitles
 
 
-def save_subtitles(video, subtitles, single=False, directory=None, encoding=None, encode_with=None, chmod=None):
+def get_subtitle_path(video_path, language=None, extension='.srt', forced_tag=False):
+    """Get the subtitle path using the `video_path` and `language`.
+
+    :param str video_path: path to the video.
+    :param language: language of the subtitle to put in the path.
+    :type language: :class:`~babelfish.language.Language`
+    :param str extension: extension of the subtitle.
+    :return: path of the subtitle.
+    :rtype: str
+
+    """
+    subtitle_root = os.path.splitext(video_path)[0]
+
+    if language:
+        subtitle_root += '.' + str(language)
+
+    if forced_tag:
+        subtitle_root += ".forced"
+
+    return subtitle_root + extension
+
+
+def save_subtitles(video, subtitles, single=False, directory=None, encoding=None, encode_with=None, chmod=None,
+                   forced_tag=False):
     """Save subtitles on filesystem.
 
     Subtitles are saved in the order of the list. If a subtitle with a language has already been saved, other subtitles
@@ -89,7 +112,7 @@ def save_subtitles(video, subtitles, single=False, directory=None, encoding=None
             continue
 
         # create subtitle path
-        subtitle_path = get_subtitle_path(video.name, None if single else subtitle.language)
+        subtitle_path = get_subtitle_path(video.name, None if single else subtitle.language, forced_tag=forced_tag)
         if directory is not None:
             subtitle_path = os.path.join(directory, os.path.split(subtitle_path)[1])
 
