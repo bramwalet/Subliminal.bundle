@@ -16,6 +16,7 @@ He has created **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/w
 1.4.16.822
 - menu: add per-section recently added menu
 - menu: fix accidentally double-triggering a just triggered force-refresh
+- core: reorder settings in a more logical, grouped way
 - core: add simple automatic filesystem/external leftover subtitle cleaning (#133, #152)
 - core: fix force-refresh for big seasons/series
 - core: add setting to only look for forced/foreign-only subtitles only (only works for opensubtitles and podnapisi)
