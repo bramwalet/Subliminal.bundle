@@ -43,7 +43,6 @@ def find_subtitles(part):
                 # relative folder
                 fld = os.path.join(sub_dir_base, sub_dir_custom)
                 sub_dir_list.append(fld)
-                global_folders.append(fld)
 
         for sub_dir in sub_dir_list:
             if os.path.isdir(sub_dir):
