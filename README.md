@@ -19,7 +19,7 @@ He has created **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/w
 - core: reorder settings in a more logical, grouped way
 - core: add simple automatic filesystem/external leftover subtitle cleaning (#133, #152)
 - core: fix force-refresh for big seasons/series
-- core: add setting to only look for forced/foreign-only subtitles only (only works for opensubtitles and podnapisi)
+- core: add setting to look for forced/foreign-only subtitles only (only works for opensubtitles and podnapisi)
 - core: fix custom subtitle folder was being ignored (#211)
 - core: only trust PMS for its movie name, not the series title (fixes #210)
 - core: full support (in filesystem/external mode) for forced/default/normal subtitle tags
