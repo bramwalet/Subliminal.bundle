@@ -143,8 +143,8 @@ def save_subtitles_to_file(subtitles):
             if not os.path.exists(fld):
                 os.makedirs(fld)
         subliminal.api.save_subtitles(video, video_subtitles, directory=fld, single=cast_bool(Prefs['subtitles.only_one']),
-                                      encode_with=force_utf8 if cast_bool(Prefs['subtitles.enforce_encoding']) else None,
-                                      chmod=config.chmod, forced_tag=cast_bool(Prefs["subtitles.only_foreign"]))
+                                      encode_with=force_utf8 if config.enforce_encoding else None,
+                                      chmod=config.chmod, forced_tag=config.forced_only)
     return True
 
 
@@ -152,7 +152,7 @@ def save_subtitles_to_metadata(videos, subtitles):
     for video, video_subtitles in subtitles.items():
         mediaPart = videos[video]
         for subtitle in video_subtitles:
-            content = force_utf8(subtitle.text) if Prefs['subtitles.enforce_encoding'] else subtitle.content
+            content = force_utf8(subtitle.text) if config.enforce_encoding else subtitle.content
             mediaPart.subtitles[Locale.Language.Match(subtitle.language.alpha2)][subtitle.id] = Proxy.Media(content, ext="srt")
     return True
 

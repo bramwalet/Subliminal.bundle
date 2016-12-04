@@ -45,6 +45,9 @@ class Config(object):
     notify_executable = None
     sections = None
     enabled_sections = None
+    enforce_encoding = False
+    chmod = None
+    forced_only = False
 
     initialized = False
 
@@ -63,7 +66,9 @@ class Config(object):
         self.enabled_sections = self.check_enabled_sections()
         self.permissions_ok = self.check_permissions()
         self.notify_executable = self.check_notify_executable()
+        self.enforce_encoding = cast_bool(Prefs['subtitles.enforce_encoding'])
         self.chmod = self.check_chmod()
+        self.forced_only = cast_bool(Prefs["subtitles.only_foreign"])
         self.initialized = True
 
     def refresh_permissions_status(self):

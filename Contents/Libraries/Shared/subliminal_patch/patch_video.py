@@ -86,7 +86,7 @@ def patched_search_external_subtitles(path, forced_tag=False):
 
 
 def scan_video(path, subtitles=True, embedded_subtitles=True, hints=None, video_fps=None, dont_use_actual_file=False,
-               forced_tag=False):
+               forced_tag=False, known_embedded_subtitle_streams=None):
     """Scan a video and its subtitle languages from a video `path`.
     :param dont_use_actual_file: guess on filename, but don't use the actual file itself
     :param str path: existing path to the video.
@@ -141,6 +141,18 @@ def scan_video(path, subtitles=True, embedded_subtitles=True, hints=None, video_
     if subtitles:
         video.subtitle_languages |= set(patched_search_external_subtitles(path, forced_tag=forced_tag).values())
 
+    if embedded_subtitles and known_embedded_subtitle_streams:
+        embedded_subtitle_languages = set()
+        # mp4 and stuff, check burned in
+        for language in known_embedded_subtitle_streams:
+            try:
+                embedded_subtitle_languages.add(Language.fromalpha3b(language))
+            except BabelfishError:
+                logger.error('Embedded subtitle track language %r is not a valid language', language)
+                embedded_subtitle_languages.add(Language('und'))
+
+            logger.debug('Found embedded subtitle %r', embedded_subtitle_languages)
+            video.subtitle_languages |= embedded_subtitle_languages
 
     # video metadata with enzyme
     try:
@@ -188,33 +200,6 @@ def scan_video(path, subtitles=True, embedded_subtitles=True, hints=None, video_
                     logger.debug('Found audio_codec %s with enzyme', video.audio_codec)
             else:
                 logger.warning('MKV has no audio track')
-
-            # subtitle tracks
-            if mkv.subtitle_tracks:
-                if embedded_subtitles:
-                    embedded_subtitle_languages = set()
-                    for st in mkv.subtitle_tracks:
-                        if st.forced:
-                            logger.debug("Ignoring forced subtitle track %r", st)
-                            continue
-                        if st.language:
-                            try:
-                                embedded_subtitle_languages.add(Language.fromalpha3b(st.language))
-                            except BabelfishError:
-                                logger.error('Embedded subtitle track language %r is not a valid language', st.language)
-                                embedded_subtitle_languages.add(Language('und'))
-                        elif st.name:
-                            try:
-                                embedded_subtitle_languages.add(Language.fromname(st.name))
-                            except BabelfishError:
-                                logger.debug('Embedded subtitle track name %r is not a valid language', st.name)
-                                embedded_subtitle_languages.add(Language('und'))
-                        else:
-                            embedded_subtitle_languages.add(Language('und'))
-                    logger.debug('Found embedded subtitle %r with enzyme', embedded_subtitle_languages)
-                    video.subtitle_languages |= embedded_subtitle_languages
-            else:
-                logger.debug('MKV has no subtitle track')
 
     except EnzymeError:
         logger.error('Parsing video metadata with enzyme failed')

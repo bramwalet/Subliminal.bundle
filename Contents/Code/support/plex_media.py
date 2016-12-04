@@ -1,11 +1,13 @@
 # coding=utf-8
 
 import os
+
 import subliminal
 import helpers
 
 from items import get_item
 from lib import get_intent, Plex
+from config import config
 
 
 def get_metadata_dict(item, part, add):
@@ -90,7 +92,7 @@ def get_media_item_ids(media, kind="series"):
     return ids
 
 
-def scan_video(plex_part, ignore_all=False, hints=None):
+def scan_video(plex_part, ignore_all=False, hints=None, rating_key=None):
     embedded_subtitles = not ignore_all and Prefs['subtitles.scan.embedded']
     external_subtitles = not ignore_all and Prefs['subtitles.scan.external']
 
@@ -99,10 +101,24 @@ def scan_video(plex_part, ignore_all=False, hints=None):
 
     Log.Debug("Scanning video: %s, subtitles=%s, embedded_subtitles=%s" % (plex_part.file, external_subtitles, embedded_subtitles))
 
+    known_embedded = []
+    parts = list(Plex["library"].metadata(rating_key))[0].media.parts
+    plexpy_part = None
+    for part in parts:
+        if int(part.id) == int(plex_part.id):
+            plexpy_part = part
+
+    for stream in plexpy_part.streams:
+        if stream.stream_type == 3:
+            if (config.forced_only and getattr(stream, "forced")) or \
+                    (not config.forced_only and not getattr(stream, "forced")):
+                known_embedded.append(stream.language_code)
+
     try:
-        return subliminal.video.scan_video(plex_part.file, subtitles=external_subtitles, embedded_subtitles=embedded_subtitles,
-                                           hints=hints or {}, video_fps=plex_part.fps,
-                                           forced_tag=helpers.cast_bool(Prefs["subtitles.only_foreign"]))
+        return subliminal.video.scan_video(plex_part.file, subtitles=external_subtitles,
+                                           embedded_subtitles=embedded_subtitles, hints=hints or {},
+                                           video_fps=plex_part.fps, forced_tag=config.forced_only,
+                                           known_embedded_subtitle_streams=known_embedded)
 
     except ValueError:
         Log.Warn("File could not be guessed by subliminal")
@@ -124,7 +140,8 @@ def scan_videos(videos, kind="series", ignore_all=False):
 
         hints = helpers.get_item_hints(video["title"], kind, series=video["series"] if kind == "series" else None)
         video["plex_part"].fps = get_stream_fps(video["plex_part"].streams)
-        scanned_video = scan_video(video["plex_part"], ignore_all=force_refresh or ignore_all, hints=hints)
+        scanned_video = scan_video(video["plex_part"], ignore_all=force_refresh or ignore_all, hints=hints,
+                                   rating_key=video["id"])
 
         if not scanned_video:
             continue
