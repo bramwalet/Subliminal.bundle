@@ -8,6 +8,9 @@ class Stream(Descriptor):
     stream_type = Property('streamType', type=int)
     selected = Property(type=bool)
 
+    forced = Property(type=bool)
+    default = Property(type=bool)
+
     title = Property
     duration = Property(type=int)
 
