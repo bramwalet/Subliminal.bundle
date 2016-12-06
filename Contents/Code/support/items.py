@@ -236,7 +236,7 @@ def is_ignored(rating_key, item=None):
         return True
 
     # physical/path ignore
-    if Prefs["subtitles.ignore_fs"] or config.ignore_paths:
+    if config.ignore_sz_files or config.ignore_paths:
         # normally check current item folder and the library
         check_ignore_paths = [".", "../"]
         if kind == "Episode":
@@ -248,7 +248,7 @@ def is_ignored(rating_key, item=None):
                 Log.Debug("Item %s's path is manually ignored" % rating_key)
                 return True
 
-            if Prefs["subtitles.ignore_fs"]:
+            if config.ignore_sz_files:
                 for sub_path in check_ignore_paths:
                     if config.is_physically_ignored(os.path.abspath(os.path.join(os.path.dirname(part.file), sub_path))):
                         Log.Debug("An ignore file exists in either the items or its parent folders")
