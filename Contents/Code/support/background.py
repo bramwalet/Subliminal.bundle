@@ -30,6 +30,9 @@ class DefaultScheduler(object):
             Dict["tasks"] = {"queue": []}
             Dict.Save()
 
+        if "queue" not in Dict["tasks"]:
+            Dict["tasks"]["queue"] = []
+
     def get_task_data(self, name):
         if name not in Dict["tasks"]:
             raise NotImplementedError("Task missing! %s" % name)
