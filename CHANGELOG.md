@@ -1,4 +1,11 @@
 
+1.4.11.781
+- core: cleanup, logging
+- core/menu: fix addic7ed display in manual subtitle list
+- core: use HTTP for OpenSubtitles instead of HTTPS because of current certificate errors
+- core: find better subtitles should now run smoothly even with replaced files (newer parts)
+
+
 1.4.10.769
 - core: hotfix for legacy intent storage regression
 

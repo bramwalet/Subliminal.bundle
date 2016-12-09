@@ -13,6 +13,12 @@ He has created **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/w
 
 ## Changelog
 
+1.4.17.836
+- core: support for any media file that PMS supports (internal subtitles on mp4 for example)
+- core: fix broken ignore folders containing "subzero.ignore/.subzero.ignore/.nosz"
+- core: fix duplicate subtitles (lowercase/default case)
+- core: fix broken tasks queue due to oversight
+
 1.4.16.822
 - menu: add per-section recently added menu
 - menu: fix accidentally double-triggering a just triggered force-refresh
@@ -28,12 +34,6 @@ He has created **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/w
 - core: skip forced/foreign-only subtitles if not specifically wanted
 - core: modify the task queue, hopefully helping #206
 - core: update anonymous usage collection
-
-1.4.11.781
-- core: cleanup, logging
-- core/menu: fix addic7ed display in manual subtitle list
-- core: use HTTP for OpenSubtitles instead of HTTPS because of current certificate errors
-- core: find better subtitles should now run smoothly even with replaced files (newer parts)
 
 
 [older changes](CHANGELOG.md)
