@@ -105,7 +105,7 @@ class PatchedSubtitle(Subtitle):
 
         # Polish, Czech, Slovak, Hungarian, Slovene, Bosnian, Croatian, Serbian (Latin script),
         # Romanian (before 1993 spelling reform) and Albanian
-        elif self.language.alpha3 in ('pol', 'cze', 'svk', 'hun', 'svn', 'bih', 'hrv', 'srb', 'rou', 'alb'):
+        elif self.language.alpha3 in ('pol', 'cze', 'svk', 'slv', 'hun', 'svn', 'bih', 'hrv', 'srb', 'rou', 'alb'):
             # Eastern European Group 1
             encodings.append('windows-1250')
 
