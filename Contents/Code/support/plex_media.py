@@ -108,6 +108,10 @@ def scan_video(plex_part, ignore_all=False, hints=None, rating_key=None):
         if int(part.id) == int(plex_part.id):
             plexpy_part = part
 
+    if not plexpy_part:
+        Log.Warning("Part %s missing of %s", plex_part.id, rating_key)
+        return
+
     for stream in plexpy_part.streams:
         if stream.stream_type == 3:
             if (config.forced_only and getattr(stream, "forced")) or \
