@@ -469,6 +469,12 @@
     "default": ""
   },
   {
+    "id": "enable_agent",
+    "label": "Enable Sub-Zero agent (disabling doesn't affect the channel features)?",
+    "type": "bool",
+    "default": "true"
+  },
+  {
     "id": "enable_channel",
     "label": "Enable Sub-Zero channel (disabling doesn't affect the subtitle features)?",
     "type": "bool",

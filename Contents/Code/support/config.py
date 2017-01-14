@@ -33,6 +33,7 @@ def int_or_default(s, default):
 class Config(object):
     version = None
     full_version = None
+    enable_agent = True
     lang_list = None
     subtitle_destination_folder = None
     providers = None
@@ -56,6 +57,7 @@ class Config(object):
         self.fs_encoding = get_viable_encoding()
         self.version = self.get_version()
         self.full_version = u"%s %s" % (PLUGIN_NAME, self.version)
+        self.enable_agent = cast_bool(Prefs['enable_agent'])
         self.lang_list = self.get_lang_list()
         self.subtitle_destination_folder = self.get_subtitle_destination_folder()
         self.providers = self.get_providers()
