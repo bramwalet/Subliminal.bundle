@@ -9,7 +9,7 @@ import subliminal
 
 from subtitlehelpers import force_utf8
 from config import config
-from helpers import notify_executable, get_title_for_video_metadata, cast_bool
+from helpers import notify_executable, get_title_for_video_metadata, cast_bool, decode
 
 
 def get_subtitle_info(rating_key):
@@ -140,6 +140,7 @@ def save_subtitles_to_file(subtitles):
                     fld = os.path.join(fld_base, fld_custom)
             else:
                 fld = os.path.join(fld_base, Prefs["subtitles.save.subFolder"])
+            fld = decode(fld)
             if not os.path.exists(fld):
                 os.makedirs(fld)
         subliminal.api.save_subtitles(video, video_subtitles, directory=fld, single=cast_bool(Prefs['subtitles.only_one']),
