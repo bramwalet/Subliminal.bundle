@@ -9,6 +9,9 @@ import time
 import re
 import platform
 import subprocess
+
+from bs4 import UnicodeDammit
+
 import chardet
 
 from babelfish import Language
@@ -51,10 +54,17 @@ def unicodize(s):
     return filename
 
 
-def decode(s):
+def force_unicode(s):
     if not isinstance(s, types.UnicodeType):
         t = chardet.detect(s)
-        s = s.decode(t["encoding"])
+        try:
+            s = s.decode(t["encoding"])
+        except UnicodeDecodeError:
+            try:
+                # try utf-8 as a last resort (?)
+                s = s.decode("utf-8")
+            except UnicodeDecodeError:
+                s = UnicodeDammit(s).unicode_markup
     return s
 
 
