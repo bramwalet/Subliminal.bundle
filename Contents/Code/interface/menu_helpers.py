@@ -157,7 +157,31 @@ def debounce(func):
 
 class SZObjectContainer(ObjectContainer):
     def __init__(self, *args, **kwargs):
+        skip_pin_lock = kwargs.pop("skip_pin_lock", False)
+
         super(SZObjectContainer, self).__init__(*args, **kwargs)
+
+        if (config.lock_menu or config.lock_advanced_menu) and not config.pin_correct and not skip_pin_lock:
+            config.locked = True
+
+    def add(self, *args, **kwargs):
+        # disable self.add if we're in lockdown
+        container = args[0]
+        current_menu_target = container.key.split("?")[0]
+        is_pin_menu = current_menu_target.endswith("/pin")
+
+        if config.locked and config.lock_menu and not is_pin_menu:
+            return
+        return super(SZObjectContainer, self).add(*args, **kwargs)
+
+
+OriginalObjectContainer = ObjectContainer
+ObjectContainer = SZObjectContainer
+
+
+class SubFolderObjectContainer(ObjectContainer):
+    def __init__(self, *args, **kwargs):
+        super(SubFolderObjectContainer, self).__init__(*args, **kwargs)
         from interface.menu import fatality
         from support.helpers import pad_title, timestamp
         self.add(DirectoryObject(

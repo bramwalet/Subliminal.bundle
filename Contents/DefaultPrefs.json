@@ -480,6 +480,31 @@
     "default": "agent + channel"
   },
   {
+    "id": "plugin_pin",
+    "label": "Access PIN",
+    "type": "text",
+    "option": "hidden",
+    "default": "",
+    "secure": "true"
+  },
+  {
+    "id": "plugin_pin_valid_for",
+    "label": "Access PIN valid for minutes",
+    "type": "text",
+    "default": "10"
+  },
+  {
+    "id": "plugin_pin_mode",
+    "label": "Use PIN to restrict access to (needs plugin or PMS restart)",
+    "type": "enum",
+    "values": [
+      "disabled",
+      "channel menu",
+      "advanced menu"
+    ],
+    "default": "disabled"
+  },
+  {
     "id": "notify_executable",
     "label": "Call this executable upon successful subtitle download",
     "type": "text",

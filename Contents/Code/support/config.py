@@ -4,6 +4,8 @@ import os
 import re
 import inspect
 
+import datetime
+
 import subliminal
 import subliminal_patch
 from babelfish import Language
@@ -35,6 +37,11 @@ class Config(object):
     full_version = None
     enable_channel = True
     enable_agent = True
+    pin = None
+    lock_menu = False
+    lock_advanced_menu = False
+    locked = False
+    pin_valid_minutes = 10
     lang_list = None
     subtitle_destination_folder = None
     providers = None
@@ -60,6 +67,7 @@ class Config(object):
         self.full_version = u"%s %s" % (PLUGIN_NAME, self.version)
 
         self.set_plugin_mode()
+        self.set_plugin_lock()
 
         self.lang_list = self.get_lang_list()
         self.subtitle_destination_folder = self.get_subtitle_destination_folder()
@@ -83,6 +91,34 @@ class Config(object):
             self.enable_channel = False
         elif Prefs["plugin_mode"] == "only channel":
             self.enable_agent = False
+
+    def set_plugin_lock(self):
+        if Prefs["plugin_pin_mode"] in ("channel menu", "advanced menu"):
+            # check pin
+            pin = Prefs["plugin_pin"]
+            if not len(pin):
+                Log.Warning("PIN enabled but not set, disabling PIN!")
+                return
+
+            pin = pin.strip()
+            try:
+                int(pin)
+            except ValueError:
+                Log.Warning("PIN has to be an integer (0-9)")
+            self.pin = pin
+            self.lock_advanced_menu = Prefs["plugin_pin_mode"] == "advanced menu"
+            self.lock_menu = Prefs["plugin_pin_mode"] == "channel menu"
+
+            try:
+                self.pin_valid_minutes = int(Prefs["plugin_pin_valid_for"].strip())
+            except ValueError:
+                pass
+
+    @property
+    def pin_correct(self):
+        if isinstance(Dict["pin_correct_time"], datetime.datetime) \
+                and Dict["pin_correct_time"] + datetime.timedelta(minutes=self.pin_valid_minutes) > datetime.datetime.now():
+            return True
 
     def refresh_permissions_status(self):
         self.permissions_ok = self.check_permissions()
