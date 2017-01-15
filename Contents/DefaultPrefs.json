@@ -481,7 +481,7 @@
   },
   {
     "id": "plugin_pin",
-    "label": "Access PIN",
+    "label": "Access PIN (any amount of numbers, 0-9)",
     "type": "text",
     "option": "hidden",
     "default": "",
