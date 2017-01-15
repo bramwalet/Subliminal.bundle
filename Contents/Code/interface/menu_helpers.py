@@ -6,6 +6,7 @@ from support.items import get_kind, get_item_thumb
 from support.helpers import get_video_display_title
 from support.ignore import ignore_list
 from support.lib import get_intent
+from support.config import config
 from subzero.constants import ICON
 
 default_thumb = R(ICON)
@@ -122,7 +123,7 @@ def enable_channel_wrapper(func):
 
     def wrap(*args, **kwargs):
         enforce_route = kwargs.pop("enforce_route", None)
-        return (func if Prefs["enable_channel"] or enforce_route else noop)(*args, **kwargs)
+        return (func if config.enable_channel or enforce_route else noop)(*args, **kwargs)
 
     return wrap
 

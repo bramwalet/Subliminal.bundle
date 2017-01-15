@@ -747,22 +747,23 @@ def ValidatePrefs():
     # cache the channel state
     update_dict = False
     restart = False
+
+    config.initialize()
     if "channel_enabled" not in Dict:
         update_dict = True
 
-    elif Dict["channel_enabled"] != Prefs["enable_channel"]:
-        Log.Debug("Channel features %s, restarting plugin", "enabled" if Prefs["enable_channel"] else "disabled")
+    elif Dict["channel_enabled"] != config.enable_channel:
+        Log.Debug("Channel features %s, restarting plugin", "enabled" if config.enable_channel else "disabled")
         update_dict = True
         restart = True
 
     if update_dict:
-        Dict["channel_enabled"] = Prefs["enable_channel"]
+        Dict["channel_enabled"] = config.enable_channel
         Dict.Save()
 
     if restart:
         DispatchRestart()
 
-    config.initialize()
     scheduler.setup_tasks()
     set_refresh_menu_state(None)
 

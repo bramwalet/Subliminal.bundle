@@ -33,6 +33,7 @@ def int_or_default(s, default):
 class Config(object):
     version = None
     full_version = None
+    enable_channel = True
     enable_agent = True
     lang_list = None
     subtitle_destination_folder = None
@@ -57,7 +58,9 @@ class Config(object):
         self.fs_encoding = get_viable_encoding()
         self.version = self.get_version()
         self.full_version = u"%s %s" % (PLUGIN_NAME, self.version)
-        self.enable_agent = cast_bool(Prefs['enable_agent'])
+
+        self.set_plugin_mode()
+
         self.lang_list = self.get_lang_list()
         self.subtitle_destination_folder = self.get_subtitle_destination_folder()
         self.providers = self.get_providers()
@@ -74,6 +77,12 @@ class Config(object):
         self.chmod = self.check_chmod()
         self.forced_only = cast_bool(Prefs["subtitles.only_foreign"])
         self.initialized = True
+
+    def set_plugin_mode(self):
+        if Prefs["plugin_mode"] == "only agent":
+            self.enable_channel = False
+        elif Prefs["plugin_mode"] == "only channel":
+            self.enable_agent = False
 
     def refresh_permissions_status(self):
         self.permissions_ok = self.check_permissions()
@@ -279,3 +288,4 @@ class Config(object):
 
 
 config = Config()
+config.initialize()
