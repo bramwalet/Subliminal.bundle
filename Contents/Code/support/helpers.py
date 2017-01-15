@@ -63,11 +63,7 @@ def force_unicode(s):
             try:
                 s = s.decode(t["encoding"])
             except UnicodeDecodeError:
-                try:
-                    # try utf-8 as a last resort (?)
-                    s = s.decode("utf-8")
-                except UnicodeDecodeError:
-                    s = UnicodeDammit(s).unicode_markup
+                s = UnicodeDammit(s).unicode_markup
     return s
 
 
