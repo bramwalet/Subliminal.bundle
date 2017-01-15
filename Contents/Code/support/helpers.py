@@ -56,15 +56,18 @@ def unicodize(s):
 
 def force_unicode(s):
     if not isinstance(s, types.UnicodeType):
-        t = chardet.detect(s)
         try:
-            s = s.decode(t["encoding"])
+            s = s.decode("utf-8")
         except UnicodeDecodeError:
+            t = chardet.detect(s)
             try:
-                # try utf-8 as a last resort (?)
-                s = s.decode("utf-8")
+                s = s.decode(t["encoding"])
             except UnicodeDecodeError:
-                s = UnicodeDammit(s).unicode_markup
+                try:
+                    # try utf-8 as a last resort (?)
+                    s = s.decode("utf-8")
+                except UnicodeDecodeError:
+                    s = UnicodeDammit(s).unicode_markup
     return s
 
 
