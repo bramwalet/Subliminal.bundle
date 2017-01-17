@@ -1,16 +1,3 @@
-#  Licensed under the Apache License, Version 2.0 (the "License"); you may
-#  not use this file except in compliance with the License. You may obtain
-#  a copy of the License at
-#
-#       http://www.apache.org/licenses/LICENSE-2.0
-#
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-#  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-#  License for the specific language governing permissions and limitations
-#  under the License.
-
-from .exception import NoMatches, MultipleMatches
 from .named import NamedExtensionManager
 
 
@@ -60,7 +47,7 @@ class DriverManager(NamedExtensionManager):
 
     @staticmethod
     def _default_on_load_failure(drivermanager, ep, err):
-        raise
+        raise err
 
     @classmethod
     def make_test_instance(cls, extension, namespace='TESTING',
@@ -106,14 +93,14 @@ class DriverManager(NamedExtensionManager):
 
         if not self.extensions:
             name = self._names[0]
-            raise NoMatches('No %r driver found, looking for %r' %
-                            (self.namespace, name))
+            raise RuntimeError('No %r driver found, looking for %r' %
+                               (self.namespace, name))
         if len(self.extensions) > 1:
             discovered_drivers = ','.join(e.entry_point_target
                                           for e in self.extensions)
 
-            raise MultipleMatches('Multiple %r drivers found: %s' %
-                                  (self.namespace, discovered_drivers))
+            raise RuntimeError('Multiple %r drivers found: %s' %
+                               (self.namespace, discovered_drivers))
 
     def __call__(self, func, *args, **kwds):
         """Invokes func() for the single loaded extension.

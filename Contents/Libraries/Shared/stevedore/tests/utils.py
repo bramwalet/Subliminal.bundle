@@ -10,20 +10,8 @@
 #  License for the specific language governing permissions and limitations
 #  under the License.
 
-"""Tests for stevedore.example.simple
-"""
-
-from stevedore.example import simple
-from stevedore.tests import utils
+from oslotest import base as test_base
 
 
-class TestExampleSimple(utils.TestCase):
-    def test_simple_items(self):
-        f = simple.Simple(100)
-        text = ''.join(f.format({'a': 'A', 'b': 'B'}))
-        expected = '\n'.join([
-            'a = A',
-            'b = B',
-            '',
-        ])
-        self.assertEqual(text, expected)
+class TestCase(test_base.BaseTestCase):
+    pass

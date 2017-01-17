@@ -20,5 +20,17 @@ import logging
 # the app we're used from does not set up logging.
 LOG = logging.getLogger('stevedore')
 
-LOG.addHandler(logging.NullHandler())
+if hasattr(logging, 'NullHandler'):
+    LOG.addHandler(logging.NullHandler())
+else:
+    class NullHandler(logging.Handler):
+        def handle(self, record):
+            pass
 
+        def emit(self, record):
+            pass
+
+        def createLock(self):
+            self.lock = None
+
+    LOG.addHandler(NullHandler())
