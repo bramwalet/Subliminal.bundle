@@ -10,7 +10,7 @@ from subliminal.core import guessit
 logger = logging.getLogger(__name__)
 
 
-def scan_video(path):
+def scan_video(path, dont_use_actual_file=False):
     """Scan a video from a `path`.
 
     :param str path: existing path to the video.
@@ -19,7 +19,7 @@ def scan_video(path):
 
     """
     # check for non-existing path
-    if not os.path.exists(path):
+    if not dont_use_actual_file and not os.path.exists(path):
         raise ValueError('Path does not exist')
 
     # check video extension
@@ -31,6 +31,9 @@ def scan_video(path):
 
     # guess
     video = Video.fromguess(path, guessit(path, options={}))
+
+    if dont_use_actual_file:
+        return video
 
     # size and hashes
     video.size = os.path.getsize(path)
