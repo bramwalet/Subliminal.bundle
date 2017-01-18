@@ -314,6 +314,8 @@ class Config(object):
             Log.Warning("Chmod setting ignored, please use only 4-digit integers with leading 0 (e.g.: 775)")
 
     def init_subliminal_patches(self):
+        Log.Error("SUBLIMINAL NOT PATCHED YET")
+        return
         # configure custom subtitle destination folders for scanning pre-existing subs
         Log.Debug("Patching subliminal ...")
         dest_folder = self.subtitle_destination_folder
