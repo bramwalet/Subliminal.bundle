@@ -8,6 +8,7 @@ import helpers
 from items import get_item
 from lib import get_intent, Plex
 from config import config
+from subliminal.core import search_external_subtitles
 
 
 def get_metadata_dict(item, part, add):
@@ -118,7 +119,16 @@ def scan_video(plex_part, ignore_all=False, hints=None, rating_key=None):
         Log.Warning("Part %s missing of %s, not able to scan internal streams", plex_part.id, rating_key)
 
     try:
+        # get basic video info scan (filename)
         video = subliminal.scan_video(plex_part.file)
+        print video
+
+        # scan for external subtitles
+        if external_subtitles:
+            video.subtitle_languages |= set(search_external_subtitles(video.name, directory=directory).values())
+
+
+        1 / 0
         """, subtitles=external_subtitles,
                                            embedded_subtitles=embedded_subtitles, hints=hints or {},
                                            video_fps=plex_part.fps, forced_tag=config.forced_only,

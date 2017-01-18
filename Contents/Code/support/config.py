@@ -314,13 +314,14 @@ class Config(object):
             Log.Warning("Chmod setting ignored, please use only 4-digit integers with leading 0 (e.g.: 775)")
 
     def init_subliminal_patches(self):
-        Log.Error("SUBLIMINAL NOT PATCHED YET")
-        return
         # configure custom subtitle destination folders for scanning pre-existing subs
         Log.Debug("Patching subliminal ...")
         dest_folder = self.subtitle_destination_folder
-        subliminal_patch.patch_video.CUSTOM_PATHS = [dest_folder] if dest_folder else []
-        subliminal_patch.patch_video.INCLUDE_EXOTIC_SUBS = cast_bool(Prefs["subtitles.scan.exotic_ext"])
+        subliminal_patch.patch_core.CUSTOM_PATHS = [dest_folder] if dest_folder else []
+        subliminal_patch.patch_core.INCLUDE_EXOTIC_SUBS = cast_bool(Prefs["subtitles.scan.exotic_ext"])
+
+        Log.Error("SUBLIMINAL NOT PATCHED YET")
+        return
         subliminal_patch.patch_provider_pool.DOWNLOAD_TRIES = int(Prefs['subtitles.try_downloads'])
         subliminal.video.Episode.scores["addic7ed_boost"] = int(Prefs['provider.addic7ed.boost_by'])
 

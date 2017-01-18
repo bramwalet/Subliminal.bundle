@@ -5,9 +5,13 @@ from subliminal.score import compute_score as default_compute_score
 from subliminal.subtitle import SUBTITLE_EXTENSIONS, get_subtitle_path
 from subliminal.utils import hash_napiprojekt, hash_opensubtitles, hash_shooter, hash_thesubdb
 from subliminal.video import VIDEO_EXTENSIONS, Episode, Movie, Video
-from subliminal.core import guessit
+from subliminal.core import guessit, Language
 
 logger = logging.getLogger(__name__)
+
+# may be absolute or relative paths; set to selected options
+CUSTOM_PATHS = []
+INCLUDE_EXOTIC_SUBS = True
 
 
 def scan_video(path, dont_use_actual_file=False):
@@ -48,3 +52,73 @@ def scan_video(path, dont_use_actual_file=False):
         logger.warning('Size is lower than 10MB: hashes not computed')
 
     return video
+
+
+def _search_external_subtitles(path, forced_tag=False):
+    dirpath, filename = os.path.split(path)
+    dirpath = dirpath or '.'
+    fileroot, fileext = os.path.splitext(filename)
+    subtitles = {}
+    for p in os.listdir(dirpath):
+        # keep only valid subtitle filenames
+        if not p.startswith(fileroot) or not p.endswith(SUBTITLE_EXTENSIONS):
+            continue
+
+        p_root, p_ext = os.path.splitext(p)
+        if not INCLUDE_EXOTIC_SUBS and p_ext not in (".srt", ".ass", ".ssa"):
+            continue
+
+        # extract potential forced/normal/default tag
+        # fixme: duplicate from subtitlehelpers
+        split_tag = p_root.rsplit('.', 1)
+        adv_tag = None
+        if len(split_tag) > 1:
+            adv_tag = split_tag[1].lower()
+            if adv_tag in ['forced', 'normal', 'default']:
+                p_root = split_tag[0]
+
+        # forced wanted but NIL
+        if forced_tag and adv_tag != "forced":
+            continue
+
+        # extract the potential language code
+        language_code = p_root[len(fileroot):].replace('_', '-')[1:]
+
+        # default language is undefined
+        language = Language('und')
+
+        # attempt to parse
+        if language_code:
+            try:
+                language = Language.fromietf(language_code)
+            except ValueError:
+                logger.error('Cannot parse language code %r', language_code)
+
+        subtitles[p] = language
+
+    logger.debug('Found subtitles %r', subtitles)
+
+    return subtitles
+
+
+def search_external_subtitles(path, forced_tag=False):
+    """
+    wrap original search_external_subtitles function to search multiple paths for one given video
+    # todo: cleanup and merge with _search_external_subtitles
+    """
+    video_path, video_filename = os.path.split(path)
+    subtitles = {}
+    for folder_or_subfolder in [video_path] + CUSTOM_PATHS:
+        # folder_or_subfolder may be a relative path or an absolute one
+        try:
+            abspath = unicode(os.path.abspath(
+                os.path.join(*[video_path if not os.path.isabs(folder_or_subfolder) else "", folder_or_subfolder, video_filename])))
+        except Exception, e:
+            logger.error("skipping path %s because of %s", repr(folder_or_subfolder), e)
+            continue
+        logger.debug("external subs: scanning path %s", abspath)
+
+        if os.path.isdir(os.path.dirname(abspath)):
+            subtitles.update(_search_external_subtitles(abspath, forced_tag=forced_tag))
+    logger.debug("external subs: found %s", subtitles)
+    return subtitles
