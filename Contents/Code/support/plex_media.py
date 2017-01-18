@@ -118,10 +118,15 @@ def scan_video(plex_part, ignore_all=False, hints=None, rating_key=None):
         Log.Warning("Part %s missing of %s, not able to scan internal streams", plex_part.id, rating_key)
 
     try:
-        return subliminal.video.scan_video(plex_part.file, subtitles=external_subtitles,
+        video = subliminal.scan_video(plex_part.file)
+        """, subtitles=external_subtitles,
                                            embedded_subtitles=embedded_subtitles, hints=hints or {},
                                            video_fps=plex_part.fps, forced_tag=config.forced_only,
                                            known_embedded_subtitle_streams=known_embedded)
+                                           """
+        # fixme
+        return video
+
 
     except ValueError:
         Log.Warn("File could not be guessed by subliminal")
