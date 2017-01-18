@@ -231,9 +231,9 @@ def check_write_permissions(path):
     return False
 
 
-def get_item_hints(title, kind, series=None):
-    hints = {"expected_title": [title]}
-    hints.update({"type": "episode", "expected_series": [series]} if kind == "series" else {"type": "movie"})
+def get_item_hints(title, kind, episode_title=None):
+    hints = {"title": title}
+    hints.update({"type": "episode", "episode_title": episode_title} if kind == "series" else {"type": "movie"})
     return hints
 
 
