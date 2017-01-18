@@ -2,13 +2,15 @@
 
 import os
 
+from babelfish.exceptions import LanguageError
+
 import subliminal
 import helpers
 
 from items import get_item
 from lib import get_intent, Plex
 from config import config
-from subliminal.core import search_external_subtitles
+from subliminal.core import search_external_subtitles, Language
 
 
 def get_metadata_dict(item, part, add):
@@ -121,11 +123,34 @@ def scan_video(plex_part, ignore_all=False, hints=None, rating_key=None):
     try:
         # get basic video info scan (filename)
         video = subliminal.scan_video(plex_part.file)
-        print video
 
         # scan for external subtitles
         if external_subtitles:
-            video.subtitle_languages |= set(search_external_subtitles(video.name, directory=directory).values())
+            # |= is update, thanks plex
+            video.subtitle_languages.update(set(search_external_subtitles(video.name).values()))
+
+        # add video fps info
+        # fixme: still needed?
+        video.fps = plex_part.fps
+
+        # add known embedded subtitles
+        if embedded_subtitles and known_embedded:
+            embedded_subtitle_languages = set()
+            # mp4 and stuff, check burned in
+            for language in known_embedded:
+                try:
+                    embedded_subtitle_languages.add(Language.fromalpha3b(language))
+                except LanguageError:
+                    Log.Error('Embedded subtitle track language %r is not a valid language', language)
+                    embedded_subtitle_languages.add(Language('und'))
+
+                Log.Debug('Found embedded subtitle %r', embedded_subtitle_languages)
+                video.subtitle_languages.update(embedded_subtitle_languages)
+
+
+        #if check_video(video, languages=language, age=age, undefined=single):
+        #    refine(video, episode_refiners=refiner, movie_refiners=refiner, embedded_subtitles=not force)
+
 
 
         1 / 0
