@@ -7,11 +7,16 @@ import operator
 import traceback
 
 import subliminal
-import subliminal_patch
+#import subliminal_patch
 
-from subliminal_patch.patch_api import list_all_subtitles, download_subtitles
+# fixme
+#from subliminal_patch.patch_api import list_all_subtitles, download_subtitles
+from subliminal import download_subtitles, compute_score
+from subliminal import list_subtitles as list_all_subtitles
 from babelfish import Language
-from subliminal_patch.patch_subtitle import compute_score
+
+# fixme
+#from subliminal_patch.patch_subtitle import compute_score
 from missing_subtitles import items_get_all_missing_subs, refresh_item
 from background import scheduler
 from storage import save_subtitles, whack_missing_parts
