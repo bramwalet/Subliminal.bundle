@@ -10,7 +10,7 @@ import helpers
 from items import get_item
 from lib import get_intent, Plex
 from config import config
-from subliminal.core import search_external_subtitles, Language
+from subliminal.core import search_external_subtitles, Language, refine
 
 
 def get_metadata_dict(item, part, add):
@@ -124,6 +124,15 @@ def scan_video(plex_part, ignore_all=False, hints=None, rating_key=None):
         # get basic video info scan (filename)
         video = subliminal.scan_video(plex_part.file)
 
+        # refiners
+        # fixme: add hints?
+        """, subtitles=external_subtitles,
+        embedded_subtitles=embedded_subtitles, hints=hints or {},
+        video_fps=plex_part.fps, forced_tag=config.forced_only,
+        known_embedded_subtitle_streams=known_embedded)
+        """
+        refine(video, embedded_subtitles=False)
+
         # scan for external subtitles
         if external_subtitles:
             # |= is update, thanks plex
@@ -147,19 +156,6 @@ def scan_video(plex_part, ignore_all=False, hints=None, rating_key=None):
                 Log.Debug('Found embedded subtitle %r', embedded_subtitle_languages)
                 video.subtitle_languages.update(embedded_subtitle_languages)
 
-
-        #if check_video(video, languages=language, age=age, undefined=single):
-        #    refine(video, episode_refiners=refiner, movie_refiners=refiner, embedded_subtitles=not force)
-
-
-
-        1 / 0
-        """, subtitles=external_subtitles,
-                                           embedded_subtitles=embedded_subtitles, hints=hints or {},
-                                           video_fps=plex_part.fps, forced_tag=config.forced_only,
-                                           known_embedded_subtitle_streams=known_embedded)
-                                           """
-        # fixme
         return video
 
 
