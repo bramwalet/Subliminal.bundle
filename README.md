@@ -10,6 +10,9 @@ Checkout **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)**
 
 ## Changelog
 
+1.4.19.866
+- core: fix wrong usage of LogKit
+
 1.4.19.857
 
 - core: add option to enable/disable channel and/or agent modes (fixes #220)
