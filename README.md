@@ -13,27 +13,19 @@ He has created **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/w
 
 ## Changelog
 
+1.4.19.857
+
+- core: add option to enable/disable channel and/or agent modes (fixes #220)
+- core: skip inexistent internal streams when scanning for internal subtitles (fixes #222)
+- core: fix filename encoding (fixes #223)
+- core: storage optimizations
+- menu: add pin-based channel menu locking (the whole channel or only the advanced menu)
+
 1.4.17.836
 - core: support for any media file that PMS supports (internal subtitles on mp4 for example)
 - core: fix broken ignore folders containing "subzero.ignore/.subzero.ignore/.nosz"
 - core: fix duplicate subtitles (lowercase/default case)
 - core: fix broken tasks queue due to oversight
-
-1.4.16.822
-- menu: add per-section recently added menu
-- menu: fix accidentally double-triggering a just triggered force-refresh
-- core: reorder settings in a more logical, grouped way
-- core: add simple automatic filesystem/external leftover subtitle cleaning (#133, #152)
-- core: fix force-refresh for big seasons/series
-- core: add setting to look for forced/foreign-only subtitles only (only works for opensubtitles and podnapisi)
-- core: fix custom subtitle folder was being ignored (#211)
-- core: only trust PMS for its movie name, not the series title (fixes #210)
-- core: full support (in filesystem/external mode) for forced/default/normal subtitle tags
-- core: ignore "non-standard" external subtitle files when scanning by default (everything but .srt, .ass, .ssa, fixes #192)
-- core: lower default max_recent_items_per_library to 500
-- core: skip forced/foreign-only subtitles if not specifically wanted
-- core: modify the task queue, hopefully helping #206
-- core: update anonymous usage collection
 
 
 [older changes](CHANGELOG.md)
