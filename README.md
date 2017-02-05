@@ -1,15 +1,12 @@
-#Sub-Zero for Plex
+# Sub-Zero for Plex
 [![](https://img.shields.io/github/release/pannal/Sub-Zero.bundle.svg?style=flat)](https://github.com/pannal/Sub-Zero.bundle/releases)
 [![master](https://img.shields.io/badge/master-stable-green.svg?maxAge=2592000)]()
-[![Maintenance](https://img.shields.io/maintenance/yes/2016.svg?maxAge=2592000)]()
+[![Maintenance](https://img.shields.io/maintenance/yes/2017.svg)]()
 
-![logo](https://raw.githubusercontent.com/pannal/Sub-Zero.bundle/master/Contents/Resources/subzero.gif)
+<img src="https://raw.githubusercontent.com/pannal/Sub-Zero.bundle/master/Contents/Resources/subzero.gif" align="left" height="100"> <font size="5"><b>Subtitles done right!</b></font><br />
 
-##### Subtitles done right
-
-## Information
-I've been receiving great support by [@ukdtom](https://github.com/ukdtom) recently:<br/>
-He has created **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)**. Please have a look in case of any questions.
+Checkout **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)** by [@ukdtom](https://github.com/ukdtom) <br />
+<br style="clear:left;"/>
 
 ## Changelog
 
