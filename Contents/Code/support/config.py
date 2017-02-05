@@ -97,14 +97,14 @@ class Config(object):
             # check pin
             pin = Prefs["plugin_pin"]
             if not len(pin):
-                Log.Warning("PIN enabled but not set, disabling PIN!")
+                Log.Warn("PIN enabled but not set, disabling PIN!")
                 return
 
             pin = pin.strip()
             try:
                 int(pin)
             except ValueError:
-                Log.Warning("PIN has to be an integer (0-9)")
+                Log.Warn("PIN has to be an integer (0-9)")
             self.pin = pin
             self.lock_advanced_menu = Prefs["plugin_pin_mode"] == "advanced menu"
             self.lock_menu = Prefs["plugin_pin_mode"] == "channel menu"
@@ -311,7 +311,7 @@ class Config(object):
             wrong_chmod = True
 
         if wrong_chmod:
-            Log.Warning("Chmod setting ignored, please use only 4-digit integers with leading 0 (e.g.: 775)")
+            Log.Warn("Chmod setting ignored, please use only 4-digit integers with leading 0 (e.g.: 775)")
 
     def init_subliminal_patches(self):
         # configure custom subtitle destination folders for scanning pre-existing subs

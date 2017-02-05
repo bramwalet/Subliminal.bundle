@@ -115,7 +115,7 @@ def scan_video(plex_part, ignore_all=False, hints=None, rating_key=None):
                         (not config.forced_only and not getattr(stream, "forced")):
                     known_embedded.append(stream.language_code)
     else:
-        Log.Warning("Part %s missing of %s, not able to scan internal streams", plex_part.id, rating_key)
+        Log.Warn("Part %s missing of %s, not able to scan internal streams", plex_part.id, rating_key)
 
     try:
         return subliminal.video.scan_video(plex_part.file, subtitles=external_subtitles,
