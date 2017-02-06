@@ -40,7 +40,19 @@ class DefaultScheduler(object):
         if "data" in Dict["tasks"][name]:
             return Dict["tasks"][name]["data"]
 
-    def clear_task_data(self, name):
+    def clear_task_data(self, name=None):
+        if name is None:
+            # full clean
+            Log.Debug("Clearing previous task data")
+            if Dict["tasks"]:
+                for task_name in Dict["tasks"].keys():
+                    if task_name == "queue":
+                        continue
+
+                    Dict["tasks"][task_name]["data"] = {}
+                Dict.Save()
+            return
+
         if name not in Dict["tasks"]:
             raise NotImplementedError("Task missing! %s" % name)
 

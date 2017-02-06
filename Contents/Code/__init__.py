@@ -52,6 +52,9 @@ def Start():
             if now > timeout:
                 del Dict["menu_history"][key]
 
+    # clear old task data
+    scheduler.clear_task_data()
+
     # init defaults; perhaps not the best idea to use ValidatePrefs here, but we'll see
     ValidatePrefs()
     Log.Debug(config.full_version)
