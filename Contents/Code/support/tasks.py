@@ -81,7 +81,7 @@ class Task(object):
         return
 
     def run(self):
-        raise NotImplementedError
+        self.time_start = datetime.datetime.now()
 
     def post_run(self, data_holder):
         self.running = False
@@ -130,6 +130,7 @@ class SearchAllRecentlyAddedMissing(Task):
         self.ready_for_display = True
 
     def run(self):
+        super(SearchAllRecentlyAddedMissing, self).run()
         self.running = True
         missing_count = len(self.items_searching)
         items_done_count = 0
@@ -278,6 +279,7 @@ class AvailableSubsForItem(SubtitleListingMixin, Task):
         Dict["tasks"][self.name]["data"] = {}
 
     def run(self):
+        super(AvailableSubsForItem, self).run()
         self.running = True
         track_usage("Subtitle", "manual", "list", 1)
         self.data = self.list_subtitles(self.rating_key, self.item_type, self.part_id, self.language)
@@ -299,6 +301,7 @@ class DownloadSubtitleForItem(DownloadSubtitleMixin, Task):
         self.rating_key = kwargs["rating_key"]
 
     def run(self):
+        super(DownloadSubtitleForItem, self).run()
         self.running = True
         self.download_subtitle(self.subtitle, self.rating_key)
         self.running = False
@@ -311,6 +314,7 @@ class MissingSubtitles(Task):
     language = None
 
     def run(self):
+        super(MissingSubtitles, self).run()
         self.running = True
         self.data = []
         recent_items = get_recent_items()
@@ -332,6 +336,7 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
     movies_cutoff = 61
 
     def run(self):
+        super(FindBetterSubtitles, self).run()
         self.running = True
         better_found = 0
         try:

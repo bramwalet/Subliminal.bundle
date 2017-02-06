@@ -127,6 +127,7 @@ class DefaultScheduler(object):
             task.last_run = datetime.datetime.now()
             task.time_start = None
             task.post_run(Dict["tasks"][name]["data"])
+            Dict.Save()
 
     def dispatch_task(self, *args, **kwargs):
         if "queue" not in Dict["tasks"]:
