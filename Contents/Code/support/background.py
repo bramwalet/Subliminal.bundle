@@ -119,13 +119,10 @@ class DefaultScheduler(object):
         Log.Debug("Scheduler: Running task %s", name)
         try:
             task.prepare(*args, **kwargs)
-            task.time_start = datetime.datetime.now()
             task.run()
         except Exception, e:
             Log.Error("Scheduler: Something went wrong when running %s: %s", name, traceback.format_exc())
         finally:
-            task.last_run = datetime.datetime.now()
-            task.time_start = None
             task.post_run(Dict["tasks"][name]["data"])
             Dict.Save()
 

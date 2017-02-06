@@ -85,8 +85,10 @@ class Task(object):
 
     def post_run(self, data_holder):
         self.running = False
+        self.last_run = datetime.datetime.now()
         if self.time_start:
             self.last_run_time = self.last_run - self.time_start
+        self.time_start = None
 
 
 class SearchAllRecentlyAddedMissing(Task):
