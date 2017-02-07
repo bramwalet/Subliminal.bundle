@@ -87,10 +87,15 @@ def find_subtitles(part):
         for path in paths:
             # we can't housekeep the global subtitle folders as we don't know about *all* media files
             # in a library; skip them
+            skip_path = False
             for fld in global_folders:
                 if path.startswith(fld):
                     Log.Info("Skipping housekeeping of folder: %s", path)
-                    continue
+                    skip_path = True
+                    break
+
+            if skip_path:
+                continue
 
             for file_path_listing in os.listdir(path.encode(sz_config.fs_encoding)):
                 file_path_listing = helpers.unicodize(file_path_listing)
