@@ -194,6 +194,9 @@ class SubZeroAgent(object):
 
             set_refresh_menu_state(media, media_type=self.agent_type)
 
+            # find local media
+            update_local_media(metadata, media, media_type=self.agent_type)
+
             # scanned_video_part_map = {subliminal.Video: plex_part, ...}
             scanned_video_part_map = scan_videos(videos, kind=self.agent_type)
 
