@@ -50,6 +50,7 @@ class DefaultScheduler(object):
                         continue
 
                     Dict["tasks"][task_name]["data"] = {}
+                    Dict["tasks"][task_name]["running"] = False
                 Dict.Save()
             return
 

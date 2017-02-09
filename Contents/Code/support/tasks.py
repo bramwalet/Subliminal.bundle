@@ -30,8 +30,8 @@ class Task(object):
     time_start = None
     data = None
 
-    stored_attributes = ("last_run", "last_run_time")
-    default_data = {"last_run": None, "last_run_time": None, "data": {}}
+    stored_attributes = ("last_run", "last_run_time", "running")
+    default_data = {"last_run": None, "last_run_time": None, "running": False, "data": {}}
 
     # task ready for being status-displayed?
     ready_for_display = False
