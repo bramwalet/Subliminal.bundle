@@ -159,6 +159,7 @@ class DefaultScheduler(object):
                 # work queue off
                 queue = Dict["tasks"]["queue"][:]
                 Dict["tasks"]["queue"] = []
+                Dict.Save()
                 for args, kwargs in queue:
                     Log.Debug("Dispatching single task: %s, %s", args, kwargs)
                     Thread.Create(self.run_task, True, *args, **kwargs)
