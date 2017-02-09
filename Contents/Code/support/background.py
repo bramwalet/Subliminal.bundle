@@ -178,7 +178,7 @@ class DefaultScheduler(object):
                 if not frequency_num:
                     continue
 
-                if not task.last_run or task.last_run + datetime.timedelta(**{frequency_key: frequency_num}) <= now:
+                if not task.last_run or (task.last_run + datetime.timedelta(**{frequency_key: frequency_num}) <= now):
                     self.run_task(name)
 
             Thread.Sleep(5.0)
