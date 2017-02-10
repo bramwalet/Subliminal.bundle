@@ -2,9 +2,6 @@
 
 import datetime
 
-from subzero.lib.dict import DictProxy
-
-
 mode_map = {
     "a": "auto",
     "m": "manual",
@@ -16,33 +13,25 @@ class SubtitleHistoryItem(object):
     item_title = None
     section_title = None
     rating_key = None
-    subtitle = None
+    provider_name = None
+    lang_name = None
+    score = None
     time = None
     mode = "a"
 
-    def __init__(self, item_title, rating_key, section_title=None, subtitle=subtitle, mode="a"):
+    def __init__(self, item_title, rating_key, section_title=None, subtitle=None, mode="a", time=None):
         self.item_title = item_title
         self.section_title = section_title
         self.rating_key = str(rating_key)
-        self.subtitle = subtitle
-        self.time = datetime.datetime.now()
+        self.provider_name = subtitle.provider_name
+        self.lang_name = subtitle.language.name
+        self.score = subtitle.score
+        self.time = time or datetime.datetime.now()
         self.mode = mode
 
     @property
     def title(self):
         return u"%s: %s" % (self.section_title, self.item_title)
-
-    @property
-    def score(self):
-        return self.subtitle.score
-
-    @property
-    def provider_name(self):
-        return self.subtitle.provider_name
-
-    @property
-    def lang_name(self):
-        return self.subtitle.language.name
 
     @property
     def mode_verbose(self):
@@ -69,27 +58,28 @@ class SubtitleHistoryItem(object):
         return not (self == other)
 
 
-class SubtitleHistory(DictProxy):
-    store = "history"
+class SubtitleHistory(object):
     size = 100
+    history_items = None
+    storage = None
 
     def __init__(self, storage, size=100):
-        super(SubtitleHistory, self).__init__(storage)
         self.size = size
+        self.storage = storage
+        self.history_items = storage.LoadObject("subtitle_history") or []
 
-    def setup_defaults(self):
-        return {"history_items": []}
-
-    def add(self, item_title, rating_key, section_title=None, subtitle=None, mode="a"):
+    def add(self, item_title, rating_key, section_title=None, subtitle=None, mode="a", time=None):
         # create copy
-        items = self.history_items[:]
-        item = SubtitleHistoryItem(item_title, rating_key, section_title=section_title, subtitle=subtitle, mode=mode)
+        items = self.history_items
+        item = SubtitleHistoryItem(item_title, rating_key, section_title=section_title, subtitle=subtitle, mode=mode, time=time)
 
         # insert item
         items.insert(0, item)
 
         # clamp item amount
-        items = items[:self.size]
+        self.history_items = items[:self.size]
 
         # store items
-        self.history_items = items
+        self.storage.SaveObject("subtitle_history", self.history_items)
+
+

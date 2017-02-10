@@ -51,3 +51,7 @@ sys.modules["support.ignore"] = ignore
 import history
 
 sys.modules["support.history"] = history
+
+import data
+
+sys.modules["support.data"] = data
