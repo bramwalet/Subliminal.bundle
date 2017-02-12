@@ -1,3 +1,22 @@
+1.4.19.866
+- core: fix wrong usage of LogKit
+
+
+1.4.19.857
+
+- core: add option to enable/disable channel and/or agent modes (fixes #220)
+- core: skip inexistent internal streams when scanning for internal subtitles (fixes #222)
+- core: fix filename encoding (fixes #223)
+- core: storage optimizations
+- menu: add pin-based channel menu locking (the whole channel or only the advanced menu)
+
+
+1.4.17.836
+- core: support for any media file that PMS supports (internal subtitles on mp4 for example)
+- core: fix broken ignore folders containing "subzero.ignore/.subzero.ignore/.nosz"
+- core: fix duplicate subtitles (lowercase/default case)
+- core: fix broken tasks queue due to oversight
+
 
 1.4.16.822
 - menu: add per-section recently added menu
