@@ -96,7 +96,7 @@ class Config(object):
         if Prefs["plugin_pin_mode"] in ("channel menu", "advanced menu"):
             # check pin
             pin = Prefs["plugin_pin"]
-            if not len(pin):
+            if not pin or not len(pin):
                 Log.Warn("PIN enabled but not set, disabling PIN!")
                 return
 
