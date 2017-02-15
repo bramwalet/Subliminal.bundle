@@ -39,10 +39,11 @@ class Task(object):
     def __init__(self, scheduler):
         self.name = self.get_class_name()
         self.ready_for_display = False
-        self.running = False
         self.time_start = None
         self.scheduler = scheduler
         self.setup_defaults()
+
+        self.running = False
 
     def get_class_name(self):
         return getattr(getattr(self, "__class__"), "__name__")
