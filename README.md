@@ -10,6 +10,11 @@ Checkout **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)**
 
 ## Changelog
 
+1.4.19.882
+- core: fix tasks for new users
+- core: double check pin correctness/existance when pin is enabled
+
+
 1.4.19.878
 - core/menu: fix a task's last runtime display
 - core: task optimizations
