@@ -30,3 +30,10 @@ PICTURE = 12
 PHOTO = 13
 CLIP = 14
 PLAYLIST_ITEM = 15
+
+
+mode_map = {
+    "a": "auto",
+    "m": "manual",
+    "b": "auto-better"
+}

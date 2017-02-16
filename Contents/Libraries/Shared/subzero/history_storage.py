@@ -2,11 +2,7 @@
 
 import datetime
 
-mode_map = {
-    "a": "auto",
-    "m": "manual",
-    "b": "auto-better"
-}
+from constants import mode_map
 
 
 class SubtitleHistoryItem(object):
