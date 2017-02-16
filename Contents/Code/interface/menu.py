@@ -19,7 +19,7 @@ from support.items import get_item, get_on_deck_items, refresh_item, get_all_ite
 from support.lib import Plex
 from support.missing_subtitles import items_get_all_missing_subs
 from support.plex_media import get_plex_metadata, scan_videos
-from support.storage import reset_storage, log_storage, get_subtitle_info
+from support.storage import reset_storage, log_storage, get_subtitle_storage
 
 # init GUI
 ObjectContainer.art = R(ART)
@@ -562,7 +562,8 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
     ))
 
     # get stored subtitle info for item id
-    current_subtitle_info = get_subtitle_info(rating_key)
+    subtitle_storage = get_subtitle_storage()
+    stored_subs = subtitle_storage.load_or_new(rating_key, item_title)
 
     # get the plex item
     plex_item = list(Plex["library"].metadata(rating_key))[0]
@@ -575,9 +576,6 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
         filename = os.path.basename(part.file)
         part_id = str(part.id)
 
-        # get corresponding stored subtitle data for that media part (physical media item)
-        sub_part_data = current_subtitle_info.get(part_id, {}) if current_subtitle_info else {}
-
         # iterate through all configured languages
         for lang in config.lang_list:
             lang_a2 = lang.alpha2
@@ -585,22 +583,21 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
             if cast_bool(Prefs["subtitles.language.ietf"]) and "-" in lang_a2:
                 lang_a2 = lang_a2.split("-")[0]
 
-            sub_data_for_lang = sub_part_data.get(lang_a2, {})
-
-            # try getting current subtitle information for that language
-            current_subtitle_key = sub_data_for_lang.get("current", (None, None))
-            current_sub_provider_name, current_sub_id = current_subtitle_key
+            # get corresponding stored subtitle data for that media part (physical media item), for language
+            current_sub = stored_subs.get_any(part_id, lang_a2)
+            current_sub_id = None
+            current_sub_provider_name = None
 
             summary = u"No current subtitle in storage"
             current_score = None
-            if current_sub_provider_name:
-                current_subtitle = sub_part_data[lang_a2][current_subtitle_key]
-                current_score = current_subtitle["score"]
+            if current_sub:
+                current_sub_id = current_sub.id
+                current_sub_provider_name = current_sub.provider_name
+                current_score = current_sub.score
 
                 summary = u"Current subtitle: %s (added: %s, %s), Language: %s, Score: %i, Storage: %s" % \
-                          (current_sub_provider_name,
-                           df(current_subtitle["date_added"]), mode_map.get(current_subtitle.get("mode", "a")), lang,
-                           current_subtitle["score"], current_subtitle["storage"])
+                          (current_sub.provider_name, df(current_sub.date_added), current_sub.mode_verbose, lang,
+                           current_sub.score, current_sub.storage_type)
 
             oc.add(DirectoryObject(
                 key=Callback(ListAvailableSubsForItemMenu, rating_key=rating_key, part_id=part_id, title=title,

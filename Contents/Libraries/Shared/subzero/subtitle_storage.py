@@ -64,6 +64,8 @@ class StoredVideoSubtitles(object):
                                        content=subtitle.content)
         subs["current"] = sub_key
 
+        return True
+
     def get_any(self, part_id, lang):
         part_id = str(part_id)
         part = self.parts.get(part_id)
