@@ -73,7 +73,7 @@ def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_ty
         stored_any = False
         for subtitle in video_subtitles:
             lang = Locale.Language.Match(subtitle.language.alpha2)
-            Log.Debug(u"Adding subtitle to storage: %s, %s, %s" % video_id, part_id, title)
+            Log.Debug(u"Adding subtitle to storage: %s, %s, %s" % (video_id, part_id, title))
             ret_val = stored_subs.add(part_id, lang, subtitle, storage_type, mode=mode)
 
             if ret_val:

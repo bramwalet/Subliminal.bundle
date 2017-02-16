@@ -37,11 +37,13 @@ class StoredVideoSubtitles(object):
     video_id = None  # rating_key
     title = None
     parts = None
+    version = None
 
-    def __init__(self, video_id, title):
+    def __init__(self, video_id, title, version=None):
         self.video_id = str(video_id)
         self.title = title
         self.parts = {}
+        self.version = version
 
     def add(self, part_id, lang, subtitle, storage_type, date_added=None, mode="a"):
         part_id = str(part_id)
@@ -97,6 +99,7 @@ class StoredSubtitlesManager(object):
     manages the storage and retrieval of StoredVideoSubtitles instances for a given video_id
     """
     storage = None
+    version = 1
 
     def __init__(self, storage):
         self.storage = storage
@@ -104,11 +107,16 @@ class StoredSubtitlesManager(object):
     def get_storage_filename(self, video_id):
         return "subs_%s" % video_id
 
-    def load_or_new(self, video_id, title):
+    def load(self, video_id):
         subs_for_video = self.storage.LoadObject(self.get_storage_filename(video_id))
+        return subs_for_video
+
+    def load_or_new(self, video_id, title):
+        subs_for_video = self.load(video_id)
         if not subs_for_video:
-            subs_for_video = StoredVideoSubtitles(video_id, title)
+            subs_for_video = StoredVideoSubtitles(video_id, title, version=self.version)
             self.save(subs_for_video)
+        return subs_for_video
 
     def save(self, subs_for_video):
         self.storage.SaveObject(self.get_storage_filename(subs_for_video.video_id), subs_for_video)

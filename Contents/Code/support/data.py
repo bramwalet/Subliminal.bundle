@@ -19,3 +19,50 @@ def migrate():
 
         del Dict["history"]
         Dict.Save()
+
+    # migrate subtitle storage from Dict to Data
+    if "subs" in Dict:
+        from support.storage import get_subtitle_storage
+        from subzero.subtitle_storage import StoredSubtitle
+
+        subtitle_storage = get_subtitle_storage()
+
+        for video_id, parts in Dict["subs"].iteritems():
+            stored_subs = subtitle_storage.load_or_new(video_id, None)
+            stored_subs.version = 1
+
+            Log.Debug(u"Migrating %s" % video_id)
+
+            stored_any = False
+            for part_id, lang_dict in parts.iteritems():
+                part_id = str(part_id)
+                Log.Debug(u"Migrating %s, %s" % (video_id, part_id))
+
+                for lang, subs in lang_dict.iteritems():
+                    lang = str(lang)
+                    if "current" in subs:
+                        current_key = subs["current"]
+                        provider_name, subtitle_id = current_key
+                        sub = subs.get(current_key)
+                        if sub:
+                            stored_subs.title = sub["title"]
+                            new_sub = StoredSubtitle(sub["score"], sub["storage"], sub["hash"], provider_name,
+                                                     subtitle_id, date_added=sub["date_added"], mode=sub["mode"])
+
+                            if part_id not in stored_subs.parts:
+                                stored_subs.parts[part_id] = {}
+
+                            if lang not in stored_subs.parts[part_id]:
+                                stored_subs.parts[part_id][lang] = {}
+
+                            Log.Debug(u"Migrating %s, %s, %s" % (video_id, part_id, current_key))
+
+                            stored_subs.parts[part_id][lang][current_key] = new_sub
+                            stored_subs.parts[part_id][lang]["current"] = current_key
+                            stored_any = True
+
+            if stored_any:
+                subtitle_storage.save(stored_subs)
+
+        del Dict["subs"]
+        Dict.Save()
