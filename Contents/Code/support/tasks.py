@@ -355,7 +355,7 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
         now = datetime.datetime.now()
 
         subtitle_storage = get_subtitle_storage()
-        recent_subs = subtitle_storage.load_recent_files()
+        recent_subs = subtitle_storage.load_recent_files(age_days=max_search_days)
 
         for fn, stored_subs in recent_subs.iteritems():
             video_id = stored_subs.video_id
