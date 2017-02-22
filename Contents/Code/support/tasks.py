@@ -360,6 +360,7 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
         for fn, stored_subs in recent_subs.iteritems():
             video_id = stored_subs.video_id
 
+            # fixme: store plex_item.type and plex_item.added_at in subtitle storage so we can skip the API
             try:
                 plex_item = get_item(video_id)
             except:
