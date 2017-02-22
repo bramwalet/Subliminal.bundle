@@ -421,13 +421,13 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
                             self.download_subtitle(sub, video_id, mode="b")
                             better_found += 1
 
-            #fixme
-            # if ditch_parts:
-            #     for part_id in ditch_parts:
-            #         try:
-            #             del parts[part_id]
-            #         except KeyError:
-            #             pass
+            if ditch_parts:
+                for part_id in ditch_parts:
+                    try:
+                        del stored_subs.parts[part_id]
+                    except KeyError:
+                        pass
+                subtitle_storage.save(stored_subs)
 
         if better_found:
             Log.Debug("Task: %s, done. Better subtitles found for %s items", self.name, better_found)
