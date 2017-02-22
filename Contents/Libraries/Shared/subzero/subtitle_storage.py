@@ -1,6 +1,7 @@
 # coding=utf-8
 import datetime
 import hashlib
+import os
 
 from constants import mode_map
 
@@ -16,7 +17,7 @@ class StoredSubtitle(object):
     content = None
 
     def __init__(self, score, storage_type, hash, provider_name, id, date_added=None, mode="a", content=None):
-        self.score = score
+        self.score = int(score)
         self.storage_type = storage_type
         self.hash = hash
         self.provider_name = provider_name
@@ -106,6 +107,34 @@ class StoredSubtitlesManager(object):
 
     def get_storage_filename(self, video_id):
         return "subs_%s" % video_id
+
+    @property
+    def dataitems_path(self):
+        return os.path.join(getattr(self.storage, "_core").storage.data_path, "DataItems")
+
+    def get_all_files(self):
+        return os.listdir(self.dataitems_path)
+
+    def get_recent_files(self, age_days=30):
+        fl = []
+        root = self.dataitems_path
+        recent_dt = datetime.datetime.now() - datetime.timedelta(days=age_days)
+        for fn in self.get_all_files():
+            if not fn.startswith("subs_"):
+                continue
+
+            finfo = os.stat(os.path.join(root, fn))
+            created = datetime.datetime.fromtimestamp(finfo.st_ctime)
+            if created > recent_dt:
+                fl.append(fn)
+        return fl
+
+    def load_recent_files(self, age_days=30):
+        fl = self.get_recent_files(age_days=age_days)
+        out = {}
+        for fn in fl:
+            out[fn] = self.storage.LoadObject(fn)
+        return out
 
     def load(self, video_id):
         subs_for_video = self.storage.LoadObject(self.get_storage_filename(video_id))
