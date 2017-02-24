@@ -24,11 +24,13 @@ def migrate():
     if "subs" in Dict:
         from support.storage import get_subtitle_storage
         from subzero.subtitle_storage import StoredSubtitle
+        from support.plex_media import get_item
 
         subtitle_storage = get_subtitle_storage()
 
         for video_id, parts in Dict["subs"].iteritems():
-            stored_subs = subtitle_storage.load_or_new(video_id, None)
+            item = get_item(video_id)
+            stored_subs = subtitle_storage.load_or_new(item)
             stored_subs.version = 1
 
             Log.Debug(u"Migrating %s" % video_id)

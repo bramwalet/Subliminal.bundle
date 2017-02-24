@@ -563,7 +563,7 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
 
     # get stored subtitle info for item id
     subtitle_storage = get_subtitle_storage()
-    stored_subs = subtitle_storage.load_or_new(rating_key, item_title)
+    stored_subs = subtitle_storage.load_or_new(item)
 
     # get the plex item
     plex_item = list(Plex["library"].metadata(rating_key))[0]

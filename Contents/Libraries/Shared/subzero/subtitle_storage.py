@@ -2,8 +2,11 @@
 import datetime
 import hashlib
 import os
+import logging
 
 from constants import mode_map
+
+logger = logging.getLogger(__name__)
 
 
 class StoredSubtitle(object):
@@ -39,12 +42,17 @@ class StoredVideoSubtitles(object):
     title = None
     parts = None
     version = None
+    item_type = None  # movie / episode
+    added_at = None
 
-    def __init__(self, video_id, title, version=None):
-        self.video_id = str(video_id)
-        self.title = title
+    def __init__(self, plex_item, version=None):
+        self.video_id = str(plex_item.rating_key)
+
+        self.title = plex_item.title
         self.parts = {}
         self.version = version
+        self.item_type = plex_item.type
+        self.added_at = datetime.datetime.fromtimestamp(plex_item.added_at)
 
     def add(self, part_id, lang, subtitle, storage_type, date_added=None, mode="a"):
         part_id = str(part_id)
@@ -100,10 +108,11 @@ class StoredSubtitlesManager(object):
     manages the storage and retrieval of StoredVideoSubtitles instances for a given video_id
     """
     storage = None
-    version = 1
+    version = 2
 
-    def __init__(self, storage):
+    def __init__(self, storage, plexapi_item_getter):
         self.storage = storage
+        self.get_item = plexapi_item_getter
 
     def get_storage_filename(self, video_id):
         return "subs_%s" % video_id
@@ -133,17 +142,48 @@ class StoredSubtitlesManager(object):
         fl = self.get_recent_files(age_days=age_days)
         out = {}
         for fn in fl:
-            out[fn] = self.storage.LoadObject(fn)
+            out[fn] = self.load(filename=fn)
         return out
 
-    def load(self, video_id):
-        subs_for_video = self.storage.LoadObject(self.get_storage_filename(video_id))
+    def migrate_v2(self, subs_for_video):
+        plex_item = self.get_item(subs_for_video.video_id)
+        subs_for_video.item_type = plex_item.type
+        subs_for_video.added_at = datetime.datetime.fromtimestamp(plex_item.added_at)
+        subs_for_video.version = 2
+        return True
+
+    def load(self, video_id=None, filename=None):
+        subs_for_video = self.storage.LoadObject(self.get_storage_filename(video_id) if video_id else filename)
+
+        if not subs_for_video:
+            return
+
+        # apply possible migrations
+        cur_ver = old_ver = subs_for_video.version
+
+        if cur_ver < self.version:
+            success = False
+            while cur_ver < self.version:
+                cur_ver += 1
+                mig_func = "migrate_v%s" % cur_ver
+                if hasattr(self, mig_func):
+                    logger.info("Migrating subtitle storage for %s %s>%s" % (subs_for_video.video_id, old_ver, cur_ver))
+                    success = getattr(self, mig_func)(subs_for_video)
+                    if not success:
+                        break
+
+            if cur_ver > old_ver and success:
+                logger.info("Storing migrated subtitle storage for %s" % subs_for_video.video_id)
+                self.save(subs_for_video)
+            elif not success:
+                logger.info("Migration of %s %s>%s failed" % (subs_for_video.video_id, old_ver, cur_ver))
+
         return subs_for_video
 
-    def load_or_new(self, video_id, title):
-        subs_for_video = self.load(video_id)
+    def load_or_new(self, plex_item):
+        subs_for_video = self.load(plex_item.rating_key)
         if not subs_for_video:
-            subs_for_video = StoredVideoSubtitles(video_id, title, version=self.version)
+            subs_for_video = StoredVideoSubtitles(plex_item, version=self.version)
             self.save(subs_for_video)
         return subs_for_video
 

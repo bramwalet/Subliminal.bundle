@@ -6,6 +6,7 @@ import pprint
 import copy
 
 import subliminal
+from items import get_item
 from subzero.subtitle_storage import StoredSubtitlesManager
 
 from subtitlehelpers import force_utf8
@@ -13,7 +14,7 @@ from config import config
 from helpers import notify_executable, get_title_for_video_metadata, cast_bool, force_unicode
 
 
-get_subtitle_storage = lambda: StoredSubtitlesManager(Data)
+get_subtitle_storage = lambda: StoredSubtitlesManager(Data, get_item)
 
 
 def whack_missing_parts(scanned_video_part_map, existing_parts=None):
@@ -62,11 +63,12 @@ def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_ty
         part = scanned_video_part_map[video]
         part_id = str(part.id)
         video_id = str(video.id)
+        plex_item = get_item(video_id)
         metadata = video.plexapi_metadata
         title = get_title_for_video_metadata(metadata)
 
         subtitle_storage = get_subtitle_storage()
-        stored_subs = subtitle_storage.load_or_new(video_id, title)
+        stored_subs = subtitle_storage.load_or_new(plex_item)
 
         existing_parts.append(part_id)
 

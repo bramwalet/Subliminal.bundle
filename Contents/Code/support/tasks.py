@@ -359,15 +359,8 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
 
         for fn, stored_subs in recent_subs.iteritems():
             video_id = stored_subs.video_id
-
-            # fixme: store plex_item.type and plex_item.added_at in subtitle storage so we can skip the API
-            try:
-                plex_item = get_item(video_id)
-            except:
-                Log.Error("Couldn't get item info for %s", video_id)
-                continue
-            cutoff = self.series_cutoff if plex_item.type == "episode" else self.movies_cutoff
-            added_date = datetime.datetime.fromtimestamp(plex_item.added_at)
+            cutoff = self.series_cutoff if stored_subs.item_type == "episode" else self.movies_cutoff
+            added_date = datetime.datetime.fromtimestamp(stored_subs.added_at)
 
             # don't search for better subtitles until at least 30 minutes have passed
             if added_date + datetime.timedelta(minutes=30) > now:
