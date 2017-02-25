@@ -360,15 +360,14 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
         for fn, stored_subs in recent_subs.iteritems():
             video_id = stored_subs.video_id
             cutoff = self.series_cutoff if stored_subs.item_type == "episode" else self.movies_cutoff
-            added_date = datetime.datetime.fromtimestamp(stored_subs.added_at)
 
             # don't search for better subtitles until at least 30 minutes have passed
-            if added_date + datetime.timedelta(minutes=30) > now:
+            if stored_subs.added_at + datetime.timedelta(minutes=30) > now:
                 Log.Debug("Item %s too new, skipping", video_id)
                 continue
 
             # added_date <= max_search_days?
-            if added_date + datetime.timedelta(days=max_search_days) <= now:
+            if stored_subs.added_at + datetime.timedelta(days=max_search_days) <= now:
                 continue
 
             ditch_parts = []
@@ -401,7 +400,7 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
                         continue
 
                     try:
-                        subs = self.list_subtitles(video_id, plex_item.type, part_id, language)
+                        subs = self.list_subtitles(video_id, stored_subs.item_type, part_id, language)
                     except PartUnknownException:
                         Log.Info("Part %s unknown/gone; ditching subtitle info", part_id)
                         ditch_parts.append(part_id)
