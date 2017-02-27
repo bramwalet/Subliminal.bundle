@@ -224,7 +224,7 @@ class PMSMediaProxy(object):
             if m.items:
                 media_item = m.items[0]
                 if not part_id:
-                    return media_item.parts[0]
+                    return media_item.parts[0] if media_item.parts else None
 
                 for part in media_item.parts:
                     if str(part.id) == str(part_id):
