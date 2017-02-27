@@ -162,6 +162,15 @@ class PartUnknownException(Exception):
 
 
 def get_plex_metadata(rating_key, part_id, item_type):
+    """
+    uses the Plex 3rd party API accessor to get metadata information
+
+    :param rating_key:
+    :param part_id:
+    :param item_type:
+    :return:
+    """
+
     plex_item = list(Plex["library"].metadata(rating_key))[0]
 
     # find current part
@@ -192,3 +201,37 @@ def get_plex_metadata(rating_key, part_id, item_type):
                                                                "episode": None,
                                                                "section": plex_item.section.title})
     return metadata
+
+
+class PMSMediaProxy(object):
+    """
+    Proxy object for getting data from a mediatree items "internally" via the PMS
+
+    note: this could be useful later on: Media.TV_Show(getattr(Metadata, "_access_point"), id=XXXXXX)
+    """
+
+    def __init__(self, media_id):
+        self.mediatree = Media.TreeForDatabaseID(media_id)
+
+    def get_part(self, part_id=None):
+        """
+        walk the mediatree until the given part was found; if no part was given, return the first one
+        :param part_id:
+        :return:
+        """
+        m = self.mediatree
+        while 1:
+            if m.items:
+                media_item = m.items[0]
+                if not part_id:
+                    return media_item.parts[0]
+
+                for part in media_item.parts:
+                    if str(part.id) == str(part_id):
+                        return part
+                break
+
+            if not m.children:
+                break
+
+            m = m.children[0]

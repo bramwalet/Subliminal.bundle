@@ -156,6 +156,8 @@ class SubZeroAgent(object):
         self.agent_type = "movies" if isinstance(self, Agent.Movies) else "series"
         self.name = "Sub-Zero Subtitles (%s, %s)" % (self.agent_type_verbose, config.get_version())
 
+        print "I WAS JUST INITED", locals()
+
     def search(self, results, media, lang):
         Log.Debug("Sub-Zero %s, %s search" % (config.version, self.agent_type))
         results.Append(MetadataSearchResult(id='null', score=100))

@@ -12,6 +12,7 @@ from subzero.subtitle_storage import StoredSubtitlesManager
 from subtitlehelpers import force_utf8
 from config import config
 from helpers import notify_executable, get_title_for_video_metadata, cast_bool, force_unicode
+from plex_media import PMSMediaProxy
 
 
 get_subtitle_storage = lambda: StoredSubtitlesManager(Data, get_item)
@@ -144,7 +145,14 @@ def save_subtitles_to_metadata(videos, subtitles):
         mediaPart = videos[video]
         for subtitle in video_subtitles:
             content = force_utf8(subtitle.text) if config.enforce_encoding else subtitle.content
-            mediaPart.subtitles[Locale.Language.Match(subtitle.language.alpha2)][subtitle.id] = Proxy.Media(content, ext="srt")
+
+            if not isinstance(mediaPart, Framework.api.agentkit.MediaPart):
+                # we're being handed a Plex.py model instance here, not an internal PMS MediaPart object.
+                # get the correct one
+                mp = PMSMediaProxy(video.id).get_part()
+            else:
+                mp = mediaPart
+            mp.subtitles[Locale.Language.Match(subtitle.language.alpha2)][subtitle.id] = Proxy.Media(content, ext="srt")
     return True
 
 
