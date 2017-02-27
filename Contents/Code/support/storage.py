@@ -149,7 +149,7 @@ def save_subtitles_to_metadata(videos, subtitles):
             if not isinstance(mediaPart, Framework.api.agentkit.MediaPart):
                 # we're being handed a Plex.py model instance here, not an internal PMS MediaPart object.
                 # get the correct one
-                mp = PMSMediaProxy(video.id).get_part()
+                mp = PMSMediaProxy(video.id).get_part(mediaPart.id)
             else:
                 mp = mediaPart
             mp.subtitles[Locale.Language.Match(subtitle.language.alpha2)][subtitle.id] = Proxy.Media(content, ext="srt")
