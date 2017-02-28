@@ -20,8 +20,10 @@ def get_item(key):
     item_id = int(key)
     item_container = Plex["library"].metadata(item_id)
 
-    item = list(item_container)[0]
-    return item
+    try:
+        return list(item_container)[0]
+    except IndexError:
+        pass
 
 
 def get_item_kind(item):

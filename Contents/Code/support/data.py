@@ -30,6 +30,9 @@ def migrate():
 
         for video_id, parts in Dict["subs"].iteritems():
             item = get_item(video_id)
+            if not item:
+                continue
+
             stored_subs = subtitle_storage.load_or_new(item)
             stored_subs.version = 1
 
