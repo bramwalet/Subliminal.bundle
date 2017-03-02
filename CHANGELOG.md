@@ -1,3 +1,16 @@
+1.4.19.882
+- core: fix tasks for new users
+- core: double check pin correctness/existance when pin is enabled
+
+
+1.4.19.878
+- core/menu: fix a task's last runtime display
+- core: task optimizations
+- core: fix leftover subtitles cleanup handling in case of a custom subtitle folder #234
+- core: run the scheduler even if permissions for libraries are wrong ("fixes" #236)
+- core: store subtitle history data in a different data format; reduce used storage size drastically (#233)
+
+
 1.4.19.866
 - core: fix wrong usage of LogKit
 

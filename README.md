@@ -10,17 +10,10 @@ Checkout **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)**
 
 ## Changelog
 
-1.4.19.882
-- core: fix tasks for new users
-- core: double check pin correctness/existance when pin is enabled
-
-
-1.4.19.878
-- core/menu: fix a task's last runtime display
-- core: task optimizations
-- core: fix leftover subtitles cleanup handling in case of a custom subtitle folder #234
-- core: run the scheduler even if permissions for libraries are wrong ("fixes" #236)
-- core: store subtitle history data in a different data format; reduce used storage size drastically (#233)
+1.4.22.898
+- core: migrate history and subtitle storage to a better implementation, making it far more stable. subtitle storage now also stores the downloaded subtitle data for future usage, so it will be possible to switch between them
+- core/menu: manual subtitle download and the FindBetterSubtitles-task now also work with metadata storage (hi @ shield users)
+- core: optimize FindBetterSubtitles-task
 
 
 [older changes](CHANGELOG.md)
