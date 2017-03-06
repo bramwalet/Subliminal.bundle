@@ -1,4 +1,5 @@
 # coding=utf-8
+from urllib2 import URLError
 
 
 def migrate():
@@ -29,7 +30,11 @@ def migrate():
         subtitle_storage = get_subtitle_storage()
 
         for video_id, parts in Dict["subs"].iteritems():
-            item = get_item(video_id)
+            try:
+                item = get_item(video_id)
+            except URLError:
+                continue
+
             if not item:
                 continue
 
