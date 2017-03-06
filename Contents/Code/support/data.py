@@ -50,7 +50,7 @@ def migrate():
                         provider_name, subtitle_id = current_key
                         sub = subs.get(current_key)
                         if sub:
-                            stored_subs.title = sub["title"]
+                            stored_subs.title = sub.get("title", "Legacy data")
                             new_sub = StoredSubtitle(sub["score"], sub["storage"], sub["hash"], provider_name,
                                                      subtitle_id, date_added=sub["date_added"], mode=sub["mode"])
 
