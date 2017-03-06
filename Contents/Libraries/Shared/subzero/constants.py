@@ -13,6 +13,8 @@ TITLE = "%s Subtitles" % PLUGIN_NAME
 ART      = 'art-default.jpg'
 ICON     = 'icon-default.jpg'
 
+DEFAULT_TIMEOUT = 10
+
 
 # media types as on https://github.com/Arcanemagus/plex-api/wiki/MediaTypes
 MOVIE = 1

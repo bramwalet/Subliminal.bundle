@@ -4,6 +4,7 @@ import plex
 from subzero.intent import TempIntent
 from subzero.lib.dict import DictProxy
 from subzero.lib.httpfake import PlexPyNativeResponseProxy
+from subzero.constants import DEFAULT_TIMEOUT
 
 
 class PlexPyNativeRequestProxy(object):
@@ -28,7 +29,8 @@ class PlexPyNativeRequestProxy(object):
         data = None
         status_code = 200
         try:
-            data = HTTP.Request(self.url, headers=self.headers, immediate=True, method=self.method)
+            data = HTTP.Request(self.url, headers=self.headers, immediate=True, method=self.method,
+                                timeout=DEFAULT_TIMEOUT)
         except Ex.HTTPError as e:
             status_code = e.code
         return PlexPyNativeResponseProxy(data, status_code, self)
