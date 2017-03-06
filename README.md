@@ -10,6 +10,10 @@ Checkout **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)**
 
 ## Changelog
 
+1.4.22.904
+- core: hotfix for more robust migrations
+
+
 1.4.22.898
 - core: migrate history and subtitle storage to a better implementation, making it far more stable. subtitle storage now also stores the downloaded subtitle data for future usage, so it will be possible to switch between them
 - core/menu: manual subtitle download and the FindBetterSubtitles-task now also work with metadata storage (hi @ shield users)
