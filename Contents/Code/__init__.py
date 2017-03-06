@@ -1,6 +1,7 @@
 # coding=utf-8
 import datetime
 import sys
+import traceback
 
 from subzero.sandbox import restore_builtins
 
@@ -54,7 +55,10 @@ def Start():
                 del Dict["menu_history"][key]
 
     # run migrations
-    migrate()
+    try:
+        migrate()
+    except:
+        Log.Error("Migration failed: %s" % traceback.format_exc())
 
     # clear old task data
     scheduler.clear_task_data()
