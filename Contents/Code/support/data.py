@@ -1,5 +1,11 @@
 # coding=utf-8
-from urllib2 import URLError
+
+
+def dispatch_migrate():
+    try:
+        migrate()
+    except:
+        Log.Error("Migration failed: %s" % traceback.format_exc())
 
 
 def migrate():
@@ -9,7 +15,7 @@ def migrate():
     """
 
     # migrate subtitle history from Dict to Data
-    if "history" in Dict and Dict["history"]["history_items"]:
+    if "history" in Dict and Dict["history"].get("history_items"):
         Log.Debug("Running migration for history data")
         from support.history import get_history
         history = get_history()
@@ -32,7 +38,7 @@ def migrate():
         for video_id, parts in Dict["subs"].iteritems():
             try:
                 item = get_item(video_id)
-            except URLError:
+            except:
                 continue
 
             if not item:
