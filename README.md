@@ -10,7 +10,7 @@ Checkout **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)**
 
 ## Changelog
 
-1.4.22.904
+1.4.22.908
 - core: hotfix for more robust migrations
 
 
