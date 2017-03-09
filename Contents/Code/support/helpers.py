@@ -46,11 +46,11 @@ def unicodize(s):
     try:
         filename = unicodedata.normalize('NFC', unicode(s.decode('utf-8')))
     except:
-        Log('Failed to unicodize: ' + filename)
+        Log('Failed to unicodize: ' + repr(filename))
     try:
         filename = re.sub(RE_UNICODE_CONTROL, '', filename)
     except:
-        Log('Couldn\'t strip control characters: ' + filename)
+        Log('Couldn\'t strip control characters: ' + repr(filename))
     return filename
 
 
