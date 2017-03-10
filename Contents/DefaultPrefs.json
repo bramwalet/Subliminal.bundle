@@ -304,7 +304,7 @@
   },
   {
     "id": "subtitles.search.minimumMovieScore1",
-    "label": "Minimum score for movies (min: 23, sane/min-ideal: 33; see http://v.ht/szscores)",
+    "label": "Minimum score for movies (min: 23, def/sane/min-ideal: 33; see http://v.ht/szscores)",
     "type": "text",
     "default": "33"
   },
