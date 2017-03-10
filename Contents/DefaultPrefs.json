@@ -298,13 +298,13 @@
   },
   {
     "id": "subtitles.search.minimumTVScore1",
-    "label": "Minimum score for TV (min: 77, sane: 110; see http://v.ht/szscores)",
+    "label": "Minimum score for TV (min: 77, sane: 110; min-ideal: 116; see http://v.ht/szscores)",
     "type": "text",
     "default": "116"
   },
   {
     "id": "subtitles.search.minimumMovieScore1",
-    "label": "Minimum score for movies (def: 23, sane: 33; see http://v.ht/szscores)",
+    "label": "Minimum score for movies (min: 23, sane/min-ideal: 33; see http://v.ht/szscores)",
     "type": "text",
     "default": "33"
   },
