@@ -3,6 +3,7 @@ import datetime
 import hashlib
 import os
 import logging
+import traceback
 
 from constants import mode_map
 
@@ -160,7 +161,7 @@ class StoredSubtitlesManager(object):
         try:
             subs_for_video = self.storage.LoadObject(fn)
         except:
-            logger.error("Failed to load item: %s" % fn)
+            logger.error("Failed to load item %s: %s" % (fn, traceback.format_exc()))
 
         if not subs_for_video:
             return
