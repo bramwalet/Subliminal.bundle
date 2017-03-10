@@ -138,23 +138,8 @@ def find_subtitles(part):
         local_basename2 = local_basename.rsplit('.', 1)[0]
         filename_matches_part = local_basename == part_basename or local_basename2 == part_basename
 
-        # If the file is located within the global subtitle folder and it's name doesn't match exactly
-        # then we should simply ignore it.
-        #
-        if global_folders and not filename_matches_part:
-            skip_path = False
-            for fld in global_folders:
-                if file_path.startswith(fld):
-                    skip_path = True
-                    break
-
-            if skip_path:
-                continue
-
-        # If we have more than one media file within the folder and located filename doesn't match
-        # exactly then we should simply ignore it.
-        #
-        if total_media_files > 1 and not filename_matches_part:
+        # generally don't add non-matching subs
+        if not filename_matches_part:
             continue
 
         subtitle_helper = subtitlehelpers.subtitle_helpers(file_path)
