@@ -62,7 +62,10 @@ class SubtitleHistory(object):
     def __init__(self, storage, size=100):
         self.size = size
         self.storage = storage
-        self.history_items = storage.LoadObject("subtitle_history") or []
+        try:
+            self.history_items = storage.LoadObject("subtitle_history") or []
+        except:
+            self.history_items = []
 
     def add(self, item_title, rating_key, section_title=None, subtitle=None, mode="a", time=None):
         # create copy
