@@ -263,7 +263,8 @@ def notify_executable(exe_info, videos, subtitles, storage):
 
             Log.Debug(u"Calling %s with arguments: %s" % (exe, prepared_arguments))
             try:
-                output = subprocess.check_output([exe] + prepared_arguments, stderr=subprocess.STDOUT)
+                output = subprocess.check_output(subprocess.list2cmdline([exe] + prepared_arguments),
+                                                 stderr=subprocess.STDOUT, shell=True)
             except subprocess.CalledProcessError:
                 Log.Error(u"Calling %s failed: %s" % (exe, traceback.format_exc()))
             else:
