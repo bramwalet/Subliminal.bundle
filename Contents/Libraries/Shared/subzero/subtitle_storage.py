@@ -150,6 +150,8 @@ class StoredSubtitlesManager(object):
 
     def migrate_v2(self, subs_for_video):
         plex_item = self.get_item(subs_for_video.video_id)
+        if not plex_item:
+            return False
         subs_for_video.item_type = plex_item.type
         subs_for_video.added_at = datetime.datetime.fromtimestamp(plex_item.added_at)
         subs_for_video.version = 2
@@ -177,7 +179,9 @@ class StoredSubtitlesManager(object):
                 if hasattr(self, mig_func):
                     logger.info("Migrating subtitle storage for %s %s>%s" % (subs_for_video.video_id, old_ver, cur_ver))
                     success = getattr(self, mig_func)(subs_for_video)
-                    if not success:
+                    if success is False:
+                        logger.error("Couldn't migrate %s, removing data", subs_for_video.video_id)
+                        self.storage.Remove(fn)
                         break
 
             if cur_ver > old_ver and success:
