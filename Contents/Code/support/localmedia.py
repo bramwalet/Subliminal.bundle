@@ -136,6 +136,7 @@ def find_subtitles(part):
         if len(split_tag) > 1 and split_tag[1].lower() in ['forced', 'normal', 'default']:
             local_basename = split_tag[0]
 
+        # split off possible language tag
         local_basename2 = local_basename.rsplit('.', 1)[0]
         filename_matches_part = local_basename == part_basename or local_basename2 == part_basename
 
