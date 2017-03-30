@@ -200,7 +200,11 @@ class StoredSubtitlesManager(object):
         return subs_for_video
 
     def save(self, subs_for_video):
-        self.storage.SaveObject(self.get_storage_filename(subs_for_video.video_id), subs_for_video)
+        fn = self.get_storage_filename(subs_for_video.video_id)
+        try:
+            self.storage.SaveObject(fn, subs_for_video)
+        except:
+            logger.error("Failed to save item %s: %s" % (fn, traceback.format_exc()))
 
     def delete(self, filename):
         try:
