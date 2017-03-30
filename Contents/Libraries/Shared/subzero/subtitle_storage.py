@@ -181,7 +181,7 @@ class StoredSubtitlesManager(object):
                     success = getattr(self, mig_func)(subs_for_video)
                     if success is False:
                         logger.error("Couldn't migrate %s, removing data", subs_for_video.video_id)
-                        self.storage.Remove(fn)
+                        self.delete(fn)
                         break
 
             if cur_ver > old_ver and success:
@@ -201,3 +201,9 @@ class StoredSubtitlesManager(object):
 
     def save(self, subs_for_video):
         self.storage.SaveObject(self.get_storage_filename(subs_for_video.video_id), subs_for_video)
+
+    def delete(self, filename):
+        try:
+            self.storage.Remove(filename)
+        except:
+            logger.error("Failed to delete item %s: %s" % (filename, traceback.format_exc()))
