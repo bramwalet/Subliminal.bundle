@@ -127,8 +127,9 @@ def find_subtitles(part):
     Log('Paths: %s', ", ".join([helpers.unicodize(p) for p in paths]))
 
     for file_path in file_paths.values():
-
-        local_basename = helpers.unicodize(os.path.splitext(os.path.basename(file_path))[0])
+        local_filename = os.path.basename(file_path)
+        bn, ext = os.path.splitext(local_filename)
+        local_basename = helpers.unicodize(bn)
 
         # get fn without forced/default/normal tag
         split_tag = local_basename.rsplit(".", 1)
@@ -138,8 +139,13 @@ def find_subtitles(part):
         local_basename2 = local_basename.rsplit('.', 1)[0]
         filename_matches_part = local_basename == part_basename or local_basename2 == part_basename
 
+        if not ext.lower()[1:] in config.SUBTITLE_EXTS:
+            continue
+
         # generally don't add non-matching subs
         if not filename_matches_part:
+            Log.Debug("%s doesn't match %s, skipping" % (helpers.unicodize(local_filename),
+                                                         helpers.unicodize(part_basename)))
             continue
 
         subtitle_helper = subtitlehelpers.subtitle_helpers(file_path)
