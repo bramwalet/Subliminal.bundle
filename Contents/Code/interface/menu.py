@@ -765,32 +765,16 @@ def AdvancedMenu(randomize=None, header=None, message=None):
         title=pad_title("Log the plugin's scheduled tasks state storage"),
     ))
     oc.add(DirectoryObject(
-        key=Callback(LogStorage, key="subs", randomize=timestamp()),
-        title=pad_title("Log the plugin's internal subtitle information storage"),
-    ))
-    oc.add(DirectoryObject(
         key=Callback(LogStorage, key="ignore", randomize=timestamp()),
         title=pad_title("Log the plugin's internal ignorelist storage"),
-    ))
-    oc.add(DirectoryObject(
-        key=Callback(LogStorage, key="history", randomize=timestamp()),
-        title=pad_title("Log the plugin's internal history storage"),
     ))
     oc.add(DirectoryObject(
         key=Callback(ResetStorage, key="tasks", randomize=timestamp()),
         title=pad_title("Reset the plugin's scheduled tasks state storage"),
     ))
     oc.add(DirectoryObject(
-        key=Callback(ResetStorage, key="subs", randomize=timestamp()),
-        title=pad_title("Reset the plugin's internal subtitle information storage"),
-    ))
-    oc.add(DirectoryObject(
         key=Callback(ResetStorage, key="ignore", randomize=timestamp()),
         title=pad_title("Reset the plugin's internal ignorelist storage"),
-    ))
-    oc.add(DirectoryObject(
-        key=Callback(ResetStorage, key="history", randomize=timestamp()),
-        title=pad_title("Reset the plugin's internal history storage"),
     ))
     return oc
 
