@@ -5,6 +5,8 @@ class Stream(Descriptor):
     id = Property(type=int)
     index = Property(type=int)
 
+    stream_key = Property('key')
+
     stream_type = Property('streamType', type=int)
     selected = Property(type=bool)
 

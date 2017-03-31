@@ -58,6 +58,7 @@ class Config(object):
     enforce_encoding = False
     chmod = None
     forced_only = False
+    treat_und_as_first = False
 
     initialized = False
 
@@ -84,6 +85,7 @@ class Config(object):
         self.enforce_encoding = cast_bool(Prefs['subtitles.enforce_encoding'])
         self.chmod = self.check_chmod()
         self.forced_only = cast_bool(Prefs["subtitles.only_foreign"])
+        self.treat_und_as_first = cast_bool(Prefs["subtitles.language.treat_und_as_first"])
         self.initialized = True
 
     def set_plugin_mode(self):

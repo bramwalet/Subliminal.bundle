@@ -185,6 +185,12 @@
     "default": "false"
   },
   {
+    "id": "subtitles.language.treat_und_as_first",
+    "label": "Embedded subtitles: Treat \"Undefined\" (und) as language 1",
+    "type": "bool",
+    "default": "true"
+  },
+  {
     "id": "provider.opensubtitles.enabled",
     "label": "Provider: Enable OpenSubtitles",
     "type": "bool",
