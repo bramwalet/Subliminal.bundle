@@ -108,13 +108,13 @@ def scan_video(plex_part, ignore_all=False, hints=None, rating_key=None):
         if int(part.id) == int(plex_part.id):
             plexpy_part = part
 
+    # embedded subtitles
     if plexpy_part:
         for stream in plexpy_part.streams:
             if stream.stream_type == 3:
                 if (config.forced_only and getattr(stream, "forced")) or \
                         (not config.forced_only and not getattr(stream, "forced")):
                     if not stream.stream_key and stream.codec in ("srt", "ass", "ssa"):
-                        # embedded
                         lang_code = stream.language_code
 
                         # treat unknown language as lang1?
