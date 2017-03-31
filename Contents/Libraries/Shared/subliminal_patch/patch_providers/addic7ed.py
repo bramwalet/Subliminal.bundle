@@ -70,7 +70,11 @@ class PatchedAddic7edProvider(PunctuationMixin, ProviderRetryMixin, Addic7edProv
         show_ids = {}
         for show in soup.select('td.version > h3 > a[href^="/show/"]'):
             show_clean = self.clean_punctuation(show.text.lower())
-            show_id = int(show['href'][6:])
+            try:
+                show_id = int(show['href'][6:])
+            except ValueError:
+                continue
+
             show_ids[show_clean] = show_id
             match = series_year_re.match(show_clean)
             if match.group(2) and match.group(1) not in show_ids:
