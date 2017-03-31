@@ -242,12 +242,14 @@ class DownloadSubtitleMixin(object):
 
         # downloaded_subtitles = {subliminal.Video: [subtitle, subtitle, ...]}
         download_subtitles([subtitle], providers=config.providers, provider_configs=config.provider_settings)
+        download_successful = False
 
         if subtitle.content:
             try:
                 whack_missing_parts(scanned_parts)
                 save_subtitles(scanned_parts, {video: [subtitle]}, mode=mode)
                 Log.Debug("Manually downloaded subtitle for: %s", rating_key)
+                download_successful = True
                 refresh_item(rating_key)
                 track_usage("Subtitle", "manual", "download", 1)
             except:
@@ -255,12 +257,14 @@ class DownloadSubtitleMixin(object):
             finally:
                 set_refresh_menu_state(None)
 
-                # store item in history
-                from support.history import get_history
-                item_title = get_title_for_video_metadata(metadata, add_section_title=False)
-                history = get_history()
-                history.add(item_title, video.id, section_title=video.plexapi_metadata["section"], subtitle=subtitle,
-                            mode=mode)
+                if download_successful:
+                    # store item in history
+                    from support.history import get_history
+                    item_title = get_title_for_video_metadata(metadata, add_section_title=False)
+                    history = get_history()
+                    history.add(item_title, video.id, section_title=video.plexapi_metadata["section"], subtitle=subtitle,
+                                mode=mode)
+        return download_successful
 
 
 class AvailableSubsForItem(SubtitleListingMixin, Task):
@@ -408,11 +412,13 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
 
                     if subs:
                         # subs are already sorted by score
-                        sub = subs[0]
-                        if sub.score > current_score:
-                            Log.Debug("Better subtitle found for %s, downloading", video_id)
-                            self.download_subtitle(sub, video_id, mode="b")
-                            better_found += 1
+                        for sub in subs:
+                            if sub.score > current_score:
+                                Log.Debug("Better subtitle found for %s, downloading", video_id)
+                                ret = self.download_subtitle(sub, video_id, mode="b")
+                                if ret:
+                                    better_found += 1
+                                    break
 
             if ditch_parts:
                 for part_id in ditch_parts:
