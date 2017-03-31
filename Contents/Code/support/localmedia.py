@@ -35,7 +35,7 @@ def find_subtitles(part):
 
         if sub_dir_custom:
             # got custom subfolder
-            sub_dir_custom = os.path.normpath(os.path.realpath(sub_dir_custom))
+            sub_dir_custom = os.path.normpath(sub_dir_custom)
             if os.path.isdir(sub_dir_custom) and os.path.isabs(sub_dir_custom):
                 # absolute folder
                 sub_dir_list.append(sub_dir_custom)
@@ -127,19 +127,26 @@ def find_subtitles(part):
     Log('Paths: %s', ", ".join([helpers.unicodize(p) for p in paths]))
 
     for file_path in file_paths.values():
-
-        local_basename = helpers.unicodize(os.path.splitext(os.path.basename(file_path))[0])
+        local_filename = os.path.basename(file_path)
+        bn, ext = os.path.splitext(local_filename)
+        local_basename = helpers.unicodize(bn)
 
         # get fn without forced/default/normal tag
         split_tag = local_basename.rsplit(".", 1)
         if len(split_tag) > 1 and split_tag[1].lower() in ['forced', 'normal', 'default']:
             local_basename = split_tag[0]
 
+        # split off possible language tag
         local_basename2 = local_basename.rsplit('.', 1)[0]
         filename_matches_part = local_basename == part_basename or local_basename2 == part_basename
 
+        if not ext.lower()[1:] in config.SUBTITLE_EXTS:
+            continue
+
         # generally don't add non-matching subs
         if not filename_matches_part:
+            Log.Debug("%s doesn't match %s, skipping" % (helpers.unicodize(local_filename),
+                                                         helpers.unicodize(part_basename)))
             continue
 
         subtitle_helper = subtitlehelpers.subtitle_helpers(file_path)
