@@ -342,6 +342,9 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
     # movies: format, title, release_group, year, video_codec, resolution, hearing_impaired
     movies_cutoff = 61
 
+    def signal_updated_metadata(self, *args, **kwargs):
+        return True
+
     def run(self):
         super(FindBetterSubtitles, self).run()
         self.running = True
