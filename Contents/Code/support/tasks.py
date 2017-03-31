@@ -412,13 +412,24 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
 
                     if subs:
                         # subs are already sorted by score
+                        better_downloaded = False
+                        better_tried_download = 0
                         for sub in subs:
                             if sub.score > current_score:
                                 Log.Debug("Better subtitle found for %s, downloading", video_id)
+                                better_tried_download += 1
                                 ret = self.download_subtitle(sub, video_id, mode="b")
                                 if ret:
                                     better_found += 1
+                                    better_downloaded = True
                                     break
+                                else:
+                                    Log.Debug("Couldn't download/save subtitle. Continuing to the next one")
+                        if better_tried_download and not better_downloaded:
+                            Log.Debug("Tried downloading better subtitle for %s, but every try failed.", video_id)
+
+                        elif better_downloaded:
+                            Log.Debug("Better subtitle downloaded for %s", video_id)
 
             if ditch_parts:
                 for part_id in ditch_parts:
