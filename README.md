@@ -10,6 +10,13 @@ Checkout **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)**
 
 ## Changelog
 
+1.4.24.939
+- core: skip to next best subtitle if findbettersubtitles failed
+- core: add setting to treat undefined-language embedded subtitle as configured language1 #239
+- core: fix inexistant addic7ed show id
+- core: fixes
+
+
 1.4.23.931
 - core: fix regression issue breaking relative custom subtitle folder handling
 - core: fix loading of stored subtitle info data of now-non-existant items
