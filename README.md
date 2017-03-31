@@ -10,6 +10,10 @@ Checkout **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)**
 
 ## Changelog
 
+1.4.23.931
+- core: fix regression issue breaking relative custom subtitle folder handling
+- core: fix loading of stored subtitle info data of now-non-existant items
+
 
 1.4.23.920
 - core: handle undecodable paths better #255
