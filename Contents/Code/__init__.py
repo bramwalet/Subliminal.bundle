@@ -34,6 +34,7 @@ from support.lib import get_intent
 from support.helpers import track_usage, get_title_for_video_metadata, get_identifier, cast_bool
 from support.history import get_history
 from support.data import dispatch_migrate
+from support.activities import activity
 
 
 def Start():
@@ -72,6 +73,9 @@ def Start():
 
     # run task scheduler
     scheduler.run()
+
+    # bind activities
+    activity.start()
 
     if "anon_id" not in Dict:
         Dict["anon_id"] = get_identifier()
