@@ -65,6 +65,7 @@ class Config(object):
     chmod = None
     forced_only = False
     treat_und_as_first = False
+    ext_match_strictness = False
 
     initialized = False
 
@@ -95,6 +96,7 @@ class Config(object):
         self.chmod = self.check_chmod()
         self.forced_only = cast_bool(Prefs["subtitles.only_foreign"])
         self.treat_und_as_first = cast_bool(Prefs["subtitles.language.treat_und_as_first"])
+        self.ext_match_strictness = self.determine_ext_sub_stricness()
         self.initialized = True
 
     def get_server_log_path(self):
@@ -350,6 +352,14 @@ class Config(object):
 
         if wrong_chmod:
             Log.Warn("Chmod setting ignored, please use only 4-digit integers with leading 0 (e.g.: 775)")
+
+    def determine_ext_sub_stricness(self):
+        val = Prefs["subtitles.scan.filename_strictness"]
+        if val == "any":
+            return "any"
+        elif val.startswith("loose"):
+            return "loose"
+        return "strict"
 
     def init_subliminal_patches(self):
         # configure custom subtitle destination folders for scanning pre-existing subs

@@ -303,6 +303,17 @@
     "default": "false"
   },
   {
+    "id": "subtitles.scan.filename_strictness",
+    "label": "Scan: which existing external subtitles should be picked up?",
+    "type": "enum",
+    "values": [
+      "exact: media filename match",
+      "loose: filename contains media filename",
+      "any"
+    ],
+    "default": "loose: filename contains media filename"
+  },
+  {
     "id": "subtitles.search.minimumTVScore1",
     "label": "Minimum score for TV (min: 77, sane: 110; min-ideal: 116; see http://v.ht/szscores)",
     "type": "text",

@@ -139,15 +139,32 @@ def find_subtitles(part):
         # split off possible language tag
         local_basename2 = local_basename.rsplit('.', 1)[0]
         filename_matches_part = local_basename == part_basename or local_basename2 == part_basename
+        filename_contains_part = part_basename in local_basename
 
         if not ext.lower()[1:] in config.SUBTITLE_EXTS:
             continue
 
-        # generally don't add non-matching subs
-        if not filename_matches_part:
-            Log.Debug("%s doesn't match %s, skipping" % (helpers.unicodize(local_filename),
-                                                         helpers.unicodize(part_basename)))
-            continue
+        # If the file is located within the global subtitle folders and it's name doesn't match exactly
+        # then we should simply ignore it.
+        #
+        if global_folders and not filename_matches_part:
+            skip_path = False
+            for fld in global_folders:
+                if file_path.startswith(fld):
+                    skip_path = True
+                    break
+
+            if skip_path:
+                continue
+
+        # determine whether to pick up the subtitle based on our match strictness
+        elif not filename_matches_part:
+            if sz_config.ext_match_strictness == "strict" or (
+                    sz_config.ext_match_strictness == "loose" and not filename_contains_part):
+
+                Log.Debug("%s doesn't match %s, skipping" % (helpers.unicodize(local_filename),
+                                                             helpers.unicodize(part_basename)))
+                continue
 
         subtitle_helper = subtitlehelpers.subtitle_helpers(file_path)
         if subtitle_helper is not None:

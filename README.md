@@ -13,6 +13,8 @@ Checkout **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)**
 1.4.24.DEV
 - core: correctly fall back to the next best subtitle if the current one couldn't be downloaded; hopefully fixes #231
 - menu: remove obsolete actions from the advanced menu
+- core: re-add separate global subtitle folder handling
+- core: add "Scan: which existing external subtitles should be picked up?"-setting
 
 
 1.4.24.939
