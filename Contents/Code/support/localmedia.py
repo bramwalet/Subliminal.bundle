@@ -144,9 +144,7 @@ def find_subtitles(part):
         if not ext.lower()[1:] in config.SUBTITLE_EXTS:
             continue
 
-        # If the file is located within the global subtitle folders and it's name doesn't match exactly
-        # then we should simply ignore it.
-        #
+        # if the file is located within the global subtitle folders and its name doesn't match exactly, ignore it
         if global_folders and not filename_matches_part:
             skip_path = False
             for fld in global_folders:
