@@ -96,7 +96,7 @@ class Config(object):
         self.chmod = self.check_chmod()
         self.forced_only = cast_bool(Prefs["subtitles.only_foreign"])
         self.treat_und_as_first = cast_bool(Prefs["subtitles.language.treat_und_as_first"])
-        self.ext_match_strictness = self.determine_ext_sub_stricness()
+        self.ext_match_strictness = self.determine_ext_sub_strictness()
         self.initialized = True
 
     def get_server_log_path(self):
@@ -353,7 +353,7 @@ class Config(object):
         if wrong_chmod:
             Log.Warn("Chmod setting ignored, please use only 4-digit integers with leading 0 (e.g.: 775)")
 
-    def determine_ext_sub_stricness(self):
+    def determine_ext_sub_strictness(self):
         val = Prefs["subtitles.scan.filename_strictness"]
         if val == "any":
             return "any"
