@@ -113,11 +113,13 @@ class Config(object):
         # thanks to: https://forums.plex.tv/discussion/247136/read-current-x-plex-token-in-an-agent-ensure-that-a-http-request-gets-executed-exactly-once#latest
         pref_path = os.path.join(self.app_support_path, "Preferences.xml")
         if os.path.exists(pref_path):
-            global_prefs = Core.storage.load(pref_path)
-            return XML.ElementFromString(global_prefs).xpath('//Preferences/@PlexOnlineToken')[0]
+            try:
+                global_prefs = Core.storage.load(pref_path)
+                return XML.ElementFromString(global_prefs).xpath('//Preferences/@PlexOnlineToken')[0]
+            except:
+                Log.Warn("Couldn't determine Plex Token")
         else:
             Log("Did NOT find Preferences file - please check logfile and hierarchy. Aborting!")
-            return
 
     def set_plugin_mode(self):
         if Prefs["plugin_mode"] == "only agent":
