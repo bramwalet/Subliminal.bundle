@@ -75,7 +75,7 @@ def Start():
     scheduler.run()
 
     # bind activities
-    activity.start()
+    Thread.Create(activity.start)
 
     if "anon_id" not in Dict:
         Dict["anon_id"] = get_identifier()

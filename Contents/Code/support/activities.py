@@ -22,7 +22,9 @@ class PlexActivity(object):
         if activity_sources_enabled:
             Activity.start(activity_sources_enabled)
 
-    def on_playing(self, info):
-        print info["ratingKey"]
+    def on_playing(self, info, *args, **kwargs):
+        if info["viewOffset"] / 60000 <= 2:
+            print info, args, kwargs
+
 
 activity = PlexActivity()
