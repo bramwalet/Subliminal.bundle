@@ -387,6 +387,17 @@
     "default": "true"
   },
   {
+    "id": "activity.on_playback",
+    "label": "On media playback",
+    "type": "enum",
+    "values": [
+      "do nothing",
+      "search for missing subtitles (refresh)",
+      "next episode: search for missing subtitles (refresh)"
+    ],
+    "default": "do nothing"
+  },
+  {
     "id": "scheduler.tasks.SearchAllRecentlyAddedMissing.frequency",
     "label": "Scheduler: Periodically search for recent items with missing subtitles",
     "type": "enum",

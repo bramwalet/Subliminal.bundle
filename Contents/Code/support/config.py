@@ -66,6 +66,8 @@ class Config(object):
     forced_only = False
     treat_und_as_first = False
     ext_match_strictness = False
+    use_activities = False
+    activity_mode = None
 
     initialized = False
 
@@ -79,6 +81,7 @@ class Config(object):
 
         self.set_plugin_mode()
         self.set_plugin_lock()
+        self.set_activity_modes()
 
         self.lang_list = self.get_lang_list()
         self.subtitle_destination_folder = self.get_subtitle_destination_folder()
@@ -360,6 +363,18 @@ class Config(object):
         elif val.startswith("loose"):
             return "loose"
         return "strict"
+
+    def set_activity_modes(self):
+        val = Prefs["activity.on_playback"]
+        if val == "do nothing":
+            self.use_activities = False
+            return
+
+        self.use_activities = True
+        if val == "search for missing subtitles (refresh)":
+            self.activity_mode = "refresh"
+        else:
+            self.activity_mode = "next_episode"
 
     def init_subliminal_patches(self):
         # configure custom subtitle destination folders for scanning pre-existing subs

@@ -43,6 +43,10 @@ def get_item_kind_from_rating_key(key):
     return PLEX_API_TYPE_MAP[get_item_kind(item)]
 
 
+def get_item_kind_from_item(item):
+    return PLEX_API_TYPE_MAP[get_item_kind(item)]
+
+
 def get_item_thumb(item):
     kind = get_item_kind(item)
     if kind == "Episode":
