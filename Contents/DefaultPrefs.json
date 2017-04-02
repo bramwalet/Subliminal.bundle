@@ -388,12 +388,13 @@
   },
   {
     "id": "activity.on_playback",
-    "label": "On media playback",
+    "label": "On media playback: search for missing subtitles (refresh)",
     "type": "enum",
     "values": [
-      "do nothing",
-      "search for missing subtitles (refresh)",
-      "next episode: search for missing subtitles (refresh)"
+      "never",
+      "current media item",
+      "next episode (series)",
+      "hybrid: current item or next episode"
     ],
     "default": "do nothing"
   },

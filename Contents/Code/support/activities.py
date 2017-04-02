@@ -34,17 +34,33 @@ class PlexActivityManager(object):
             Dict["last_played_item"] = rating_key
             Dict.Save()
 
-            if config.activity_mode == "next_episode":
-                next_ep = self.get_next_episode(rating_key)
+            debug_msg = "Started playing %s. Refreshing it." % rating_key
 
-                if next_ep:
-                    refresh_item(next_ep.rating_key)
-                    Log.Debug("Started playing %s. Refreshing next episode (%s, S%02iE%02i)." %
-                              (rating_key, next_ep.rating_key, int(next_ep.season.index), int(next_ep.index)))
-            else:
-                # simple refresh of the current file
-                Log.Debug("Started playing %s. Refreshing it." % rating_key)
-                refresh_item(rating_key)
+            key_to_refresh = None
+            if config.activity_mode in ["refresh", "next_episode", "hybrid"]:
+                # next episode or next episode and current movie
+                if config.activity_mode in ["next_episode", "hybrid"]:
+                    plex_item = get_item(rating_key)
+                    if not plex_item:
+                        Log.Warn("Can't determine media type of %s, skipping" % rating_key)
+                        return
+
+                    if get_item_kind_from_item(plex_item) == "episode":
+                        next_ep = self.get_next_episode(rating_key)
+                        if next_ep:
+                            key_to_refresh = next_ep.rating_key
+                            debug_msg = "Started playing %s. Refreshing next episode (%s, S%02iE%02i)." % \
+                                        (rating_key, next_ep.rating_key, int(next_ep.season.index), int(next_ep.index))
+
+                    else:
+                        if config.activity_mode == "hybrid":
+                            key_to_refresh = rating_key
+                elif config.activity_mode == "refresh":
+                    key_to_refresh = rating_key
+
+                if key_to_refresh:
+                    Log.Debug(debug_msg)
+                    refresh_item(key_to_refresh)
 
     def get_next_episode(self, rating_key):
         plex_item = get_item(rating_key)

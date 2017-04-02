@@ -366,13 +366,15 @@ class Config(object):
 
     def set_activity_modes(self):
         val = Prefs["activity.on_playback"]
-        if val == "do nothing":
+        if val == "never":
             self.use_activities = False
             return
 
         self.use_activities = True
-        if val == "search for missing subtitles (refresh)":
+        if val == "current media item":
             self.activity_mode = "refresh"
+        elif val == "hybrid: current item or next episode":
+            self.activity_mode = "hybrid"
         else:
             self.activity_mode = "next_episode"
 
