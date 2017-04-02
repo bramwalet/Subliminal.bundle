@@ -304,7 +304,7 @@
   },
   {
     "id": "subtitles.scan.filename_strictness",
-    "label": "Scan: which existing external subtitles should be picked up?",
+    "label": "Scan: which external subtitles should be picked up?",
     "type": "enum",
     "values": [
       "exact: media filename match",

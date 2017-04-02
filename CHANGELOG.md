@@ -1,3 +1,11 @@
+1.4.23.920
+- core: handle undecodable paths better #255
+- core: don't fail on unrecoverable data #257
+- core: increase default scores from 110 (series) and 23 (movies) to 116 and 33
+- core: fix global subtitle folder handling #234
+- core: better invoking of configured executable after subtitle addition #247
+
+
 1.4.22.908
 - core: hotfix for more robust migrations
 
