@@ -388,7 +388,7 @@
   },
   {
     "id": "activity.on_playback",
-    "label": "On media playback: search for missing subtitles (refresh)",
+    "label": "On media playback: search for missing subtitles (refresh item)",
     "type": "enum",
     "values": [
       "never",
@@ -396,7 +396,7 @@
       "next episode (series)",
       "hybrid: current item or next episode"
     ],
-    "default": "do nothing"
+    "default": "next episode (series)"
   },
   {
     "id": "scheduler.tasks.SearchAllRecentlyAddedMissing.frequency",
