@@ -396,7 +396,7 @@
       "next episode (series)",
       "hybrid: current item or next episode"
     ],
-    "default": "next episode (series)"
+    "default": "never"
   },
   {
     "id": "scheduler.tasks.SearchAllRecentlyAddedMissing.frequency",
