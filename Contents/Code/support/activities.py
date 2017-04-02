@@ -35,43 +35,47 @@ class PlexActivityManager(object):
             Dict.Save()
 
             if config.activity_mode == "next_episode":
-                plex_item = get_item(rating_key)
-                if get_item_kind_from_item(plex_item) == "episode":
-                    # get season
-                    season = get_item(plex_item.season.rating_key)
+                next_ep = self.get_next_episode(rating_key)
 
-                    # determine next episode
-                    next_ep = None
-                    # next episode is in the same season
-                    if plex_item.index < season.episode_count:
-                        # get next ep
-                        for ep in season.children():
-                            if ep.index == plex_item.index + 1:
-                                next_ep = ep
-                                break
-                    # it's not, try getting the first episode of the next season
-                    else:
-                        # get show
-                        show = get_item(plex_item.show.rating_key)
-                        # is there a next season?
-                        if season.index < show.season_count:
-                            for other_season in show.children():
-                                if other_season.index == season.index + 1:
-                                    next_season = other_season
-                                    for ep in next_season.children():
-                                        if ep.index == 1:
-                                            next_ep = ep
-                                            break
-                                    if next_ep:
-                                        break
-
-                    if next_ep:
-                        refresh_item(next_ep.rating_key)
-                        Log.Debug("Started playing %s. Refreshing next episode (%s, S%02iE%02i)." %
-                                  (rating_key, next_ep.rating_key, int(next_ep.season.index), int(next_ep.index)))
+                if next_ep:
+                    refresh_item(next_ep.rating_key)
+                    Log.Debug("Started playing %s. Refreshing next episode (%s, S%02iE%02i)." %
+                              (rating_key, next_ep.rating_key, int(next_ep.season.index), int(next_ep.index)))
             else:
                 # simple refresh of the current file
                 Log.Debug("Started playing %s. Refreshing it." % rating_key)
                 refresh_item(rating_key)
+
+    def get_next_episode(self, rating_key):
+        plex_item = get_item(rating_key)
+        if not plex_item:
+            return
+
+        if get_item_kind_from_item(plex_item) == "episode":
+            # get season
+            season = get_item(plex_item.season.rating_key)
+            if not season:
+                return
+
+            # determine next episode
+            # next episode is in the same season
+            if plex_item.index < season.episode_count:
+                # get next ep
+                for ep in season.children():
+                    if ep.index == plex_item.index + 1:
+                        return ep
+
+            # it's not, try getting the first episode of the next season
+            else:
+                # get show
+                show = get_item(plex_item.show.rating_key)
+                # is there a next season?
+                if season.index < show.season_count:
+                    for other_season in show.children():
+                        if other_season.index == season.index + 1:
+                            next_season = other_season
+                            for ep in next_season.children():
+                                if ep.index == 1:
+                                    return ep
 
 activity = PlexActivityManager()
