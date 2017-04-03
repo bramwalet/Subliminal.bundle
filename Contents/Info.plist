@@ -21,7 +21,7 @@
         <key>PlexPluginMode</key>
         <string>Daemon</string>
         <key>PlexPluginConsoleLogging</key>
-        <string>0</string>
+        <string>1</string>
         <key>PlexPluginDevMode</key>
         <string>1</string>
          <key>PlexPluginCodePolicy</key>
