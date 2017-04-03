@@ -10,6 +10,10 @@ Checkout **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)**
 
 ## Changelog
 
+1.4.27.965
+- core: on_playback activity bugfixes
+
+
 1.4.27.957
 - core: correctly fall back to the next best subtitle if the current one couldn't be downloaded; hopefully fixes #231
 - core: add "Scan: which external subtitles should be picked up?"-setting
