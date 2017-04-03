@@ -21,7 +21,7 @@
         <key>PlexPluginMode</key>
         <string>Daemon</string>
         <key>PlexPluginConsoleLogging</key>
-        <string>0</string>
+        <string>1</string>
         <key>PlexPluginDevMode</key>
         <string>0</string>
          <key>PlexPluginCodePolicy</key>
@@ -32,7 +32,7 @@
 
 &lt;h1&gt;Sub-Zero for Plex&lt;/h1&gt;&lt;i&gt;Subtitles done right&lt;/i&gt;
 
-Version 1.4.27.957
+Version 1.4.27.957 DEV
 
 Originally based on @bramwalet's awesome &lt;a href=&quot;https://github.com/bramwalet/Subliminal.bundle&quot;&gt;Subliminal.bundle&lt;/a&gt;
 

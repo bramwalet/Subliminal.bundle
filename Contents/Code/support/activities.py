@@ -1,4 +1,5 @@
 # coding=utf-8
+from wraptor.decorators import throttle
 from config import config
 from items import get_item, get_item_kind_from_item, refresh_item
 
@@ -24,12 +25,19 @@ class PlexActivityManager(object):
         if activity_sources_enabled:
             Activity.start(activity_sources_enabled)
 
+    @throttle(5, instance_method=True)
     def on_playing(self, info):
         if not config.use_activities:
             return
 
+        # don't trigger on the first hit ever
+        if "last_played_item" not in Dict:
+            Dict["last_played_item"] = None
+            Dict.Save()
+            return
+
         rating_key = info["ratingKey"]
-        if "last_played_item" not in Dict or Dict["last_played_item"] != rating_key:
+        if Dict["last_played_item"] != rating_key:
             # new playing
             Dict["last_played_item"] = rating_key
             Dict.Save()
