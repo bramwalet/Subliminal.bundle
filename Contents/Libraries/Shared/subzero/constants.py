@@ -2,7 +2,7 @@
 
 OS_PLEX_USERAGENT = 'plexapp.com v9.0'
 
-DEPENDENCY_MODULE_NAMES = ['subliminal', 'subliminal_patch', 'enzyme', 'guessit']
+DEPENDENCY_MODULE_NAMES = ['subliminal', 'subliminal_patch', 'enzyme', 'guessit', 'subzero', 'plex_activity']
 PERSONAL_MEDIA_IDENTIFIER = "com.plexapp.agents.none"
 PLUGIN_IDENTIFIER_SHORT = "subzero"
 PLUGIN_IDENTIFIER = "com.plexapp.agents.%s" % PLUGIN_IDENTIFIER_SHORT
@@ -12,6 +12,8 @@ PREFIX = "/video/%s" % PLUGIN_IDENTIFIER_SHORT
 TITLE = "%s Subtitles" % PLUGIN_NAME
 ART      = 'art-default.jpg'
 ICON     = 'icon-default.jpg'
+
+DEFAULT_TIMEOUT = 10
 
 
 # media types as on https://github.com/Arcanemagus/plex-api/wiki/MediaTypes
@@ -30,3 +32,10 @@ PICTURE = 12
 PHOTO = 13
 CLIP = 14
 PLAYLIST_ITEM = 15
+
+
+mode_map = {
+    "a": "auto",
+    "m": "manual",
+    "b": "auto-better"
+}

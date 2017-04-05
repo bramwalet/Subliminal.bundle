@@ -1,39 +1,34 @@
-#Sub-Zero for Plex
+# Sub-Zero for Plex
 [![](https://img.shields.io/github/release/pannal/Sub-Zero.bundle.svg?style=flat)](https://github.com/pannal/Sub-Zero.bundle/releases)
 [![master](https://img.shields.io/badge/master-stable-green.svg?maxAge=2592000)]()
-[![Maintenance](https://img.shields.io/maintenance/yes/2016.svg?maxAge=2592000)]()
+[![Maintenance](https://img.shields.io/maintenance/yes/2017.svg)]()
 
-![logo](https://raw.githubusercontent.com/pannal/Sub-Zero.bundle/master/Contents/Resources/subzero.gif)
+<img src="https://raw.githubusercontent.com/pannal/Sub-Zero.bundle/master/Contents/Resources/subzero.gif" align="left" height="100"> <font size="5"><b>Subtitles done right!</b></font><br />
 
-##### Subtitles done right
-
-## Information
-I've been receiving great support by [@ukdtom](https://github.com/ukdtom) recently:<br/>
-He has created **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)**. Please have a look in case of any questions.
+Checkout **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)** by [@ukdtom](https://github.com/ukdtom) <br />
+<br style="clear:left;"/>
 
 ## Changelog
 
-1.4.17.836
-- core: support for any media file that PMS supports (internal subtitles on mp4 for example)
-- core: fix broken ignore folders containing "subzero.ignore/.subzero.ignore/.nosz"
-- core: fix duplicate subtitles (lowercase/default case)
-- core: fix broken tasks queue due to oversight
+1.4.27.967
+- core: remember the last 10 played items; only consider on_playback for "playing" state within the first 60 seconds of an item
 
-1.4.16.822
-- menu: add per-section recently added menu
-- menu: fix accidentally double-triggering a just triggered force-refresh
-- core: reorder settings in a more logical, grouped way
-- core: add simple automatic filesystem/external leftover subtitle cleaning (#133, #152)
-- core: fix force-refresh for big seasons/series
-- core: add setting to look for forced/foreign-only subtitles only (only works for opensubtitles and podnapisi)
-- core: fix custom subtitle folder was being ignored (#211)
-- core: only trust PMS for its movie name, not the series title (fixes #210)
-- core: full support (in filesystem/external mode) for forced/default/normal subtitle tags
-- core: ignore "non-standard" external subtitle files when scanning by default (everything but .srt, .ass, .ssa, fixes #192)
-- core: lower default max_recent_items_per_library to 500
-- core: skip forced/foreign-only subtitles if not specifically wanted
-- core: modify the task queue, hopefully helping #206
-- core: update anonymous usage collection
+
+1.4.27.965
+- core: on_playback activity bugfixes
+
+
+1.4.27.957
+- core: correctly fall back to the next best subtitle if the current one couldn't be downloaded; hopefully fixes #231
+- core: add "Scan: which external subtitles should be picked up?"-setting
+- core: add optional on_playing activities. refresh currently playing movie, refresh next episode in season, both or none; fixes #259 #33
+- core: skip to next best subtitle if findbettersubtitles failed
+- core: add setting to treat undefined-language embedded subtitle as configured language1 #239
+- core: fix handling of inexistant addic7ed show id
+- core: fix regression issue breaking relative custom subtitle folder handling
+- core: fix loading of stored subtitle info data of now-non-existant items
+- core: re-add separate global subtitle folder handling
+- menu: remove obsolete actions from the advanced menu
 
 
 [older changes](CHANGELOG.md)

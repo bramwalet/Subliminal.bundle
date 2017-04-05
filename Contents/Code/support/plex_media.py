@@ -111,14 +111,21 @@ def scan_video(plex_part, ignore_all=False, hints=None, rating_key=None):
         if int(part.id) == int(plex_part.id):
             plexpy_part = part
 
+    # embedded subtitles
     if plexpy_part:
         for stream in plexpy_part.streams:
             if stream.stream_type == 3:
                 if (config.forced_only and getattr(stream, "forced")) or \
                         (not config.forced_only and not getattr(stream, "forced")):
-                    known_embedded.append(stream.language_code)
+                    if not stream.stream_key and stream.codec in ("srt", "ass", "ssa"):
+                        lang_code = stream.language_code
+
+                        # treat unknown language as lang1?
+                        if not lang_code and config.treat_und_as_first:
+                            lang_code = list(config.lang_list)[0].alpha3
+                        known_embedded.append(lang_code)
     else:
-        Log.Warning("Part %s missing of %s, not able to scan internal streams", plex_part.id, rating_key)
+        Log.Warn("Part %s missing of %s, not able to scan internal streams", plex_part.id, rating_key)
 
     try:
         # get basic video info scan (filename)
@@ -221,6 +228,15 @@ class PartUnknownException(Exception):
 
 
 def get_plex_metadata(rating_key, part_id, item_type):
+    """
+    uses the Plex 3rd party API accessor to get metadata information
+
+    :param rating_key:
+    :param part_id:
+    :param item_type:
+    :return:
+    """
+
     plex_item = list(Plex["library"].metadata(rating_key))[0]
 
     # find current part
@@ -251,3 +267,37 @@ def get_plex_metadata(rating_key, part_id, item_type):
                                                                "episode": None,
                                                                "section": plex_item.section.title})
     return metadata
+
+
+class PMSMediaProxy(object):
+    """
+    Proxy object for getting data from a mediatree items "internally" via the PMS
+
+    note: this could be useful later on: Media.TV_Show(getattr(Metadata, "_access_point"), id=XXXXXX)
+    """
+
+    def __init__(self, media_id):
+        self.mediatree = Media.TreeForDatabaseID(media_id)
+
+    def get_part(self, part_id=None):
+        """
+        walk the mediatree until the given part was found; if no part was given, return the first one
+        :param part_id:
+        :return:
+        """
+        m = self.mediatree
+        while 1:
+            if m.items:
+                media_item = m.items[0]
+                if not part_id:
+                    return media_item.parts[0] if media_item.parts else None
+
+                for part in media_item.parts:
+                    if str(part.id) == str(part_id):
+                        return part
+                break
+
+            if not m.children:
+                break
+
+            m = m.children[0]

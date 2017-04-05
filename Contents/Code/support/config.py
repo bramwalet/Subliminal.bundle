@@ -15,9 +15,11 @@ from lib import Plex
 from helpers import check_write_permissions, cast_bool
 
 SUBTITLE_EXTS = ['utf', 'utf8', 'utf-8', 'srt', 'smi', 'rt', 'ssa', 'aqt', 'jss', 'ass', 'idx', 'sub', 'txt', 'psb']
-VIDEO_EXTS = ['3g2', '3gp', 'asf', 'asx', 'avc', 'avi', 'avs', 'bivx', 'bup', 'divx', 'dv', 'dvr-ms', 'evo', 'fli', 'flv',
+VIDEO_EXTS = ['3g2', '3gp', 'asf', 'asx', 'avc', 'avi', 'avs', 'bivx', 'bup', 'divx', 'dv', 'dvr-ms', 'evo', 'fli',
+              'flv',
               'm2t', 'm2ts', 'm2v', 'm4v', 'mkv', 'mov', 'mp4', 'mpeg', 'mpg', 'mts', 'nsv', 'nuv', 'ogm', 'ogv', 'tp',
-              'pva', 'qt', 'rm', 'rmvb', 'sdp', 'svq3', 'strm', 'ts', 'ty', 'vdr', 'viv', 'vob', 'vp3', 'wmv', 'wpl', 'wtv', 'xsp', 'xvid',
+              'pva', 'qt', 'rm', 'rmvb', 'sdp', 'svq3', 'strm', 'ts', 'ty', 'vdr', 'viv', 'vob', 'vp3', 'wmv', 'wpl',
+              'wtv', 'xsp', 'xvid',
               'webm']
 
 IGNORE_FN = ("subzero.ignore", ".subzero.ignore", ".nosz")
@@ -35,6 +37,10 @@ def int_or_default(s, default):
 class Config(object):
     version = None
     full_version = None
+    server_log_path = None
+    app_support_path = None
+    universal_plex_token = None
+
     enable_channel = True
     enable_agent = True
     pin = None
@@ -58,6 +64,10 @@ class Config(object):
     enforce_encoding = False
     chmod = None
     forced_only = False
+    treat_und_as_first = False
+    ext_match_strictness = False
+    use_activities = False
+    activity_mode = None
 
     initialized = False
 
@@ -65,9 +75,13 @@ class Config(object):
         self.fs_encoding = get_viable_encoding()
         self.version = self.get_version()
         self.full_version = u"%s %s" % (PLUGIN_NAME, self.version)
+        self.server_log_path = self.get_server_log_path()
+        self.app_support_path = Core.app_support_path
+        self.universal_plex_token = self.get_universal_plex_token()
 
         self.set_plugin_mode()
         self.set_plugin_lock()
+        self.set_activity_modes()
 
         self.lang_list = self.get_lang_list()
         self.subtitle_destination_folder = self.get_subtitle_destination_folder()
@@ -84,7 +98,33 @@ class Config(object):
         self.enforce_encoding = cast_bool(Prefs['subtitles.enforce_encoding'])
         self.chmod = self.check_chmod()
         self.forced_only = cast_bool(Prefs["subtitles.only_foreign"])
+        self.treat_und_as_first = cast_bool(Prefs["subtitles.language.treat_und_as_first"])
+        self.ext_match_strictness = self.determine_ext_sub_strictness()
         self.initialized = True
+
+    def get_server_log_path(self):
+        # find log handler
+        for handler in Core.log.handlers:
+            if getattr(getattr(handler, "__class__"), "__name__") in (
+                    'FileHandler', 'RotatingFileHandler', 'TimedRotatingFileHandler'):
+                plugin_log_file = handler.baseFilename
+
+                if plugin_log_file:
+                    server_log_file = os.path.realpath(os.path.join(plugin_log_file, "../../Plex Media Server.log"))
+                    if os.path.isfile(server_log_file):
+                        return server_log_file
+
+    def get_universal_plex_token(self):
+        # thanks to: https://forums.plex.tv/discussion/247136/read-current-x-plex-token-in-an-agent-ensure-that-a-http-request-gets-executed-exactly-once#latest
+        pref_path = os.path.join(self.app_support_path, "Preferences.xml")
+        if os.path.exists(pref_path):
+            try:
+                global_prefs = Core.storage.load(pref_path)
+                return XML.ElementFromString(global_prefs).xpath('//Preferences/@PlexOnlineToken')[0]
+            except:
+                Log.Warn("Couldn't determine Plex Token")
+        else:
+            Log("Did NOT find Preferences file - please check logfile and hierarchy. Aborting!")
 
     def set_plugin_mode(self):
         if Prefs["plugin_mode"] == "only agent":
@@ -96,15 +136,15 @@ class Config(object):
         if Prefs["plugin_pin_mode"] in ("channel menu", "advanced menu"):
             # check pin
             pin = Prefs["plugin_pin"]
-            if not len(pin):
-                Log.Warning("PIN enabled but not set, disabling PIN!")
+            if not pin or not len(pin):
+                Log.Warn("PIN enabled but not set, disabling PIN!")
                 return
 
             pin = pin.strip()
             try:
                 int(pin)
             except ValueError:
-                Log.Warning("PIN has to be an integer (0-9)")
+                Log.Warn("PIN has to be an integer (0-9)")
             self.pin = pin
             self.lock_advanced_menu = Prefs["plugin_pin_mode"] == "advanced menu"
             self.lock_menu = Prefs["plugin_pin_mode"] == "channel menu"
@@ -117,7 +157,8 @@ class Config(object):
     @property
     def pin_correct(self):
         if isinstance(Dict["pin_correct_time"], datetime.datetime) \
-                and Dict["pin_correct_time"] + datetime.timedelta(minutes=self.pin_valid_minutes) > datetime.datetime.now():
+                and Dict["pin_correct_time"] + datetime.timedelta(
+                    minutes=self.pin_valid_minutes) > datetime.datetime.now():
             return True
 
     def refresh_permissions_status(self):
@@ -261,12 +302,14 @@ class Config(object):
         if not Prefs["subtitles.save.filesystem"]:
             return
 
-        fld_custom = Prefs["subtitles.save.subFolder.Custom"].strip() if cast_bool(Prefs["subtitles.save.subFolder.Custom"]) else None
-        return fld_custom or (Prefs["subtitles.save.subFolder"] if Prefs["subtitles.save.subFolder"] != "current folder" else None)
+        fld_custom = Prefs["subtitles.save.subFolder.Custom"].strip() if cast_bool(
+            Prefs["subtitles.save.subFolder.Custom"]) else None
+        return fld_custom or (
+        Prefs["subtitles.save.subFolder"] if Prefs["subtitles.save.subFolder"] != "current folder" else None)
 
     def get_providers(self):
         providers = {'opensubtitles': cast_bool(Prefs['provider.opensubtitles.enabled']),
-                     #'thesubdb': Prefs['provider.thesubdb.enabled'],
+                     # 'thesubdb': Prefs['provider.thesubdb.enabled'],
                      'podnapisi': cast_bool(Prefs['provider.podnapisi.enabled']),
                      'addic7ed': cast_bool(Prefs['provider.addic7ed.enabled']),
                      'tvsubtitles': cast_bool(Prefs['provider.tvsubtitles.enabled'])
@@ -311,7 +354,29 @@ class Config(object):
             wrong_chmod = True
 
         if wrong_chmod:
-            Log.Warning("Chmod setting ignored, please use only 4-digit integers with leading 0 (e.g.: 775)")
+            Log.Warn("Chmod setting ignored, please use only 4-digit integers with leading 0 (e.g.: 775)")
+
+    def determine_ext_sub_strictness(self):
+        val = Prefs["subtitles.scan.filename_strictness"]
+        if val == "any":
+            return "any"
+        elif val.startswith("loose"):
+            return "loose"
+        return "strict"
+
+    def set_activity_modes(self):
+        val = Prefs["activity.on_playback"]
+        if val == "never":
+            self.use_activities = False
+            return
+
+        self.use_activities = True
+        if val == "current media item":
+            self.activity_mode = "refresh"
+        elif val == "hybrid: current item or next episode":
+            self.activity_mode = "hybrid"
+        else:
+            self.activity_mode = "next_episode"
 
     def init_subliminal_patches(self):
         # configure custom subtitle destination folders for scanning pre-existing subs

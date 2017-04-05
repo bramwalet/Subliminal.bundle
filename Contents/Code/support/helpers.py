@@ -46,11 +46,11 @@ def unicodize(s):
     try:
         filename = unicodedata.normalize('NFC', unicode(s.decode('utf-8')))
     except:
-        Log('Failed to unicodize: ' + filename)
+        Log('Failed to unicodize: ' + repr(filename))
     try:
         filename = re.sub(RE_UNICODE_CONTROL, '', filename)
     except:
-        Log('Couldn\'t strip control characters: ' + filename)
+        Log('Couldn\'t strip control characters: ' + repr(filename))
     return filename
 
 
@@ -263,7 +263,8 @@ def notify_executable(exe_info, videos, subtitles, storage):
 
             Log.Debug(u"Calling %s with arguments: %s" % (exe, prepared_arguments))
             try:
-                output = subprocess.check_output([exe] + prepared_arguments, stderr=subprocess.STDOUT)
+                output = subprocess.check_output(subprocess.list2cmdline([exe] + prepared_arguments),
+                                                 stderr=subprocess.STDOUT, shell=True)
             except subprocess.CalledProcessError:
                 Log.Error(u"Calling %s failed: %s" % (exe, traceback.format_exc()))
             else:

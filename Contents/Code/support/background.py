@@ -40,7 +40,20 @@ class DefaultScheduler(object):
         if "data" in Dict["tasks"][name]:
             return Dict["tasks"][name]["data"]
 
-    def clear_task_data(self, name):
+    def clear_task_data(self, name=None):
+        if name is None:
+            # full clean
+            Log.Debug("Clearing previous task data")
+            if Dict["tasks"]:
+                for task_name in Dict["tasks"].keys():
+                    if task_name == "queue":
+                        continue
+
+                    Dict["tasks"][task_name]["data"] = {}
+                    Dict["tasks"][task_name]["running"] = False
+                Dict.Save()
+            return
+
         if name not in Dict["tasks"]:
             raise NotImplementedError("Task missing! %s" % name)
 
@@ -107,14 +120,12 @@ class DefaultScheduler(object):
         Log.Debug("Scheduler: Running task %s", name)
         try:
             task.prepare(*args, **kwargs)
-            task.time_start = datetime.datetime.now()
             task.run()
         except Exception, e:
             Log.Error("Scheduler: Something went wrong when running %s: %s", name, traceback.format_exc())
         finally:
-            task.last_run = datetime.datetime.now()
-            task.time_start = None
             task.post_run(Dict["tasks"][name]["data"])
+            Dict.Save()
 
     def dispatch_task(self, *args, **kwargs):
         if "queue" not in Dict["tasks"]:
@@ -149,6 +160,7 @@ class DefaultScheduler(object):
                 # work queue off
                 queue = Dict["tasks"]["queue"][:]
                 Dict["tasks"]["queue"] = []
+                Dict.Save()
                 for args, kwargs in queue:
                     Log.Debug("Dispatching single task: %s, %s", args, kwargs)
                     Thread.Create(self.run_task, True, *args, **kwargs)
@@ -168,7 +180,7 @@ class DefaultScheduler(object):
                 if not frequency_num:
                     continue
 
-                if not task.last_run or task.last_run + datetime.timedelta(**{frequency_key: frequency_num}) <= now:
+                if not task.last_run or (task.last_run + datetime.timedelta(**{frequency_key: frequency_num}) <= now):
                     self.run_task(name)
 
             Thread.Sleep(5.0)

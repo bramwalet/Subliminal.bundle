@@ -35,7 +35,8 @@ def find_subtitles(part):
 
         if sub_dir_custom:
             # got custom subfolder
-            if os.path.isabs(sub_dir_custom):
+            sub_dir_custom = os.path.normpath(sub_dir_custom)
+            if os.path.isdir(sub_dir_custom) and os.path.isabs(sub_dir_custom):
                 # absolute folder
                 sub_dir_list.append(sub_dir_custom)
                 global_folders.append(sub_dir_custom)
@@ -87,10 +88,15 @@ def find_subtitles(part):
         for path in paths:
             # we can't housekeep the global subtitle folders as we don't know about *all* media files
             # in a library; skip them
+            skip_path = False
             for fld in global_folders:
                 if path.startswith(fld):
                     Log.Info("Skipping housekeeping of folder: %s", path)
-                    continue
+                    skip_path = True
+                    break
+
+            if skip_path:
+                continue
 
             for file_path_listing in os.listdir(path.encode(sz_config.fs_encoding)):
                 file_path_listing = helpers.unicodize(file_path_listing)
@@ -121,28 +127,42 @@ def find_subtitles(part):
     Log('Paths: %s', ", ".join([helpers.unicodize(p) for p in paths]))
 
     for file_path in file_paths.values():
-
-        local_basename = helpers.unicodize(os.path.splitext(os.path.basename(file_path))[0])
+        local_filename = os.path.basename(file_path)
+        bn, ext = os.path.splitext(local_filename)
+        local_basename = helpers.unicodize(bn)
 
         # get fn without forced/default/normal tag
         split_tag = local_basename.rsplit(".", 1)
         if len(split_tag) > 1 and split_tag[1].lower() in ['forced', 'normal', 'default']:
             local_basename = split_tag[0]
 
+        # split off possible language tag
         local_basename2 = local_basename.rsplit('.', 1)[0]
         filename_matches_part = local_basename == part_basename or local_basename2 == part_basename
+        filename_contains_part = part_basename in local_basename
 
-        # If the file is located within the global subtitle folder and it's name doesn't match exactly
-        # then we should simply ignore it.
-        #
-        if global_subtitle_folder and file_path.count(global_subtitle_folder) and not filename_matches_part:
+        if not ext.lower()[1:] in config.SUBTITLE_EXTS:
             continue
 
-        # If we have more than one media file within the folder and located filename doesn't match
-        # exactly then we should simply ignore it.
-        #
-        if total_media_files > 1 and not filename_matches_part:
-            continue
+        # if the file is located within the global subtitle folders and its name doesn't match exactly, ignore it
+        if global_folders and not filename_matches_part:
+            skip_path = False
+            for fld in global_folders:
+                if file_path.startswith(fld):
+                    skip_path = True
+                    break
+
+            if skip_path:
+                continue
+
+        # determine whether to pick up the subtitle based on our match strictness
+        elif not filename_matches_part:
+            if sz_config.ext_match_strictness == "strict" or (
+                    sz_config.ext_match_strictness == "loose" and not filename_contains_part):
+
+                Log.Debug("%s doesn't match %s, skipping" % (helpers.unicodize(local_filename),
+                                                             helpers.unicodize(part_basename)))
+                continue
 
         subtitle_helper = subtitlehelpers.subtitle_helpers(file_path)
         if subtitle_helper is not None:

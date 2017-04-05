@@ -1,3 +1,70 @@
+1.4.23.920
+- core: handle undecodable paths better #255
+- core: don't fail on unrecoverable data #257
+- core: increase default scores from 110 (series) and 23 (movies) to 116 and 33
+- core: fix global subtitle folder handling #234
+- core: better invoking of configured executable after subtitle addition #247
+
+
+1.4.22.908
+- core: hotfix for more robust migrations
+
+
+1.4.22.898
+- core: migrate history and subtitle storage to a better implementation, making it far more stable. subtitle storage now also stores the downloaded subtitle data for future usage, so it will be possible to switch between them
+- core/menu: manual subtitle download and the FindBetterSubtitles-task now also work with metadata storage (hi @ shield users)
+- core: optimize FindBetterSubtitles-task
+
+
+1.4.19.882
+- core: fix tasks for new users
+- core: double check pin correctness/existance when pin is enabled
+
+
+1.4.19.878
+- core/menu: fix a task's last runtime display
+- core: task optimizations
+- core: fix leftover subtitles cleanup handling in case of a custom subtitle folder #234
+- core: run the scheduler even if permissions for libraries are wrong ("fixes" #236)
+- core: store subtitle history data in a different data format; reduce used storage size drastically (#233)
+
+
+1.4.19.866
+- core: fix wrong usage of LogKit
+
+
+1.4.19.857
+
+- core: add option to enable/disable channel and/or agent modes (fixes #220)
+- core: skip inexistent internal streams when scanning for internal subtitles (fixes #222)
+- core: fix filename encoding (fixes #223)
+- core: storage optimizations
+- menu: add pin-based channel menu locking (the whole channel or only the advanced menu)
+
+
+1.4.17.836
+- core: support for any media file that PMS supports (internal subtitles on mp4 for example)
+- core: fix broken ignore folders containing "subzero.ignore/.subzero.ignore/.nosz"
+- core: fix duplicate subtitles (lowercase/default case)
+- core: fix broken tasks queue due to oversight
+
+
+1.4.16.822
+- menu: add per-section recently added menu
+- menu: fix accidentally double-triggering a just triggered force-refresh
+- core: reorder settings in a more logical, grouped way
+- core: add simple automatic filesystem/external leftover subtitle cleaning (#133, #152)
+- core: fix force-refresh for big seasons/series
+- core: add setting to look for forced/foreign-only subtitles only (only works for opensubtitles and podnapisi)
+- core: fix custom subtitle folder was being ignored (#211)
+- core: only trust PMS for its movie name, not the series title (fixes #210)
+- core: full support (in filesystem/external mode) for forced/default/normal subtitle tags
+- core: ignore "non-standard" external subtitle files when scanning by default (everything but .srt, .ass, .ssa, fixes #192)
+- core: lower default max_recent_items_per_library to 500
+- core: skip forced/foreign-only subtitles if not specifically wanted
+- core: modify the task queue, hopefully helping #206
+- core: update anonymous usage collection
+
 
 1.4.11.781
 - core: cleanup, logging

@@ -6,17 +6,16 @@ import pprint
 import copy
 
 import subliminal
+from items import get_item
+from subzero.subtitle_storage import StoredSubtitlesManager
 
 from subtitlehelpers import force_utf8
 from config import config
 from helpers import notify_executable, get_title_for_video_metadata, cast_bool, force_unicode
+from plex_media import PMSMediaProxy
 
 
-def get_subtitle_info(rating_key):
-    if "subs" not in Dict:
-        Dict["subs"] = {}
-
-    return Dict["subs"].get(rating_key)
+get_subtitle_storage = lambda: StoredSubtitlesManager(Data, get_item)
 
 
 def whack_missing_parts(scanned_video_part_map, existing_parts=None):
@@ -60,41 +59,39 @@ def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_ty
     """
     stores information about downloaded subtitles in plex's Dict()
     """
-    if "subs" not in Dict:
-        Dict["subs"] = {}
-
     existing_parts = []
     for video, video_subtitles in downloaded_subtitles.items():
         part = scanned_video_part_map[video]
         part_id = str(part.id)
         video_id = str(video.id)
+        plex_item = get_item(video_id)
+        metadata = video.plexapi_metadata
+        title = get_title_for_video_metadata(metadata)
 
-        if video_id not in Dict["subs"]:
-            Dict["subs"][video_id] = {}
-
-        if part_id not in Dict["subs"][video_id]:
-            Dict["subs"][video_id][part_id] = {}
+        subtitle_storage = get_subtitle_storage()
+        stored_subs = subtitle_storage.load_or_new(plex_item)
 
         existing_parts.append(part_id)
 
+        stored_any = False
         for subtitle in video_subtitles:
             lang = Locale.Language.Match(subtitle.language.alpha2)
+            Log.Debug(u"Adding subtitle to storage: %s, %s, %s" % (video_id, part_id, title))
+            ret_val = stored_subs.add(part_id, lang, subtitle, storage_type, mode=mode)
 
-            sub_key = subtitle.provider_name, str(subtitle.id)
-            metadata = video.plexapi_metadata
+            if ret_val:
+                Log.Debug("Subtitle stored")
+                stored_any = True
 
-            # compute title
-            title = get_title_for_video_metadata(metadata)
-            Dict["subs"][video_id][part_id][lang] = {
-                sub_key: dict(score=subtitle.score, storage=storage_type, hash=Hash.MD5(subtitle.content),
-                              date_added=datetime.datetime.now(), title=title, mode=mode),
-                "current": sub_key
-            }
+            else:
+                Log.Debug("Subtitle already existing in storage")
 
-        Dict.Save()
+        if stored_any:
+            Log.Debug("Saving subtitle storage for %s" % video_id)
+            subtitle_storage.save(stored_subs)
 
-    if existing_parts:
-        whack_missing_parts(scanned_video_part_map, existing_parts=existing_parts)
+    #if existing_parts:
+    #    whack_missing_parts(scanned_video_part_map, existing_parts=existing_parts)
 
 
 def reset_storage(key):
@@ -148,7 +145,14 @@ def save_subtitles_to_metadata(videos, subtitles):
         mediaPart = videos[video]
         for subtitle in video_subtitles:
             content = force_utf8(subtitle.text) if config.enforce_encoding else subtitle.content
-            mediaPart.subtitles[Locale.Language.Match(subtitle.language.alpha2)][subtitle.id] = Proxy.Media(content, ext="srt")
+
+            if not isinstance(mediaPart, Framework.api.agentkit.MediaPart):
+                # we're being handed a Plex.py model instance here, not an internal PMS MediaPart object.
+                # get the correct one
+                mp = PMSMediaProxy(video.id).get_part(mediaPart.id)
+            else:
+                mp = mediaPart
+            mp.subtitles[Locale.Language.Match(subtitle.language.alpha2)][subtitle.id] = Proxy.Media(content, ext="srt")
     return True
 
 

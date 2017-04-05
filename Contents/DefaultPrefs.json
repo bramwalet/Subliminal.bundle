@@ -185,6 +185,12 @@
     "default": "false"
   },
   {
+    "id": "subtitles.language.treat_und_as_first",
+    "label": "Embedded subtitles: Treat \"Undefined\" (und) as language 1",
+    "type": "bool",
+    "default": "true"
+  },
+  {
     "id": "provider.opensubtitles.enabled",
     "label": "Provider: Enable OpenSubtitles",
     "type": "bool",
@@ -297,16 +303,27 @@
     "default": "false"
   },
   {
+    "id": "subtitles.scan.filename_strictness",
+    "label": "Scan: which external subtitles should be picked up?",
+    "type": "enum",
+    "values": [
+      "exact: media filename match",
+      "loose: filename contains media filename",
+      "any"
+    ],
+    "default": "loose: filename contains media filename"
+  },
+  {
     "id": "subtitles.search.minimumTVScore1",
-    "label": "Minimum score for TV (min: 77, sane: 110; see http://v.ht/szscores)",
+    "label": "Minimum score for TV (min: 77, sane: 110; min-ideal: 116; see http://v.ht/szscores)",
     "type": "text",
-    "default": "110"
+    "default": "116"
   },
   {
     "id": "subtitles.search.minimumMovieScore1",
-    "label": "Minimum score for movies (def: 23, sane: 33; see http://v.ht/szscores)",
+    "label": "Minimum score for movies (min: 23, def/sane/min-ideal: 33; see http://v.ht/szscores)",
     "type": "text",
-    "default": "23"
+    "default": "33"
   },
   {
     "id": "subtitles.search.hearingImpaired",
@@ -368,6 +385,18 @@
     "label": "Automatically delete leftover/unused (externally saved) subtitles",
     "type": "bool",
     "default": "true"
+  },
+  {
+    "id": "activity.on_playback",
+    "label": "On media playback: search for missing subtitles (refresh item)",
+    "type": "enum",
+    "values": [
+      "never",
+      "current media item",
+      "next episode (series)",
+      "hybrid: current item or next episode"
+    ],
+    "default": "never"
   },
   {
     "id": "scheduler.tasks.SearchAllRecentlyAddedMissing.frequency",
