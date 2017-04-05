@@ -30,16 +30,22 @@ class PlexActivityManager(object):
         if not config.use_activities:
             return
 
+        # ignore non-playing states and anything too far in
+        if info["state"] != "playing" or info["viewOffset"] > 60000:
+            return
+
         # don't trigger on the first hit ever
-        if "last_played_item" not in Dict:
-            Dict["last_played_item"] = None
+        if "last_played_items" not in Dict:
+            Dict["last_played_items"] = []
             Dict.Save()
             return
 
         rating_key = info["ratingKey"]
-        if Dict["last_played_item"] != rating_key:
-            # new playing
-            Dict["last_played_item"] = rating_key
+        if rating_key not in Dict["last_played_items"]:
+            # new playing; store last 10 recently played items
+            Dict["last_played_items"].insert(0, rating_key)
+            Dict["last_played_items"] = Dict["last_played_items"][:10]
+
             Dict.Save()
 
             debug_msg = "Started playing %s. Refreshing it." % rating_key
