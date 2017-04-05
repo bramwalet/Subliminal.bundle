@@ -10,6 +10,10 @@ Checkout **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)**
 
 ## Changelog
 
+1.4.27.967
+- core: remember the last 10 played items; only consider on_playback for "playing" state within the first 60 seconds of an item
+
+
 1.4.27.965
 - core: on_playback activity bugfixes
 
