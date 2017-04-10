@@ -1,6 +1,7 @@
 # coding=utf-8
 
 import os
+import re
 import logging
 import traceback
 
@@ -14,6 +15,7 @@ logger = logging.getLogger(__name__)
 CUSTOM_PATHS = []
 INCLUDE_EXOTIC_SUBS = True
 
+REMOVE_CRAP_FROM_FILENAME = re.compile("(?i)[_-](obfuscated|scrambled)", re.IGNORECASE)
 
 def _search_external_subtitles(path, forced_tag=False):
     dirpath, filename = os.path.split(path)
@@ -113,6 +115,8 @@ def scan_video(path, subtitles=True, embedded_subtitles=True, hints=None, video_
 
     # hint guessit the filename itself and its 2 parent directories if we're an episode (most likely Series name/Season/filename), else only one
     guess_from = os.path.join(*os.path.normpath(path).split(os.path.sep)[-3 if video_type == "episode" else -2:])
+    guess_from = REMOVE_CRAP_FROM_FILENAME.sub("", guess_from)
+
     hints = hints or {}
     logger.info('Scanning video (hints: %s) %r', hints, guess_from)
 
