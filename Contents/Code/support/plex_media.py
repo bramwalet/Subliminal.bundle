@@ -111,16 +111,20 @@ def scan_video(plex_part, ignore_all=False, hints=None, rating_key=None):
     # embedded subtitles
     if plexpy_part:
         for stream in plexpy_part.streams:
+            # subtitle stream
             if stream.stream_type == 3:
                 if (config.forced_only and getattr(stream, "forced")) or \
                         (not config.forced_only and not getattr(stream, "forced")):
-                    if not stream.stream_key and stream.codec in ("srt", "ass", "ssa"):
-                        lang_code = stream.language_code
 
-                        # treat unknown language as lang1?
-                        if not lang_code and config.treat_und_as_first:
-                            lang_code = list(config.lang_list)[0].alpha3
-                        known_embedded.append(lang_code)
+                    # embedded subtitle
+                    if not stream.stream_key:
+                        if config.exotic_ext or stream.codec in ("srt", "ass", "ssa"):
+                            lang_code = stream.language_code
+
+                            # treat unknown language as lang1?
+                            if not lang_code and config.treat_und_as_first:
+                                lang_code = list(config.lang_list)[0].alpha3
+                            known_embedded.append(lang_code)
     else:
         Log.Warn("Part %s missing of %s, not able to scan internal streams", plex_part.id, rating_key)
 

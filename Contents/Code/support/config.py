@@ -64,6 +64,7 @@ class Config(object):
     enforce_encoding = False
     chmod = None
     forced_only = False
+    exotic_ext = False
     treat_und_as_first = False
     ext_match_strictness = False
     use_activities = False
@@ -98,6 +99,7 @@ class Config(object):
         self.enforce_encoding = cast_bool(Prefs['subtitles.enforce_encoding'])
         self.chmod = self.check_chmod()
         self.forced_only = cast_bool(Prefs["subtitles.only_foreign"])
+        self.exotic_ext = cast_bool(Prefs["subtitles.scan.exotic_ext"])
         self.treat_und_as_first = cast_bool(Prefs["subtitles.language.treat_und_as_first"])
         self.ext_match_strictness = self.determine_ext_sub_strictness()
         self.initialized = True
@@ -383,7 +385,7 @@ class Config(object):
         Log.Debug("Patching subliminal ...")
         dest_folder = self.subtitle_destination_folder
         subliminal_patch.patch_video.CUSTOM_PATHS = [dest_folder] if dest_folder else []
-        subliminal_patch.patch_video.INCLUDE_EXOTIC_SUBS = cast_bool(Prefs["subtitles.scan.exotic_ext"])
+        subliminal_patch.patch_video.INCLUDE_EXOTIC_SUBS = self.exotic_ext
         subliminal_patch.patch_provider_pool.DOWNLOAD_TRIES = int(Prefs['subtitles.try_downloads'])
         subliminal.video.Episode.scores["addic7ed_boost"] = int(Prefs['provider.addic7ed.boost_by'])
 
