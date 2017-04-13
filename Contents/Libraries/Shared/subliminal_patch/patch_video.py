@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 CUSTOM_PATHS = []
 INCLUDE_EXOTIC_SUBS = True
 
-REMOVE_CRAP_FROM_FILENAME = re.compile("(?i)[_-](obfuscated|scrambled)(\.[\w]+)$", re.IGNORECASE)
+REMOVE_CRAP_FROM_FILENAME = re.compile("(?i)[_-](obfuscated|scrambled)(\.[\w]+)$")
 
 
 def _search_external_subtitles(path, forced_tag=False):
