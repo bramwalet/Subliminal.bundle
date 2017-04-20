@@ -6,6 +6,8 @@ import traceback
 
 import time
 
+import operator
+
 import requests
 from babelfish import LanguageReverseError
 from subliminal import ProviderError
@@ -226,3 +228,84 @@ class PatchedProviderPool(ProviderPool):
             return False
 
         return True
+
+    def download_best_subtitles(self, subtitles, video, languages, min_score=0, hearing_impaired=False, only_one=False,
+                                compute_score=None):
+        """Download the best matching subtitles.
+        
+        patch: 
+            - hearing_impaired is now string
+            - add .score to subtitle
+            - move all languages check further to the top (still necessary?)
+
+        :param subtitles: the subtitles to use.
+        :type subtitles: list of :class:`~subliminal.subtitle.Subtitle`
+        :param video: video to download subtitles for.
+        :type video: :class:`~subliminal.video.Video`
+        :param languages: languages to download.
+        :type languages: set of :class:`~babelfish.language.Language`
+        :param int min_score: minimum score for a subtitle to be downloaded.
+        :param bool hearing_impaired: hearing impaired preference.
+        :param bool only_one: download only one subtitle, not one per language.
+        :param compute_score: function that takes `subtitle` and `video` as positional arguments,
+            `hearing_impaired` as keyword argument and returns the score.
+        :return: downloaded subtitles.
+        :rtype: list of :class:`~subliminal.subtitle.Subtitle`
+
+        """
+        compute_score = compute_score or default_compute_score
+        use_hearing_impaired = hearing_impaired in ("prefer", "force HI")
+
+        # sort subtitles by score
+        unsorted_subtitles = []
+
+        for s in subtitles:
+            # get the matches
+            try:
+                matches = s.get_matches(video)
+            except AttributeError:
+                logger.error("Match computation failed for %s: %s", s, traceback.format_exc())
+                continue
+
+            logger.debug('Found matches %r', matches)
+            unsorted_subtitles.append(
+                (s, compute_score(matches, s, video, hearing_impaired=use_hearing_impaired), matches))
+
+        # sort subtitles by score
+        scored_subtitles = sorted(unsorted_subtitles, key=operator.itemgetter(1), reverse=True)
+
+        # download best subtitles, falling back on the next on error
+        downloaded_subtitles = []
+        for subtitle, score, matches in scored_subtitles:
+            # check score
+            if score < min_score:
+                logger.info('Score %d is below min_score (%d)', score, min_score)
+                break
+
+            # stop when all languages are downloaded
+            if set(s.language for s in downloaded_subtitles) == languages:
+                logger.debug('All languages downloaded')
+                break
+
+            # check downloaded languages
+            if subtitle.language in set(s.language for s in downloaded_subtitles):
+                logger.debug('Skipping subtitle: %r already downloaded', subtitle.language)
+                continue
+
+            # bail out if hearing_impaired was wrong
+            if "hearing_impaired" not in matches and hearing_impaired in ("force HI", "force non-HI"):
+                logger.debug('Skipping subtitle: %r with score %d because hearing-impaired set to %s', subtitle,
+                             score, hearing_impaired)
+                continue
+
+            # download
+            if self.download_subtitle(subtitle):
+                subtitle.score = score
+                downloaded_subtitles.append(subtitle)
+
+            # stop if only one subtitle is requested
+            if only_one:
+                logger.debug('Only one subtitle downloaded')
+                break
+
+        return downloaded_subtitles
