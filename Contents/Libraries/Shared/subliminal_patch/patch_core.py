@@ -1,11 +1,15 @@
 # coding=utf-8
 import os
 import logging
+import traceback
+
+from babelfish import LanguageReverseError
+
 from subliminal.score import compute_score as default_compute_score
 from subliminal.subtitle import SUBTITLE_EXTENSIONS, get_subtitle_path
 from subliminal.utils import hash_napiprojekt, hash_opensubtitles, hash_shooter, hash_thesubdb
 from subliminal.video import VIDEO_EXTENSIONS, Episode, Movie, Video
-from subliminal.core import guessit, Language
+from subliminal.core import guessit, Language, ProviderPool
 
 logger = logging.getLogger(__name__)
 
@@ -122,3 +126,44 @@ def search_external_subtitles(path, forced_tag=False):
             subtitles.update(_search_external_subtitles(abspath, forced_tag=forced_tag))
     logger.debug("external subs: found %s", subtitles)
     return subtitles
+
+
+class PatchedProviderPool(ProviderPool):
+    def list_subtitles(self, video, languages):
+        """List subtitles.
+        
+        patch: handle LanguageReverseError
+
+        :param video: video to list subtitles for.
+        :type video: :class:`~subliminal.video.Video`
+        :param languages: languages to search for.
+        :type languages: set of :class:`~babelfish.language.Language`
+        :return: found subtitles.
+        :rtype: list of :class:`~subliminal.subtitle.Subtitle`
+
+        """
+        subtitles = []
+
+        for name in self.providers:
+            # check discarded providers
+            if name in self.discarded_providers:
+                logger.debug('Skipping discarded provider %r', name)
+                continue
+
+            # list subtitles
+            try:
+                provider_subtitles = self.list_subtitles_provider(name, video, languages)
+            except LanguageReverseError:
+                logger.exception("Unexpected language reverse error in %s, skipping. Error: %s", name,
+                                 traceback.format_exc())
+                continue
+
+            if provider_subtitles is None:
+                logger.info('Discarding provider %s', name)
+                self.discarded_providers.add(name)
+                continue
+
+            # add the subtitles
+            subtitles.extend(provider_subtitles)
+
+        return subtitles
