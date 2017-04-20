@@ -384,13 +384,11 @@ class Config(object):
         # configure custom subtitle destination folders for scanning pre-existing subs
         Log.Debug("Patching subliminal ...")
         dest_folder = self.subtitle_destination_folder
-        subliminal_patch.patch_core.CUSTOM_PATHS = [dest_folder] if dest_folder else []
-        subliminal_patch.patch_core.INCLUDE_EXOTIC_SUBS = self.exotic_ext
+        subliminal_patch.core.CUSTOM_PATHS = [dest_folder] if dest_folder else []
+        subliminal_patch.core.INCLUDE_EXOTIC_SUBS = self.exotic_ext
 
-        Log.Error("SUBLIMINAL NOT PATCHED YET")
-        return
-        subliminal_patch.patch_provider_pool.DOWNLOAD_TRIES = int(Prefs['subtitles.try_downloads'])
-        subliminal.video.Episode.scores["addic7ed_boost"] = int(Prefs['provider.addic7ed.boost_by'])
+        subliminal_patch.core.DOWNLOAD_TRIES = int(Prefs['subtitles.try_downloads'])
+        subliminal.score.episode_scores["addic7ed_boost"] = int(Prefs['provider.addic7ed.boost_by'])
 
 
 config = Config()

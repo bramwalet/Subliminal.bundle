@@ -10,7 +10,7 @@ from babelfish.exceptions import LanguageReverseError
 from pkg_resources import EntryPoint, iter_entry_points
 from subliminal import ProviderError
 from subliminal.api import ProviderPool
-from subliminal_patch.patch_subtitle import compute_score
+from subliminal_patch.subtitle import compute_score
 
 logger = logging.getLogger(__name__)
 
