@@ -1,4 +1,5 @@
 # coding=utf-8
+import json
 import re
 import os
 import logging
@@ -12,6 +13,7 @@ from collections import defaultdict
 
 import requests
 from babelfish import LanguageReverseError
+from guessit.jsonutils import GuessitEncoder
 from subliminal import ProviderError
 
 from subliminal.score import compute_score as default_compute_score
@@ -65,7 +67,9 @@ def scan_video(path, dont_use_actual_file=False, hints=None):
     guess_from = REMOVE_CRAP_FROM_FILENAME.sub(r"\2", guess_from)
 
     # guess
-    video = Video.fromguess(path, guessit(guess_from, options=hints or {}))
+    guessed_result = guessit(guess_from, options=hints or {})
+    logger.debug('GuessIt found: %s', json.dumps(guessed_result, cls=GuessitEncoder, indent=4, ensure_ascii=False))
+    video = Video.fromguess(path, guessed_result)
 
     # trust plex's movie name
     if video_type == "movie" and hints.get("expected_title"):
