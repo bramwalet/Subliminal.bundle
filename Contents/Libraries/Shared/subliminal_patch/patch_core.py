@@ -1,9 +1,14 @@
 # coding=utf-8
 import os
 import logging
+import socket
 import traceback
 
+import time
+
+import requests
 from babelfish import LanguageReverseError
+from subliminal import ProviderError
 
 from subliminal.score import compute_score as default_compute_score
 from subliminal.subtitle import SUBTITLE_EXTENSIONS, get_subtitle_path
@@ -16,6 +21,9 @@ logger = logging.getLogger(__name__)
 # may be absolute or relative paths; set to selected options
 CUSTOM_PATHS = []
 INCLUDE_EXOTIC_SUBS = True
+
+DOWNLOAD_TRIES = 0
+DOWNLOAD_RETRY_SLEEP = 2
 
 
 def scan_video(path, dont_use_actual_file=False):
@@ -116,7 +124,8 @@ def search_external_subtitles(path, forced_tag=False):
         # folder_or_subfolder may be a relative path or an absolute one
         try:
             abspath = unicode(os.path.abspath(
-                os.path.join(*[video_path if not os.path.isabs(folder_or_subfolder) else "", folder_or_subfolder, video_filename])))
+                os.path.join(*[video_path if not os.path.isabs(folder_or_subfolder) else "", folder_or_subfolder,
+                               video_filename])))
         except Exception, e:
             logger.error("skipping path %s because of %s", repr(folder_or_subfolder), e)
             continue
@@ -167,3 +176,53 @@ class PatchedProviderPool(ProviderPool):
             subtitles.extend(provider_subtitles)
 
         return subtitles
+
+    def download_subtitle(self, subtitle):
+        """Download `subtitle`'s :attr:`~subliminal.subtitle.Subtitle.content`.
+        
+        patch: add retry functionality
+        
+        :param subtitle: subtitle to download.
+        :type subtitle: :class:`~subliminal.subtitle.Subtitle`
+        :return: `True` if the subtitle has been successfully downloaded, `False` otherwise.
+        :rtype: bool
+        """
+        # check discarded providers
+        if subtitle.provider_name in self.discarded_providers:
+            logger.warning('Provider %r is discarded', subtitle.provider_name)
+            return False
+
+        logger.info('Downloading subtitle %r', subtitle)
+        tries = 0
+
+        # retry downloading on failure until settings' download retry limit hit
+        while True:
+            tries += 1
+            try:
+                self[subtitle.provider_name].download_subtitle(subtitle)
+                break
+            except (requests.Timeout, socket.timeout):
+                logger.error('Provider %r timed out', subtitle.provider_name)
+            except ProviderError:
+                logger.error('Unexpected error in provider %r, Traceback: %s', subtitle.provider_name,
+                             traceback.format_exc())
+            except:
+                logger.exception('Unexpected error in provider %r, Traceback: %s', subtitle.provider_name,
+                                 traceback.format_exc())
+
+            if tries == DOWNLOAD_TRIES:
+                self.discarded_providers.add(subtitle.provider_name)
+                logger.error('Maximum retries reached for provider %r, discarding it', subtitle.provider_name)
+                return False
+
+            # don't hammer the provider
+            logger.debug('Errors while downloading subtitle, retrying provider %r in %s seconds',
+                         subtitle.provider_name, DOWNLOAD_RETRY_SLEEP)
+            time.sleep(DOWNLOAD_RETRY_SLEEP)
+
+        # check subtitle validity
+        if not subtitle.is_valid():
+            logger.error('Invalid subtitle')
+            return False
+
+        return True
