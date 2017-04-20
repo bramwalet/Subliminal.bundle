@@ -7,6 +7,7 @@ import traceback
 import time
 
 import operator
+from collections import defaultdict
 
 import requests
 from babelfish import LanguageReverseError
@@ -309,3 +310,37 @@ class PatchedProviderPool(ProviderPool):
                 break
 
         return downloaded_subtitles
+
+
+def list_all_subtitles(videos, languages, **kwargs):
+    """List all available subtitles.
+    
+    patch: remove video check, it has been done before
+
+    The `videos` must pass the `languages` check of :func:`check_video`.
+
+    All other parameters are passed onwards to the :class:`ProviderPool` constructor.
+
+    :param videos: videos to list subtitles for.
+    :type videos: set of :class:`~subliminal.video.Video`
+    :param languages: languages to search for.
+    :type languages: set of :class:`~babelfish.language.Language`
+    :return: found subtitles per video.
+    :rtype: dict of :class:`~subliminal.video.Video` to list of :class:`~subliminal.subtitle.Subtitle`
+
+    """
+    listed_subtitles = defaultdict(list)
+
+    # return immediatly if no video passed the checks
+    if not videos:
+        return listed_subtitles
+
+    # list subtitles
+    with PatchedProviderPool(**kwargs) as pool:
+        for video in videos:
+            logger.info('Listing subtitles for %r', video)
+            subtitles = pool.list_subtitles(video, languages - video.subtitle_languages)
+            listed_subtitles[video].extend(subtitles)
+            logger.info('Found %d subtitle(s)', len(subtitles))
+
+    return listed_subtitles
