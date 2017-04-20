@@ -8,7 +8,7 @@ from subliminal.score import get_scores
 logger = logging.getLogger(__name__)
 
 
-def compute_score(orig_matches, subtitle, video, hearing_impaired=None):
+def compute_score(matches, subtitle, video, hearing_impaired=None):
     """Compute the score of the `subtitle` against the `video` with `hearing_impaired` preference.
     
     patch: 
@@ -28,7 +28,6 @@ def compute_score(orig_matches, subtitle, video, hearing_impaired=None):
 
     """
     logger.info('Computing score of %r for video %r with %r', subtitle, video, dict(hearing_impaired=hearing_impaired))
-    matches = orig_matches.copy()
 
     # get the scores dict
     scores = get_scores(video)

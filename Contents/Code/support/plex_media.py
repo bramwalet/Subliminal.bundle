@@ -96,6 +96,14 @@ def get_media_item_ids(media, kind="series"):
 
 
 def scan_video(plex_part, ignore_all=False, hints=None, rating_key=None):
+    """
+    returnes a subliminal/guessit-refined parsed video
+    :param plex_part: 
+    :param ignore_all: 
+    :param hints: 
+    :param rating_key: 
+    :return: 
+    """
     embedded_subtitles = not ignore_all and Prefs['subtitles.scan.embedded']
     external_subtitles = not ignore_all and Prefs['subtitles.scan.external']
 
