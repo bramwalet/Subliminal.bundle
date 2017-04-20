@@ -231,9 +231,21 @@ def check_write_permissions(path):
     return False
 
 
-def get_item_hints(title, kind, episode_title=None):
-    hints = {"title": title}
-    hints.update({"type": "episode", "episode_title": episode_title} if kind == "series" else {"type": "movie"})
+def get_item_hints(data):
+    """
+    :param data: video item dict of media_to_videos 
+    :return: 
+    """
+    hints = {"title": data["title"], "type": "movie"}
+    if data["type"] == "episode":
+        hints.update(
+            {
+                "type": "episode",
+                "episode_title": data["title"],
+                "title": data["series"],
+            }
+        )
+    hints["expected_title"] = hints["title"]
     return hints
 
 

@@ -1,4 +1,5 @@
 # coding=utf-8
+import re
 import os
 import logging
 import socket
@@ -28,15 +29,25 @@ INCLUDE_EXOTIC_SUBS = True
 DOWNLOAD_TRIES = 0
 DOWNLOAD_RETRY_SLEEP = 2
 
+REMOVE_CRAP_FROM_FILENAME = re.compile("(?i)[_-](obfuscated|scrambled)(\.[\w]+)$")
 
-def scan_video(path, dont_use_actual_file=False):
+
+def scan_video(path, dont_use_actual_file=False, hints=None):
     """Scan a video from a `path`.
+    
+    patch:
+        - allow passing of hints/options to guessit
+        - allow dry-run with dont_use_actual_file
+        - add crap removal (obfuscated/scrambled)
+        - trust plex's movie name
 
     :param str path: existing path to the video.
     :return: the scanned video.
     :rtype: :class:`~subliminal.video.Video`
 
     """
+    video_type = hints.get("type")
+
     # check for non-existing path
     if not dont_use_actual_file and not os.path.exists(path):
         raise ValueError('Path does not exist')
@@ -48,8 +59,17 @@ def scan_video(path, dont_use_actual_file=False):
     dirpath, filename = os.path.split(path)
     logger.info('Scanning video %r in %r', filename, dirpath)
 
+    # hint guessit the filename itself and its 2 parent directories if we're an episode (most likely
+    # Series name/Season/filename), else only one
+    guess_from = os.path.join(*os.path.normpath(path).split(os.path.sep)[-3 if video_type == "episode" else -2:])
+    guess_from = REMOVE_CRAP_FROM_FILENAME.sub(r"\2", guess_from)
+
     # guess
-    video = Video.fromguess(path, guessit(path, options={}))
+    video = Video.fromguess(path, guessit(guess_from, options=hints or {}))
+
+    # trust plex's movie name
+    if video_type == "movie" and hints.get("expected_title"):
+        video.title = hints.get("expected_title")[0]
 
     if dont_use_actual_file:
         return video

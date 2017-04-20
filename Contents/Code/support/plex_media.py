@@ -133,7 +133,7 @@ def scan_video(plex_part, ignore_all=False, hints=None, rating_key=None):
 
     try:
         # get basic video info scan (filename)
-        video = subliminal.scan_video(plex_part.file)
+        video = subliminal.scan_video(plex_part.file, hints=hints)
 
         # refiners
         # fixme: add hints?
@@ -164,7 +164,14 @@ def scan_video(plex_part, ignore_all=False, hints=None, rating_key=None):
 
         # title not matched? try plex title hint
         if refine_with_plex:
-            refine(video, embedded_subtitles=False, episode_refiners=episode_rerefiners, movie_refiners=movie_rerefiners)
+            refine(video, embedded_subtitles=False, episode_refiners=episode_rerefiners,
+                   movie_refiners=movie_rerefiners)
+
+            # did it match now?
+            if (hints["type"] == "episode" and not video.series_tvdb_id and not video.tvdb_id and
+                    not video.series_imdb_id) or (hints["type"] == "movie" and not video.imdb_id):
+                Log.Warn("File could not be guessed by subliminal")
+                return
 
         # scan for external subtitles
         if external_subtitles:
@@ -211,7 +218,7 @@ def scan_videos(videos, kind="series", ignore_all=False):
         Log.Debug("Determining force-refresh (video: %s, series: %s, season: %s), result: %s"
                   % (video["id"], video["series_id"], video["season_id"], force_refresh))
 
-        hints = helpers.get_item_hints(video["series"] if kind == "series" else video["title"], kind, episode_title=video["title"] if kind == "series" else None)
+        hints = helpers.get_item_hints(video)
         video["plex_part"].fps = get_stream_fps(video["plex_part"].streams)
         scanned_video = scan_video(video["plex_part"], ignore_all=force_refresh or ignore_all, hints=hints,
                                    rating_key=video["id"])
