@@ -245,7 +245,7 @@ def get_item_hints(data):
                 "title": data["series"],
             }
         )
-    hints["expected_title"] = hints["title"]
+    hints["expected_title"] = [hints["title"]]
     return hints
 
 

@@ -3,6 +3,7 @@ import datetime
 import sys
 import traceback
 
+from subliminal_patch import compute_score
 from subzero.sandbox import restore_builtins
 
 module = sys.modules['__main__']
@@ -35,6 +36,7 @@ from support.helpers import track_usage, get_title_for_video_metadata, get_ident
 from support.history import get_history
 from support.data import dispatch_migrate
 from support.activities import activity
+from subliminal_patch.core import PatchedProviderPool
 
 
 def Start():
@@ -122,8 +124,9 @@ def download_best_subtitles(video_part_map, min_score=0):
     if missing_languages:
         Log.Debug("Download best subtitles using settings: min_score: %s, hearing_impaired: %s" % (min_score, hearing_impaired))
 
-        return subliminal.api.download_best_subtitles(video_part_map.keys(), languages, min_score, hearing_impaired, providers=config.providers,
-                                                      provider_configs=config.provider_settings)
+        return subliminal.download_best_subtitles(video_part_map.keys(), languages, min_score, hearing_impaired, providers=config.providers,
+                                                  provider_configs=config.provider_settings, pool_class=PatchedProviderPool,
+                                                  compute_score=compute_score)
     Log.Debug("All languages for all requested videos exist. Doing nothing.")
 
 

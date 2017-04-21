@@ -11,7 +11,6 @@ class RetryingSession(Session):
         return retry_call(getattr(super(RetryingSession, self), method), fargs=args, fkwargs=kwargs, tries=3, delay=1)
 
     def get(self, *args, **kwargs):
-        print "YOLOOOOOOOOOOOOOOOOO"
         return self.retry_method("get", *args, **kwargs)
 
     def post(self, *args, **kwargs):

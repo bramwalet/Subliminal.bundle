@@ -11,7 +11,8 @@ import subliminal
 
 # fixme
 #from subliminal_patch.patch_api import list_all_subtitles, download_subtitles
-from subliminal import download_subtitles, compute_score
+from subliminal import download_subtitles
+from subliminal_patch.score import compute_score
 from subliminal import list_subtitles as list_all_subtitles
 from babelfish import Language
 
@@ -20,6 +21,7 @@ from babelfish import Language
 from missing_subtitles import items_get_all_missing_subs, refresh_item
 from background import scheduler
 from storage import save_subtitles, whack_missing_parts, get_subtitle_storage
+from subliminal_patch.core import PatchedProviderPool
 from support.config import config
 from support.items import get_recent_items, is_ignored, get_item
 from support.lib import Plex
@@ -246,7 +248,8 @@ class DownloadSubtitleMixin(object):
         video, plex_part = scanned_parts.items()[0]
 
         # downloaded_subtitles = {subliminal.Video: [subtitle, subtitle, ...]}
-        download_subtitles([subtitle], providers=config.providers, provider_configs=config.provider_settings)
+        download_subtitles([subtitle], providers=config.providers, provider_configs=config.provider_settings,
+                           pool_class=PatchedProviderPool, compute_score=compute_score)
         download_successful = False
 
         if subtitle.content:
