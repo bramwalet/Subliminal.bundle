@@ -7,8 +7,16 @@ import logging
 # patch subliminal's subtitle and provider base
 from .subtitle import PatchedSubtitle
 from .providers import PatchedProvider
+from .http import RetryingSession
 subliminal.subtitle.Subtitle = PatchedSubtitle
 subliminal.providers.Provider = PatchedProvider
+
+# inject our requests.Session wrapper for automatic retry
+subliminal.providers.addic7ed.Session = RetryingSession
+subliminal.providers.podnapisi.Session = RetryingSession
+subliminal.providers.tvsubtitles.Session = RetryingSession
+subliminal.providers.opensubtitles.Session = RetryingSession
+
 from subliminal.providers.addic7ed import Addic7edSubtitle, Addic7edProvider
 from subliminal.providers.podnapisi import PodnapisiSubtitle, PodnapisiProvider
 from subliminal.providers.tvsubtitles import TVsubtitlesSubtitle, TVsubtitlesProvider

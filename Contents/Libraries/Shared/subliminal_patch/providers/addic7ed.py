@@ -60,7 +60,7 @@ class PatchedAddic7edProvider(PunctuationMixin, ProviderRetryMixin, Addic7edProv
         """
         # get the show page
         logger.info('Getting show ids')
-        r = self.retry(lambda: self.session.get(self.server_url + 'shows.php', timeout=10))
+        r = self.session.get(self.server_url + 'shows.php', timeout=10)
         r.raise_for_status()
         soup = ParserBeautifulSoup(r.content, ['lxml', 'html.parser'])
 
@@ -83,7 +83,6 @@ class PatchedAddic7edProvider(PunctuationMixin, ProviderRetryMixin, Addic7edProv
 
         return show_ids
 
-
     @region.cache_on_arguments(expiration_time=SHOW_EXPIRATION_TIME)
     def _search_show_id(self, series, year=None):
         """Search the show id from the `series` and `year`.
@@ -104,7 +103,7 @@ class PatchedAddic7edProvider(PunctuationMixin, ProviderRetryMixin, Addic7edProv
 
         # make the search
         logger.info('Searching show ids with %r', params)
-        r = self.retry(lambda: self.session.get(self.server_url + 'search.php', params=params, timeout=10))
+        r = self.session.get(self.server_url + 'search.php', params=params, timeout=10)
         r.raise_for_status()
         if r.status_code == 304:
             raise TooManyRequests()
@@ -133,9 +132,10 @@ class PatchedAddic7edProvider(PunctuationMixin, ProviderRetryMixin, Addic7edProv
 
         # get the page of the season of the show
         logger.info('Getting the page of show id %d, season %d', show_id, season)
-        r = self.retry(lambda: self.session.get(self.server_url + 'show/%d' % show_id,
-                                                params={'season': season}, timeout=10))
+        r = self.session.get(self.server_url + 'show/%d' % show_id, params={'season': season}, timeout=10)
         r.raise_for_status()
+        if r.status_code == 304:
+            raise TooManyRequests()
         soup = ParserBeautifulSoup(r.content, ['lxml', 'html.parser'])
 
         # loop over subtitle rows
