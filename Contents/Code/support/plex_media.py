@@ -151,8 +151,8 @@ def scan_video(plex_part, ignore_all=False, hints=None, rating_key=None):
         known_embedded_subtitle_streams=known_embedded)
         """
         refine_kwargs = {
-            "episode_rerefiners": ('sz_metadata', 'tvdb', 'omdb'),
-            "movie_rerefiners": ('sz_metadata', 'omdb',),
+            "episode_refiners": ('sz_metadata', 'tvdb', 'omdb'),
+            "movie_refiners": ('sz_metadata', 'omdb',),
             "embedded_subtitles": False,
         }
 

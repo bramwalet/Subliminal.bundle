@@ -13,12 +13,12 @@ from collections import defaultdict
 from bs4 import UnicodeDammit
 from babelfish import LanguageReverseError
 from guessit.jsonutils import GuessitEncoder
-from subliminal import ProviderError
+from subliminal import ProviderError, refiner_manager
 
 from subliminal.score import compute_score as default_compute_score
-from subliminal.subtitle import SUBTITLE_EXTENSIONS, get_subtitle_path
+from subliminal.subtitle import SUBTITLE_EXTENSIONS
 from subliminal.utils import hash_napiprojekt, hash_opensubtitles, hash_shooter, hash_thesubdb
-from subliminal.video import VIDEO_EXTENSIONS, Video
+from subliminal.video import VIDEO_EXTENSIONS, Video, Episode, Movie
 from subliminal.core import guessit, Language, ProviderPool, io
 
 logger = logging.getLogger(__name__)
@@ -475,3 +475,32 @@ def save_subtitles(video, subtitles, single=False, directory=None, encoding=None
             break
 
     return saved_subtitles
+
+
+def refine(video, episode_refiners=None, movie_refiners=None, **kwargs):
+    """Refine a video using :ref:`refiners`.
+    
+    patch: add traceback logging
+
+    .. note::
+
+        Exceptions raised in refiners are silently passed and logged.
+
+    :param video: the video to refine.
+    :type video: :class:`~subliminal.video.Video`
+    :param tuple episode_refiners: refiners to use for episodes.
+    :param tuple movie_refiners: refiners to use for movies.
+    :param \*\*kwargs: additional parameters for the :func:`~subliminal.refiners.refine` functions.
+
+    """
+    refiners = ()
+    if isinstance(video, Episode):
+        refiners = episode_refiners or ('metadata', 'tvdb', 'omdb')
+    elif isinstance(video, Movie):
+        refiners = movie_refiners or ('metadata', 'omdb')
+    for refiner in refiners:
+        logger.info('Refining video with %s', refiner)
+        try:
+            refiner_manager[refiner].plugin(video, **kwargs)
+        except:
+            logger.exception('Failed to refine video: %s' % traceback.format_exc())

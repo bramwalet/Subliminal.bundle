@@ -32,7 +32,7 @@ setattr(PodnapisiProvider, "__bases__", (PatchedProvider,))
 setattr(TVsubtitlesProvider, "__bases__", (PatchedProvider,))
 setattr(OpenSubtitlesProvider, "__bases__", (PatchedProvider,))
 
-from .core import scan_video, search_external_subtitles, PatchedProviderPool, list_all_subtitles, save_subtitles
+from .core import scan_video, search_external_subtitles, PatchedProviderPool, list_all_subtitles, save_subtitles, refine
 from .score import compute_score
 from .extensions import provider_manager
 from .providers import addic7ed#, podnapisi, tvsubtitles, opensubtitles
@@ -43,6 +43,7 @@ subliminal.core.search_external_subtitles = search_external_subtitles
 subliminal.save_subtitles = subliminal.core.save_subtitles = save_subtitles
 subliminal.ProviderPool = subliminal.core.ProviderPool = PatchedProviderPool
 subliminal.compute_score = subliminal.score.compute_score = compute_score
+subliminal.refine = subliminal.core.refine = refine
 
 # add our own list_all_subtitles
 subliminal.list_all_subtitles = subliminal.core.list_all_subtitles = list_all_subtitles
