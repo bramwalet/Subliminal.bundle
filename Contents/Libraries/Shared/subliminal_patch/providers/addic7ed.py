@@ -75,7 +75,7 @@ class PatchedAddic7edProvider(PunctuationMixin, ProviderRetryMixin, Addic7edProv
 
             show_ids[show_clean] = show_id
             match = series_year_re.match(show_clean)
-            if match.group(2) and match.group(1) not in show_ids:
+            if match and match.group(2) and match.group(1) not in show_ids:
                 # year found, also add it without year
                 show_ids[match.group(1)] = show_id
 
