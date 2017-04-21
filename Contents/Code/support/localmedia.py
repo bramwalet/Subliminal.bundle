@@ -160,8 +160,8 @@ def find_subtitles(part):
             if sz_config.ext_match_strictness == "strict" or (
                     sz_config.ext_match_strictness == "loose" and not filename_contains_part):
 
-                Log.Debug("%s doesn't match %s, skipping" % (helpers.unicodize(local_filename),
-                                                             helpers.unicodize(part_basename)))
+                #Log.Debug("%s doesn't match %s, skipping" % (helpers.unicodize(local_filename),
+                #                                             helpers.unicodize(part_basename)))
                 continue
 
         subtitle_helper = subtitlehelpers.subtitle_helpers(file_path)
