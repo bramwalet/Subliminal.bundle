@@ -112,7 +112,7 @@ def str_pad(s, length, align='left', pad_char=' ', trim=False):
 
 def pad_title(value):
     """Pad a title to 30 characters to force the 'details' view."""
-    return str_pad(value, 30, pad_char=' ')
+    return str_pad(value, 49, pad_char=' ')
 
 
 def get_plex_item_display_title(item, kind, parent=None, parent_title=None, section_title=None,

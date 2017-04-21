@@ -7,9 +7,9 @@ from support.helpers import get_video_display_title
 from support.ignore import ignore_list
 from support.lib import get_intent
 from support.config import config
-from subzero.constants import ICON
+from subzero.constants import ICON_SUB
 
-default_thumb = R(ICON)
+default_thumb = R(ICON_SUB)
 
 
 def should_display_ignore(items, previous=None):

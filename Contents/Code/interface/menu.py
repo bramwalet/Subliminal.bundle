@@ -91,25 +91,29 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
             key=Callback(OnDeckMenu),
             title="On Deck items",
             summary="Shows the current on deck items and allows you to individually (force-) refresh their metadata/"
-                    "subtitles."
+                    "subtitles.",
+            thumb=R("icon-ondeck.jpg")
         ))
         oc.add(DirectoryObject(
             key=Callback(RecentlyAddedMenu),
             title="Recently Added items",
-            summary="Shows the recently added items per section."
+            summary="Shows the recently added items per section.",
+            thumb=R("icon-recent.jpg")
         ))
         oc.add(DirectoryObject(
             key=Callback(RecentMissingSubtitlesMenu, randomize=timestamp()),
             title="Items with missing subtitles",
             summary="Shows the items honoring the configured 'Item age to be considered recent'-setting (%s)"
                     " and allowing you to individually (force-) refresh their metadata/subtitles. " %
-                    Prefs["scheduler.item_is_recent_age"]
+                    Prefs["scheduler.item_is_recent_age"],
+            thumb=R("icon-missing.jpg")
         ))
         oc.add(DirectoryObject(
             key=Callback(SectionsMenu),
             title="Browse all items",
             summary="Go through your whole library and manage your ignore list. You can also "
-                    "(force-) refresh the metadata/subtitles of individual items."
+                    "(force-) refresh the metadata/subtitles of individual items.",
+            thumb=R("icon-browse.jpg")
         ))
 
         task_name = "SearchAllRecentlyAddedMissing"
@@ -125,19 +129,22 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
         oc.add(DirectoryObject(
             key=Callback(RefreshMissing, randomize=timestamp()),
             title="Search for missing subtitles (in recently-added items, max-age: %s)" % Prefs["scheduler.item_is_recent_age"],
-            summary="Automatically run periodically by the scheduler, if configured. %s" % task_state
+            summary="Automatically run periodically by the scheduler, if configured. %s" % task_state,
+            thumb=R("icon-search.jpg")
         ))
 
         oc.add(DirectoryObject(
             key=Callback(IgnoreListMenu),
             title="Display ignore list (%d)" % len(ignore_list),
-            summary="Show the current ignore list (mainly used for the automatic tasks)"
+            summary="Show the current ignore list (mainly used for the automatic tasks)",
+            thumb=R("icon-ignore.jpg")
         ))
 
         oc.add(DirectoryObject(
             key=Callback(HistoryMenu),
             title="History",
-            summary="Show the last %i downloaded subtitles" % int(Prefs["history_size"])
+            summary="Show the last %i downloaded subtitles" % int(Prefs["history_size"]),
+            thumb=R("icon-history.jpg")
         ))
 
     oc.add(DirectoryObject(
@@ -146,7 +153,8 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
         summary="Current state: %s; Last state: %s" % (
             (Dict["current_refresh_state"] or "Idle") if "current_refresh_state" in Dict else "Idle",
             (Dict["last_refresh_state"] or "None") if "last_refresh_state" in Dict else "None"
-        )
+        ),
+        thumb=R("icon-refresh.jpg")
     ))
 
     # add re-lock after pin unlock
@@ -161,7 +169,8 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
         oc.add(DirectoryObject(
             key=Callback(AdvancedMenu),
             title=pad_title("Advanced functions"),
-            summary="Use at your own risk"
+            summary="Use at your own risk",
+            thumb=R("icon-advanced.jpg")
         ))
 
     return oc

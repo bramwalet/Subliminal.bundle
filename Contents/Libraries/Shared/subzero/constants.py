@@ -12,6 +12,7 @@ PREFIX = "/video/%s" % PLUGIN_IDENTIFIER_SHORT
 TITLE = "%s Subtitles" % PLUGIN_NAME
 ART      = 'art-default.jpg'
 ICON     = 'icon-default.jpg'
+ICON_SUB = 'icon-sub.jpg'
 
 DEFAULT_TIMEOUT = 10
 
