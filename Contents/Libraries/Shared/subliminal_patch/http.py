@@ -2,6 +2,7 @@
 
 import certifi
 
+import os
 from requests import Session
 from retry.api import retry_call
 
@@ -11,8 +12,7 @@ class RetryingSession(Session):
 
     def __init__(self):
         super(RetryingSession, self).__init__()
-        self.verify = certifi.where()
-        print self.verify
+        self.verify = os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", certifi.where()))
 
     def retry_method(self, method, *args, **kwargs):
         return retry_call(getattr(super(RetryingSession, self), method), fargs=args, fkwargs=kwargs, tries=3, delay=1)
