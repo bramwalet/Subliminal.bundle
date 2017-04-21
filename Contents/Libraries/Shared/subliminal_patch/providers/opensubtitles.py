@@ -8,6 +8,7 @@ from subliminal.exceptions import ConfigurationError
 from subliminal.providers.opensubtitles import OpenSubtitlesProvider, checked, __short_version__, \
     OpenSubtitlesSubtitle, Episode, ServerProxy
 from mixins import ProviderRetryMixin
+from subliminal_patch.http import TimeoutSafeTransport
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +69,7 @@ class PatchedOpenSubtitlesProvider(ProviderRetryMixin, OpenSubtitlesProvider):
             logger.info("Only searching for foreign/forced subtitles")
 
         super(PatchedOpenSubtitlesProvider, self).__init__()
+        self.server = ServerProxy('https://api.opensubtitles.org/xml-rpc', TimeoutSafeTransport(10))
 
     def initialize(self):
         logger.info('Logging in')
