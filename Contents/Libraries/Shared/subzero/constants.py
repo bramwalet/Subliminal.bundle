@@ -10,8 +10,8 @@ PLUGIN_NAME = "Sub-Zero"
 PREFIX = "/video/%s" % PLUGIN_IDENTIFIER_SHORT
 
 TITLE = "%s Subtitles" % PLUGIN_NAME
-ART      = 'art-default.jpg'
-ICON     = 'icon-default.jpg'
+ART      = 'art-2.0.jpg'
+ICON     = 'icon-2.0.jpg'
 
 DEFAULT_TIMEOUT = 10
 
