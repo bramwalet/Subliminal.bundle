@@ -26,8 +26,8 @@ setattr(OpenSubtitlesProvider, "__bases__", (PatchedProvider,))
 
 from .core import scan_video, search_external_subtitles, PatchedProviderPool, list_all_subtitles, save_subtitles
 from .score import compute_score
-from .extensions import refiner_manager
-from .providers import addic7ed, podnapisi, tvsubtitles, opensubtitles
+#from .extensions import refiner_manager
+from .providers import addic7ed#, podnapisi, tvsubtitles, opensubtitles
 
 # patch subliminal's core functions
 subliminal.scan_video = subliminal.core.scan_video = scan_video
@@ -38,7 +38,7 @@ subliminal.compute_score = subliminal.score.compute_score = compute_score
 
 # add our own list_all_subtitles
 subliminal.list_all_subtitles = subliminal.core.list_all_subtitles = list_all_subtitles
-subliminal.refiner_manager = subliminal.core.refiner_manager = refiner_manager
+#subliminal.refiner_manager = subliminal.core.refiner_manager = refiner_manager
 
 # patch subliminal's subtitle classes
 def subtitleRepr(self):
@@ -55,10 +55,11 @@ subliminal.subtitle.Subtitle.__repr__ = subtitleRepr
 
 # patch subliminal's providers
 subliminal.providers.addic7ed.Addic7edProvider = addic7ed.PatchedAddic7edProvider
-subliminal.providers.podnapisi.PodnapisiProvider = podnapisi.PatchedPodnapisiProvider
-subliminal.providers.tvsubtitles.TVsubtitlesProvider = tvsubtitles.PatchedTVsubtitlesProvider
-subliminal.providers.opensubtitles.OpenSubtitlesProvider = opensubtitles.PatchedOpenSubtitlesProvider
+#subliminal.providers.podnapisi.PodnapisiProvider = podnapisi.PatchedPodnapisiProvider
+#subliminal.providers.tvsubtitles.TVsubtitlesProvider = tvsubtitles.PatchedTVsubtitlesProvider
+#subliminal.providers.opensubtitles.OpenSubtitlesProvider = opensubtitles.PatchedOpenSubtitlesProvider
 
 # add language converters
+babelfish.language_converters.unregister('addic7ed = subliminal.converters.addic7ed:Addic7edConverter')
 babelfish.language_converters.register('addic7ed = subliminal_patch.language:PatchedAddic7edConverter')
-babelfish.language_converters.register('tvsubtitles = subliminal.converters.tvsubtitles:TVsubtitlesConverter')
+subliminal.refiner_manager.register('sz_metadata = subliminal_patch.refiners.metadata:refine')

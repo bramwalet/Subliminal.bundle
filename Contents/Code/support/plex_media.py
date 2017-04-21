@@ -150,12 +150,17 @@ def scan_video(plex_part, ignore_all=False, hints=None, rating_key=None):
         video_fps=plex_part.fps, forced_tag=config.forced_only,
         known_embedded_subtitle_streams=known_embedded)
         """
-        refine(video, embedded_subtitles=False)
+        refine_kwargs = {
+            "episode_rerefiners": ('sz_metadata', 'tvdb', 'omdb'),
+            "movie_rerefiners": ('sz_metadata', 'omdb',),
+            "embedded_subtitles": False,
+        }
+
+        refine(video, **refine_kwargs)
 
         # re-refine with plex's known data?
         refine_with_plex = False
-        episode_rerefiners = ('tvdb', 'omdb')
-        movie_rerefiners = ('omdb',)
+
 
         # episode but wasn't able to match title
         if hints["type"] == "episode" and not video.series_tvdb_id and not video.tvdb_id and not video.series_imdb_id:
@@ -172,8 +177,7 @@ def scan_video(plex_part, ignore_all=False, hints=None, rating_key=None):
 
         # title not matched? try plex title hint
         if refine_with_plex:
-            refine(video, embedded_subtitles=False, episode_refiners=episode_rerefiners,
-                   movie_refiners=movie_rerefiners)
+            refine(video, **refine_kwargs)
 
             # did it match now?
             if (hints["type"] == "episode" and not video.series_tvdb_id and not video.tvdb_id and
