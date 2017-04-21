@@ -114,11 +114,11 @@ class PatchedOpenSubtitlesProvider(ProviderRetryMixin, OpenSubtitlesProvider):
         if use_tag_search and tag:
             criteria.append({'tag': tag})
         if imdb_id:
-            criteria.append({'imdbid': imdb_id})
+            criteria.append({'imdbid': imdb_id[2:]})
         if query and season and episode:
-            criteria.append({'query': query, 'season': season, 'episode': episode})
+            criteria.append({'query': query.replace('\'', ''), 'season': season, 'episode': episode})
         elif query:
-            criteria.append({'query': query})
+            criteria.append({'query': query.replace('\'', '')})
         if not criteria:
             raise ValueError('Not enough information')
 
