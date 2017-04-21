@@ -35,7 +35,6 @@ setattr(OpenSubtitlesProvider, "__bases__", (PatchedProvider,))
 from .core import scan_video, search_external_subtitles, list_all_subtitles, save_subtitles, refine
 from .score import compute_score
 from .extensions import provider_manager
-from .providers import addic7ed#, podnapisi, tvsubtitles, opensubtitles
 
 # patch subliminal's core functions
 subliminal.scan_video = subliminal.core.scan_video = scan_video

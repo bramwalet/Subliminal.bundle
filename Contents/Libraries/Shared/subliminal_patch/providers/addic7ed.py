@@ -8,7 +8,6 @@ from subliminal.exceptions import TooManyRequests
 from subliminal.providers.addic7ed import Addic7edProvider, Addic7edSubtitle, ParserBeautifulSoup, Language
 from subliminal.cache import SHOW_EXPIRATION_TIME, region
 from subliminal.utils import sanitize
-from .mixins import PunctuationMixin, ProviderRetryMixin
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +33,7 @@ class PatchedAddic7edSubtitle(Addic7edSubtitle):
         return matches
 
 
-class PatchedAddic7edProvider(PunctuationMixin, ProviderRetryMixin, Addic7edProvider):
+class PatchedAddic7edProvider(Addic7edProvider):
     USE_ADDICTED_RANDOM_AGENTS = False
 
     def __init__(self, username=None, password=None, use_random_agents=False):
