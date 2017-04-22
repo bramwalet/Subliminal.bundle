@@ -5,7 +5,7 @@ import subliminal
 from random import randint
 
 from subliminal.exceptions import TooManyRequests
-from subliminal.providers.addic7ed import Addic7edProvider, Addic7edSubtitle, ParserBeautifulSoup, Language
+from subliminal.providers.addic7ed import Addic7edProvider as _Addic7edProvider, Addic7edSubtitle, ParserBeautifulSoup, Language
 from subliminal.cache import SHOW_EXPIRATION_TIME, region
 from subliminal.utils import sanitize
 
@@ -33,16 +33,16 @@ class PatchedAddic7edSubtitle(Addic7edSubtitle):
         return matches
 
 
-class PatchedAddic7edProvider(Addic7edProvider):
+class Addic7edProvider(_Addic7edProvider):
     USE_ADDICTED_RANDOM_AGENTS = False
 
     def __init__(self, username=None, password=None, use_random_agents=False):
-        super(PatchedAddic7edProvider, self).__init__(username=username, password=password)
+        super(Addic7edProvider, self).__init__(username=username, password=password)
         self.USE_ADDICTED_RANDOM_AGENTS = use_random_agents
 
     def initialize(self):
         # patch: add optional user agent randomization
-        super(PatchedAddic7edProvider, self).initialize()
+        super(Addic7edProvider, self).initialize()
         if self.USE_ADDICTED_RANDOM_AGENTS:
             from .utils import FIRST_THOUSAND_OR_SO_USER_AGENTS as AGENT_LIST
             logger.debug("addic7ed: using random user agents")

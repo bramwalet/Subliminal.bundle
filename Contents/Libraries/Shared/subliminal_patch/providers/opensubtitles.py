@@ -5,7 +5,7 @@ import os
 
 from babelfish import Language
 from subliminal.exceptions import ConfigurationError
-from subliminal.providers.opensubtitles import OpenSubtitlesProvider, checked, __short_version__, \
+from subliminal.providers.opensubtitles import OpenSubtitlesProvider as _OpenSubtitlesProvider, checked, __short_version__, \
     OpenSubtitlesSubtitle, Episode, ServerProxy
 from mixins import ProviderRetryMixin
 from subliminal_patch.http import TimeoutSafeTransport
@@ -50,7 +50,7 @@ class PatchedOpenSubtitlesSubtitle(OpenSubtitlesSubtitle):
         return matches
 
 
-class PatchedOpenSubtitlesProvider(ProviderRetryMixin, OpenSubtitlesProvider):
+class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
     only_foreign = True
 
     def __init__(self, username=None, password=None, use_tag_search=False, only_foreign=False):
@@ -68,7 +68,7 @@ class PatchedOpenSubtitlesProvider(ProviderRetryMixin, OpenSubtitlesProvider):
         if only_foreign:
             logger.info("Only searching for foreign/forced subtitles")
 
-        super(PatchedOpenSubtitlesProvider, self).__init__()
+        super(OpenSubtitlesProvider, self).__init__()
         self.server = ServerProxy('https://api.opensubtitles.org/xml-rpc', TimeoutSafeTransport(10))
 
     def initialize(self):
