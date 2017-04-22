@@ -4,10 +4,8 @@ import subliminal
 
 # patch subliminal's subtitle and provider base
 from .subtitle import PatchedSubtitle
-from .providers import PatchedProvider
 from .http import RetryingSession
 subliminal.subtitle.Subtitle = PatchedSubtitle
-subliminal.providers.Provider = PatchedProvider
 
 # inject our requests.Session wrapper for automatic retry
 subliminal.providers.addic7ed.Session = RetryingSession

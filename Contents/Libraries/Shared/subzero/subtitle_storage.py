@@ -68,9 +68,6 @@ class StoredVideoSubtitles(object):
             subs = part[lang]
 
         sub_key = self.get_sub_key(subtitle.provider_name, subtitle.id)
-        if sub_key in subs:
-            return
-
         subs[sub_key] = StoredSubtitle(subtitle.score, storage_type, hashlib.md5(subtitle.content).hexdigest(),
                                        subtitle.provider_name, subtitle.id, date_added=date_added, mode=mode,
                                        content=subtitle.content)
