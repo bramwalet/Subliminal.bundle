@@ -17,6 +17,10 @@ class PatchedSubtitle(Subtitle):
     release_info = None
     matches = None
 
+    def __repr__(self):
+        return '<%s %r [%s]>' % (
+            self.__class__.__name__, self.page_link, self.language)
+
     def guess_encoding(self):
         """Guess encoding using the language, falling back on chardet.
 
