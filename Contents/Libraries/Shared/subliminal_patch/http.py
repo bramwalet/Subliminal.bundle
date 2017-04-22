@@ -37,7 +37,6 @@ class TimeoutSafeTransport(SafeTransport):
         self.context = default_ssl_context
 
     def make_connection(self, host):
-        print self.context
         c = SafeTransport.make_connection(self, host)
         c.timeout = self.timeout
 
