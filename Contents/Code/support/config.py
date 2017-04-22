@@ -388,7 +388,7 @@ class Config(object):
         subliminal_patch.core.INCLUDE_EXOTIC_SUBS = self.exotic_ext
 
         subliminal_patch.core.DOWNLOAD_TRIES = int(Prefs['subtitles.try_downloads'])
-        subliminal.score.episode_scores["addic7ed_boost"] = int(Prefs['provider.addic7ed.boost_by'])
+        subliminal.score.episode_scores["addic7ed_boost"] = int(Prefs['provider.addic7ed.boost_by1'])
 
 
 config = Config()
