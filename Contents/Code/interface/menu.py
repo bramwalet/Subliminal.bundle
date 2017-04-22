@@ -34,8 +34,10 @@ route = enable_channel_wrapper(route)
 # noinspection PyUnboundLocalVariable
 handler = enable_channel_wrapper(handler)
 
+main_icon = ICON if not config.is_development else "icon-dev.jpg"
 
-@handler(PREFIX, TITLE, art=ART, thumb=ICON)
+
+@handler(PREFIX, TITLE if not config.is_development else TITLE + " DEV", art=ART, thumb=main_icon)
 @route(PREFIX)
 def fatality(randomize=None, force_title=None, header=None, message=None, only_refresh=False, no_history=False, replace_parent=False):
     """

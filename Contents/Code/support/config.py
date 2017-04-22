@@ -25,6 +25,7 @@ VIDEO_EXTS = ['3g2', '3gp', 'asf', 'asx', 'avc', 'avi', 'avs', 'bivx', 'bup', 'd
 IGNORE_FN = ("subzero.ignore", ".subzero.ignore", ".nosz")
 
 VERSION_RE = re.compile(ur'CFBundleVersion.+?<string>([0-9\.]+)</string>', re.DOTALL)
+DEV_RE = re.compile(ur'PlexPluginDevMode.+?<string>([01]+)</string>', re.DOTALL)
 
 
 def int_or_default(s, default):
@@ -35,11 +36,13 @@ def int_or_default(s, default):
 
 
 class Config(object):
+    plugin_info = ""
     version = None
     full_version = None
     server_log_path = None
     app_support_path = None
     universal_plex_token = None
+    is_development = False
 
     enable_channel = True
     enable_agent = True
@@ -74,6 +77,8 @@ class Config(object):
 
     def initialize(self):
         self.fs_encoding = get_viable_encoding()
+        self.plugin_info = self.get_plugin_info()
+        self.is_development = self.get_dev_mode()
         self.version = self.get_version()
         self.full_version = u"%s %s" % (PLUGIN_NAME, self.version)
         self.server_log_path = self.get_server_log_path()
@@ -201,12 +206,21 @@ class Config(object):
         return all_permissions_ok
 
     def get_version(self):
+        result = VERSION_RE.search(self.plugin_info)
+        add = "" if not self.is_development else " DEV"
+
+        if result:
+            return result.group(1) + add
+
+    def get_dev_mode(self):
+        dev = DEV_RE.search(self.plugin_info)
+        if dev and dev.group(1) == "1":
+            return True
+
+    def get_plugin_info(self):
         curDir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
         info_file_path = os.path.abspath(os.path.join(curDir, "..", "..", "Info.plist"))
-        data = FileIO.read(info_file_path)
-        result = VERSION_RE.search(data)
-        if result:
-            return result.group(1)
+        return FileIO.read(info_file_path)
 
     def parse_ignore_paths(self):
         paths = Prefs["subtitles.ignore_paths"]
