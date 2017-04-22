@@ -26,7 +26,7 @@ class PatchedOpenSubtitlesSubtitle(OpenSubtitlesSubtitle):
         self.release_info = movie_release_name
 
     def get_matches(self, video, hearing_impaired=False):
-        matches = super(PatchedOpenSubtitlesSubtitle, self).get_matches(video, hearing_impaired=hearing_impaired)
+        matches = super(PatchedOpenSubtitlesSubtitle, self).get_matches(video)
 
         sub_fps = None
         try:
