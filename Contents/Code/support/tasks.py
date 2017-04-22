@@ -250,7 +250,7 @@ class DownloadSubtitleMixin(object):
 
         # downloaded_subtitles = {subliminal.Video: [subtitle, subtitle, ...]}
         download_subtitles([subtitle], providers=config.providers, provider_configs=config.provider_settings,
-                           pool_class=PatchedProviderPool, compute_score=compute_score)
+                           pool_class=PatchedProviderPool)
         download_successful = False
 
         if subtitle.content:
