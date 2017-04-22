@@ -215,7 +215,7 @@ class SubtitleListingMixin(object):
         for s in available_subs[video]:
             Log.Debug("Starting score computation for %s", s)
             try:
-                matches = s.get_matches(video, hearing_impaired=use_hearing_impaired)
+                matches = s.get_matches(video)
             except AttributeError:
                 Log.Error("Match computation failed for %s: %s", s, traceback.format_exc())
                 continue
