@@ -371,6 +371,22 @@ def list_all_subtitles(videos, languages, **kwargs):
     return listed_subtitles
 
 
+def download_subtitles(subtitles, pool_class=ProviderPool, **kwargs):
+    """Download :attr:`~subliminal.subtitle.Subtitle.content` of `subtitles`.
+
+    :param subtitles: subtitles to download.
+    :type subtitles: list of :class:`~subliminal.subtitle.Subtitle`
+    :param pool_class: class to use as provider pool.
+    :type pool_class: :class:`ProviderPool`, :class:`AsyncProviderPool` or similar
+    :param \*\*kwargs: additional parameters for the provided `pool_class` constructor.
+
+    """
+    with pool_class(**kwargs) as pool:
+        for subtitle in subtitles:
+            logger.info('Downloading subtitle %r with score %s', subtitle, subtitle.score)
+            pool.download_subtitle(subtitle)
+
+
 def get_subtitle_path(video_path, language=None, extension='.srt', forced_tag=False):
     """Get the subtitle path using the `video_path` and `language`.
 

@@ -6,13 +6,10 @@ import time
 import operator
 import traceback
 
-import subliminal
-# import subliminal_patch
-
 # fixme
 # from subliminal_patch.patch_api import list_all_subtitles, download_subtitles
-from subliminal import download_subtitles
 from subliminal_patch.score import compute_score
+from subliminal_patch.core import download_subtitles
 from subliminal import list_subtitles as list_all_subtitles
 from babelfish import Language
 
