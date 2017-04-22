@@ -315,9 +315,9 @@
   },
   {
     "id": "subtitles.search.minimumTVScore2",
-    "label": "Minimum score for TV (min: 240, sane/min-ideal: 345; see http://v.ht/szscores)",
+    "label": "Minimum score for TV (min: 240, def/sane: 337, min-ideal: 352; see http://v.ht/szscores)",
     "type": "text",
-    "default": "345"
+    "default": "337"
   },
   {
     "id": "subtitles.search.minimumMovieScore2",
