@@ -149,7 +149,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
             movie_name = subtitle_item['MovieName']
             movie_release_name = subtitle_item['MovieReleaseName']
             movie_year = int(subtitle_item['MovieYear']) if subtitle_item['MovieYear'] else None
-            movie_imdb_id = int(subtitle_item['IDMovieImdb'])
+            movie_imdb_id = 'tt' + subtitle_item['IDMovieImdb']
             movie_fps = subtitle_item.get('MovieFPS')
             series_season = int(subtitle_item['SeriesSeason']) if subtitle_item['SeriesSeason'] else None
             series_episode = int(subtitle_item['SeriesEpisode']) if subtitle_item['SeriesEpisode'] else None
@@ -172,7 +172,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
                                              hash, movie_name, movie_release_name, movie_year, movie_imdb_id,
                                              series_season, series_episode, query_parameters, filename, encoding,
                                              movie_fps)
-            logger.debug('Found subtitle %r', subtitle)
+            logger.debug('Found subtitle %r by %s', subtitle, matched_by)
             subtitles.append(subtitle)
 
         return subtitles
