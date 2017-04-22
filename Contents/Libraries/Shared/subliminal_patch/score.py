@@ -31,7 +31,7 @@ def compute_score(matches, subtitle, video, hearing_impaired=None):
 
     # get the scores dict
     scores = get_scores(video)
-    logger.debug('Using scores %r', scores)
+    #logger.debug('Using scores %r', scores)
 
     is_episode = isinstance(video, Episode)
     is_movie = isinstance(video, Movie)
