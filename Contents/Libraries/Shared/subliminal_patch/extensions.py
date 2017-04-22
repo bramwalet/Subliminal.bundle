@@ -1,4 +1,6 @@
 # coding=utf-8
+import subliminal
+import babelfish
 from subliminal.extensions import RegistrableExtensionManager
 
 provider_manager = RegistrableExtensionManager('subliminal.providers', [
@@ -9,5 +11,10 @@ provider_manager = RegistrableExtensionManager('subliminal.providers', [
     'shooter = subliminal.providers.shooter:ShooterProvider',
     'subscenter = subliminal.providers.subscenter:SubsCenterProvider',
     'thesubdb = subliminal.providers.thesubdb:TheSubDBProvider',
-    'tvsubtitles = subliminal.providers.tvsubtitles:TVsubtitlesProvider'
+    'tvsubtitles = subliminal_patch.providers.tvsubtitles:TVsubtitlesProvider'
 ])
+
+# add language converters
+babelfish.language_converters.unregister('addic7ed = subliminal.converters.addic7ed:Addic7edConverter')
+babelfish.language_converters.register('addic7ed = subliminal_patch.language:PatchedAddic7edConverter')
+subliminal.refiner_manager.register('sz_metadata = subliminal_patch.refiners.metadata:refine')

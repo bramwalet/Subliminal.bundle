@@ -6,3 +6,6 @@ python -c "import logging; logging.basicConfig(level=logging.DEBUG); import subl
 
 # podnapisi
 python -c "import logging; logging.basicConfig(level=logging.DEBUG); import subliminal_patch, subliminal; subliminal.region.configure('dogpile.cache.memory'); from subliminal import ProviderPool; from babelfish import Language; ProviderPool(providers=['podnapisi'], )['podnapisi'].query([Language('eng')], 'Game of Thrones', season=2, episode=1)"
+
+# tvsubtitles
+python -c "import logging; logging.basicConfig(level=logging.DEBUG); import subliminal_patch, subliminal; subliminal.region.configure('dogpile.cache.memory'); from subliminal import ProviderPool; from babelfish import Language; ProviderPool(providers=['tvsubtitles'], )['tvsubtitles'].query('Game of Thrones', 2, 1)"

@@ -33,6 +33,10 @@ class Addic7edSubtitle(_Addic7edSubtitle):
             logger.info("Boosting Addic7ed subtitle by %s" % subliminal.score.episode_scores.get("addic7ed_boost"))
         return matches
 
+    def __repr__(self):
+        return '<%s %r [%s]>' % (
+            self.__class__.__name__, u"http://www.addic7ed.com/%s" % self.download_link, self.language)
+
 
 class Addic7edProvider(_Addic7edProvider):
     USE_ADDICTED_RANDOM_AGENTS = False
