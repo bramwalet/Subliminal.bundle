@@ -315,13 +315,13 @@
   },
   {
     "id": "subtitles.search.minimumTVScore2",
-    "label": "Minimum score for TV (min: 240, sane: 255; min-ideal: 262; see http://v.ht/szscores)",
+    "label": "Minimum score for TV (min: 240, sane/min-ideal: 345; see http://v.ht/szscores)",
     "type": "text",
-    "default": "262"
+    "default": "345"
   },
   {
     "id": "subtitles.search.minimumMovieScore2",
-    "label": "Minimum score for movies (min: 60, def/sane/min-ideal: 69; see http://v.ht/szscores)",
+    "label": "Minimum score for movies (min: 60, def/sane: 69, min-ideal: 82; see http://v.ht/szscores)",
     "type": "text",
     "default": "69"
   },

@@ -193,7 +193,8 @@ class PatchedProviderPool(ProviderPool):
                 continue
 
             # download
-            logger.debug("Trying to download subtitle %r with matches %s, score: %s", subtitle, matches, score)
+            logger.debug("Trying to download subtitle %r with matches %s, score: %s; release(s): %s", subtitle, matches,
+                         score, subtitle.release_info)
             if self.download_subtitle(subtitle):
                 subtitle.score = score
                 downloaded_subtitles.append(subtitle)
