@@ -74,7 +74,7 @@ def Start():
             Log.Error("Insufficient permissions on library %s, folder: %s" % (title, path))
 
     # run task scheduler
-    #scheduler.run()
+    scheduler.run()
 
     # bind activities
     Thread.Create(activity.start)

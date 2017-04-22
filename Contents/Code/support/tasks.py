@@ -7,17 +7,17 @@ import operator
 import traceback
 
 import subliminal
-#import subliminal_patch
+# import subliminal_patch
 
 # fixme
-#from subliminal_patch.patch_api import list_all_subtitles, download_subtitles
+# from subliminal_patch.patch_api import list_all_subtitles, download_subtitles
 from subliminal import download_subtitles
 from subliminal_patch.score import compute_score
 from subliminal import list_subtitles as list_all_subtitles
 from babelfish import Language
 
 # fixme
-#from subliminal_patch.patch_subtitle import compute_score
+# from subliminal_patch.patch_subtitle import compute_score
 from missing_subtitles import items_get_all_missing_subs, refresh_item
 from background import scheduler
 from storage import save_subtitles, whack_missing_parts, get_subtitle_storage
@@ -220,7 +220,8 @@ class SubtitleListingMixin(object):
                 Log.Error("Match computation failed for %s: %s", s, traceback.format_exc())
                 continue
 
-            unsorted_subtitles.append((s, compute_score(matches, video), matches))
+            unsorted_subtitles.append(
+                (s, compute_score(matches, s, video, hearing_impaired=use_hearing_impaired), matches))
         scored_subtitles = sorted(unsorted_subtitles, key=operator.itemgetter(1), reverse=True)
 
         subtitles = []
@@ -270,7 +271,8 @@ class DownloadSubtitleMixin(object):
                     from support.history import get_history
                     item_title = get_title_for_video_metadata(metadata, add_section_title=False)
                     history = get_history()
-                    history.add(item_title, video.id, section_title=video.plexapi_metadata["section"], subtitle=subtitle,
+                    history.add(item_title, video.id, section_title=video.plexapi_metadata["section"],
+                                subtitle=subtitle,
                                 mode=mode)
         return download_successful
 
