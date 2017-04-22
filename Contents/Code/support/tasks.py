@@ -189,9 +189,9 @@ class SubtitleListingMixin(object):
         metadata = get_plex_metadata(rating_key, part_id, item_type)
 
         if item_type == "episode":
-            min_score = 66
+            min_score = 240
         else:
-            min_score = 23
+            min_score = 60
 
         scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
         if not scanned_parts:
