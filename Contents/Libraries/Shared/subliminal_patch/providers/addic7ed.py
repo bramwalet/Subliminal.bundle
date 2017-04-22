@@ -5,7 +5,8 @@ import subliminal
 from random import randint
 
 from subliminal.exceptions import TooManyRequests
-from subliminal.providers.addic7ed import Addic7edProvider as _Addic7edProvider, Addic7edSubtitle, ParserBeautifulSoup, Language
+from subliminal.providers.addic7ed import Addic7edProvider as _Addic7edProvider, Addic7edSubtitle as _Addic7edSubtitle, \
+    ParserBeautifulSoup, Language
 from subliminal.cache import SHOW_EXPIRATION_TIME, region
 from subliminal.utils import sanitize
 
@@ -15,15 +16,15 @@ logger = logging.getLogger(__name__)
 series_year_re = re.compile(r'^(?P<series>[ \w\'.:(),&!?-]+?)(?: \((?P<year>\d{4})\))?$')
 
 
-class PatchedAddic7edSubtitle(Addic7edSubtitle):
+class Addic7edSubtitle(_Addic7edSubtitle):
     def __init__(self, language, hearing_impaired, page_link, series, season, episode, title, year, version,
                  download_link):
-        super(PatchedAddic7edSubtitle, self).__init__(language, hearing_impaired, page_link, series, season, episode,
-                                                      title, year, version, download_link)
+        super(Addic7edSubtitle, self).__init__(language, hearing_impaired, page_link, series, season, episode,
+                                               title, year, version, download_link)
         self.release_info = version
 
     def get_matches(self, video):
-        matches = super(PatchedAddic7edSubtitle, self).get_matches(video)
+        matches = super(Addic7edSubtitle, self).get_matches(video)
         if not subliminal.score.episode_scores.get("addic7ed_boost"):
             return matches
 
@@ -158,8 +159,9 @@ class Addic7edProvider(_Addic7edProvider):
             version = cells[4].text
             download_link = cells[9].a['href'][1:]
 
-            subtitle = PatchedAddic7edSubtitle(language, hearing_impaired, page_link, series, season, episode, title, year,
-                                               version, download_link)
+            subtitle = Addic7edSubtitle(language, hearing_impaired, page_link, series, season, episode, title,
+                                        year,
+                                        version, download_link)
             logger.debug('Found subtitle %r', subtitle)
             subtitles.append(subtitle)
 

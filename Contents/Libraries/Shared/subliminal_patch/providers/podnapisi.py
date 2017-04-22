@@ -14,18 +14,19 @@ except ImportError:
 from babelfish import Language
 from subliminal import Episode
 from subliminal import Movie
-from subliminal.providers.podnapisi import PodnapisiProvider as _PodnapisiProvider, PodnapisiSubtitle
+from subliminal.providers.podnapisi import PodnapisiProvider as _PodnapisiProvider, \
+    PodnapisiSubtitle as _PodnapisiSubtitle
 
 logger = logging.getLogger(__name__)
 
 
-class PatchedPodnapisiSubtitle(PodnapisiSubtitle):
+class PodnapisiSubtitle(_PodnapisiSubtitle):
     provider_name = 'podnapisi'
 
     def __init__(self, language, hearing_impaired, page_link, pid, releases, title, season=None, episode=None,
                  year=None):
-        super(PatchedPodnapisiSubtitle, self).__init__(language, hearing_impaired, page_link, pid, releases, title,
-                                                       season=season, episode=episode, year=year)
+        super(PodnapisiSubtitle, self).__init__(language, hearing_impaired, page_link, pid, releases, title,
+                                                season=season, episode=episode, year=year)
         self.release_info = u", ".join(releases)
 
 
@@ -66,8 +67,7 @@ class PodnapisiProvider(_PodnapisiProvider):
         pids = set()
         while True:
             # query the server
-            xml = etree.fromstring(self.retry(lambda: self.session.get(self.server_url + 'search/old',
-                                                                       params=params, timeout=10).content))
+            xml = etree.fromstring(self.session.get(self.server_url + 'search/old', params=params, timeout=10).content)
 
             # exit if no results
             if not int(xml.find('pagination/results').text):
@@ -98,10 +98,10 @@ class PodnapisiProvider(_PodnapisiProvider):
                 year = int(subtitle_xml.find('year').text)
 
                 if is_episode:
-                    subtitle = PatchedPodnapisiSubtitle(language, hearing_impaired, page_link, pid, releases, title,
+                    subtitle = PodnapisiSubtitle(language, hearing_impaired, page_link, pid, releases, title,
                                                  season=season, episode=episode, year=year)
                 else:
-                    subtitle = PatchedPodnapisiSubtitle(language, hearing_impaired, page_link, pid, releases, title,
+                    subtitle = PodnapisiSubtitle(language, hearing_impaired, page_link, pid, releases, title,
                                                  year=year)
 
                 # ignore duplicates, see http://www.podnapisi.net/forum/viewtopic.php?f=62&t=26164&start=10#p213321

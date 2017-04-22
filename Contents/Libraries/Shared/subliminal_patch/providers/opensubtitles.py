@@ -6,27 +6,27 @@ import os
 from babelfish import Language
 from subliminal.exceptions import ConfigurationError
 from subliminal.providers.opensubtitles import OpenSubtitlesProvider as _OpenSubtitlesProvider, checked, __short_version__, \
-    OpenSubtitlesSubtitle, Episode, ServerProxy
+    OpenSubtitlesSubtitle as _OpenSubtitlesSubtitle, Episode, ServerProxy
 from mixins import ProviderRetryMixin
 from subliminal_patch.http import TimeoutSafeTransport
 
 logger = logging.getLogger(__name__)
 
 
-class PatchedOpenSubtitlesSubtitle(OpenSubtitlesSubtitle):
+class OpenSubtitlesSubtitle(_OpenSubtitlesSubtitle):
     def __init__(self, language, hearing_impaired, page_link, subtitle_id, matched_by, movie_kind, hash, movie_name,
                  movie_release_name, movie_year, movie_imdb_id, series_season, series_episode, query_parameters,
                  filename, encoding, fps):
-        super(PatchedOpenSubtitlesSubtitle, self).__init__(language, hearing_impaired, page_link, subtitle_id,
-                                                           matched_by, movie_kind, hash,
-                                                           movie_name, movie_release_name, movie_year, movie_imdb_id,
-                                                           series_season, series_episode, filename, encoding)
+        super(OpenSubtitlesSubtitle, self).__init__(language, hearing_impaired, page_link, subtitle_id,
+                                                    matched_by, movie_kind, hash,
+                                                    movie_name, movie_release_name, movie_year, movie_imdb_id,
+                                                    series_season, series_episode, filename, encoding)
         self.query_parameters = query_parameters or {}
         self.fps = fps
         self.release_info = movie_release_name
 
     def get_matches(self, video, hearing_impaired=False):
-        matches = super(PatchedOpenSubtitlesSubtitle, self).get_matches(video)
+        matches = super(OpenSubtitlesSubtitle, self).get_matches(video)
 
         sub_fps = None
         try:
@@ -167,11 +167,11 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
 
             query_parameters = subtitle_item.get("QueryParameters")
 
-            subtitle = PatchedOpenSubtitlesSubtitle(language, hearing_impaired, page_link, subtitle_id, matched_by,
-                                                    movie_kind,
-                                                    hash, movie_name, movie_release_name, movie_year, movie_imdb_id,
-                                                    series_season, series_episode, query_parameters, filename, encoding,
-                                                    movie_fps)
+            subtitle = OpenSubtitlesSubtitle(language, hearing_impaired, page_link, subtitle_id, matched_by,
+                                             movie_kind,
+                                             hash, movie_name, movie_release_name, movie_year, movie_imdb_id,
+                                             series_season, series_episode, query_parameters, filename, encoding,
+                                             movie_fps)
             logger.debug('Found subtitle %r', subtitle)
             subtitles.append(subtitle)
 
