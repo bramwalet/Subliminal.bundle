@@ -20,6 +20,8 @@ class TVsubtitlesSubtitle(_TVsubtitlesSubtitle):
 
 
 class TVsubtitlesProvider(_TVsubtitlesProvider):
+    subtitle_class = TVsubtitlesSubtitle
+
     @region.cache_on_arguments(expiration_time=SHOW_EXPIRATION_TIME)
     def search_show_id(self, series, year=None):
         """Search the show id from the `series` and `year`.
@@ -81,7 +83,7 @@ class TVsubtitlesProvider(_TVsubtitlesProvider):
             rip = row.find('p', title='rip').text.strip() or None
             release = row.find('p', title='release').text.strip() or None
 
-            subtitle = TVsubtitlesSubtitle(language, page_link, subtitle_id, series, season, episode, year, rip,
+            subtitle = self.subtitle_class(language, page_link, subtitle_id, series, season, episode, year, rip,
                                            release)
             logger.info('Found subtitle %s', subtitle)
             subtitles.append(subtitle)

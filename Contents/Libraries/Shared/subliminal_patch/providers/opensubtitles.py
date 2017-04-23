@@ -5,7 +5,8 @@ import os
 
 from babelfish import Language
 from subliminal.exceptions import ConfigurationError
-from subliminal.providers.opensubtitles import OpenSubtitlesProvider as _OpenSubtitlesProvider, checked, __short_version__, \
+from subliminal.providers.opensubtitles import OpenSubtitlesProvider as _OpenSubtitlesProvider, checked, \
+    __short_version__, \
     OpenSubtitlesSubtitle as _OpenSubtitlesSubtitle, Episode, ServerProxy
 from mixins import ProviderRetryMixin
 from subliminal_patch.http import TimeoutSafeTransport
@@ -52,6 +53,7 @@ class OpenSubtitlesSubtitle(_OpenSubtitlesSubtitle):
 
 class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
     only_foreign = True
+    subtitle_class = OpenSubtitlesSubtitle
 
     def __init__(self, username=None, password=None, use_tag_search=False, only_foreign=False):
         if username is not None and password is None or username is None and password is not None:
@@ -167,11 +169,11 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
 
             query_parameters = subtitle_item.get("QueryParameters")
 
-            subtitle = OpenSubtitlesSubtitle(language, hearing_impaired, page_link, subtitle_id, matched_by,
-                                             movie_kind,
-                                             hash, movie_name, movie_release_name, movie_year, movie_imdb_id,
-                                             series_season, series_episode, query_parameters, filename, encoding,
-                                             movie_fps)
+            subtitle = self.subtitle_class(language, hearing_impaired, page_link, subtitle_id, matched_by,
+                                           movie_kind,
+                                           hash, movie_name, movie_release_name, movie_year, movie_imdb_id,
+                                           series_season, series_episode, query_parameters, filename, encoding,
+                                           movie_fps)
             logger.debug('Found subtitle %r by %s', subtitle, matched_by)
             subtitles.append(subtitle)
 

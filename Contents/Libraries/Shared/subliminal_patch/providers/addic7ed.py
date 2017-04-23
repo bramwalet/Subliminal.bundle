@@ -40,6 +40,7 @@ class Addic7edSubtitle(_Addic7edSubtitle):
 
 class Addic7edProvider(_Addic7edProvider):
     USE_ADDICTED_RANDOM_AGENTS = False
+    subtitle_class = Addic7edSubtitle
 
     def __init__(self, username=None, password=None, use_random_agents=False):
         super(Addic7edProvider, self).__init__(username=username, password=password)
@@ -163,9 +164,9 @@ class Addic7edProvider(_Addic7edProvider):
             version = cells[4].text
             download_link = cells[9].a['href'][1:]
 
-            subtitle = Addic7edSubtitle(language, hearing_impaired, page_link, series, season, episode, title,
-                                        year,
-                                        version, download_link)
+            subtitle = self.subtitle_class(language, hearing_impaired, page_link, series, season, episode, title,
+                                           year,
+                                           version, download_link)
             logger.debug('Found subtitle %r', subtitle)
             subtitles.append(subtitle)
 

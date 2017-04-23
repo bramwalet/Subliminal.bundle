@@ -32,6 +32,7 @@ class PodnapisiSubtitle(_PodnapisiSubtitle):
 
 class PodnapisiProvider(_PodnapisiProvider):
     only_foreign = False
+    subtitle_class = PodnapisiSubtitle
 
     def __init__(self, only_foreign=False):
         self.only_foreign = only_foreign
@@ -98,11 +99,11 @@ class PodnapisiProvider(_PodnapisiProvider):
                 year = int(subtitle_xml.find('year').text)
 
                 if is_episode:
-                    subtitle = PodnapisiSubtitle(language, hearing_impaired, page_link, pid, releases, title,
-                                                 season=season, episode=episode, year=year)
+                    subtitle = self.subtitle_class(language, hearing_impaired, page_link, pid, releases, title,
+                                                   season=season, episode=episode, year=year)
                 else:
-                    subtitle = PodnapisiSubtitle(language, hearing_impaired, page_link, pid, releases, title,
-                                                 year=year)
+                    subtitle = self.subtitle_class(language, hearing_impaired, page_link, pid, releases, title,
+                                                   year=year)
 
                 # ignore duplicates, see http://www.podnapisi.net/forum/viewtopic.php?f=62&t=26164&start=10#p213321
                 if pid in pids:
