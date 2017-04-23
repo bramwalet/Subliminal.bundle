@@ -781,7 +781,7 @@ def AdvancedMenu(randomize=None, header=None, message=None):
     ))
     oc.add(DirectoryObject(
         key=Callback(GetLogsLink),
-        title="Get my logs",
+        title="Get my logs (copy the appearing link and open it in your browser, please)",
         summary="Copy the appearing link and open it in your browser, please",
     ))
     oc.add(DirectoryObject(
