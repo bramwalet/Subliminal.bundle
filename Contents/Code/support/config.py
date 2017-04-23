@@ -339,6 +339,7 @@ class Config(object):
         if cast_bool(Prefs['subtitles.only_foreign']):
             providers["addic7ed"] = False
             providers["tvsubtitles"] = False
+            providers["legendastv"] = False
 
         return filter(lambda prov: providers[prov], providers)
 

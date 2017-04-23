@@ -17,12 +17,14 @@ from subliminal.providers.addic7ed import Addic7edSubtitle
 from subliminal.providers.podnapisi import PodnapisiSubtitle
 from subliminal.providers.tvsubtitles import TVsubtitlesSubtitle
 from subliminal.providers.opensubtitles import OpenSubtitlesSubtitle
+from subliminal.providers.legendastv import LegendasTVSubtitle
 
 # add our patched base classes
 setattr(Addic7edSubtitle, "__bases__", (PatchedSubtitle,))
 setattr(PodnapisiSubtitle, "__bases__", (PatchedSubtitle,))
 setattr(TVsubtitlesSubtitle, "__bases__", (PatchedSubtitle,))
 setattr(OpenSubtitlesSubtitle, "__bases__", (PatchedSubtitle,))
+setattr(LegendasTVSubtitle, "__bases__", (PatchedSubtitle,))
 
 from .core import scan_video, search_external_subtitles, list_all_subtitles, save_subtitles, refine
 from .score import compute_score
