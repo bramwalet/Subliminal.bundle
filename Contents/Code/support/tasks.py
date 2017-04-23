@@ -2,7 +2,6 @@
 
 import datetime
 import time
-
 import operator
 import traceback
 
@@ -121,7 +120,7 @@ class SearchAllRecentlyAddedMissing(Task):
     def signal_updated_metadata(self, *args, **kwargs):
         item_id = int(args[0])
 
-        if item_id in self.items_searching_ids:
+        if self.items_searching_ids is not None and item_id in self.items_searching_ids:
             self.items_done.append(item_id)
             return True
 
