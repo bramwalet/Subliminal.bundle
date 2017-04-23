@@ -143,9 +143,6 @@ class LegendasTVSubtitle(Subtitle):
             if video.imdb_id and self.imdb_id == video.imdb_id:
                 matches.add('imdb_id')
 
-        # archive name
-        matches |= guess_matches(video, guessit(self.archive.name, {'type': self.type}))
-
         # name
         matches |= guess_matches(video, guessit(self.name, {'type': self.type}))
 
@@ -161,6 +158,7 @@ class LegendasTVProvider(Provider):
     """
     languages = {Language.fromlegendastv(l) for l in language_converters['legendastv'].codes}
     server_url = 'http://legendas.tv/'
+    subtitle_class = LegendasTVSubtitle
 
     def __init__(self, username=None, password=None):
         if username and not password or not username and password:
@@ -421,8 +419,8 @@ class LegendasTVProvider(Provider):
 
                 # iterate over releases
                 for r in releases:
-                    subtitle = LegendasTVSubtitle(language, t['type'], t['title'], t.get('year'), t.get('imdb_id'),
-                                                  t.get('season'), a, r)
+                    subtitle = self.subtitle_class(language, t['type'], t['title'], t.get('year'), t.get('imdb_id'),
+                                                   t.get('season'), a, r)
                     logger.debug('Found subtitle %r', subtitle)
                     subtitles.append(subtitle)
 
