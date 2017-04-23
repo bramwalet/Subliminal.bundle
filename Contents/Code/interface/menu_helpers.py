@@ -192,3 +192,19 @@ class SubFolderObjectContainer(ObjectContainer):
                 (Dict["last_refresh_state"] or "None") if "last_refresh_state" in Dict else "None"
             )
         ))
+
+
+ObjectClass = getattr(getattr(Redirect, "_object_class"), "__bases__")[0]
+
+
+class ZipObject(ObjectClass):
+    def __init__(self, data):
+        ObjectClass.__init__(self, "")
+        self.zipdata = data
+        self.SetHeader("Content-Type", "application/zip")
+
+    def Content(self):
+        self.SetHeader("Content-Disposition",
+                       'attachment; filename="' + datetime.datetime.now().strftime("Logs_%y%m%d_%H-%M-%S.zip")
+                       + '"')
+        return self.zipdata

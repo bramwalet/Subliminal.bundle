@@ -1,15 +1,17 @@
 # coding=utf-8
 import logging
-
 import datetime
-
 import logger
 import os
+import StringIO
+import glob
+
+from zipfile import ZipFile, ZIP_DEFLATED
 
 from menu_helpers import add_ignore_options, dig_tree, set_refresh_menu_state, \
-    should_display_ignore, enable_channel_wrapper, default_thumb, debounce, ObjectContainer, SubFolderObjectContainer
+    should_display_ignore, enable_channel_wrapper, default_thumb, debounce, ObjectContainer, SubFolderObjectContainer, \
+    ZipObject
 from subzero.constants import TITLE, ART, ICON, PREFIX, PLUGIN_IDENTIFIER, DEPENDENCY_MODULE_NAMES
-from subzero.history_storage import mode_map
 from support.background import scheduler
 from support.config import config
 from support.helpers import pad_title, timestamp, get_language, df, cast_bool
@@ -17,7 +19,7 @@ from support.ignore import ignore_list
 from support.items import get_item, get_on_deck_items, refresh_item, get_all_items, get_items_info, \
     get_item_thumb, get_item_kind_from_rating_key
 from support.lib import Plex
-from support.missing_subtitles import items_get_all_missing_subs
+from subzero.lib.io import FileIO
 from support.plex_media import get_plex_metadata, scan_videos
 from support.storage import reset_storage, log_storage, get_subtitle_storage
 
@@ -27,7 +29,6 @@ ObjectContainer.no_cache = True
 
 # default thumb for DirectoryObjects
 DirectoryObject.thumb = default_thumb
-
 
 # noinspection PyUnboundLocalVariable
 route = enable_channel_wrapper(route)
@@ -39,12 +40,14 @@ main_icon = ICON if not config.is_development else "icon-dev.jpg"
 
 @handler(PREFIX, TITLE if not config.is_development else TITLE + " DEV", art=ART, thumb=main_icon)
 @route(PREFIX)
-def fatality(randomize=None, force_title=None, header=None, message=None, only_refresh=False, no_history=False, replace_parent=False):
+def fatality(randomize=None, force_title=None, header=None, message=None, only_refresh=False, no_history=False,
+             replace_parent=False):
     """
     subzero main menu
     """
-    title = config.full_version#force_title if force_title is not None else config.full_version
-    oc = ObjectContainer(title1=title, title2=title, header=unicode(header) if header else title, message=message, no_history=no_history,
+    title = config.full_version  # force_title if force_title is not None else config.full_version
+    oc = ObjectContainer(title1=title, title2=title, header=unicode(header) if header else title, message=message,
+                         no_history=no_history,
                          replace_parent=replace_parent, no_cache=True)
 
     # always re-check permissions
@@ -124,13 +127,15 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
         if task.ready_for_display:
             task_state = "Running: %s/%s (%s%%)" % (len(task.items_done), len(task.items_searching), task.percentage)
         else:
-            task_state = "Last scheduler run: %s; Next scheduled run: %s; Last runtime: %s" % (df(scheduler.last_run(task_name)) or "never",
-                                                                                               df(scheduler.next_run(task_name)) or "never",
-                                                                                               str(task.last_run_time).split(".")[0])
+            task_state = "Last scheduler run: %s; Next scheduled run: %s; Last runtime: %s" % (
+                df(scheduler.last_run(task_name)) or "never",
+                df(scheduler.next_run(task_name)) or "never",
+                str(task.last_run_time).split(".")[0])
 
         oc.add(DirectoryObject(
             key=Callback(RefreshMissing, randomize=timestamp()),
-            title="Search for missing subtitles (in recently-added items, max-age: %s)" % Prefs["scheduler.item_is_recent_age"],
+            title="Search for missing subtitles (in recently-added items, max-age: %s)" % Prefs[
+                "scheduler.item_is_recent_age"],
             summary="Automatically run periodically by the scheduler, if configured. %s" % task_state,
             thumb=R("icon-search.jpg")
         ))
@@ -193,11 +198,11 @@ def PinMenu(pin="", randomize=None, success_go_to="channel"):
 
     for i in range(10):
         oc.add(DirectoryObject(
-            key=Callback(PinMenu, randomize=timestamp(), pin=pin + str(i),success_go_to=success_go_to),
+            key=Callback(PinMenu, randomize=timestamp(), pin=pin + str(i), success_go_to=success_go_to),
             title=pad_title(str(i)),
         ))
     oc.add(DirectoryObject(
-        key=Callback(PinMenu, randomize=timestamp(),success_go_to=success_go_to),
+        key=Callback(PinMenu, randomize=timestamp(), success_go_to=success_go_to),
         title=pad_title("Reset"),
     ))
     return oc
@@ -233,7 +238,7 @@ def RecentlyAddedMenu(message=None):
 @route(PREFIX + '/recent', force=bool)
 @debounce
 def RecentMissingSubtitlesMenu(force=False, randomize=None):
-    title="Items with missing subtitles"
+    title = "Items with missing subtitles"
     oc = SubFolderObjectContainer(title2=title, no_cache=True, no_history=True)
 
     running = scheduler.is_task_running("MissingSubtitles")
@@ -260,7 +265,8 @@ def RecentMissingSubtitlesMenu(force=False, randomize=None):
     if missing_items is not None:
         for added_at, item_id, item_title, item, missing_languages in missing_items:
             oc.add(DirectoryObject(
-                key=Callback(ItemDetailsMenu, title=title + " > " + item_title, item_title=item_title, rating_key=item_id),
+                key=Callback(ItemDetailsMenu, title=title + " > " + item_title, item_title=item_title,
+                             rating_key=item_id),
                 title=item_title,
                 summary="Missing: %s" % ", ".join(l.name for l in missing_languages),
                 thumb=get_item_thumb(item) or default_thumb
@@ -323,9 +329,11 @@ def IgnoreMenu(kind, rating_key, title=None, sure=False, todo="not_set"):
     is_ignored = rating_key in ignore_list[kind]
     if not sure:
         oc = SubFolderObjectContainer(no_history=True, replace_parent=True, title1="%s %s %s %s the ignore list" % (
-            "Add" if not is_ignored else "Remove", ignore_list.verbose(kind), title, "to" if not is_ignored else "from"), title2="Are you sure?")
+            "Add" if not is_ignored else "Remove", ignore_list.verbose(kind), title,
+            "to" if not is_ignored else "from"), title2="Are you sure?")
         oc.add(DirectoryObject(
-            key=Callback(IgnoreMenu, kind=kind, rating_key=rating_key, title=title, sure=True, todo="add" if not is_ignored else "remove"),
+            key=Callback(IgnoreMenu, kind=kind, rating_key=rating_key, title=title, sure=True,
+                         todo="add" if not is_ignored else "remove"),
             title=pad_title("Are you sure?"),
         ))
         return oc
@@ -451,7 +459,8 @@ def FirstLetterMetadataMenu(rating_key, key, title=None, base_title=None, displa
     items = get_all_items(key="first_character", value=[rating_key, key], base="library/sections", flat=False)
     kind, deeper = get_items_info(items)
     dig_tree(oc, items, MetadataMenu,
-             pass_kwargs={"base_title": title, "display_items": deeper, "previous_item_type": kind, "previous_rating_key": rating_key})
+             pass_kwargs={"base_title": title, "display_items": deeper, "previous_item_type": kind,
+                          "previous_rating_key": rating_key})
     return oc
 
 
@@ -479,7 +488,8 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
         items = get_all_items(key="children", value=rating_key, base="library/metadata")
         kind, deeper = get_items_info(items)
         dig_tree(oc, items, MetadataMenu,
-                 pass_kwargs={"base_title": title, "display_items": deeper, "previous_item_type": kind, "previous_rating_key": rating_key})
+                 pass_kwargs={"base_title": title, "display_items": deeper, "previous_item_type": kind,
+                              "previous_rating_key": rating_key})
         # we don't know exactly where we are here, only add ignore option to series
         if should_display_ignore(items, previous=previous_item_type):
             add_ignore_options(oc, "series", title=item_title, rating_key=rating_key, callback_menu=IgnoreMenu)
@@ -493,13 +503,13 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
         # add refresh
         oc.add(DirectoryObject(
             key=Callback(RefreshItem, rating_key=rating_key, item_title=title, refresh_kind=current_kind,
-                         previous_rating_key=previous_rating_key, timeout=timeout*1000, randomize=timestamp()),
+                         previous_rating_key=previous_rating_key, timeout=timeout * 1000, randomize=timestamp()),
             title=u"Refresh: %s" % item_title,
             summary="Refreshes the %s, possibly searching for missing and picking up new subtitles on disk" % current_kind
         ))
         oc.add(DirectoryObject(
             key=Callback(RefreshItem, rating_key=rating_key, item_title=title, force=True,
-                         refresh_kind=current_kind, previous_rating_key=previous_rating_key, timeout=timeout*1000,
+                         refresh_kind=current_kind, previous_rating_key=previous_rating_key, timeout=timeout * 1000,
                          randomize=timestamp()),
             title=u"Auto-Find subtitles: %s" % item_title,
             summary="Issues a forced refresh, ignoring known subtitles and searching for new ones"
@@ -516,7 +526,8 @@ def IgnoreListMenu():
     for key in ignore_list.key_order:
         values = ignore_list[key]
         for value in values:
-            add_ignore_options(oc, key, title=ignore_list.get_title(key, value), rating_key=value, callback_menu=IgnoreMenu)
+            add_ignore_options(oc, key, title=ignore_list.get_title(key, value), rating_key=value,
+                               callback_menu=IgnoreMenu)
     return oc
 
 
@@ -559,14 +570,14 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
     oc = SubFolderObjectContainer(title2=title, replace_parent=True)
     oc.add(DirectoryObject(
         key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title, randomize=timestamp(),
-                     timeout=timeout*1000),
+                     timeout=timeout * 1000),
         title=u"Refresh: %s" % item_title,
         summary="Refreshes the %s, possibly searching for missing and picking up new subtitles on disk" % current_kind,
         thumb=item.thumb or default_thumb
     ))
     oc.add(DirectoryObject(
         key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title, force=True, randomize=timestamp(),
-                     timeout=timeout*1000),
+                     timeout=timeout * 1000),
         title=u"Auto-search: %s" % item_title,
         summary="Issues a forced refresh, ignoring known subtitles and searching for new ones",
         thumb=item.thumb or default_thumb
@@ -699,7 +710,7 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
             key=Callback(TriggerDownloadSubtitle, rating_key=rating_key, randomize=timestamp(), item_title=item_title,
                          subtitle_id=str(subtitle.id), language=language),
             title=u"%s: %s, score: %s" % ("Available" if current_id != subtitle.id else "Current",
-                                    subtitle.provider_name, subtitle.score),
+                                          subtitle.provider_name, subtitle.score),
             summary=u"Release: %s, Matches: %s" % (subtitle.release_info, ", ".join(subtitle.matches)),
             thumb=default_thumb
         ))
@@ -752,7 +763,8 @@ def RefreshMissing(randomize=None):
 
 @route(PREFIX + '/advanced')
 def AdvancedMenu(randomize=None, header=None, message=None):
-    oc = SubFolderObjectContainer(header=header or "Internal stuff, pay attention!", message=message, no_cache=True, no_history=True,
+    oc = SubFolderObjectContainer(header=header or "Internal stuff, pay attention!", message=message, no_cache=True,
+                                  no_history=True,
                                   replace_parent=False, title2="Advanced")
 
     if config.lock_advanced_menu and not config.pin_correct:
@@ -766,6 +778,11 @@ def AdvancedMenu(randomize=None, header=None, message=None):
     oc.add(DirectoryObject(
         key=Callback(TriggerRestart, randomize=timestamp()),
         title=pad_title("Restart the plugin"),
+    ))
+    oc.add(DirectoryObject(
+        key=Callback(GetLogsLink),
+        title="Get my logs",
+        summary="Copy the appearing link and open it in your browser, please",
     ))
     oc.add(DirectoryObject(
         key=Callback(TriggerBetterSubtitles, randomize=timestamp()),
@@ -844,7 +861,8 @@ def DispatchRestart():
 def TriggerRestart(randomize=None):
     set_refresh_menu_state("Restarting the plugin")
     DispatchRestart()
-    return fatality(header="Restart triggered, please wait about 5 seconds", force_title=" ", only_refresh=True, replace_parent=True,
+    return fatality(header="Restart triggered, please wait about 5 seconds", force_title=" ", only_refresh=True,
+                    replace_parent=True,
                     no_history=True, randomize=timestamp())
 
 
@@ -896,3 +914,29 @@ def TriggerBetterSubtitles(randomize=None):
         header='Success',
         message='FindBetterSubtitles triggered'
     )
+
+
+@route(PREFIX + '/get_logs_link')
+def GetLogsLink():
+    ip = Core.networking.http_request("http://www.plexapp.com/ip.php", cacheTime=7200).content.strip()
+    logs_link = "http://%s:32400%s?X-Plex-Token=%s" % (ip, PREFIX + '/logs', config.universal_plex_token)
+    oc = ObjectContainer(title2="Download Logs", no_cache=True, no_history=True,
+                         header="Copy this link and open this in your browser, please",
+                         message=logs_link)
+    return oc
+
+
+@route(PREFIX + '/logs')
+def DownloadLogs():
+    buff = StringIO.StringIO()
+    zip_archive = ZipFile(buff, mode='w', compression=ZIP_DEFLATED)
+
+    logs = sorted(glob.glob(config.plugin_log_path + '*')) + [config.server_log_path]
+    for path in logs:
+        data = StringIO.StringIO()
+        data.write(FileIO.read(path))
+        zip_archive.writestr(os.path.basename(path), data.getvalue())
+
+    zip_archive.close()
+
+    return ZipObject(buff.getvalue())
