@@ -324,14 +324,15 @@ class Config(object):
         fld_custom = Prefs["subtitles.save.subFolder.Custom"].strip() if cast_bool(
             Prefs["subtitles.save.subFolder.Custom"]) else None
         return fld_custom or (
-        Prefs["subtitles.save.subFolder"] if Prefs["subtitles.save.subFolder"] != "current folder" else None)
+            Prefs["subtitles.save.subFolder"] if Prefs["subtitles.save.subFolder"] != "current folder" else None)
 
     def get_providers(self):
         providers = {'opensubtitles': cast_bool(Prefs['provider.opensubtitles.enabled']),
                      # 'thesubdb': Prefs['provider.thesubdb.enabled'],
                      'podnapisi': cast_bool(Prefs['provider.podnapisi.enabled']),
                      'addic7ed': cast_bool(Prefs['provider.addic7ed.enabled']),
-                     'tvsubtitles': cast_bool(Prefs['provider.tvsubtitles.enabled'])
+                     'tvsubtitles': cast_bool(Prefs['provider.tvsubtitles.enabled']),
+                     'legendastv': cast_bool(Prefs['provider.legendastv.enabled'])
                      }
 
         # ditch non-forced-subtitles-reporting providers
@@ -354,6 +355,9 @@ class Config(object):
                              'podnapisi': {
                                  'only_foreign': cast_bool(Prefs['subtitles.only_foreign'])
                              },
+                             'legendastv': {'username': Prefs['provider.legendastv.username'],
+                                            'password': Prefs['provider.legendastv.password'],
+                                            },
                              }
 
         return provider_settings

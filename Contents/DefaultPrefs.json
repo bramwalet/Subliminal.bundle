@@ -237,6 +237,26 @@
     "secure": "true"
   },
   {
+    "id": "provider.legendastv.enabled",
+    "label": "Provider: Enable Legendas TV",
+    "type": "bool",
+    "default": "false"
+  },
+  {
+    "id": "provider.legendastv.username",
+    "label": "Legendas TV Username",
+    "type": "text",
+    "default": ""
+  },
+  {
+    "id": "provider.legendastv.password",
+    "label": "Legendas TV Password",
+    "type": "text",
+    "option": "hidden",
+    "default": "",
+    "secure": "true"
+  },
+  {
     "id": "provider.addic7ed.boost_by1",
     "label": "Addic7ed: boost score (if requirements met)",
     "type": "enum",
