@@ -39,6 +39,7 @@ class Config(object):
     plugin_info = ""
     version = None
     full_version = None
+    plugin_log_path = None
     server_log_path = None
     app_support_path = None
     universal_plex_token = None
@@ -81,7 +82,7 @@ class Config(object):
         self.is_development = self.get_dev_mode()
         self.version = self.get_version()
         self.full_version = u"%s %s" % (PLUGIN_NAME, self.version)
-        self.server_log_path = self.get_server_log_path()
+        self.set_log_paths()
         self.app_support_path = Core.app_support_path
         self.universal_plex_token = self.get_universal_plex_token()
 
@@ -109,17 +110,19 @@ class Config(object):
         self.ext_match_strictness = self.determine_ext_sub_strictness()
         self.initialized = True
 
-    def get_server_log_path(self):
+    def set_log_paths(self):
         # find log handler
         for handler in Core.log.handlers:
             if getattr(getattr(handler, "__class__"), "__name__") in (
                     'FileHandler', 'RotatingFileHandler', 'TimedRotatingFileHandler'):
                 plugin_log_file = handler.baseFilename
+                if os.path.isfile(os.path.realpath(plugin_log_file)):
+                    self.plugin_log_path = plugin_log_file
 
                 if plugin_log_file:
                     server_log_file = os.path.realpath(os.path.join(plugin_log_file, "../../Plex Media Server.log"))
                     if os.path.isfile(server_log_file):
-                        return server_log_file
+                        self.server_log_path = server_log_file
 
     def get_universal_plex_token(self):
         # thanks to: https://forums.plex.tv/discussion/247136/read-current-x-plex-token-in-an-agent-ensure-that-a-http-request-gets-executed-exactly-once#latest
