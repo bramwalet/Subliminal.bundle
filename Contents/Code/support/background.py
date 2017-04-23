@@ -141,7 +141,11 @@ class DefaultScheduler(object):
 
             if task.running:
                 Log.Debug("Scheduler: Sending signal %s to task %s (%s, %s)", name, task_name, args, kwargs)
-                status = task.signal(name, *args, **kwargs)
+                try:
+                    status = task.signal(name, *args, **kwargs)
+                except NotImplementedError:
+                    Log.Debug("Scheduler: Signal ignored by %s", task_name)
+                    continue
                 if status:
                     Log.Debug("Scheduler: Signal accepted by %s", task_name)
                 else:
