@@ -334,6 +334,7 @@ class Config(object):
                      'tvsubtitles': cast_bool(Prefs['provider.tvsubtitles.enabled']),
                      'legendastv': cast_bool(Prefs['provider.legendastv.enabled']),
                      'napiprojekt': cast_bool(Prefs['provider.napiprojekt.enabled']),
+                     'shooter': cast_bool(Prefs['provider.shooter.enabled']),
                      }
 
         # ditch non-forced-subtitles-reporting providers

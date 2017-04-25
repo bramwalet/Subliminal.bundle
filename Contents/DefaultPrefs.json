@@ -300,7 +300,13 @@
   },
   {
     "id": "provider.napiprojekt.enabled",
-    "label": "Provider: Enable NapiProjekt.pl (polish)",
+    "label": "Provider: Enable NapiProjekt.pl (Polish)",
+    "type": "bool",
+    "default": "false"
+  },
+  {
+    "id": "provider.shooter.enabled",
+    "label": "Provider: Enable Shooter.cn (Chinese)",
     "type": "bool",
     "default": "false"
   },
