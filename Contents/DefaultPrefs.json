@@ -273,8 +273,8 @@
     "default": "false"
   },
   {
-    "id": "provider.legendastv.enabled (mostly pt-BR)",
-    "label": "Provider: Enable Legendas TV",
+    "id": "provider.legendastv.enabled",
+    "label": "Provider: Enable Legendas TV (mostly pt-BR)",
     "type": "bool",
     "default": "false"
   },
