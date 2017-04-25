@@ -221,6 +221,7 @@ def scan_video(path, dont_use_actual_file=False, hints=None):
     :rtype: :class:`~subliminal.video.Video`
 
     """
+    hints = hints or {}
     video_type = hints.get("type")
 
     # check for non-existing path

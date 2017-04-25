@@ -273,7 +273,7 @@
     "default": "false"
   },
   {
-    "id": "provider.legendastv.enabled",
+    "id": "provider.legendastv.enabled (mostly pt-BR)",
     "label": "Provider: Enable Legendas TV",
     "type": "bool",
     "default": "false"
@@ -297,6 +297,12 @@
     "label": "Provider: Enable TVsubtitles.net",
     "type": "bool",
     "default": "true"
+  },
+  {
+    "id": "provider.napiprojekt.enabled",
+    "label": "Provider: Enable NapiProjekt.pl (polish)",
+    "type": "bool",
+    "default": "false"
   },
   {
     "id": "provider.opensubtitles.use_tags",

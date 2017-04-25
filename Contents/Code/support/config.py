@@ -332,7 +332,8 @@ class Config(object):
                      'podnapisi': cast_bool(Prefs['provider.podnapisi.enabled']),
                      'addic7ed': cast_bool(Prefs['provider.addic7ed.enabled']),
                      'tvsubtitles': cast_bool(Prefs['provider.tvsubtitles.enabled']),
-                     'legendastv': cast_bool(Prefs['provider.legendastv.enabled'])
+                     'legendastv': cast_bool(Prefs['provider.legendastv.enabled']),
+                     'napiprojekt': cast_bool(Prefs['provider.napiprojekt.enabled']),
                      }
 
         # ditch non-forced-subtitles-reporting providers
