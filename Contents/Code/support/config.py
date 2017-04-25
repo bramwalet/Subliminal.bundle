@@ -335,6 +335,7 @@ class Config(object):
                      'legendastv': cast_bool(Prefs['provider.legendastv.enabled']),
                      'napiprojekt': cast_bool(Prefs['provider.napiprojekt.enabled']),
                      'shooter': cast_bool(Prefs['provider.shooter.enabled']),
+                     'subscenter': cast_bool(Prefs['provider.subscenter.enabled']),
                      }
 
         # ditch non-forced-subtitles-reporting providers
@@ -360,6 +361,9 @@ class Config(object):
                              },
                              'legendastv': {'username': Prefs['provider.legendastv.username'],
                                             'password': Prefs['provider.legendastv.password'],
+                                            },
+                             'subscenter': {'username': Prefs['provider.subscenter.username'],
+                                            'password': Prefs['provider.subscenter.password'],
                                             },
                              }
 

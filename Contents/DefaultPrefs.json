@@ -311,6 +311,26 @@
     "default": "false"
   },
   {
+    "id": "provider.subscenter.enabled",
+    "label": "Provider: Enable SubsCenter (Hebrew)",
+    "type": "bool",
+    "default": "false"
+  },
+  {
+    "id": "provider.subscenter.username",
+    "label": "SubsCenter Username",
+    "type": "text",
+    "default": ""
+  },
+  {
+    "id": "provider.subscenter.password",
+    "label": "SubsCenter Password",
+    "type": "text",
+    "option": "hidden",
+    "default": "",
+    "secure": "true"
+  },
+  {
     "id": "provider.opensubtitles.use_tags",
     "label": "I keep the exact (release-) filename of my media files",
     "type": "bool",

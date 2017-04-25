@@ -18,4 +18,7 @@ python -c "import logging; logging.basicConfig(level=logging.DEBUG); logging.get
 
 
 # shooter:list
-python -c "import logging; logging.basicConfig(level=logging.DEBUG); logging.getLogger('rebulk').setLevel(logging.WARNING); import subliminal_patch, subliminal; subliminal.region.configure('dogpile.cache.memory'); from subliminal import ProviderPool; from babelfish import Language; from subliminal.core import scan_video; print ProviderPool(providers=['napiprojekt'], )['shooter'].list_subtitles(scan_video('FULL_PATH'), languages=[Language('zho')])"
+python -c "import logging; logging.basicConfig(level=logging.DEBUG); logging.getLogger('rebulk').setLevel(logging.WARNING); import subliminal_patch, subliminal; subliminal.region.configure('dogpile.cache.memory'); from subliminal import ProviderPool; from babelfish import Language; from subliminal.core import scan_video; print ProviderPool(providers=['shooter'], )['shooter'].list_subtitles(scan_video('FULL_PATH'), languages=[Language('zho')])"
+
+# subscenter:list
+python -c "import logging; logging.basicConfig(level=logging.DEBUG); logging.getLogger('rebulk').setLevel(logging.WARNING); import subliminal_patch, subliminal; subliminal.region.configure('dogpile.cache.memory'); from subliminal import ProviderPool; from babelfish import Language; from subliminal.core import scan_video; print ProviderPool(providers=['subscenter'], )['subscenter'].list_subtitles(scan_video('FULL_PATH'), languages=[Language('heb')])"
