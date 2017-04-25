@@ -15,3 +15,7 @@ python -c "import logging; logging.basicConfig(level=logging.DEBUG); logging.get
 
 # napiprojekt:download
 python -c "import logging; logging.basicConfig(level=logging.DEBUG); logging.getLogger('rebulk').setLevel(logging.WARNING); import subliminal_patch, subliminal; subliminal.region.configure('dogpile.cache.memory'); from subliminal_patch.core import PatchedProviderPool; from subliminal import download_best_subtitles; from babelfish import Language; from subliminal.core import scan_video; subs = download_best_subtitles([scan_video('FULL_PATH')], languages={Language('eng')}, providers=['napiprojekt'], ); print subs.values()[0][0].is_valid()"
+
+
+# shooter:list
+python -c "import logging; logging.basicConfig(level=logging.DEBUG); logging.getLogger('rebulk').setLevel(logging.WARNING); import subliminal_patch, subliminal; subliminal.region.configure('dogpile.cache.memory'); from subliminal import ProviderPool; from babelfish import Language; from subliminal.core import scan_video; print ProviderPool(providers=['napiprojekt'], )['shooter'].list_subtitles(scan_video('FULL_PATH'), languages=[Language('zho')])"

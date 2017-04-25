@@ -7,17 +7,28 @@ from .subtitle import PatchedSubtitle
 from .http import RetryingSession
 subliminal.subtitle.Subtitle = PatchedSubtitle
 
+try:
+    subliminal.provider_manager.register('napiprojekt = subliminal.providers.napiprojekt:NapiProjektProvider',)
+except ValueError:
+    # already registered
+    pass
+
 # inject our requests.Session wrapper for automatic retry
 subliminal.providers.addic7ed.Session = RetryingSession
 subliminal.providers.podnapisi.Session = RetryingSession
 subliminal.providers.tvsubtitles.Session = RetryingSession
 subliminal.providers.opensubtitles.Session = RetryingSession
+subliminal.providers.legendastv.Session = RetryingSession
+subliminal.providers.napiprojekt.Session = RetryingSession
+subliminal.providers.shooter.Session = RetryingSession
 
 from subliminal.providers.addic7ed import Addic7edSubtitle
 from subliminal.providers.podnapisi import PodnapisiSubtitle
 from subliminal.providers.tvsubtitles import TVsubtitlesSubtitle
 from subliminal.providers.opensubtitles import OpenSubtitlesSubtitle
 from subliminal.providers.legendastv import LegendasTVSubtitle
+from subliminal.providers.napiprojekt import NapiProjektSubtitle
+from subliminal.providers.shooter import ShooterSubtitle
 
 # add our patched base classes
 setattr(Addic7edSubtitle, "__bases__", (PatchedSubtitle,))
@@ -25,6 +36,8 @@ setattr(PodnapisiSubtitle, "__bases__", (PatchedSubtitle,))
 setattr(TVsubtitlesSubtitle, "__bases__", (PatchedSubtitle,))
 setattr(OpenSubtitlesSubtitle, "__bases__", (PatchedSubtitle,))
 setattr(LegendasTVSubtitle, "__bases__", (PatchedSubtitle,))
+setattr(NapiProjektSubtitle, "__bases__", (PatchedSubtitle,))
+setattr(ShooterSubtitle, "__bases__", (PatchedSubtitle,))
 
 from .core import scan_video, search_external_subtitles, list_all_subtitles, save_subtitles, refine
 from .score import compute_score
