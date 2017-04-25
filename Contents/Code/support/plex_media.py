@@ -213,7 +213,7 @@ def scan_video(plex_part, ignore_all=False, hints=None, rating_key=None):
         return video
 
     except ValueError:
-        Log.Warn("File could not be guessed by subliminal")
+        Log.Warn("File could not be guessed by subliminal: %s" % plex_part.file)
 
 
 def scan_videos(videos, kind="series", ignore_all=False):
