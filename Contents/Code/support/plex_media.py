@@ -2,15 +2,12 @@
 
 import os
 
-from babelfish.exceptions import LanguageError
-
-import subliminal
 import helpers
 
 from items import get_item
 from lib import get_intent, Plex
 from config import config
-from subliminal.core import search_external_subtitles, Language, refine
+from subzero.video import parse_video
 
 
 def get_metadata_dict(item, part, add):
@@ -110,7 +107,8 @@ def scan_video(plex_part, ignore_all=False, hints=None, rating_key=None):
     if ignore_all:
         Log.Debug("Force refresh intended.")
 
-    Log.Debug("Scanning video: %s, subtitles=%s, embedded_subtitles=%s" % (plex_part.file, external_subtitles, embedded_subtitles))
+    Log.Debug("Scanning video: %s, subtitles=%s, embedded_subtitles=%s" % (
+        plex_part.file, external_subtitles, embedded_subtitles))
 
     known_embedded = []
     parts = list(Plex["library"].metadata(rating_key))[0].media.parts
@@ -141,73 +139,9 @@ def scan_video(plex_part, ignore_all=False, hints=None, rating_key=None):
 
     try:
         # get basic video info scan (filename)
-        video = subliminal.scan_video(plex_part.file, hints=hints)
-
-        # refiners
-        # fixme: add hints?
-        """, subtitles=external_subtitles,
-        embedded_subtitles=embedded_subtitles, hints=hints or {},
-        video_fps=plex_part.fps, forced_tag=config.forced_only,
-        known_embedded_subtitle_streams=known_embedded)
-        """
-        refine_kwargs = {
-            "episode_refiners": ('sz_metadata', 'tvdb', 'omdb'),
-            "movie_refiners": ('sz_metadata', 'omdb',),
-            "embedded_subtitles": False,
-        }
-
-        refine(video, **refine_kwargs)
-
-        # re-refine with plex's known data?
-        refine_with_plex = False
-
-        # episode but wasn't able to match title
-        if hints["type"] == "episode" and not video.series_tvdb_id and not video.tvdb_id and not video.series_imdb_id \
-                and video.series != hints["title"]:
-            Log.Info(u"Re-refining with series title: '%s' instead of '%s'", hints["title"], video.series)
-            video.series = hints["title"]
-            refine_with_plex = True
-
-        # movie
-        elif hints["type"] == "movie" and not video.imdb_id and video.title != hints["title"]:
-            # movie
-            Log.Info(u"Re-refining with series title: '%s' instead of '%s'", hints["title"], video.title)
-            video.title = hints["title"]
-            refine_with_plex = True
-
-        # title not matched? try plex title hint
-        if refine_with_plex:
-            refine(video, **refine_kwargs)
-
-            # did it match now?
-            if (hints["type"] == "episode" and not video.series_tvdb_id and not video.tvdb_id and
-                    not video.series_imdb_id) or (hints["type"] == "movie" and not video.imdb_id):
-                Log.Warn("Couldn't find corresponding series/movie in online databases, continuing")
-
-        # scan for external subtitles
-        if external_subtitles:
-            # |= is update, thanks plex
-            video.subtitle_languages.update(
-                set(search_external_subtitles(video.name, forced_tag=config.forced_only).values())
-            )
-
-        # add video fps info
-        # fixme: still needed?
-        video.fps = plex_part.fps
-
-        # add known embedded subtitles
-        if embedded_subtitles and known_embedded:
-            embedded_subtitle_languages = set()
-            # mp4 and stuff, check burned in
-            for language in known_embedded:
-                try:
-                    embedded_subtitle_languages.add(Language.fromalpha3b(language))
-                except LanguageError:
-                    Log.Error('Embedded subtitle track language %r is not a valid language', language)
-                    embedded_subtitle_languages.add(Language('und'))
-
-                Log.Debug('Found embedded subtitle %r', embedded_subtitle_languages)
-                video.subtitle_languages.update(embedded_subtitle_languages)
+        video = parse_video(plex_part.file, hints, external_subtitles=external_subtitles,
+                            embedded_subtitles=embedded_subtitles, known_embedded=known_embedded,
+                            forced_only=config.forced_only, video_fps=plex_part.fps)
 
         return video
 
