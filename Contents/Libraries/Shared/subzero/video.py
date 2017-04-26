@@ -1,5 +1,6 @@
 # coding=utf-8
 import logging
+import os
 
 from babelfish.exceptions import LanguageError
 from babelfish import Language
@@ -12,6 +13,7 @@ logger = logging.getLogger(__name__)
 def parse_video(fn, hints, external_subtitles=False, embedded_subtitles=False, known_embedded=None, forced_only=False,
                 video_fps=None, dry_run=False):
 
+    logger.debug("Parsing video: %s, hints: %s", os.path.basename(fn), hints)
     video = scan_video(fn, hints=hints, dont_use_actual_file=dry_run)
 
     # refiners

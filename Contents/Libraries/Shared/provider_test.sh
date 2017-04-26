@@ -22,3 +22,7 @@ python -c "import logging; logging.basicConfig(level=logging.DEBUG); logging.get
 
 # subscenter:list
 python -c "import logging; logging.basicConfig(level=logging.DEBUG); logging.getLogger('rebulk').setLevel(logging.WARNING); import subliminal_patch, subliminal; subliminal.region.configure('dogpile.cache.memory'); from subliminal import ProviderPool; from babelfish import Language; from subliminal.core import scan_video; print ProviderPool(providers=['subscenter'], )['subscenter'].list_subtitles(scan_video('FULL_PATH'), languages=[Language('heb')])"
+
+
+# refining
+python -c "import logging; logging.basicConfig(level=logging.DEBUG); logging.getLogger('rebulk').setLevel(logging.WARNING); import subliminal_patch, subliminal; subliminal.region.configure('dogpile.cache.memory'); from subzero.video import parse_video; print parse_video('FILE_NAME', hints={'type': 'episode'}, dry_run=True)"
