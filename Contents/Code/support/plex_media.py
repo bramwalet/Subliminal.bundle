@@ -161,15 +161,15 @@ def scan_video(plex_part, ignore_all=False, hints=None, rating_key=None):
         # re-refine with plex's known data?
         refine_with_plex = False
 
-
         # episode but wasn't able to match title
-        if hints["type"] == "episode" and not video.series_tvdb_id and not video.tvdb_id and not video.series_imdb_id:
+        if hints["type"] == "episode" and not video.series_tvdb_id and not video.tvdb_id and not video.series_imdb_id \
+                and video.series != hints["title"]:
             Log.Info(u"Re-refining with series title: '%s' instead of '%s'", hints["title"], video.series)
             video.series = hints["title"]
             refine_with_plex = True
 
         # movie
-        elif hints["type"] == "movie" and not video.imdb_id:
+        elif hints["type"] == "movie" and not video.imdb_id and video.title != hints["title"]:
             # movie
             Log.Info(u"Re-refining with series title: '%s' instead of '%s'", hints["title"], video.title)
             video.title = hints["title"]
@@ -182,8 +182,7 @@ def scan_video(plex_part, ignore_all=False, hints=None, rating_key=None):
             # did it match now?
             if (hints["type"] == "episode" and not video.series_tvdb_id and not video.tvdb_id and
                     not video.series_imdb_id) or (hints["type"] == "movie" and not video.imdb_id):
-                Log.Warn("File could not be guessed by subliminal")
-                return
+                Log.Warn("Couldn't find corresponding series/movie in online databases, continuing")
 
         # scan for external subtitles
         if external_subtitles:
