@@ -331,6 +331,12 @@
     "secure": "true"
   },
   {
+    "id": "providers.multithreading",
+    "label": "Search enabled providers simuntaneously (multithreading)",
+    "type": "bool",
+    "default": "true"
+  },
+  {
     "id": "provider.opensubtitles.use_tags",
     "label": "I keep the exact (release-) filename of my media files",
     "type": "bool",

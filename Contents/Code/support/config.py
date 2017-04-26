@@ -369,6 +369,12 @@ class Config(object):
 
         return provider_settings
 
+    @property
+    def provider_pool(self):
+        if cast_bool(Prefs['providers.multithreading']):
+            return subliminal_patch.core.SZAsyncProviderPool
+        return subliminal_patch.core.SZProviderPool
+
     def check_chmod(self):
         val = Prefs["subtitles.save.chmod"]
         if not val or not len(val):

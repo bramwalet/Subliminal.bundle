@@ -7,6 +7,11 @@ import socket
 import traceback
 import time
 import operator
+
+import itertools
+
+from concurrent.futures import ThreadPoolExecutor
+
 import requests
 
 from collections import defaultdict
@@ -33,7 +38,7 @@ DOWNLOAD_RETRY_SLEEP = 2
 REMOVE_CRAP_FROM_FILENAME = re.compile(r"(?i)[\s_-]+(obfuscated|scrambled)(\.\w+)$")
 
 
-class PatchedProviderPool(ProviderPool):
+class SZProviderPool(ProviderPool):
     def list_subtitles(self, video, languages):
         """List subtitles.
         
@@ -207,6 +212,50 @@ class PatchedProviderPool(ProviderPool):
         return downloaded_subtitles
 
 
+class SZAsyncProviderPool(SZProviderPool):
+    """Subclass of :class:`ProviderPool` with asynchronous support for :meth:`~ProviderPool.list_subtitles`.
+
+    :param int max_workers: maximum number of threads to use. If `None`, :attr:`max_workers` will be set
+        to the number of :attr:`~ProviderPool.providers`.
+
+    """
+    def __init__(self, max_workers=None, *args, **kwargs):
+        super(SZAsyncProviderPool, self).__init__(*args, **kwargs)
+
+        #: Maximum number of threads to use
+        self.max_workers = max_workers or len(self.providers)
+        logger.info("Using %d threads for %d providers", self.max_workers, len(self.providers))
+
+    def list_subtitles_provider(self, provider, video, languages):
+        # list subtitles
+        provider_subtitles = None
+        try:
+            provider_subtitles = super(SZAsyncProviderPool, self).list_subtitles_provider(provider, video, languages)
+        except LanguageReverseError:
+            logger.exception("Unexpected language reverse error in %s, skipping. Error: %s", provider,
+                             traceback.format_exc())
+
+        return provider, provider_subtitles
+
+    def list_subtitles(self, video, languages):
+        subtitles = []
+
+        with ThreadPoolExecutor(self.max_workers) as executor:
+            for provider, provider_subtitles in executor.map(self.list_subtitles_provider, self.providers,
+                                                             itertools.repeat(video, len(self.providers)),
+                                                             itertools.repeat(languages, len(self.providers))):
+                # discard provider that failed
+                if provider_subtitles is None:
+                    logger.info('Discarding provider %s', provider)
+                    self.discarded_providers.add(provider)
+                    continue
+
+                # add subtitles
+                subtitles.extend(provider_subtitles)
+
+        return subtitles
+
+
 def scan_video(path, dont_use_actual_file=False, hints=None):
     """Scan a video from a `path`.
 
@@ -362,7 +411,7 @@ def list_all_subtitles(videos, languages, **kwargs):
         return listed_subtitles
 
     # list subtitles
-    with PatchedProviderPool(**kwargs) as pool:
+    with SZProviderPool(**kwargs) as pool:
         for video in videos:
             logger.info('Listing subtitles for %r', video)
             subtitles = pool.list_subtitles(video, languages - video.subtitle_languages)

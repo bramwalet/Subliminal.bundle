@@ -34,7 +34,6 @@ from support.helpers import track_usage, get_title_for_video_metadata, get_ident
 from support.history import get_history
 from support.data import dispatch_migrate
 from support.activities import activity
-from subliminal_patch.core import PatchedProviderPool
 
 
 def Start():
@@ -123,7 +122,7 @@ def download_best_subtitles(video_part_map, min_score=0):
         Log.Debug("Download best subtitles using settings: min_score: %s, hearing_impaired: %s" % (min_score, hearing_impaired))
 
         return subliminal.download_best_subtitles(video_part_map.keys(), languages, min_score, hearing_impaired, providers=config.providers,
-                                                  provider_configs=config.provider_settings, pool_class=PatchedProviderPool,
+                                                  provider_configs=config.provider_settings, pool_class=config.provider_pool,
                                                   compute_score=compute_score)
     Log.Debug("All languages for all requested videos exist. Doing nothing.")
 
