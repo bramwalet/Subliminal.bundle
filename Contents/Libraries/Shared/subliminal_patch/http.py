@@ -8,6 +8,11 @@ from requests import Session
 from retry.api import retry_call
 
 pem_file = os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", certifi.where()))
+try:
+    default_ssl_context = ssl.create_default_context(cafile=pem_file)
+except AttributeError:
+    # < Python 2.7.9
+    default_ssl_context = None
 
 
 class RetryingSession(Session):
@@ -25,8 +30,6 @@ class RetryingSession(Session):
 
     def post(self, *args, **kwargs):
         return self.retry_method("post", *args, **kwargs)
-
-default_ssl_context = ssl.create_default_context(cafile=pem_file)
 
 
 class TimeoutSafeTransport(SafeTransport):
