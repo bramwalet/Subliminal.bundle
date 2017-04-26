@@ -120,7 +120,7 @@ class DefaultSubtitleHelper(SubtitleHelper):
         forced = ''
         default = ''
         split_tag = file.rsplit('.', 1)
-        if len(split_tag) > 1 and split_tag[1].lower() in ['forced', 'normal', 'default']:
+        if len(split_tag) > 1 and split_tag[1].lower() in ['forced', 'normal', 'default', 'embedded', 'custom']:
             file = split_tag[0]
             # don't do anything with 'normal', we don't need it
             if 'forced' == split_tag[1].lower():
