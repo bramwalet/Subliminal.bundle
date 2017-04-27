@@ -54,7 +54,7 @@ def compute_score(matches, subtitle, video, hearing_impaired=None):
                 logger.debug('Ignoring hash as other matches are wrong (missing: %r) and (%r)', hash_valid_if - matches,
                              video)
                 matches -= {"hash"}
-    else:
+    elif 'hash' in matches:
         logger.debug('Hash not verifiable for this provider. Keeping it')
 
     # handle equivalent matches
