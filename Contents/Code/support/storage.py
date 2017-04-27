@@ -184,3 +184,4 @@ def save_subtitles(scanned_video_part_map, downloaded_subtitles, mode="a"):
         notify_executable(config.notify_executable, scanned_video_part_map, downloaded_subtitles, storage)
 
     store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage, mode=mode)
+

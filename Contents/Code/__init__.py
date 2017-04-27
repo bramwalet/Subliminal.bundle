@@ -27,7 +27,7 @@ from subzero.constants import OS_PLEX_USERAGENT, PERSONAL_MEDIA_IDENTIFIER
 from interface.menu import *
 from support.plex_media import media_to_videos, get_media_item_ids, scan_videos
 from support.subtitlehelpers import get_subtitles_from_metadata
-from support.storage import whack_missing_parts, save_subtitles
+from support.storage import whack_missing_parts, save_subtitles, get_subtitle_storage
 from support.items import is_ignored
 from support.config import config
 from support.lib import get_intent

@@ -72,7 +72,7 @@ class DefaultScheduler(object):
             try:
                 task_frequency = Prefs["scheduler.tasks.%s.frequency" % task.name]
             except KeyError:
-                task_frequency = None
+                task_frequency = getattr(task, "frequency", None)
 
             self.tasks[task.name] = {"task": task, "frequency": parse_frequency(task_frequency)}
 

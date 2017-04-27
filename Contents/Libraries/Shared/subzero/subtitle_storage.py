@@ -120,16 +120,13 @@ class StoredSubtitlesManager(object):
         return os.path.join(getattr(self.storage, "_core").storage.data_path, "DataItems")
 
     def get_all_files(self):
-        return os.listdir(self.dataitems_path)
+        return [fn for fn in os.listdir(self.dataitems_path) if fn.startswith("subs_")]
 
     def get_recent_files(self, age_days=30):
         fl = []
         root = self.dataitems_path
         recent_dt = datetime.datetime.now() - datetime.timedelta(days=age_days)
         for fn in self.get_all_files():
-            if not fn.startswith("subs_"):
-                continue
-
             finfo = os.stat(os.path.join(root, fn))
             created = datetime.datetime.fromtimestamp(finfo.st_ctime)
             if created > recent_dt:
@@ -144,6 +141,16 @@ class StoredSubtitlesManager(object):
             if data:
                 out[fn] = data
         return out
+
+    def delete_missing_files(self):
+        deleted = []
+        for fn in self.get_all_files():
+            video_id = os.path.basename(fn).split("subs_")[1]
+            item = self.get_item(video_id)
+            if not item:
+                self.delete(fn)
+                deleted.append(video_id)
+        return deleted
 
     def migrate_v2(self, subs_for_video):
         plex_item = self.get_item(subs_for_video.video_id)

@@ -446,7 +446,23 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
 
         if better_found:
             Log.Debug("Task: %s, done. Better subtitles found for %s items", self.name, better_found)
-        self.running = False
+
+
+class SubtitleStorageMaintenance(Task):
+    periodic = True
+    frequency = "every 7 days"
+
+    def run(self):
+        super(SubtitleStorageMaintenance, self).run()
+        self.running = True
+        Log.Info("Running subtitle storage maintenance")
+        storage = get_subtitle_storage()
+        deleted_items = storage.delete_missing_files()
+        if deleted_items:
+            Log.Info("Subtitle information for %d non-existant videos have been cleaned up" % len(deleted_items))
+            Log.Debug("Videos: %s" % deleted_items)
+        else:
+            Log.Info("Nothing to do")
 
 
 scheduler.register(SearchAllRecentlyAddedMissing)
@@ -454,3 +470,4 @@ scheduler.register(AvailableSubsForItem)
 scheduler.register(DownloadSubtitleForItem)
 scheduler.register(MissingSubtitles)
 scheduler.register(FindBetterSubtitles)
+scheduler.register(SubtitleStorageMaintenance)

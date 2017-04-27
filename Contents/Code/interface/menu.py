@@ -789,6 +789,10 @@ def AdvancedMenu(randomize=None, header=None, message=None):
         title=pad_title("Trigger find better subtitles"),
     ))
     oc.add(DirectoryObject(
+        key=Callback(TriggerStorageMaintenance, randomize=timestamp()),
+        title=pad_title("Trigger subtitle storage maintenance"),
+    ))
+    oc.add(DirectoryObject(
         key=Callback(LogStorage, key="tasks", randomize=timestamp()),
         title=pad_title("Log the plugin's scheduled tasks state storage"),
     ))
@@ -917,6 +921,16 @@ def TriggerBetterSubtitles(randomize=None):
         randomize=timestamp(),
         header='Success',
         message='FindBetterSubtitles triggered'
+    )
+
+
+@route(PREFIX + '/triggermaintenance')
+def TriggerStorageMaintenance(randomize=None):
+    scheduler.dispatch_task("SubtitleStorageMaintenance")
+    return AdvancedMenu(
+        randomize=timestamp(),
+        header='Success',
+        message='SubtitleStorageMaintenance triggered'
     )
 
 
