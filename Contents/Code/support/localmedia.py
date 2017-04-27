@@ -56,7 +56,7 @@ def find_subtitles(part):
             global_folders.append(global_subtitle_folder)
 
     # normalize all paths
-    paths = [os.path.normpath(os.path.realpath(helpers.unicodize(path))) for path in paths]
+    paths = [os.path.normpath(helpers.unicodize(path)) for path in paths]
 
     # We start by building a dictionary of files to their absolute paths. We also need to know
     # the number of media files that are actually present, in case the found local media asset
