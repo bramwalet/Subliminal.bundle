@@ -16,6 +16,7 @@ class PatchedSubtitle(Subtitle):
     storage_path = None
     release_info = None
     matches = None
+    hash_verifiable = False
 
     def __repr__(self):
         return '<%s %r [%s]>' % (

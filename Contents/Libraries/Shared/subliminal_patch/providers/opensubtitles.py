@@ -15,6 +15,8 @@ logger = logging.getLogger(__name__)
 
 
 class OpenSubtitlesSubtitle(_OpenSubtitlesSubtitle):
+    hash_verifiable = True
+
     def __init__(self, language, hearing_impaired, page_link, subtitle_id, matched_by, movie_kind, hash, movie_name,
                  movie_release_name, movie_year, movie_imdb_id, series_season, series_episode, query_parameters,
                  filename, encoding, fps):
@@ -54,6 +56,7 @@ class OpenSubtitlesSubtitle(_OpenSubtitlesSubtitle):
 class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
     only_foreign = True
     subtitle_class = OpenSubtitlesSubtitle
+    hash_verifiable = True
 
     def __init__(self, username=None, password=None, use_tag_search=False, only_foreign=False):
         if username is not None and password is None or username is None and password is not None:

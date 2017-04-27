@@ -40,19 +40,22 @@ def compute_score(matches, subtitle, video, hearing_impaired=None):
     movie_hash_valid_if = {"video_codec", "format"}
 
     # on hash match, discard everything else
-    if 'hash' in matches:
-        # hash is error-prone, try to fix that
-        hash_valid_if = episode_hash_valid_if if is_episode else movie_hash_valid_if
+    if subtitle.hash_verifiable:
+        if 'hash' in matches:
+            # hash is error-prone, try to fix that
+            hash_valid_if = episode_hash_valid_if if is_episode else movie_hash_valid_if
 
-        if hash_valid_if <= set(matches):
-            # series, season and episode matched, hash is valid
-            logger.debug('Using valid hash, as %s are correct (%r) and (%r)', hash_valid_if, matches, video)
-            matches &= {'hash', 'hearing_impaired'}
-        else:
-            # no match, invalidate hash
-            logger.debug('Ignoring hash as other matches are wrong (missing: %r) and (%r)', hash_valid_if - matches,
-                         video)
-            matches -= {"hash"}
+            if hash_valid_if <= set(matches):
+                # series, season and episode matched, hash is valid
+                logger.debug('Using valid hash, as %s are correct (%r) and (%r)', hash_valid_if, matches, video)
+                matches &= {'hash', 'hearing_impaired'}
+            else:
+                # no match, invalidate hash
+                logger.debug('Ignoring hash as other matches are wrong (missing: %r) and (%r)', hash_valid_if - matches,
+                             video)
+                matches -= {"hash"}
+    else:
+        logger.debug('Hash not verifiable for this provider. Keeping it')
 
     # handle equivalent matches
     if is_episode:
