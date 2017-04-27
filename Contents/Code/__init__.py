@@ -22,6 +22,7 @@ import support
 import interface
 sys.modules["interface"] = interface
 
+from subliminal.cli import MutexLock
 from subzero.constants import OS_PLEX_USERAGENT, PERSONAL_MEDIA_IDENTIFIER
 from interface.menu import *
 from support.plex_media import media_to_videos, get_media_item_ids, scan_videos
@@ -40,8 +41,9 @@ def Start():
     HTTP.CacheTime = 0
     HTTP.Headers['User-agent'] = OS_PLEX_USERAGENT
 
-    # configured cache to be in memory as per https://github.com/Diaoul/subliminal/issues/303
-    subliminal.region.configure('dogpile.cache.memory')
+    subliminal.region.configure('dogpile.cache.dbm', expiration_time=datetime.timedelta(days=30),
+                                arguments={'filename': os.path.join(config.data_items_path, 'subzero.dbm'),
+                                           'lock_factory': MutexLock})
 
     # clear expired intents
     intent = get_intent()

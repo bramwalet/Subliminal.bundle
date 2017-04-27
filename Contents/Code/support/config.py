@@ -42,6 +42,8 @@ class Config(object):
     plugin_log_path = None
     server_log_path = None
     app_support_path = None
+    data_path = None
+    data_items_path = None
     universal_plex_token = None
     is_development = False
 
@@ -84,6 +86,8 @@ class Config(object):
         self.full_version = u"%s %s" % (PLUGIN_NAME, self.version)
         self.set_log_paths()
         self.app_support_path = Core.app_support_path
+        self.data_path = getattr(Data, "_core").storage.data_path
+        self.data_items_path = os.path.join(self.data_path, "DataItems")
         self.universal_plex_token = self.get_universal_plex_token()
 
         self.set_plugin_mode()
