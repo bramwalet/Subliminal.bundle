@@ -804,6 +804,10 @@ def AdvancedMenu(randomize=None, header=None, message=None):
         key=Callback(ResetStorage, key="ignore", randomize=timestamp()),
         title=pad_title("Reset the plugin's internal ignorelist storage"),
     ))
+    oc.add(DirectoryObject(
+        key=Callback(InvalidateCache, randomize=timestamp()),
+        title=pad_title("Invalidate Sub-Zero metadata caches (subliminal)"),
+    ))
     return oc
 
 
@@ -940,3 +944,14 @@ def DownloadLogs():
     zip_archive.close()
 
     return ZipObject(buff.getvalue())
+
+
+@route(PREFIX + '/invalidatecache')
+def InvalidateCache(randomize=None):
+    from subliminal.cache import region
+    region.invalidate()
+    return AdvancedMenu(
+        randomize=timestamp(),
+        header='Success',
+        message='Cache invalidated'
+    )
