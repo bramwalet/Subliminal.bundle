@@ -10,6 +10,10 @@ Checkout **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)**
 
 ## Changelog
 
+1.4.27.974
+- core: fix duplicate subtitles issue on QNAP/Synology/libraries with symlinks (#215)
+
+
 1.4.27.973
 - core: ignore "obfuscated" and "scrambled" tags in filenames when searching for subtitles
 - core: exotic embedded subtitles are now also considered when searching (and when the option is enabled); fixes #264
