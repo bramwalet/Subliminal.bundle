@@ -178,7 +178,7 @@ class SZProviderPool(ProviderPool):
         for subtitle, score, matches in scored_subtitles:
             # check score
             if score < min_score:
-                logger.info('%r: Score %d is below min_score (%d)', score, min_score)
+                logger.info('%r: Score %d is below min_score (%d)', subtitle, score, min_score)
                 break
 
             # stop when all languages are downloaded
@@ -193,7 +193,7 @@ class SZProviderPool(ProviderPool):
 
             # bail out if hearing_impaired was wrong
             if "hearing_impaired" not in matches and hearing_impaired in ("force HI", "force non-HI"):
-                logger.debug('Skipping subtitle: %r with score %d because hearing-impaired set to %s', subtitle,
+                logger.debug('%r: Skipping subtitle with score %d because hearing-impaired set to %s', subtitle,
                              score, hearing_impaired)
                 continue
 
