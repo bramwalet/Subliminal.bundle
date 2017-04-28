@@ -163,10 +163,10 @@ class SZProviderPool(ProviderPool):
             try:
                 matches = s.get_matches(video)
             except AttributeError:
-                logger.error("Match computation failed for %s: %s", s, traceback.format_exc())
+                logger.error("%r: Match computation failed: %s", s, traceback.format_exc())
                 continue
 
-            logger.debug('Found matches %r', matches)
+            logger.debug('%r: Found matches %r', s, matches)
             unsorted_subtitles.append(
                 (s, compute_score(matches, s, video, hearing_impaired=use_hearing_impaired), matches))
 
@@ -178,7 +178,7 @@ class SZProviderPool(ProviderPool):
         for subtitle, score, matches in scored_subtitles:
             # check score
             if score < min_score:
-                logger.info('Score %d is below min_score (%d)', score, min_score)
+                logger.info('%r: Score %d is below min_score (%d)', score, min_score)
                 break
 
             # stop when all languages are downloaded
@@ -188,7 +188,7 @@ class SZProviderPool(ProviderPool):
 
             # check downloaded languages
             if subtitle.language in set(s.language for s in downloaded_subtitles):
-                logger.debug('Skipping subtitle: %r already downloaded', subtitle.language)
+                logger.debug('%r: Skipping subtitle: already downloaded', subtitle.language)
                 continue
 
             # bail out if hearing_impaired was wrong
@@ -198,7 +198,7 @@ class SZProviderPool(ProviderPool):
                 continue
 
             # download
-            logger.debug("Trying to download subtitle %r with matches %s, score: %s; release(s): %s", subtitle, matches,
+            logger.debug("%r: Trying to download subtitle with matches %s, score: %s; release(s): %s", subtitle, matches,
                          score, subtitle.release_info)
             if self.download_subtitle(subtitle):
                 subtitle.score = score
