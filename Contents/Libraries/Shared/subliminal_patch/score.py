@@ -27,11 +27,11 @@ def compute_score(matches, subtitle, video, hearing_impaired=None):
     :rtype: int
 
     """
-    logger.info('Computing score of %r for video %r with %r', subtitle, video, dict(hearing_impaired=hearing_impaired))
+    logger.info('%r: Computing score for video %r with %r', subtitle, video, dict(hearing_impaired=hearing_impaired))
 
     # get the scores dict
     scores = get_scores(video)
-    #logger.debug('Using scores %r', scores)
+    # logger.debug('Using scores %r', scores)
 
     is_episode = isinstance(video, Episode)
     is_movie = isinstance(video, Movie)
@@ -47,15 +47,16 @@ def compute_score(matches, subtitle, video, hearing_impaired=None):
 
             if hash_valid_if <= set(matches):
                 # series, season and episode matched, hash is valid
-                logger.debug('Using valid hash, as %s are correct (%r) and (%r)', hash_valid_if, matches, video)
+                logger.debug('%r: Using valid hash, as %s are correct (%r) and (%r)', subtitle, hash_valid_if, matches,
+                             video)
                 matches &= {'hash', 'hearing_impaired'}
             else:
                 # no match, invalidate hash
-                logger.debug('Ignoring hash as other matches are wrong (missing: %r) and (%r)', hash_valid_if - matches,
-                             video)
+                logger.debug('%r: Ignoring hash as other matches are wrong (missing: %r) and (%r)', subtitle,
+                             hash_valid_if - matches, video)
                 matches -= {"hash"}
     elif 'hash' in matches:
-        logger.debug('Hash not verifiable for this provider. Keeping it')
+        logger.debug('%r: Hash not verifiable for this provider. Keeping it', subtitle)
 
     # handle equivalent matches
     if is_episode:
@@ -86,6 +87,6 @@ def compute_score(matches, subtitle, video, hearing_impaired=None):
 
     # compute the score
     score = sum((scores.get(match, 0) for match in matches))
-    logger.info('Computed score %r with final matches %r', score, matches)
+    logger.info('%r: Computed score %r with final matches %r', subtitle, score, matches)
 
     return score
