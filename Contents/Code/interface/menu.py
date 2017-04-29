@@ -936,8 +936,14 @@ def TriggerStorageMaintenance(randomize=None):
 
 @route(PREFIX + '/get_logs_link')
 def GetLogsLink():
-    ip = Core.networking.http_request("http://www.plexapp.com/ip.php", cacheTime=7200).content.strip()
-    logs_link = "http://%s:32400%s?X-Plex-Token=%s" % (ip, PREFIX + '/logs', config.universal_plex_token)
+    # try getting the link base via the request in context, first, otherwise use the public ip
+    try:
+        link_base = Core.sandbox.context.request.headers["Origin"]
+    except:
+        ip = Core.networking.http_request("http://www.plexapp.com/ip.php", cacheTime=7200).content.strip()
+        link_base = "http://%s:32400" % ip
+
+    logs_link = "%s%s?X-Plex-Token=%s" % (link_base, PREFIX + '/logs', config.universal_plex_token)
     oc = ObjectContainer(title2="Download Logs", no_cache=True, no_history=True,
                          header="Copy this link and open this in your browser, please",
                          message=logs_link)
