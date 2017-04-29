@@ -84,7 +84,7 @@ class ReProcessor(Processor):
         self.replace_with = replace_with
 
     def process(self, content):
-        return re.sub(self.pattern, self.replace_with, content)
+        return self.pattern.sub(self.replace_with, content)
 
 
 class NReProcessor(ReProcessor):
@@ -141,27 +141,27 @@ class SubtitleModification(object):
 class SubtitleTextModification(SubtitleModification):
     post_processors = [
         # empty tag
-        ReProcessor(r'(<[A-z]+[^>]*>)[\s.,-_!?]+(</[A-z]>)', ""),
+        ReProcessor(re.compile(r'(<[A-z]+[^>]*>)[\s.,-_!?]+(</[A-z]>)'), ""),
 
         # empty line (needed?)
-        ReProcessor(r'(?m)^\s+$', ""),
+        ReProcessor(re.compile(r'(?m)^\s+$'), ""),
 
         # empty dash line (needed?)
-        ReProcessor(r'(?m)(^[\s]*[\-]+[\s]*)$', ""),
+        ReProcessor(re.compile(r'(?m)(^[\s]*[\-]+[\s]*)$'), ""),
 
         # clean whitespace at start and end
-        ReProcessor(r'^\s*([^\s]+)\s*$', r"\1"),
+        ReProcessor(re.compile(r'^\s*([^\s]+)\s*$'), r"\1"),
     ]
 
 
 class HearingImpaired(SubtitleTextModification):
     processors = [
         # brackets
-        ReProcessor(r'(?sux)[([{].+[)\]}]', ""),
+        ReProcessor(re.compile(r'(?sux)[([{].+[)\]}]'), ""),
 
         # text before colon (and possible dash in front)
-        ReProcessor(r'(?mu)(^[A-z\-]+[\w\s]*:[^0-9{2}][\s]*)', ""),
+        ReProcessor(re.compile(r'(?mu)(^[A-z\-]+[\w\s]*:[^0-9{2}][\s]*)'), ""),
 
         # all caps line (at least 3 chars
-        NReProcessor(r'(?mu)(^[A-Z\.\-_]{3,}$)', ""),
+        NReProcessor(re.compile(r'(?mu)(^[A-Z\.\-_]{3,}$)'), ""),
     ]
