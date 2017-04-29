@@ -10,23 +10,20 @@ logger = logging.getLogger(__name__)
 
 
 class SubtitleModifications(object):
-    def __init__(self, fn, content, fps=None):
-        if fn:
-            try:
+    def __init__(self, fn=None, content=None, fps=None):
+        try:
+            if fn:
                 self.f = pysubs2.load(fn, fps=fps)
-            except (IOError,
-                    UnicodeDecodeError,
-                    pysubs2.exceptions.UnknownFPSError,
-                    pysubs2.exceptions.UnknownFormatIdentifierError,
-                    pysubs2.exceptions.FormatAutodetectionError):
-                logger.exception("Couldn't load subtitle: %s: %s", fn, traceback.format_exc())
-        elif content:
-            try:
+            elif content:
                 self.f = pysubs2.SSAFile.from_string(content, fps=fps)
-            except (UnicodeDecodeError,
-                    pysubs2.exceptions.UnknownFPSError,
-                    pysubs2.exceptions.UnknownFormatIdentifierError,
-                    pysubs2.exceptions.FormatAutodetectionError):
+        except (IOError,
+                UnicodeDecodeError,
+                pysubs2.exceptions.UnknownFPSError,
+                pysubs2.exceptions.UnknownFormatIdentifierError,
+                pysubs2.exceptions.FormatAutodetectionError):
+            if fn:
+                logger.exception("Couldn't load subtitle: %s: %s", fn, traceback.format_exc())
+            elif content:
                 logger.exception("Couldn't load subtitle: %s", traceback.format_exc())
 
     def modify(self, *mods):
@@ -35,13 +32,16 @@ class SubtitleModifications(object):
             for mod in mods:
                 new_content = mod.modify(line.text)
                 if not new_content:
-                    print "deleting %s", line
+                    logger.debug("deleting %s", line)
                     continue
 
                 line.text = new_content
                 new_f.append(line)
 
         self.f.events = new_f
+
+    def to_string(self, format="srt"):
+        return self.f.to_string(format)
 
     def save(self, fn):
         self.f.save(fn)

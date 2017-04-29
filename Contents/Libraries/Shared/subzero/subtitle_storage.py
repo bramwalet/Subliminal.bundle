@@ -6,6 +6,7 @@ import logging
 import traceback
 
 from constants import mode_map
+from modification import SubtitleModifications
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +20,7 @@ class StoredSubtitle(object):
     date_added = None
     mode = "a"  # auto/manual/auto-better (a/m/b)
     content = None
+    mods = None
 
     def __init__(self, score, storage_type, hash, provider_name, id, date_added=None, mode="a", content=None):
         self.score = int(score)
@@ -29,10 +31,18 @@ class StoredSubtitle(object):
         self.date_added = date_added or datetime.datetime.now()
         self.mode = mode
         self.content = content
+        self.mods = []
 
     @property
     def mode_verbose(self):
         return mode_map.get(self.mode, "Unknown")
+
+    def get_modified_content(self, fps=None):
+        if not self.mods:
+            return self.content
+        submods = SubtitleModifications(content=self.content, fps=fps)
+        submods.modify(*self.mods)
+        return submods.to_string("srt")
 
 
 class StoredVideoSubtitles(object):
