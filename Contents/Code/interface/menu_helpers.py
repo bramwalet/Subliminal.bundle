@@ -7,9 +7,10 @@ from support.helpers import get_video_display_title
 from support.ignore import ignore_list
 from support.lib import get_intent
 from support.config import config
-from subzero.constants import ICON_SUB
+from subzero.constants import ICON_SUB, ICON
 
 default_thumb = R(ICON_SUB)
+main_icon = ICON if not config.is_development else "icon-dev.jpg"
 
 
 def should_display_ignore(items, previous=None):
