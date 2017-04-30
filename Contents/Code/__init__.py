@@ -43,9 +43,12 @@ def Start():
     HTTP.CacheTime = 0
     HTTP.Headers['User-agent'] = OS_PLEX_USERAGENT
 
-    subliminal.region.configure('dogpile.cache.dbm', expiration_time=datetime.timedelta(days=30),
-                                arguments={'filename': os.path.join(config.data_items_path, 'subzero.dbm'),
-                                           'lock_factory': MutexLock})
+    try:
+        subliminal.region.configure('dogpile.cache.dbm', expiration_time=datetime.timedelta(days=30),
+                                    arguments={'filename': os.path.join(config.data_items_path, 'subzero.dbm'),
+                                               'lock_factory': MutexLock})
+    except:
+        subliminal.region.configure('dogpile.cache.memory')
 
     # clear expired intents
     intent = get_intent()
