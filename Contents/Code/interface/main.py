@@ -18,13 +18,12 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
     subzero main menu
     """
     from interface.advanced import PinMenu, ClearPin, AdvancedMenu
+    from interface.menu import RefreshMissing, IgnoreListMenu, HistoryMenu
 
     title = config.full_version  # force_title if force_title is not None else config.full_version
     oc = ObjectContainer(title1=title, title2=title, header=unicode(header) if header else title, message=message,
                          no_history=no_history,
                          replace_parent=replace_parent, no_cache=True)
-
-    from menu import  RefreshMissing, IgnoreListMenu, HistoryMenu
 
     # always re-check permissions
     config.refresh_permissions_status()
