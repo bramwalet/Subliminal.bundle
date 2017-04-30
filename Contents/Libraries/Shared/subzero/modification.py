@@ -30,21 +30,28 @@ class SubtitleModifications(object):
     def modify(self, *mods):
         new_f = []
         for line in self.f:
+            applied_mods = []
             for identifier in mods:
                 if identifier in registry.mods:
                     mod = registry.mods[identifier]
+
+                    # don't bother reapplying exclusive mods multiple times
+                    if mod.exclusive and identifier in applied_mods:
+                        continue
+
                     new_content = mod.modify(line.text)
                     if not new_content:
-                        logger.debug("deleting %s", line)
+                        logger.debug("%s: deleting %s", identifier, line)
                         continue
 
                     line.text = new_content
                     new_f.append(line)
+                    applied_mods.append(identifier)
 
         self.f.events = new_f
 
-    def to_string(self, format="srt"):
-        return self.f.to_string(format)
+    def to_string(self, format="srt", encoding="utf-8"):
+        return self.f.to_string(format, encoding=encoding)
 
     def save(self, fn):
         self.f.save(fn)
@@ -53,13 +60,45 @@ class SubtitleModifications(object):
 SubMod = SubtitleModifications
 
 
+class SubtitleModRegistry(object):
+    mods = None
+    mods_available = None
+
+    def __init__(self):
+        self.mods = OrderedDict()
+        self.mods_available = []
+
+    def register(self, mod):
+        self.mods[mod.identifier] = mod
+        self.mods_available.append(mod.identifier)
+
+registry = SubtitleModRegistry()
+
+
 class Processor(object):
     """
     Processor base class
     """
+    name = None
+
+    def __init__(self, name=None):
+        self.name = name
+
+    @property
+    def info(self):
+        return self.name
 
     def process(self, content):
         return content
+
+    def __repr__(self):
+        return "Processor <%s %s>" % (self.__class__.__name__, self.info)
+
+    def __str__(self):
+        return repr(self)
+
+    def __unicode__(self):
+        return unicode(repr(self))
 
 
 class StringProcessor(Processor):
@@ -67,7 +106,8 @@ class StringProcessor(Processor):
     String replacement processor base
     """
 
-    def __init__(self, search, replace):
+    def __init__(self, search, replace, name=None):
+        super(StringProcessor, self).__init__(name=name)
         self.search = search
         self.replace = replace
 
@@ -82,7 +122,8 @@ class ReProcessor(Processor):
     pattern = None
     replace_with = None
 
-    def __init__(self, pattern, replace_with):
+    def __init__(self, pattern, replace_with, name=None):
+        super(ReProcessor, self).__init__(name=name)
         self.pattern = pattern
         self.replace_with = replace_with
 
@@ -105,20 +146,10 @@ class NReProcessor(ReProcessor):
         return r"\N".join(lines)
 
 
-class SubtitleModRegistry(object):
-    mods = None
-
-    def __init__(self):
-        self.mods = OrderedDict()
-
-    def register(self, mod):
-        self.mods[mod.identifier] = mod
-
-registry = SubtitleModRegistry()
-
-
 class SubtitleModification(object):
-    short_name = None
+    identifier = None
+    description = None
+    exclusive = False
     pre_processors = []
     processors = []
     post_processors = []
@@ -131,6 +162,9 @@ class SubtitleModification(object):
         new_content = content
         for processor in processors:
             new_content = processor.process(new_content)
+            if not new_content:
+                logger.debug("Processor returned empty line: %s", processor)
+                break
         return new_content
 
     @classmethod
@@ -157,31 +191,33 @@ class SubtitleModification(object):
 class SubtitleTextModification(SubtitleModification):
     post_processors = [
         # empty tag
-        ReProcessor(re.compile(r'(<[A-z]+[^>]*>)[\s.,-_!?]+(</[A-z]>)'), ""),
+        ReProcessor(re.compile(r'({\\\w+1})[\s.,-_!?]+({\\\w+0})'), "", name="empty_tag"),
 
         # empty line (needed?)
-        ReProcessor(re.compile(r'(?m)^\s+$'), ""),
+        ReProcessor(re.compile(r'(?m)^\s+$'), "", name="empty_line"),
 
         # empty dash line (needed?)
-        ReProcessor(re.compile(r'(?m)(^[\s]*[\-]+[\s]*)$'), ""),
+        ReProcessor(re.compile(r'(?m)(^[\s]*[\-]+[\s]*)$'), "", name="empty_dash_line"),
 
         # clean whitespace at start and end
-        ReProcessor(re.compile(r'^\s*([^\s]+)\s*$'), r"\1"),
+        ReProcessor(re.compile(r'^\s*([^\s]+)\s*$'), r"\1", name="surrounding_whitespace"),
     ]
 
 
 class HearingImpaired(SubtitleTextModification):
     identifier = "remove_HI"
-    name = "Remove Hearing Impaired tags"
+    description = "Remove Hearing Impaired tags"
+    exclusive = True
+
     processors = [
         # brackets
-        ReProcessor(re.compile(r'(?sux)[([{].+[)\]}]'), ""),
+        ReProcessor(re.compile(r'(?sux)[([].+[)\]]'), "", name="HI_brackets"),
 
         # text before colon (and possible dash in front)
-        ReProcessor(re.compile(r'(?mu)(^[A-z\-]+[\w\s]*:[^0-9{2}][\s]*)'), ""),
+        ReProcessor(re.compile(r'(?mu)(^[A-z\-]+[\w\s]*:[^0-9{2}][\s]*)'), "", name="HI_before_colon"),
 
-        # all caps line (at least 3 chars
-        NReProcessor(re.compile(r'(?mu)(^[A-Z\.\-_]{3,}$)'), ""),
+        # all caps line (at least 3 chars)
+        NReProcessor(re.compile(r'(?mu)(^[A-Z]{3,}$)'), "", name="HI_all_caps"),
     ]
 
 
