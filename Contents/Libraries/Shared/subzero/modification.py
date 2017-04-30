@@ -2,6 +2,7 @@
 
 import re
 import traceback
+from collections import OrderedDict
 
 import pysubs2
 import logging
@@ -10,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 class SubtitleModifications(object):
-    def __init__(self, fn=None, content=None, fps=None):
+    def load(self, fn=None, content=None, fps=None):
         try:
             if fn:
                 self.f = pysubs2.load(fn, fps=fps)
@@ -29,14 +30,16 @@ class SubtitleModifications(object):
     def modify(self, *mods):
         new_f = []
         for line in self.f:
-            for mod in mods:
-                new_content = mod.modify(line.text)
-                if not new_content:
-                    logger.debug("deleting %s", line)
-                    continue
+            for identifier in mods:
+                if identifier in registry.mods:
+                    mod = registry.mods[identifier]
+                    new_content = mod.modify(line.text)
+                    if not new_content:
+                        logger.debug("deleting %s", line)
+                        continue
 
-                line.text = new_content
-                new_f.append(line)
+                    line.text = new_content
+                    new_f.append(line)
 
         self.f.events = new_f
 
@@ -102,7 +105,20 @@ class NReProcessor(ReProcessor):
         return r"\N".join(lines)
 
 
+class SubtitleModRegistry(object):
+    mods = None
+
+    def __init__(self):
+        self.mods = OrderedDict()
+
+    def register(self, mod):
+        self.mods[mod.identifier] = mod
+
+registry = SubtitleModRegistry()
+
+
 class SubtitleModification(object):
+    short_name = None
     pre_processors = []
     processors = []
     post_processors = []
@@ -155,6 +171,8 @@ class SubtitleTextModification(SubtitleModification):
 
 
 class HearingImpaired(SubtitleTextModification):
+    identifier = "remove_HI"
+    name = "Remove Hearing Impaired tags"
     processors = [
         # brackets
         ReProcessor(re.compile(r'(?sux)[([{].+[)\]}]'), ""),
@@ -165,3 +183,6 @@ class HearingImpaired(SubtitleTextModification):
         # all caps line (at least 3 chars
         NReProcessor(re.compile(r'(?mu)(^[A-Z\.\-_]{3,}$)'), ""),
     ]
+
+
+registry.register(HearingImpaired)
