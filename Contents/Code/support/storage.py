@@ -6,16 +6,17 @@ import pprint
 import copy
 
 import subliminal
-from items import get_item
 from subzero.subtitle_storage import StoredSubtitlesManager
 
 from subtitlehelpers import force_utf8
 from config import config
 from helpers import notify_executable, get_title_for_video_metadata, cast_bool, force_unicode
 from plex_media import PMSMediaProxy
+from support.items import get_item
 
 
-get_subtitle_storage = lambda: StoredSubtitlesManager(Data, get_item)
+def get_subtitle_storage():
+    return StoredSubtitlesManager(Data, get_item)
 
 
 def whack_missing_parts(scanned_video_part_map, existing_parts=None):

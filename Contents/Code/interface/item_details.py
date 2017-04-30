@@ -1,17 +1,22 @@
 # coding=utf-8
 import os
+import traceback
+
+from babelfish import Language
 
 from subzero.constants import PREFIX
 from menu_helpers import debounce, SubFolderObjectContainer, default_thumb, add_ignore_options, get_item_task_data, \
     set_refresh_menu_state
 from refresh_item import RefreshItem
 from support.helpers import timestamp, cast_bool, df, get_language
-from support.items import get_item_kind_from_rating_key, get_item
-from support.plex_media import get_plex_metadata, scan_videos
+from support.items import get_item_kind_from_rating_key, get_item, get_current_sub
+from support.plex_media import get_plex_metadata, scan_videos, PMSMediaProxy, get_stream_fps
 from support.lib import Plex
 from support.storage import get_subtitle_storage
 from support.config import config
 from support.background import scheduler
+
+from subzero.modification import registry as mod_registry
 
 
 @route(PREFIX + '/item/{rating_key}/actions')
@@ -89,18 +94,100 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                            current_sub.score, current_sub.storage_type)
 
             oc.add(DirectoryObject(
-                key=Callback(ListAvailableSubsForItemMenu, rating_key=rating_key, part_id=part_id, title=title,
-                             item_title=item_title, language=lang, current_id=current_sub_id,
+                key=Callback(SubtitleOptionsMenu, rating_key=rating_key, part_id=part_id, title=title,
+                             item_title=item_title, language=lang, language_name=lang.name, current_id=current_sub_id,
                              item_type=plex_item.type, filename=filename, current_data=summary,
                              randomize=timestamp(), current_provider=current_sub_provider_name,
                              current_score=current_score),
-                title=u"List %s subtitles" % lang.name,
+                title=u"Actions for %s subtitle" % lang.name,
                 summary=summary
             ))
 
     add_ignore_options(oc, "videos", title=item_title, rating_key=rating_key, callback_menu=IgnoreMenu)
 
     return oc
+
+
+@route(PREFIX + '/item/current_sub/{rating_key}/{part_id}', force=bool)
+@debounce
+def SubtitleOptionsMenu(**kwargs):
+    oc = SubFolderObjectContainer(title2=kwargs["title"], replace_parent=True)
+    rating_key = kwargs["rating_key"]
+    part_id = kwargs["part_id"]
+    language = kwargs["language"]
+
+    current_sub, stored_subs, storage = get_current_sub(rating_key, part_id, language)
+
+    oc.add(DirectoryObject(
+        key=Callback(ItemDetailsMenu, rating_key=kwargs["rating_key"], item_title=kwargs["item_title"], title=kwargs["title"], randomize=timestamp()),
+        title=u"Back to: %s" % kwargs["title"],
+        summary=kwargs["current_data"],
+        thumb=default_thumb
+    ))
+    oc.add(DirectoryObject(
+        key=Callback(ListAvailableSubsForItemMenu, **kwargs),
+        title=u"List %s subtitles" % kwargs["language_name"],
+        summary=kwargs["current_data"]
+    ))
+    oc.add(DirectoryObject(
+        key=Callback(SubtitleModificationsMenu, **kwargs),
+        title=u"Modify %s subtitle" % kwargs["language_name"],
+        summary=u"Currently applied mods: %s" % (", ".join(current_sub.mods) if current_sub.mods else "none")
+    ))
+    return oc
+
+
+@route(PREFIX + '/item/sub_mods/{rating_key}/{part_id}', force=bool)
+@debounce
+def SubtitleModificationsMenu(**kwargs):
+    rating_key = kwargs["rating_key"]
+    part_id = kwargs["part_id"]
+    language = kwargs["language"]
+    current_sub, stored_subs, storage = get_current_sub(rating_key, part_id, language)
+
+    oc = SubFolderObjectContainer(title2=kwargs["title"], replace_parent=True)
+    for identifier, mod in mod_registry.mods.iteritems():
+        oc.add(DirectoryObject(
+            key=Callback(SubtitleApplyMod, mod_identifier=identifier, **kwargs),
+            title=mod.description
+        ))
+
+    oc.add(DirectoryObject(
+        key=Callback(SubtitleApplyMod, mod_identifier=None, **kwargs),
+        title="Restore original version",
+        summary=u"Currently applied mods: %s" % (", ".join(current_sub.mods) if current_sub.mods else "none")
+    ))
+
+    return oc
+
+
+@route(PREFIX + '/item/sub_add_mod/{rating_key}/{part_id}/{mod_identifier}', force=bool)
+@debounce
+def SubtitleApplyMod(mod_identifier=None, **kwargs):
+    if mod_identifier is not None and mod_identifier not in mod_registry.mods:
+        raise NotImplementedError
+
+    rating_key = kwargs["rating_key"]
+    part_id = kwargs["part_id"]
+    lang_a2 = kwargs["language"]
+
+    language = Language.fromietf(lang_a2)
+
+    current_sub, stored_subs, storage = get_current_sub(rating_key, part_id, language)
+    current_sub.add_mod(mod_identifier)
+
+    storage.save(stored_subs)
+    media = PMSMediaProxy(rating_key)
+    part = media.get_part(part_id)
+    fps = get_stream_fps(part.streams)
+
+    try:
+        subtitle_content = current_sub.get_modified_content(language, fps=fps)
+    except:
+        Log.Error("Can't modify subtitle: %s, %s: %s" % (lang_a2, part_id, traceback.format_exc()))
+
+    kwargs.pop("randomize")
+    return SubtitleModificationsMenu(randomize=timestamp(), **kwargs)
 
 
 @route(PREFIX + '/item/search/{rating_key}/{part_id}', force=bool)

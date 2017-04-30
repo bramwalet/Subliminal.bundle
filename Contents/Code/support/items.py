@@ -283,3 +283,13 @@ def refresh_item(rating_key, force=False, timeout=8000, refresh_kind=None, paren
     for key in refresh:
         Log.Info("%s item %s", "Refreshing" if not force else "Forced-refreshing", key)
         Plex["library/metadata"].refresh(key)
+
+
+def get_current_sub(rating_key, part_id, language):
+    from support.storage import get_subtitle_storage
+
+    item = get_item(rating_key)
+    subtitle_storage = get_subtitle_storage()
+    stored_subs = subtitle_storage.load_or_new(item)
+    current_sub = stored_subs.get_any(part_id, language)
+    return current_sub, stored_subs, subtitle_storage
