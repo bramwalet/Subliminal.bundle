@@ -1,12 +1,13 @@
 # coding=utf-8
 import logging
 import datetime
-import traceback
-
-import logger
 import os
 import StringIO
 import glob
+import urlparse
+
+import logger
+
 
 from zipfile import ZipFile, ZIP_DEFLATED
 
@@ -939,12 +940,21 @@ def TriggerStorageMaintenance(randomize=None):
 @route(PREFIX + '/get_logs_link')
 def GetLogsLink():
     # try getting the link base via the request in context, first, otherwise use the public ip
-    try:
-        link_base = Core.sandbox.context.request.headers["Origin"]
-    except:
-        Log.Debug("Couldn't determine current request origin base, guessing external IP: ", traceback.format_exc())
+    req_headers = Core.sandbox.context.request.headers
+
+    if "Origin" in req_headers:
+        link_base = req_headers["Origin"]
+        Log.Debug("Using origin-based link_base")
+
+    elif "Referer" in req_headers:
+        parsed = urlparse.urlparse(Core.sandbox.context.request.headers["Referer"])
+        link_base = "%s://%s:%s" % (parsed.scheme, parsed.host, parsed.port)
+        Log.Debug("Using referer-based link_base")
+
+    else:
         ip = Core.networking.http_request("http://www.plexapp.com/ip.php", cacheTime=7200).content.strip()
         link_base = "https://%s:32400" % ip
+        Log.Debug("Using ip-based fallback link_base")
 
     logs_link = "%s%s?X-Plex-Token=%s" % (link_base, PREFIX + '/logs', config.universal_plex_token)
     oc = ObjectContainer(title2="Download Logs", no_cache=True, no_history=True,
