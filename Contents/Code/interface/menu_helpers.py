@@ -8,6 +8,7 @@ from support.ignore import ignore_list
 from support.lib import get_intent
 from support.config import config
 from subzero.constants import ICON_SUB, ICON
+from support.background import scheduler
 
 default_thumb = R(ICON_SUB)
 main_icon = ICON if not config.is_development else "icon-dev.jpg"
@@ -103,6 +104,12 @@ def set_refresh_menu_state(state_or_media, media_type="movies"):
     force_refresh = intent.get("force", media_id)
 
     Dict["current_refresh_state"] = u"%sRefreshing %s" % ("Force-" if force_refresh else "", unicode(title))
+
+
+def get_item_task_data(task_name, rating_key, language):
+    task_data = scheduler.get_task_data(task_name)
+    search_results = task_data.get(rating_key, {}) if task_data else {}
+    return search_results.get(language)
 
 
 def enable_channel_wrapper(func):
