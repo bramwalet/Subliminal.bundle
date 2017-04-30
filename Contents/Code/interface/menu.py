@@ -947,7 +947,7 @@ def GetLogsLink():
         Log.Debug("Using origin-based link_base")
 
     elif "Referer" in req_headers:
-        parsed = urlparse.urlparse(Core.sandbox.context.request.headers["Referer"])
+        parsed = urlparse.urlparse(req_headers["Referer"])
         link_base = "%s://%s:%s" % (parsed.scheme, parsed.hostname, parsed.port)
         Log.Debug("Using referer-based link_base")
 
