@@ -1,6 +1,8 @@
 # coding=utf-8
 import logging
 import datetime
+import traceback
+
 import logger
 import os
 import StringIO
@@ -940,8 +942,9 @@ def GetLogsLink():
     try:
         link_base = Core.sandbox.context.request.headers["Origin"]
     except:
+        Log.Debug("Couldn't determine current request origin base, guessing external IP: ", traceback.format_exc())
         ip = Core.networking.http_request("http://www.plexapp.com/ip.php", cacheTime=7200).content.strip()
-        link_base = "http://%s:32400" % ip
+        link_base = "https://%s:32400" % ip
 
     logs_link = "%s%s?X-Plex-Token=%s" % (link_base, PREFIX + '/logs', config.universal_plex_token)
     oc = ObjectContainer(title2="Download Logs", no_cache=True, no_history=True,
