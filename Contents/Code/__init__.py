@@ -48,6 +48,7 @@ def Start():
                                     arguments={'filename': os.path.join(config.data_items_path, 'subzero.dbm'),
                                                'lock_factory': MutexLock})
     except:
+        Log.Warn("Not using file based cache!")
         subliminal.region.configure('dogpile.cache.memory')
 
     # clear expired intents
