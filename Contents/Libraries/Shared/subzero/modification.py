@@ -237,6 +237,9 @@ class HearingImpaired(SubtitleTextModification):
 
         # all caps line (at least 3 chars)
         NReProcessor(re.compile(r'(?u)(^[A-Z]{3,}$)'), "", name="HI_all_caps"),
+
+        # dash in front
+        NReProcessor(re.compile(r'(?u)^\s*-\s*'), "", name="HI_starting_dash"),
     ]
 
 
