@@ -11,6 +11,11 @@ logger = logging.getLogger(__name__)
 
 
 class SubtitleModifications(object):
+    debug = False
+
+    def __init__(self, debug=False):
+        self.debug = debug
+
     def load(self, fn=None, content=None, fps=None):
         """
         
@@ -46,9 +51,10 @@ class SubtitleModifications(object):
                     if mod.exclusive and identifier in applied_mods:
                         continue
 
-                    new_content = mod.modify(line.text)
+                    new_content = mod.modify(line.text, debug=self.debug)
                     if not new_content:
-                        logger.debug("%s: deleting %s", identifier, line)
+                        if self.debug:
+                            logger.debug("%s: deleting %s", identifier, line)
                         continue
 
                     line.text = new_content
@@ -134,7 +140,7 @@ class ReProcessor(Processor):
         self.pattern = pattern
         self.replace_with = replace_with
 
-    def process(self, content):
+    def process(self, content, debug=False):
         return self.pattern.sub(self.replace_with, content)
 
 
@@ -143,10 +149,10 @@ class NReProcessor(ReProcessor):
     Single line regex processor
     """
 
-    def process(self, content):
+    def process(self, content, debug=False):
         lines = []
         for line in content.split(r"\N"):
-            a = super(NReProcessor, self).process(line)
+            a = super(NReProcessor, self).process(line, debug=debug)
             if not a:
                 continue
             lines.append(a)
@@ -162,35 +168,41 @@ class SubtitleModification(object):
     post_processors = []
 
     @classmethod
-    def _process(cls, content, processors):
+    def _process(cls, content, processors, debug=False):
         if not content:
             return
 
         new_content = content
         for processor in processors:
-            new_content = processor.process(new_content)
+            old_content = new_content
+            new_content = processor.process(new_content, debug=debug)
             if not new_content:
                 logger.debug("Processor returned empty line: %s", processor)
                 break
+            if debug:
+                if old_content == new_content:
+                    #logger.debug("%s: %s stayed the same", processor, old_content)
+                    continue
+                logger.debug("%s: %s -> %s", processor, old_content, new_content)
         return new_content
 
     @classmethod
-    def pre_process(cls, content):
-        return cls._process(content, cls.pre_processors)
+    def pre_process(cls, content, debug=False):
+        return cls._process(content, cls.pre_processors, debug=debug)
 
     @classmethod
-    def process(cls, content):
-        return cls._process(content, cls.processors)
+    def process(cls, content, debug=False):
+        return cls._process(content, cls.processors, debug=debug)
 
     @classmethod
-    def post_process(cls, content):
-        return cls._process(content, cls.post_processors)
+    def post_process(cls, content, debug=False):
+        return cls._process(content, cls.post_processors, debug=debug)
 
     @classmethod
-    def modify(cls, content):
+    def modify(cls, content, debug=False):
         new_content = content
         for method in ("pre_process", "process", "post_process"):
-            new_content = getattr(cls, method)(new_content)
+            new_content = getattr(cls, method)(new_content, debug=debug)
 
         return new_content
 
@@ -201,10 +213,10 @@ class SubtitleTextModification(SubtitleModification):
         ReProcessor(re.compile(r'({\\\w+1})[\s.,-_!?]+({\\\w+0})'), "", name="empty_tag"),
 
         # empty line (needed?)
-        ReProcessor(re.compile(r'(?m)^\s+$'), "", name="empty_line"),
+        NReProcessor(re.compile(r'^\s+$'), "", name="empty_line"),
 
         # empty dash line (needed?)
-        ReProcessor(re.compile(r'(?m)(^[\s]*[\-]+[\s]*)$'), "", name="empty_dash_line"),
+        NReProcessor(re.compile(r'(^[\s]*[\-]+[\s]*)$'), "", name="empty_dash_line"),
 
         # clean whitespace at start and end
         ReProcessor(re.compile(r'^\s*([^\s]+)\s*$'), r"\1", name="surrounding_whitespace"),
@@ -218,13 +230,13 @@ class HearingImpaired(SubtitleTextModification):
 
     processors = [
         # brackets
-        ReProcessor(re.compile(r'(?sux)[([].+[)\]]'), "", name="HI_brackets"),
+        NReProcessor(re.compile(r'(?sux)[([].+[)\]]'), "", name="HI_brackets"),
 
         # text before colon (and possible dash in front)
-        ReProcessor(re.compile(r'(?mu)(^[A-z\-]+[\w\s]*:[^0-9{2}][\s]*)'), "", name="HI_before_colon"),
+        NReProcessor(re.compile(r'(?u)(^[A-z\-]+[\w\s]*:[^0-9{2}][\s]*)'), "", name="HI_before_colon"),
 
         # all caps line (at least 3 chars)
-        NReProcessor(re.compile(r'(?mu)(^[A-Z]{3,}$)'), "", name="HI_all_caps"),
+        NReProcessor(re.compile(r'(?u)(^[A-Z]{3,}$)'), "", name="HI_all_caps"),
     ]
 
 
