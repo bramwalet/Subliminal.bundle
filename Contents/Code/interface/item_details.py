@@ -189,10 +189,12 @@ def SubtitleApplyMod(mod_identifier=None, **kwargs):
     subtitle = Subtitle(language, mods=current_sub.mods)
     subtitle.content = current_sub.content
     subtitle.plex_media_fps = plex_part.fps
+    subtitle.page_link = "modify subtitles with: %s" % (", ".join(current_sub.mods) if current_sub.mods else "none")
+    subtitle.language = language
 
     try:
         save_subtitles(scanned_parts, {video: [subtitle]}, mode="m", bare_save=True)
-        Log.Debug("Modified %s subtitle for: %s:%s with: %s", language.name, rating_key, part_id, lang_a2,
+        Log.Debug("Modified %s subtitle for: %s:%s with: %s", language.name, rating_key, part_id,
                   ", ".join(current_sub.mods) if current_sub.mods else "none")
     except:
         Log.Error("Something went wrong when modifying subtitle: %s", traceback.format_exc())
