@@ -177,11 +177,11 @@ class SubtitleModification(object):
             old_content = new_content
             new_content = processor.process(new_content, debug=debug)
             if not new_content:
-                logger.debug("Processor returned empty line: %s", processor)
+                if debug:
+                    logger.debug("Processor returned empty line: %s", processor)
                 break
             if debug:
                 if old_content == new_content:
-                    #logger.debug("%s: %s stayed the same", processor, old_content)
                     continue
                 logger.debug("%s: %s -> %s", processor, old_content, new_content)
         return new_content
