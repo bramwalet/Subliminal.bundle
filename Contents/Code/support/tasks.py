@@ -80,6 +80,7 @@ class Task(object):
         return
 
     def run(self):
+        Log.Debug(u"Task: running: %s", self.name)
         self.time_start = datetime.datetime.now()
 
     def post_run(self, data_holder):
@@ -88,6 +89,7 @@ class Task(object):
         if self.time_start:
             self.last_run_time = self.last_run - self.time_start
         self.time_start = None
+        Log.Debug(u"Task: ran: %s", self.name)
 
 
 class SearchAllRecentlyAddedMissing(Task):
