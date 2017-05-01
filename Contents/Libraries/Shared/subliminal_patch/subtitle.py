@@ -19,6 +19,7 @@ class PatchedSubtitle(Subtitle):
     matches = None
     hash_verifiable = False
     mods = None
+    plex_media_fps = None
 
     def __init__(self, language, hearing_impaired=False, page_link=None, encoding=None, mods=None):
         super(PatchedSubtitle, self).__init__(language, hearing_impaired=hearing_impaired, page_link=page_link,
@@ -135,7 +136,7 @@ class PatchedSubtitle(Subtitle):
 
         return True
 
-    def get_modified_content(self, language, fps=None):
+    def get_modified_content(self):
         """
         :param language: 
         :param fps: 
@@ -147,16 +148,16 @@ class PatchedSubtitle(Subtitle):
         encoding = self.guess_encoding()
 
         submods = SubtitleModifications()
-        submods.load(content=self.text, fps=fps)
+        submods.load(content=self.text, fps=self.plex_media_fps)
         submods.modify(*self.mods)
         return submods.to_string("srt", encoding=encoding).encode(encoding=encoding)
 
-    def get_modified_text(self, language, mods=None, fps=None):
+    def get_modified_text(self):
         """
         :param language: 
         :param fps: 
         :return: unicode 
         """
-        content = self.get_modified_content(language, fps=fps)
+        content = self.get_modified_content()
         encoding = self.guess_encoding()
         return content.decode(encoding=encoding)

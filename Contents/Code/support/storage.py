@@ -157,7 +157,15 @@ def save_subtitles_to_metadata(videos, subtitles):
     return True
 
 
-def save_subtitles(scanned_video_part_map, downloaded_subtitles, mode="a"):
+def save_subtitles(scanned_video_part_map, downloaded_subtitles, mode="a", bare_save=False):
+    """
+    
+    :param scanned_video_part_map: 
+    :param downloaded_subtitles: 
+    :param mode: 
+    :param bare_save: don't trigger anything; don't store information 
+    :return: 
+    """
     meta_fallback = False
     save_successful = False
     storage = "metadata"
@@ -181,8 +189,9 @@ def save_subtitles(scanned_video_part_map, downloaded_subtitles, mode="a"):
             Log.Debug("Using metadata as subtitle storage")
         save_successful = save_subtitles_to_metadata(scanned_video_part_map, downloaded_subtitles)
 
-    if save_successful and config.notify_executable:
+    if not bare_save and save_successful and config.notify_executable:
         notify_executable(config.notify_executable, scanned_video_part_map, downloaded_subtitles, storage)
 
-    store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage, mode=mode)
+    if not bare_save:
+        store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage, mode=mode)
 

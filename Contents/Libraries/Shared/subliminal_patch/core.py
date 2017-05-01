@@ -515,7 +515,7 @@ def save_subtitles(video, subtitles, single=False, directory=None, encoding=None
 
         # save normalized subtitle if encoder or no encoding is given
         if has_encoder or encoding is None:
-            content = encode_with(subtitle.text) if has_encoder else subtitle.content
+            content = encode_with(subtitle.get_modified_text()) if has_encoder else subtitle.get_modified_content()
             with io.open(subtitle_path, 'wb') as f:
                 f.write(content)
 
@@ -530,7 +530,7 @@ def save_subtitles(video, subtitles, single=False, directory=None, encoding=None
         # save subtitle if encoding given
         if encoding is not None:
             with io.open(subtitle_path, 'w', encoding=encoding) as f:
-                f.write(subtitle.text)
+                f.write(subtitle.get_modified_text())
 
         # change chmod if requested
         if chmod:

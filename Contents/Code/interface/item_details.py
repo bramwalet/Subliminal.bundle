@@ -10,9 +10,9 @@ from menu_helpers import debounce, SubFolderObjectContainer, default_thumb, add_
 from refresh_item import RefreshItem
 from support.helpers import timestamp, cast_bool, df, get_language
 from support.items import get_item_kind_from_rating_key, get_item, get_current_sub
-from support.plex_media import get_plex_metadata, scan_videos, PMSMediaProxy, get_stream_fps
+from support.plex_media import get_plex_metadata, scan_videos
 from support.lib import Plex
-from support.storage import get_subtitle_storage
+from support.storage import get_subtitle_storage, save_subtitles
 from support.config import config
 from support.scheduler import scheduler
 
@@ -118,20 +118,22 @@ def SubtitleOptionsMenu(**kwargs):
     language = kwargs["language"]
 
     current_sub, stored_subs, storage = get_current_sub(rating_key, part_id, language)
+    kwargs.pop("randomize")
 
     oc.add(DirectoryObject(
-        key=Callback(ItemDetailsMenu, rating_key=kwargs["rating_key"], item_title=kwargs["item_title"], title=kwargs["title"], randomize=timestamp()),
+        key=Callback(ItemDetailsMenu, rating_key=kwargs["rating_key"], item_title=kwargs["item_title"],
+                     title=kwargs["title"], randomize=timestamp()),
         title=u"Back to: %s" % kwargs["title"],
         summary=kwargs["current_data"],
         thumb=default_thumb
     ))
     oc.add(DirectoryObject(
-        key=Callback(ListAvailableSubsForItemMenu, **kwargs),
+        key=Callback(ListAvailableSubsForItemMenu, randomize=timestamp(), **kwargs),
         title=u"List %s subtitles" % kwargs["language_name"],
         summary=kwargs["current_data"]
     ))
     oc.add(DirectoryObject(
-        key=Callback(SubtitleModificationsMenu, **kwargs),
+        key=Callback(SubtitleModificationsMenu, randomize=timestamp(), **kwargs),
         title=u"Modify %s subtitle" % kwargs["language_name"],
         summary=u"Currently applied mods: %s" % (", ".join(current_sub.mods) if current_sub.mods else "none")
     ))
@@ -145,16 +147,17 @@ def SubtitleModificationsMenu(**kwargs):
     part_id = kwargs["part_id"]
     language = kwargs["language"]
     current_sub, stored_subs, storage = get_current_sub(rating_key, part_id, language)
+    kwargs.pop("randomize")
 
     oc = SubFolderObjectContainer(title2=kwargs["title"], replace_parent=True)
     for identifier, mod in mod_registry.mods.iteritems():
         oc.add(DirectoryObject(
-            key=Callback(SubtitleApplyMod, mod_identifier=identifier, **kwargs),
+            key=Callback(SubtitleApplyMod, mod_identifier=identifier, randomize=timestamp(), **kwargs),
             title=mod.description
         ))
 
     oc.add(DirectoryObject(
-        key=Callback(SubtitleApplyMod, mod_identifier=None, **kwargs),
+        key=Callback(SubtitleApplyMod, mod_identifier=None, randomize=timestamp(), **kwargs),
         title="Restore original version",
         summary=u"Currently applied mods: %s" % (", ".join(current_sub.mods) if current_sub.mods else "none")
     ))
@@ -171,6 +174,7 @@ def SubtitleApplyMod(mod_identifier=None, **kwargs):
     rating_key = kwargs["rating_key"]
     part_id = kwargs["part_id"]
     lang_a2 = kwargs["language"]
+    item_type = kwargs["item_type"]
 
     language = Language.fromietf(lang_a2)
 
@@ -178,18 +182,20 @@ def SubtitleApplyMod(mod_identifier=None, **kwargs):
     current_sub.add_mod(mod_identifier)
 
     storage.save(stored_subs)
-    media = PMSMediaProxy(rating_key)
-    part = media.get_part(part_id)
-    fps = get_stream_fps(part.streams)
+    metadata = get_plex_metadata(rating_key, part_id, item_type)
+    scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
+    video, plex_part = scanned_parts.items()[0]
+
     subtitle = Subtitle(language, mods=current_sub.mods)
     subtitle.content = current_sub.content
+    subtitle.plex_media_fps = plex_part.fps
 
     try:
-        subtitle_content = subtitle.get_modified_content(language, fps=fps)
+        save_subtitles(scanned_parts, {video: [subtitle]}, mode="m", bare_save=True)
+        Log.Debug("Modified %s subtitle for: %s:%s with: %s", language.name, rating_key, part_id, lang_a2,
+                  ", ".join(current_sub.mods) if current_sub.mods else "none")
     except:
-        Log.Error("Can't modify subtitle: %s, %s: %s" % (lang_a2, part_id, traceback.format_exc()))
-
-    print type(subtitle_content), subtitle_content[:50]
+        Log.Error("Something went wrong when modifying subtitle: %s", traceback.format_exc())
 
     kwargs.pop("randomize")
     return SubtitleModificationsMenu(randomize=timestamp(), **kwargs)
