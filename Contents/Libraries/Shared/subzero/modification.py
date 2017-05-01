@@ -12,6 +12,13 @@ logger = logging.getLogger(__name__)
 
 class SubtitleModifications(object):
     def load(self, fn=None, content=None, fps=None):
+        """
+        
+        :param fn:  filename
+        :param content: unicode 
+        :param fps: 
+        :return: 
+        """
         try:
             if fn:
                 self.f = pysubs2.load(fn, fps=fps)

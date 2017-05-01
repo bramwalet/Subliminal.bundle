@@ -51,20 +51,20 @@ class StoredSubtitle(object):
         """
         :param language: 
         :param fps: 
-        :return: string 
+        :return: unicode 
         """
         sub = Subtitle(language)
         sub.content = self.content
 
         if not self.mods:
-            return sub.content
+            return sub.text
 
         encoding = sub.guess_encoding()
 
         submods = SubtitleModifications()
-        submods.load(content=sub.content, fps=fps)
+        submods.load(content=sub.text, fps=fps)
         submods.modify(*self.mods)
-        return submods.to_string("srt", encoding=encoding)
+        return submods.to_string("srt", encoding=encoding).decode(encoding=encoding)
 
 
 class StoredVideoSubtitles(object):
