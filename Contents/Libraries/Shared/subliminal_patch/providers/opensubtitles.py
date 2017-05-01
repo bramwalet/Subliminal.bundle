@@ -74,7 +74,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
             logger.info("Only searching for foreign/forced subtitles")
 
         super(OpenSubtitlesProvider, self).__init__()
-        self.server = ServerProxy('https://api.opensubtitles.org/xml-rpc', TimeoutSafeTransport(10))
+        self.server = ServerProxy('https://api.opensubtitles.org/xml-rpc', TimeoutSafeTransport(4))
 
     def initialize(self):
         logger.info('Logging in')
