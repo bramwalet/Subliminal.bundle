@@ -157,17 +157,29 @@ def save_subtitles_to_metadata(videos, subtitles):
     return True
 
 
-def save_subtitles(scanned_video_part_map, downloaded_subtitles, mode="a", bare_save=False):
+def save_subtitles(scanned_video_part_map, downloaded_subtitles, mode="a", bare_save=False, mods=None):
     """
-    
+     
     :param scanned_video_part_map: 
     :param downloaded_subtitles: 
     :param mode: 
-    :param bare_save: don't trigger anything; don't store information 
+    :param bare_save: don't trigger anything; don't store information
+    :param mods: enabled mods
     :return: 
     """
     meta_fallback = False
     save_successful = False
+
+    if mods:
+        for video, video_subtitles in downloaded_subtitles.items():
+            if not video_subtitles:
+                continue
+
+            for subtitle in video_subtitles:
+                Log.Info("Applying mods: %s to %s", mods, subtitle)
+                subtitle.mods = mods
+                subtitle.plex_media_fps = video.fps
+
     storage = "metadata"
     if Prefs['subtitles.save.filesystem']:
         storage = "filesystem"

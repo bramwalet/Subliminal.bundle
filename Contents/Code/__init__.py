@@ -224,7 +224,7 @@ class SubZeroAgent(object):
             whack_missing_parts(scanned_video_part_map)
 
             if downloaded_subtitles:
-                save_subtitles(scanned_video_part_map, downloaded_subtitles)
+                save_subtitles(scanned_video_part_map, downloaded_subtitles, mods=config.default_mods)
                 track_usage("Subtitle", "refreshed", "download", 1)
 
                 for video, video_subtitles in downloaded_subtitles.items():

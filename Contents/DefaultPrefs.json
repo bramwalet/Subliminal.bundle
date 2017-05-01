@@ -396,6 +396,12 @@
     "default": "don't prefer"
   },
   {
+    "id": "subtitles.remove_hi",
+    "label": "Remove Hearing Impaired tags from downloaded subtitles",
+    "type": "bool",
+    "default": "true"
+  },
+  {
     "id": "subtitles.enforce_encoding",
     "label": "Normalize subtitle encoding to UTF-8",
     "type": "bool",

@@ -67,12 +67,14 @@ class Config(object):
     notify_executable = None
     sections = None
     enabled_sections = None
+    remove_hi = False
     enforce_encoding = False
     chmod = None
     forced_only = False
     exotic_ext = False
     treat_und_as_first = False
     ext_match_strictness = False
+    default_mods = None
     use_activities = False
     activity_mode = None
 
@@ -106,12 +108,14 @@ class Config(object):
         self.enabled_sections = self.check_enabled_sections()
         self.permissions_ok = self.check_permissions()
         self.notify_executable = self.check_notify_executable()
+        self.remove_hi = cast_bool(Prefs['subtitles.remove_hi'])
         self.enforce_encoding = cast_bool(Prefs['subtitles.enforce_encoding'])
         self.chmod = self.check_chmod()
         self.forced_only = cast_bool(Prefs["subtitles.only_foreign"])
         self.exotic_ext = cast_bool(Prefs["subtitles.scan.exotic_ext"])
         self.treat_und_as_first = cast_bool(Prefs["subtitles.language.treat_und_as_first"])
         self.ext_match_strictness = self.determine_ext_sub_strictness()
+        self.default_mods = self.get_default_mods()
         self.initialized = True
 
     def set_log_paths(self):
@@ -403,6 +407,13 @@ class Config(object):
         elif val.startswith("loose"):
             return "loose"
         return "strict"
+
+    def get_default_mods(self):
+        mods = []
+        if self.remove_hi:
+            mods.append("remove_HI")
+
+        return mods
 
     def set_activity_modes(self):
         val = Prefs["activity.on_playback"]
