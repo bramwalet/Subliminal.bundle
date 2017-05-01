@@ -32,9 +32,9 @@ import missing_subtitles
 
 sys.modules["support.missing_subtitles"] = missing_subtitles
 
-import background
+import scheduler
 
-sys.modules["support.background"] = background
+sys.modules["support.scheduler"] = scheduler
 
 import tasks
 

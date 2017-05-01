@@ -9,7 +9,7 @@ from menu_helpers import add_ignore_options, dig_tree, set_refresh_menu_state, \
 from main import fatality, IgnoreMenu
 from advanced import DispatchRestart
 from subzero.constants import ART, PREFIX, DEPENDENCY_MODULE_NAMES
-from support.background import scheduler
+from support.scheduler import scheduler
 from support.config import config
 from support.helpers import timestamp,  df
 from support.ignore import ignore_list

@@ -11,7 +11,7 @@ from subliminal import list_subtitles as list_all_subtitles
 from babelfish import Language
 
 from missing_subtitles import items_get_all_missing_subs, refresh_item
-from background import scheduler
+from scheduler import scheduler
 from storage import save_subtitles, whack_missing_parts, get_subtitle_storage
 from support.config import config
 from support.items import get_recent_items, is_ignored, get_item

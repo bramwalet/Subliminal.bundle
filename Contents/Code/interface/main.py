@@ -3,7 +3,7 @@
 from subzero.constants import PREFIX, TITLE, ART
 from support.config import config
 from support.helpers import pad_title, timestamp, df
-from support.background import scheduler
+from support.scheduler import scheduler
 from support.ignore import ignore_list
 from support.items import get_item_thumb, get_on_deck_items, get_all_items, get_items_info
 from menu_helpers import main_icon, debounce, SubFolderObjectContainer, default_thumb, dig_tree, add_ignore_options

@@ -14,8 +14,9 @@ from support.plex_media import get_plex_metadata, scan_videos, PMSMediaProxy, ge
 from support.lib import Plex
 from support.storage import get_subtitle_storage
 from support.config import config
-from support.background import scheduler
+from support.scheduler import scheduler
 
+from subliminal_patch import PatchedSubtitle as Subtitle
 from subzero.modification import registry as mod_registry
 
 
@@ -180,11 +181,15 @@ def SubtitleApplyMod(mod_identifier=None, **kwargs):
     media = PMSMediaProxy(rating_key)
     part = media.get_part(part_id)
     fps = get_stream_fps(part.streams)
+    subtitle = Subtitle(language, mods=current_sub.mods)
+    subtitle.content = current_sub.content
 
     try:
-        subtitle_content = current_sub.get_modified_content(language, fps=fps)
+        subtitle_content = subtitle.get_modified_content(language, fps=fps)
     except:
         Log.Error("Can't modify subtitle: %s, %s: %s" % (lang_a2, part_id, traceback.format_exc()))
+
+    print type(subtitle_content), subtitle_content[:50]
 
     kwargs.pop("randomize")
     return SubtitleModificationsMenu(randomize=timestamp(), **kwargs)

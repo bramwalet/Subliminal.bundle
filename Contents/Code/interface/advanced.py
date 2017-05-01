@@ -15,7 +15,7 @@ from support.helpers import timestamp, pad_title
 from support.config import config
 from support.lib import Plex
 from support.storage import reset_storage, log_storage
-from support.background import scheduler
+from support.scheduler import scheduler
 
 
 @route(PREFIX + '/advanced')

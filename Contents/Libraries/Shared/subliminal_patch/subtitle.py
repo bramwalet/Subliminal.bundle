@@ -8,6 +8,7 @@ import pysrt
 import pysubs2
 from bs4 import UnicodeDammit
 from subliminal import Subtitle
+from subzero.modification import SubtitleModifications
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +18,12 @@ class PatchedSubtitle(Subtitle):
     release_info = None
     matches = None
     hash_verifiable = False
+    mods = None
+
+    def __init__(self, language, hearing_impaired=False, page_link=None, encoding=None, mods=None):
+        super(PatchedSubtitle, self).__init__(language, hearing_impaired=hearing_impaired, page_link=page_link,
+                                              encoding=encoding)
+        self.mods = mods
 
     def __repr__(self):
         return '<%s %r [%s]>' % (
@@ -127,3 +134,29 @@ class PatchedSubtitle(Subtitle):
             return False
 
         return True
+
+    def get_modified_content(self, language, fps=None):
+        """
+        :param language: 
+        :param fps: 
+        :return: string 
+        """
+        if not self.mods:
+            return self.content
+
+        encoding = self.guess_encoding()
+
+        submods = SubtitleModifications()
+        submods.load(content=self.text, fps=fps)
+        submods.modify(*self.mods)
+        return submods.to_string("srt", encoding=encoding).encode(encoding=encoding)
+
+    def get_modified_text(self, language, mods=None, fps=None):
+        """
+        :param language: 
+        :param fps: 
+        :return: unicode 
+        """
+        content = self.get_modified_content(language, fps=fps)
+        encoding = self.guess_encoding()
+        return content.decode(encoding=encoding)

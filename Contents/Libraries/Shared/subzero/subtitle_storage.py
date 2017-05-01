@@ -6,9 +6,6 @@ import logging
 import traceback
 
 from constants import mode_map
-from modification import SubtitleModifications
-
-from subliminal_patch import PatchedSubtitle as Subtitle
 
 logger = logging.getLogger(__name__)
 
@@ -46,25 +43,6 @@ class StoredSubtitle(object):
     @property
     def mode_verbose(self):
         return mode_map.get(self.mode, "Unknown")
-
-    def get_modified_content(self, language, fps=None):
-        """
-        :param language: 
-        :param fps: 
-        :return: unicode 
-        """
-        sub = Subtitle(language)
-        sub.content = self.content
-
-        if not self.mods:
-            return sub.text
-
-        encoding = sub.guess_encoding()
-
-        submods = SubtitleModifications()
-        submods.load(content=sub.text, fps=fps)
-        submods.modify(*self.mods)
-        return submods.to_string("srt", encoding=encoding).decode(encoding=encoding)
 
 
 class StoredVideoSubtitles(object):

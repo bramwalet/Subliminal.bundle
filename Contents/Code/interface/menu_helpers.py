@@ -8,7 +8,7 @@ from support.ignore import ignore_list
 from support.lib import get_intent
 from support.config import config
 from subzero.constants import ICON_SUB, ICON
-from support.background import scheduler
+from support.scheduler import scheduler
 
 default_thumb = R(ICON_SUB)
 main_icon = ICON if not config.is_development else "icon-dev.jpg"
