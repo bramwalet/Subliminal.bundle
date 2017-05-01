@@ -21,7 +21,8 @@ class StoredSubtitle(object):
     content = None
     mods = None
 
-    def __init__(self, score, storage_type, hash, provider_name, id, date_added=None, mode="a", content=None):
+    def __init__(self, score, storage_type, hash, provider_name, id, date_added=None, mode="a", content=None,
+                 mods=None):
         self.score = int(score)
         self.storage_type = storage_type
         self.hash = hash
@@ -30,7 +31,7 @@ class StoredSubtitle(object):
         self.date_added = date_added or datetime.datetime.now()
         self.mode = mode
         self.content = content
-        self.mods = []
+        self.mods = mods or []
 
     def add_mod(self, identifier):
         self.mods = self.mods or []
@@ -80,7 +81,7 @@ class StoredVideoSubtitles(object):
         sub_key = self.get_sub_key(subtitle.provider_name, subtitle.id)
         subs[sub_key] = StoredSubtitle(subtitle.score, storage_type, hashlib.md5(subtitle.content).hexdigest(),
                                        subtitle.provider_name, subtitle.id, date_added=date_added, mode=mode,
-                                       content=subtitle.content)
+                                       content=subtitle.content, mods=subtitle.mods)
         subs["current"] = sub_key
 
         return True

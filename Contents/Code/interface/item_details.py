@@ -132,11 +132,12 @@ def SubtitleOptionsMenu(**kwargs):
         title=u"List %s subtitles" % kwargs["language_name"],
         summary=kwargs["current_data"]
     ))
-    oc.add(DirectoryObject(
-        key=Callback(SubtitleModificationsMenu, randomize=timestamp(), **kwargs),
-        title=u"Modify %s subtitle" % kwargs["language_name"],
-        summary=u"Currently applied mods: %s" % (", ".join(current_sub.mods) if current_sub.mods else "none")
-    ))
+    if current_sub:
+        oc.add(DirectoryObject(
+            key=Callback(SubtitleModificationsMenu, randomize=timestamp(), **kwargs),
+            title=u"Modify %s subtitle" % kwargs["language_name"],
+            summary=u"Currently applied mods: %s" % (", ".join(current_sub.mods) if current_sub.mods else "none")
+        ))
     return oc
 
 
@@ -206,7 +207,8 @@ def SubtitleApplyMod(mod_identifier=None, **kwargs):
 @route(PREFIX + '/item/search/{rating_key}/{part_id}', force=bool)
 @debounce
 def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item_title=None, filename=None,
-                                 item_type="episode", language=None, force=False, current_id=None, current_data=None,
+                                 item_type="episode", language=None, language_name=None, force=False, current_id=None,
+                                 current_data=None,
                                  current_provider=None, current_score=None, randomize=None):
     assert rating_key, part_id
 
