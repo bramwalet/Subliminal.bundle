@@ -250,7 +250,7 @@ class DownloadSubtitleMixin(object):
         if subtitle.content:
             try:
                 whack_missing_parts(scanned_parts)
-                save_subtitles(scanned_parts, {video: [subtitle]}, mode=mode)
+                save_subtitles(scanned_parts, {video: [subtitle]}, mode=mode, mods=config.default_mods)
                 Log.Debug("Manually downloaded subtitle for: %s", rating_key)
                 download_successful = True
                 refresh_item(rating_key)
