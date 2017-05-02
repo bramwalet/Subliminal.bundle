@@ -364,13 +364,20 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
                 return
 
         now = datetime.datetime.now()
+        min_score_series = int(Prefs["subtitles.search.minimumTVScore2"].strip())
+        min_score_movies = int(Prefs["subtitles.search.minimumMovieScore2"].strip())
 
         subtitle_storage = get_subtitle_storage()
         recent_subs = subtitle_storage.load_recent_files(age_days=max_search_days)
 
         for fn, stored_subs in recent_subs.iteritems():
             video_id = stored_subs.video_id
-            cutoff = self.series_cutoff if stored_subs.item_type == "episode" else self.movies_cutoff
+
+            if stored_subs.item_type == "episode":
+                min_score = min_score_series
+            else:
+                cutoff = self.movies_cutoff
+                min_score = min_score_movies
 
             # don't search for better subtitles until at least 30 minutes have passed
             if stored_subs.added_at + datetime.timedelta(minutes=30) > now:
@@ -422,7 +429,7 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
                         better_downloaded = False
                         better_tried_download = 0
                         for sub in subs:
-                            if sub.score > current_score:
+                            if sub.score > current_score and sub.score > min_score:
                                 Log.Debug("Better subtitle found for %s, downloading", video_id)
                                 better_tried_download += 1
                                 ret = self.download_subtitle(sub, video_id, mode="b")
