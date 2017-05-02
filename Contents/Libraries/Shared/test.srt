@@ -14,11 +14,11 @@ of signal, drawing the Tardis off course.
 
 4
 00:00:16,099 --> 00:00:17,224
-Where are we?
+this is a subtitle test with a text before colons: Where are we?
 
 5
 00:00:17,225 --> 00:00:19,684
-Earth. Utah, North America.
+less text before colons: Earth. Utah, North America.
 
 6
 00:00:19,686 --> 00:00:21,103
@@ -55,7 +55,7 @@ ROSE: Like a great big museum.
 
 14
 00:00:40,414 --> 00:00:42,914
-DOCTOR: An alien museum.
+DOCTOR's MOM: An alien museum.
 
 15
 00:00:43,542 --> 00:00:46,042

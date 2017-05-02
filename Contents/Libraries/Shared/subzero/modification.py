@@ -232,8 +232,8 @@ class HearingImpaired(SubtitleTextModification):
         # brackets
         NReProcessor(re.compile(r'(?sux)[([].+[)\]]'), "", name="HI_brackets"),
 
-        # text before colon (and possible dash in front)
-        NReProcessor(re.compile(r'(?u)(^[A-z\-]+[\w\s]*:[^0-9{2}][\s]*)'), "", name="HI_before_colon"),
+        # text before colon (and possible dash in front), max 11 chars after the first whitespace (if any)
+        NReProcessor(re.compile(r'(?u)(^[A-z\-\'"_]+[\w\s]{0,11}:[^0-9{2}][\s]*)'), "", name="HI_before_colon"),
 
         # all caps line (at least 3 chars)
         NReProcessor(re.compile(r'(?u)(^[A-Z]{3,}$)'), "", name="HI_all_caps"),
