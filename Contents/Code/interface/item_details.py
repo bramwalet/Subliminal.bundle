@@ -3,21 +3,19 @@ import os
 import traceback
 
 from babelfish import Language
-
-from subzero.constants import PREFIX
 from menu_helpers import debounce, SubFolderObjectContainer, default_thumb, add_ignore_options, get_item_task_data, \
     set_refresh_menu_state
+from subzero.modification import registry as mod_registry
 from refresh_item import RefreshItem
+from subliminal_patch import PatchedSubtitle as Subtitle
+from subzero.constants import PREFIX
+from support.config import config
 from support.helpers import timestamp, cast_bool, df, get_language
 from support.items import get_item_kind_from_rating_key, get_item, get_current_sub
-from support.plex_media import get_plex_metadata, scan_videos
 from support.lib import Plex
-from support.storage import get_subtitle_storage, save_subtitles
-from support.config import config
+from support.plex_media import get_plex_metadata, scan_videos
 from support.scheduler import scheduler
-
-from subliminal_patch import PatchedSubtitle as Subtitle
-from subzero.modification import registry as mod_registry
+from support.storage import get_subtitle_storage, save_subtitles
 
 
 @route(PREFIX + '/item/{rating_key}/actions')

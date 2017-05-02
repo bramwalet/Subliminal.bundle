@@ -7,8 +7,8 @@ import chardet
 import pysrt
 import pysubs2
 from bs4 import UnicodeDammit
-from subliminal import Subtitle
 from subzero.modification import SubtitleModifications
+from subliminal import Subtitle
 
 logger = logging.getLogger(__name__)
 
