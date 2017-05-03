@@ -138,8 +138,6 @@ class PatchedSubtitle(Subtitle):
 
     def get_modified_content(self):
         """
-        :param language: 
-        :param fps: 
         :return: string 
         """
         if not self.mods:
@@ -154,8 +152,6 @@ class PatchedSubtitle(Subtitle):
 
     def get_modified_text(self):
         """
-        :param language: 
-        :param fps: 
         :return: unicode 
         """
         content = self.get_modified_content()

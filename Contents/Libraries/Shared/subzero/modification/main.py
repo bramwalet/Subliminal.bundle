@@ -28,6 +28,7 @@ class SubtitleModifications(object):
         :return: 
         """
         self.language = language
+        self.initialized_mods = {}
         try:
             if fn:
                 self.f = pysubs2.load(fn, fps=fps)
