@@ -23,7 +23,13 @@ class StringProcessor(Processor):
 
 class MultipleLineProcessor(Processor):
     """
+    replaces stuff in whole lines
+    
     takes a search/replace dict as first argument
+    Expects a dictionary in the form of:
+    dict = {
+        "data": {"old_value": "new_value"}
+    }
     """
     def __init__(self, snr_dict, name=None, parent=None):
         super(MultipleLineProcessor, self).__init__(name=name)
@@ -47,13 +53,21 @@ class MultipleLineProcessor(Processor):
 
 
 class MultipleWordProcessor(MultipleLineProcessor):
+    """
+    replaces words
+
+    takes a search/replace dict as first argument
+    Expects a dictionary in the form of:
+    dict = {
+        "data": {"old_value": "new_value"}
+    }
+    """
     def process(self, content, debug=False):
         new_lines = []
         for line in content.split(u"\\N"):
             words = line.split(u" ")
             new_words = []
             for word in words:
-                print repr(word)
                 new_words.append(self.snr_dict.get(word, word))
 
             new_lines.append(u" ".join(new_words))
