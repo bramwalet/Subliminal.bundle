@@ -43,8 +43,9 @@ class MultipleWordReProcessor(ReProcessor):
     Expects a dictionary in the form of:
     dict = {
         "data": {"old_value": "new_value"},
-        "pattern": compiled re object that matches data
+        "pattern": compiled re object that matches data.keys()
     }
+    replaces found key in pattern with the corresponding value in data
     """
     def __init__(self, snr_dict, name=None, parent=None):
         super(ReProcessor, self).__init__(name=name)
