@@ -23,12 +23,15 @@ if __name__ == "__main__":
             lang = fn.split("_")[0]
             soup = BeautifulSoup(open(os.path.join(xml_dir, fn)), "xml")
 
-            data[lang] = OrderedDict()
+            data[lang] = {"full": OrderedDict(), "partial": OrderedDict()}
 
             for wanted in ("WholeLines", "WholeWords", "PartialWordsAlways"):
                 for grp in soup.find_all(wanted):
                     for line in grp.find_all(["Line", "Word", "WordPart"]):
-                        data[lang][line["from"]] = line["to"]
+                        data[lang]["full"][line["from"]] = line["to"]
+
+                    for line in grp.find_all(["WordPart"]):
+                        data[lang]["partial"][line["from"]] = line["to"]
 
     f = open(os.path.join(cur_dir, "data.py"), "w+")
     f.write(TEMPLATE)
