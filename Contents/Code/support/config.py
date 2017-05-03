@@ -118,6 +118,21 @@ class Config(object):
         self.default_mods = self.get_default_mods()
         self.initialized = True
 
+    def init_cache(self):
+        use_fallback_cache = True
+        if Core.runtime.os != "Windows":
+            try:
+                subliminal.region.configure('dogpile.cache.dbm', expiration_time=datetime.timedelta(days=30),
+                                            arguments={'filename': os.path.join(config.data_items_path, 'subzero.dbm'),
+                                                       'lock_factory': MutexLock})
+                use_fallback_cache = False
+            except:
+                pass
+
+        if use_fallback_cache:
+            Log.Warn("Not using file based cache!")
+            subliminal.region.configure('dogpile.cache.memory')
+
     def set_log_paths(self):
         # find log handler
         for handler in Core.log.handlers:

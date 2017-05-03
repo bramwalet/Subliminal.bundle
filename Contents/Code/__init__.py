@@ -29,7 +29,7 @@ from subzero.constants import OS_PLEX_USERAGENT, PERSONAL_MEDIA_IDENTIFIER
 from interface.menu import *
 from support.plex_media import media_to_videos, get_media_item_ids, scan_videos
 from support.subtitlehelpers import get_subtitles_from_metadata
-from support.storage import whack_missing_parts, save_subtitles, get_subtitle_storage
+from support.storage import whack_missing_parts, save_subtitles
 from support.items import is_ignored
 from support.config import config
 from support.lib import get_intent
@@ -43,13 +43,7 @@ def Start():
     HTTP.CacheTime = 0
     HTTP.Headers['User-agent'] = OS_PLEX_USERAGENT
 
-    try:
-        subliminal.region.configure('dogpile.cache.dbm', expiration_time=datetime.timedelta(days=30),
-                                    arguments={'filename': os.path.join(config.data_items_path, 'subzero.dbm'),
-                                               'lock_factory': MutexLock})
-    except:
-        Log.Warn("Not using file based cache!")
-        subliminal.region.configure('dogpile.cache.memory')
+    config.init_cache()
 
     # clear expired intents
     intent = get_intent()

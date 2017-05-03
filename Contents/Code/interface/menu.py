@@ -11,7 +11,7 @@ from advanced import DispatchRestart
 from subzero.constants import ART, PREFIX, DEPENDENCY_MODULE_NAMES
 from support.scheduler import scheduler
 from support.config import config
-from support.helpers import timestamp,  df
+from support.helpers import timestamp, df
 from support.ignore import ignore_list
 from support.items import get_all_items, get_items_info, \
     get_item_kind_from_rating_key
@@ -149,6 +149,15 @@ def ValidatePrefs():
     Core.log.setLevel(logging.DEBUG)
     Log.Debug("Validate Prefs called.")
 
+    # SZ config debug
+    Log.Debug("--- SZ Config-Debug ---")
+    for attr in [
+            "app_support_path", "data_path", "data_items_path", "plugin_log_path", "server_log_path", "enable_agent",
+            "enable_channel", "permissions_ok", "missing_permissions", "fs_encoding"]:
+        Log.Debug("config.%s: %s", attr, getattr(config, attr))
+
+    Log.Debug("-----------------------")
+
     # cache the channel state
     update_dict = False
     restart = False
@@ -187,4 +196,3 @@ def ValidatePrefs():
     Core.log.setLevel(logging.getLevelName(Prefs["log_level"]))
 
     return
-
