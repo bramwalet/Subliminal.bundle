@@ -402,6 +402,12 @@
     "default": "true"
   },
   {
+    "id": "subtitles.fix_ocr",
+    "label": "Fix common OCR errors in downloaded subtitles",
+    "type": "bool",
+    "default": "true"
+  },
+  {
     "id": "subtitles.enforce_encoding",
     "label": "Normalize subtitle encoding to UTF-8",
     "type": "bool",

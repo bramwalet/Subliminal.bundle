@@ -72,8 +72,8 @@ class SubtitleModifications(object):
                         continue
 
                     line.text = new_content
-                    new_f.append(line)
                     applied_mods.append(identifier)
+            new_f.append(line)
 
         self.f.events = new_f
 

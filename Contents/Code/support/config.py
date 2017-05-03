@@ -68,6 +68,7 @@ class Config(object):
     sections = None
     enabled_sections = None
     remove_hi = False
+    fix_ocr = False
     enforce_encoding = False
     chmod = None
     forced_only = False
@@ -109,6 +110,7 @@ class Config(object):
         self.permissions_ok = self.check_permissions()
         self.notify_executable = self.check_notify_executable()
         self.remove_hi = cast_bool(Prefs['subtitles.remove_hi'])
+        self.fix_ocr = cast_bool(Prefs['subtitles.fix_ocr'])
         self.enforce_encoding = cast_bool(Prefs['subtitles.enforce_encoding'])
         self.chmod = self.check_chmod()
         self.forced_only = cast_bool(Prefs["subtitles.only_foreign"])
@@ -427,6 +429,8 @@ class Config(object):
         mods = []
         if self.remove_hi:
             mods.append("remove_HI")
+        if self.fix_ocr:
+            mods.append("OCR_fixes")
 
         return mods
 
