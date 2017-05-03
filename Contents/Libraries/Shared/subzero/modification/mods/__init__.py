@@ -15,13 +15,22 @@ class SubtitleModification(object):
     processors = []
     post_processors = []
 
-    @classmethod
-    def _process(cls, content, processors, debug=False):
+    def __init__(self, parent):
+        return
+
+    def _process(self, content, processors, debug=False, parent=None):
         if not content:
             return
 
+        # processors may be a list or a callable
+        #if callable(processors):
+        #    _processors = processors()
+        #else:
+        #    _processors = processors
+        _processors = processors
+
         new_content = content
-        for processor in processors:
+        for processor in _processors:
             old_content = new_content
             new_content = processor.process(new_content, debug=debug)
             if not new_content:
@@ -34,23 +43,19 @@ class SubtitleModification(object):
                 logger.debug("%s: %s -> %s", processor, old_content, new_content)
         return new_content
 
-    @classmethod
-    def pre_process(cls, content, debug=False):
-        return cls._process(content, cls.pre_processors, debug=debug)
+    def pre_process(self, content, debug=False, parent=None):
+        return self._process(content, self.pre_processors, debug=debug, parent=parent)
 
-    @classmethod
-    def process(cls, content, debug=False):
-        return cls._process(content, cls.processors, debug=debug)
+    def process(self, content, debug=False, parent=None):
+        return self._process(content, self.processors, debug=debug, parent=parent)
 
-    @classmethod
-    def post_process(cls, content, debug=False):
-        return cls._process(content, cls.post_processors, debug=debug)
+    def post_process(self, content, debug=False, parent=None):
+        return self._process(content, self.post_processors, debug=debug, parent=parent)
 
-    @classmethod
-    def modify(cls, content, debug=False):
+    def modify(self, content, debug=False, parent=None):
         new_content = content
         for method in ("pre_process", "process", "post_process"):
-            new_content = getattr(cls, method)(new_content, debug=debug)
+            new_content = getattr(self, method)(new_content, debug=debug, parent=parent)
 
         return new_content
 

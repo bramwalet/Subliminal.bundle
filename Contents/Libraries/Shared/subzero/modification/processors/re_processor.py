@@ -1,5 +1,10 @@
 # coding=utf-8
+import re
+import logging
+
 from subzero.modification.processors import Processor
+
+logger = logging.getLogger(__name__)
 
 
 class ReProcessor(Processor):
@@ -31,3 +36,26 @@ class NReProcessor(ReProcessor):
                 continue
             lines.append(a)
         return r"\N".join(lines)
+
+
+class MultipleWordReProcessor(ReProcessor):
+    """
+    Expects a dictionary in the form of:
+    dict = {
+        "data": {"old_value": "new_value"},
+        "pattern": compiled re object that matches data
+    }
+    """
+    def __init__(self, snr_dict, name=None, parent=None):
+        super(ReProcessor, self).__init__(name=name)
+        self.snr_dict = snr_dict
+
+    def process(self, content, debug=False):
+        if not self.snr_dict["data"]:
+            return content
+
+        out = []
+        for a in content.split(ur"\N"):
+            out.append(self.snr_dict["pattern"].sub(lambda x: self.snr_dict["data"][x.group(0)], a))
+        return ur"\N".join(out)
+

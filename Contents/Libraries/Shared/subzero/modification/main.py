@@ -11,18 +11,23 @@ logger = logging.getLogger(__name__)
 
 class SubtitleModifications(object):
     debug = False
+    language = None
+    initialized_mods = {}
 
     def __init__(self, debug=False):
         self.debug = debug
+        self.initialized_mods = {}
 
-    def load(self, fn=None, content=None, fps=None):
+    def load(self, fn=None, content=None, fps=None, language=None):
         """
         
+        :param language: babelfish.Language language of the subtitle
         :param fn:  filename
         :param content: unicode 
         :param fps: 
         :return: 
         """
+        self.language = language
         try:
             if fn:
                 self.f = pysubs2.load(fn, fps=fps)
@@ -49,13 +54,18 @@ class SubtitleModifications(object):
             applied_mods = []
             for identifier in mods:
                 if identifier in registry.mods:
-                    mod = registry.mods[identifier]
+                    if identifier not in self.initialized_mods:
+                        self.initialized_mods[identifier] = registry.mods[identifier](self)
+                    mod = self.initialized_mods[identifier]
 
                     # don't bother reapplying exclusive mods multiple times
                     if mod.exclusive and identifier in applied_mods:
                         continue
 
-                    new_content = mod.modify(line.text, debug=self.debug)
+                    if not mod.processors:
+                        continue
+
+                    new_content = mod.modify(line.text, debug=self.debug, parent=self)
                     if not new_content:
                         if self.debug:
                             logger.debug("%s: deleting %s", identifier, line)

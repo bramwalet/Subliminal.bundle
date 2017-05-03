@@ -6,15 +6,17 @@ class Processor(object):
     Processor base class
     """
     name = None
+    parent = None
 
-    def __init__(self, name=None):
+    def __init__(self, name=None, parent=None):
         self.name = name
+        self.parent = parent
 
     @property
     def info(self):
         return self.name
 
-    def process(self, content):
+    def process(self, content, debug=False):
         return content
 
     def __repr__(self):
