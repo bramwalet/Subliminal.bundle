@@ -148,6 +148,12 @@ def TriggerStorageMaintenance(randomize=None):
 
 @route(PREFIX + '/get_logs_link')
 def GetLogsLink():
+    if not config.universal_plex_token:
+        oc = ObjectContainer(title2="Download Logs", no_cache=True, no_history=True,
+                             header="Sorry, feature unavailable",
+                             message="Universal Plex token not available on Windows at the moment")
+        return oc
+
     # try getting the link base via the request in context, first, otherwise use the public ip
     req_headers = Core.sandbox.context.request.headers
 

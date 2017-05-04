@@ -161,6 +161,8 @@ class Config(object):
         else:
             Log("Did NOT find Preferences file - please check logfile and hierarchy. Aborting!")
 
+        # fixme: windows
+
     def set_plugin_mode(self):
         if Prefs["plugin_mode"] == "only agent":
             self.enable_channel = False
