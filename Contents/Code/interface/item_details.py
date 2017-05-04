@@ -152,20 +152,20 @@ def SubtitleModificationsMenu(**kwargs):
     oc = SubFolderObjectContainer(title2=kwargs["title"], replace_parent=True)
     for identifier, mod in mod_registry.mods.iteritems():
         oc.add(DirectoryObject(
-            key=Callback(SubtitleSetMods, mods=identifier, randomize=timestamp(), **kwargs),
-            title=pad_title(mod.description)
+            key=Callback(SubtitleSetMods, mods=identifier, mode="add", randomize=timestamp(), **kwargs),
+            title=pad_title(mod.description), summary=mod.long_description or ""
         ))
 
     if current_sub.mods:
         oc.add(DirectoryObject(
             key=Callback(SubtitleSetMods, mods=None, mode="remove_last", randomize=timestamp(), **kwargs),
-            title="Remove last applied mod (%s)" % current_sub.mods[-1],
+            title=pad_title("Remove last applied mod (%s)" % current_sub.mods[-1]),
             summary=u"Currently applied mods: %s" % (", ".join(current_sub.mods) if current_sub.mods else "none")
         ))
 
     oc.add(DirectoryObject(
         key=Callback(SubtitleSetMods, mods=None, mode="clear", randomize=timestamp(), **kwargs),
-        title="Restore original version",
+        title=pad_title("Restore original version"),
         summary=u"Currently applied mods: %s" % (", ".join(current_sub.mods) if current_sub.mods else "none")
     ))
 
@@ -174,8 +174,7 @@ def SubtitleModificationsMenu(**kwargs):
 
 @route(PREFIX + '/item/sub_set_mods/{rating_key}/{part_id}/{mods}/{mode}', force=bool)
 @debounce
-def SubtitleSetMods(mods=None, mode="add", **kwargs):
-    print "YELLO"
+def SubtitleSetMods(mods=None, mode=None, **kwargs):
     if not isinstance(mods, types.ListType) and mods:
         mods = [mods]
 

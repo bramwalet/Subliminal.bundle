@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 class SubtitleModification(object):
     identifier = None
     description = None
+    long_description = None
     exclusive = False
     pre_processors = []
     processors = []
