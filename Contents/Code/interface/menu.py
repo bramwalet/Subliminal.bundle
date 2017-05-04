@@ -208,6 +208,15 @@ def ValidatePrefs():
     # fixme: check existance of and os access of logs
     Log.Debug("Platform: %s", Core.runtime.platform)
     Log.Debug("OS: %s", Core.runtime.os)
+    Log.Debug("----- Environment -----")
+    for key, value in os.environ.iteritems():
+        if key.startswith("PLEX"):
+            if "TOKEN" in key:
+                outval = "xxxxxxxxxxxxxxxxxxx"
+
+            else:
+                outval = value
+            Log.Debug("%s: %s", key, outval)
     Log.Debug("-----------------------")
 
     Log.Debug("Setting log-level to %s", Prefs["log_level"])
