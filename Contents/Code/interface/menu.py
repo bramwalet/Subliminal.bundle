@@ -1,5 +1,7 @@
 # coding=utf-8
 import logging
+import os
+
 import logger
 
 from item_details import ItemDetailsMenu
@@ -147,18 +149,6 @@ def RefreshMissing(randomize=None):
 @route(PREFIX + '/ValidatePrefs', enforce_route=True)
 def ValidatePrefs():
     Core.log.setLevel(logging.DEBUG)
-    Log.Debug("Validate Prefs called.")
-
-    # SZ config debug
-    Log.Debug("--- SZ Config-Debug ---")
-    for attr in [
-            "app_support_path", "data_path", "data_items_path", "plugin_log_path", "server_log_path", "enable_agent",
-            "enable_channel", "permissions_ok", "missing_permissions", "fs_encoding"]:
-        Log.Debug("config.%s: %s", attr, getattr(config, attr))
-    # fixme: check existance of and os access of logs
-    Log.Debug("Platform: %s", Core.runtime.platform)
-    Log.Debug("OS: %s", Core.runtime.os)
-    Log.Debug("-----------------------")
 
     # cache the channel state
     update_dict = False
@@ -192,6 +182,33 @@ def ValidatePrefs():
     else:
         Core.log.removeHandler(logger.console_handler)
         Log.Debug("Stop logging to console")
+
+    Log.Debug("Validate Prefs called.")
+
+    # SZ config debug
+    Log.Debug("--- SZ Config-Debug ---")
+    for attr in [
+            "app_support_path", "data_path", "data_items_path", "enable_agent",
+            "enable_channel", "permissions_ok", "missing_permissions", "fs_encoding"]:
+        Log.Debug("config.%s: %s", attr, getattr(config, attr))
+
+    for attr in ["plugin_log_path", "server_log_path"]:
+        value = getattr(config, attr)
+        access = os.access(value, os.R_OK)
+        if Core.runtime.os == "Windows":
+            try:
+                f = open(value, "r")
+                f.read(1)
+                f.close()
+            except:
+                access = False
+
+        Log.Debug("config.%s: %s (accessible: %s)", attr, value, access)
+
+    # fixme: check existance of and os access of logs
+    Log.Debug("Platform: %s", Core.runtime.platform)
+    Log.Debug("OS: %s", Core.runtime.os)
+    Log.Debug("-----------------------")
 
     Log.Debug("Setting log-level to %s", Prefs["log_level"])
     logger.register_logging_handler(DEPENDENCY_MODULE_NAMES, level=Prefs["log_level"])
