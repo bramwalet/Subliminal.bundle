@@ -156,17 +156,21 @@ def GetLogsLink():
 
     # try getting the link base via the request in context, first, otherwise use the public ip
     req_headers = Core.sandbox.context.request.headers
+    get_external_ip = True
+    link_base = ""
 
     if "Origin" in req_headers:
         link_base = req_headers["Origin"]
         Log.Debug("Using origin-based link_base")
+        get_external_ip = False
 
     elif "Referer" in req_headers:
         parsed = urlparse.urlparse(req_headers["Referer"])
         link_base = "%s://%s:%s" % (parsed.scheme, parsed.hostname, parsed.port)
         Log.Debug("Using referer-based link_base")
+        get_external_ip = False
 
-    else:
+    if get_external_ip or "plex.tv" in link_base:
         ip = Core.networking.http_request("http://www.plexapp.com/ip.php", cacheTime=7200).content.strip()
         link_base = "https://%s:32400" % ip
         Log.Debug("Using ip-based fallback link_base")
