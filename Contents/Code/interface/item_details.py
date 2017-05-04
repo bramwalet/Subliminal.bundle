@@ -1,6 +1,7 @@
 # coding=utf-8
 import os
 import traceback
+import types
 
 from babelfish import Language
 from menu_helpers import debounce, SubFolderObjectContainer, default_thumb, add_ignore_options, get_item_task_data, \
@@ -10,7 +11,7 @@ from refresh_item import RefreshItem
 from subliminal_patch import PatchedSubtitle as Subtitle
 from subzero.constants import PREFIX
 from support.config import config
-from support.helpers import timestamp, cast_bool, df, get_language
+from support.helpers import timestamp, cast_bool, df, get_language, pad_title
 from support.items import get_item_kind_from_rating_key, get_item, get_current_sub
 from support.lib import Plex
 from support.plex_media import get_plex_metadata, scan_videos
@@ -151,12 +152,19 @@ def SubtitleModificationsMenu(**kwargs):
     oc = SubFolderObjectContainer(title2=kwargs["title"], replace_parent=True)
     for identifier, mod in mod_registry.mods.iteritems():
         oc.add(DirectoryObject(
-            key=Callback(SubtitleApplyMod, mod_identifier=identifier, randomize=timestamp(), **kwargs),
-            title=mod.description
+            key=Callback(SubtitleSetMods, mods=identifier, randomize=timestamp(), **kwargs),
+            title=pad_title(mod.description)
+        ))
+
+    if current_sub.mods:
+        oc.add(DirectoryObject(
+            key=Callback(SubtitleSetMods, mods=None, mode="remove_last", randomize=timestamp(), **kwargs),
+            title="Remove last applied mod (%s)" % current_sub.mods[-1],
+            summary=u"Currently applied mods: %s" % (", ".join(current_sub.mods) if current_sub.mods else "none")
         ))
 
     oc.add(DirectoryObject(
-        key=Callback(SubtitleApplyMod, mod_identifier=None, randomize=timestamp(), **kwargs),
+        key=Callback(SubtitleSetMods, mods=None, mode="clear", randomize=timestamp(), **kwargs),
         title="Restore original version",
         summary=u"Currently applied mods: %s" % (", ".join(current_sub.mods) if current_sub.mods else "none")
     ))
@@ -164,11 +172,12 @@ def SubtitleModificationsMenu(**kwargs):
     return oc
 
 
-@route(PREFIX + '/item/sub_add_mod/{rating_key}/{part_id}/{mod_identifier}', force=bool)
+@route(PREFIX + '/item/sub_set_mods/{rating_key}/{part_id}/{mods}/{mode}', force=bool)
 @debounce
-def SubtitleApplyMod(mod_identifier=None, **kwargs):
-    if mod_identifier is not None and mod_identifier not in mod_registry.mods:
-        raise NotImplementedError
+def SubtitleSetMods(mods=None, mode="add", **kwargs):
+    print "YELLO"
+    if not isinstance(mods, types.ListType) and mods:
+        mods = [mods]
 
     rating_key = kwargs["rating_key"]
     part_id = kwargs["part_id"]
@@ -178,9 +187,21 @@ def SubtitleApplyMod(mod_identifier=None, **kwargs):
     language = Language.fromietf(lang_a2)
 
     current_sub, stored_subs, storage = get_current_sub(rating_key, part_id, language)
-    current_sub.add_mod(mod_identifier)
+    if mode == "add":
+        for mod in mods:
+            if mod not in mod_registry.mods_available:
+                raise NotImplementedError("Mod unknown or not registered")
 
+            current_sub.add_mod(mod)
+    elif mode == "clear":
+        current_sub.add_mod(None)
+    elif mode == "remove_last":
+        if current_sub.mods:
+            current_sub.mods.pop()
+    else:
+        raise NotImplementedError("Wrong mode given")
     storage.save(stored_subs)
+
     metadata = get_plex_metadata(rating_key, part_id, item_type)
     scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
     video, plex_part = scanned_parts.items()[0]
