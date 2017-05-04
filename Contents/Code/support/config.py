@@ -45,6 +45,7 @@ class Config(object):
     data_path = None
     data_items_path = None
     universal_plex_token = None
+    plex_token = None
     is_development = False
 
     enable_channel = True
@@ -92,6 +93,7 @@ class Config(object):
         self.data_path = getattr(Data, "_core").storage.data_path
         self.data_items_path = os.path.join(self.data_path, "DataItems")
         self.universal_plex_token = self.get_universal_plex_token()
+        self.plex_token = os.environ.get("PLEXTOKEN", self.universal_plex_token)
 
         self.set_plugin_mode()
         self.set_plugin_lock()

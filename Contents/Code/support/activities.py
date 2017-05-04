@@ -11,9 +11,9 @@ class PlexActivityManager(object):
     def start(self):
         activity_sources_enabled = None
 
-        if config.universal_plex_token:
+        if config.plex_token:
             from plex import Plex
-            Plex.configuration.defaults.authentication(config.universal_plex_token)
+            Plex.configuration.defaults.authentication(config.plex_token)
             activity_sources_enabled = ["websocket"]
             Activity.on('websocket.playing', self.on_playing)
 

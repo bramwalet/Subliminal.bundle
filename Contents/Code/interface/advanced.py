@@ -148,10 +148,10 @@ def TriggerStorageMaintenance(randomize=None):
 
 @route(PREFIX + '/get_logs_link')
 def GetLogsLink():
-    if not config.universal_plex_token:
+    if not config.plex_token:
         oc = ObjectContainer(title2="Download Logs", no_cache=True, no_history=True,
                              header="Sorry, feature unavailable",
-                             message="Universal Plex token not available on Windows at the moment")
+                             message="Universal Plex token not available")
         return oc
 
     # try getting the link base via the request in context, first, otherwise use the public ip
@@ -175,7 +175,7 @@ def GetLogsLink():
         link_base = "https://%s:32400" % ip
         Log.Debug("Using ip-based fallback link_base")
 
-    logs_link = "%s%s?X-Plex-Token=%s" % (link_base, PREFIX + '/logs', config.universal_plex_token)
+    logs_link = "%s%s?X-Plex-Token=%s" % (link_base, PREFIX + '/logs', config.plex_token)
     oc = ObjectContainer(title2="Download Logs", no_cache=True, no_history=True,
                          header="Copy this link and open this in your browser, please",
                          message=logs_link)
