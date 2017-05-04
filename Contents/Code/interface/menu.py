@@ -155,7 +155,8 @@ def ValidatePrefs():
             "app_support_path", "data_path", "data_items_path", "plugin_log_path", "server_log_path", "enable_agent",
             "enable_channel", "permissions_ok", "missing_permissions", "fs_encoding"]:
         Log.Debug("config.%s: %s", attr, getattr(config, attr))
-
+    Log.Debug("Platform: %s", Core.runtime.platform)
+    Log.Debug("OS: %s", Core.runtime.os)
     Log.Debug("-----------------------")
 
     # cache the channel state
