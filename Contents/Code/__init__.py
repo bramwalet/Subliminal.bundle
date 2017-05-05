@@ -24,7 +24,6 @@ import support
 import interface
 sys.modules["interface"] = interface
 
-from subliminal.cli import MutexLock
 from subzero.constants import OS_PLEX_USERAGENT, PERSONAL_MEDIA_IDENTIFIER
 from interface.menu import *
 from support.plex_media import media_to_videos, get_media_item_ids, scan_videos

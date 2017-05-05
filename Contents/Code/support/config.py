@@ -9,6 +9,7 @@ import datetime
 import subliminal
 import subliminal_patch
 from babelfish import Language
+from subliminal.cli import MutexLock
 from subzero.lib.io import FileIO, get_viable_encoding
 from subzero.constants import PLUGIN_NAME, PLUGIN_IDENTIFIER, MOVIE, SHOW
 from lib import Plex
