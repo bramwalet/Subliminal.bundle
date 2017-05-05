@@ -18,3 +18,6 @@ sys.modules["interface.refresh_item"] = refresh_item
 
 import item_details
 sys.modules["interface.item_details"] = item_details
+
+import sub_mod
+sys.modules["interface.modification"] = sub_mod
