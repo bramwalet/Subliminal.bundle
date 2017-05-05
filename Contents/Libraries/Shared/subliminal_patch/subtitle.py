@@ -146,7 +146,7 @@ class PatchedSubtitle(Subtitle):
         encoding = self.guess_encoding()
 
         submods = SubtitleModifications()
-        submods.load(content=self.text, fps=self.plex_media_fps, language=self.language)
+        submods.load(content=self.text, language=self.language)
         submods.modify(*self.mods)
         return submods.to_string("srt", encoding=encoding).encode(encoding=encoding)
 

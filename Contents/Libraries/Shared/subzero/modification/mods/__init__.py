@@ -12,6 +12,8 @@ class SubtitleModification(object):
     description = None
     long_description = None
     exclusive = False
+    advanced = False  # has parameters
+    modifies_whole_file = False  # operates on the whole file, not individual entries
     pre_processors = []
     processors = []
     post_processors = []
@@ -19,7 +21,7 @@ class SubtitleModification(object):
     def __init__(self, parent):
         return
 
-    def _process(self, content, processors, debug=False, parent=None):
+    def _process(self, content, processors, debug=False, parent=None, **kwargs):
         if not content:
             return
 
@@ -44,21 +46,26 @@ class SubtitleModification(object):
                 logger.debug("%s: %s -> %s", processor, old_content, new_content)
         return new_content
 
-    def pre_process(self, content, debug=False, parent=None):
-        return self._process(content, self.pre_processors, debug=debug, parent=parent)
+    def pre_process(self, content, debug=False, parent=None, **kwargs):
+        return self._process(content, self.pre_processors, debug=debug, parent=parent, **kwargs)
 
-    def process(self, content, debug=False, parent=None):
-        return self._process(content, self.processors, debug=debug, parent=parent)
+    def process(self, content, debug=False, parent=None, **kwargs):
+        return self._process(content, self.processors, debug=debug, parent=parent, **kwargs)
 
-    def post_process(self, content, debug=False, parent=None):
-        return self._process(content, self.post_processors, debug=debug, parent=parent)
+    def post_process(self, content, debug=False, parent=None, **kwargs):
+        return self._process(content, self.post_processors, debug=debug, parent=parent, **kwargs)
 
-    def modify(self, content, debug=False, parent=None):
+    def modify(self, content, debug=False, parent=None, **kwargs):
         new_content = content
         for method in ("pre_process", "process", "post_process"):
-            new_content = getattr(self, method)(new_content, debug=debug, parent=parent)
+            new_content = getattr(self, method)(new_content, debug=debug, parent=parent, **kwargs)
 
         return new_content
+
+    @classmethod
+    def get_signature(cls, **kwargs):
+        string_args = ",".join(["%s=%s" % (key, value) for key, value in kwargs.iteritems()])
+        return "%s(%s)" % (cls.identifier, string_args)
 
 
 class SubtitleTextModification(SubtitleModification):

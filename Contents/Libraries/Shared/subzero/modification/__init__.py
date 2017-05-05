@@ -1,5 +1,5 @@
 # coding=utf-8
 
 from registry import registry
-from mods import hearing_impaired, ocr_fixes
+from mods import hearing_impaired, ocr_fixes, fps
 from main import SubtitleModifications, SubMod
