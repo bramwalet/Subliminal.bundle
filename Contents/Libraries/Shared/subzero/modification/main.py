@@ -94,6 +94,7 @@ class SubtitleModifications(object):
         if line_mods:
             for line in self.f:
                 applied_mods = []
+                skip_line = False
                 for identifier, args in line_mods:
                     mod = self.initialized_mods[identifier]
 
@@ -108,11 +109,13 @@ class SubtitleModifications(object):
                     if not new_content:
                         if self.debug:
                             logger.debug("%s: deleting %s", identifier, line)
-                        continue
+                        skip_line = True
+                        break
 
                     line.text = new_content
                     applied_mods.append(identifier)
-                new_f.append(line)
+                if not skip_line:
+                    new_f.append(line)
 
         self.f.events = new_f
 

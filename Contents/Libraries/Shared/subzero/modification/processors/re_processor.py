@@ -31,7 +31,8 @@ class NReProcessor(ReProcessor):
     def process(self, content, debug=False):
         lines = []
         for line in content.split(r"\N"):
-            a = super(NReProcessor, self).process(line, debug=debug)
+            a = line.strip()
+            a = super(NReProcessor, self).process(a, debug=debug)
             if not a:
                 continue
             lines.append(a)
