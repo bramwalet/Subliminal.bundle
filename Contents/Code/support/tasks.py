@@ -374,6 +374,7 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
             video_id = stored_subs.video_id
 
             if stored_subs.item_type == "episode":
+                cutoff = self.series_cutoff
                 min_score = min_score_series
             else:
                 cutoff = self.movies_cutoff
