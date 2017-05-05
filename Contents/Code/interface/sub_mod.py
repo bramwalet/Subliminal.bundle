@@ -55,6 +55,11 @@ def SubtitleModificationsMenu(**kwargs):
             title=pad_title("Remove last applied mod (%s)" % current_sub.mods[-1]),
             summary=u"Currently applied mods: %s" % (", ".join(current_sub.mods) if current_sub.mods else "none")
         ))
+        oc.add(DirectoryObject(
+            key=Callback(SubtitleListMods, randomize=timestamp(), **kwargs),
+            title=pad_title("Manage applied mods"),
+            summary=u"Currently applied mods: %s" % (", ".join(current_sub.mods))
+        ))
 
     oc.add(DirectoryObject(
         key=Callback(SubtitleSetMods, mods=None, mode="clear", randomize=timestamp(), **kwargs),
@@ -125,8 +130,6 @@ def SubtitleShiftModMenu(unit=None, **kwargs):
 
     kwargs.pop("randomize")
 
-    unit_title = POSSIBLE_UNITS_D[unit]
-
     rng = []
     if unit == "h":
         rng = range(-10, 11)
@@ -171,6 +174,10 @@ def SubtitleSetMods(mods=None, mode=None, **kwargs):
             current_sub.add_mod(mod)
     elif mode == "clear":
         current_sub.add_mod(None)
+    elif mode == "remove":
+        for mod in mods:
+            current_sub.mods.remove(mod)
+
     elif mode == "remove_last":
         if current_sub.mods:
             current_sub.mods.pop()
@@ -197,3 +204,23 @@ def SubtitleSetMods(mods=None, mode=None, **kwargs):
 
     kwargs.pop("randomize")
     return SubtitleModificationsMenu(randomize=timestamp(), **kwargs)
+
+
+@route(PREFIX + '/item/sub_list_mods/{rating_key}/{part_id}', force=bool)
+@debounce
+def SubtitleListMods(**kwargs):
+    rating_key = kwargs["rating_key"]
+    part_id = kwargs["part_id"]
+    language = kwargs["language"]
+    current_sub, stored_subs, storage = get_current_sub(rating_key, part_id, language)
+
+    kwargs.pop("randomize")
+
+    oc = SubFolderObjectContainer(title2=kwargs["title"], replace_parent=True)
+    for identifier in current_sub.mods:
+        oc.add(DirectoryObject(
+            key=Callback(SubtitleSetMods, mods=identifier, mode="remove", randomize=timestamp(), **kwargs),
+            title="Remove: %s" % identifier
+        ))
+
+    return oc
