@@ -399,7 +399,7 @@
     "id": "subtitles.remove_hi",
     "label": "Remove Hearing Impaired tags from downloaded subtitles",
     "type": "bool",
-    "default": "true"
+    "default": "false"
   },
   {
     "id": "subtitles.fix_ocr",
