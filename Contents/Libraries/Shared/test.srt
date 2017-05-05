@@ -30,11 +30,11 @@ lrn gonna And when are we?
 
 8
 00:00:24,274 --> 00:00:26,649
-2012.
+2012.  it's 1 2:00 o'clock
 
 9
 00:00:26,650 --> 00:00:29,370
-God, that's so close. I should be 26!
+(BIG BROTHER THEME MUSIC)
 
 10
 00:00:30,612 --> 00:00:33,112
@@ -63,7 +63,8 @@ Someone's got a hobby.
 
 16
 00:00:46,378 --> 00:00:49,048
-They must've spent a fortune on this.
+FULL UPPERCASE LINE HERE
+and some text
 
 17
 00:00:49,631 --> 00:00:51,924
