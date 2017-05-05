@@ -16,6 +16,10 @@ class FixOCR(SubtitleTextModification):
     exclusive = True
     data_dict = None
 
+    long_description = """\
+    Fix issues that happen when a subtitle gets converted from bitmap to text through OCR
+    """
+
     def __init__(self, parent):
         super(FixOCR, self).__init__(parent)
         data_dict = OCR_fix_data.get(parent.language.alpha3t)

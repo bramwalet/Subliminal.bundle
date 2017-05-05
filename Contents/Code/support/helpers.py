@@ -110,9 +110,9 @@ def str_pad(s, length, align='left', pad_char=' ', trim=False):
         raise ValueError("Unknown align type, expected either 'left' or 'right'")
 
 
-def pad_title(value):
+def pad_title(value, width=49):
     """Pad a title to 30 characters to force the 'details' view."""
-    return str_pad(value, 49, pad_char=' ')
+    return str_pad(value, width, pad_char=' ')
 
 
 def get_plex_item_display_title(item, kind, parent=None, parent_title=None, section_title=None,

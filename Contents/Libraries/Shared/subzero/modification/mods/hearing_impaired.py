@@ -11,6 +11,10 @@ class HearingImpaired(SubtitleTextModification):
     description = "Remove Hearing Impaired tags"
     exclusive = True
 
+    long_description = """\
+    Removes tags, text and characters from subtitles that are meant for hearing impaired people
+    """
+
     processors = [
         # brackets
         NReProcessor(re.compile(r'(?sux)[([].+[)\]]'), "", name="HI_brackets"),
