@@ -87,14 +87,19 @@ def SubtitleFPSModMenu(**kwargs):
 
     kwargs.pop("randomize")
 
-    for fps in ["23.976", "24.000", "25.000", "29.970", "50.000", "59.940", "60.000"]:
-        if fps == str(target_fps):
+    for fps in ["23.976", "24.000", "25.000", "29.970", "30.000", "50.000", "59.940", "60.000"]:
+        if float(fps) == float(target_fps):
             continue
+
+        if float(fps) > float(target_fps):
+            indicator = "subs constantly getting faster"
+        else:
+            indicator = "subs constantly getting slower"
 
         mod_ident = SubtitleModifications.get_mod_signature("change_FPS", **{"from": fps, "to": target_fps})
         oc.add(DirectoryObject(
             key=Callback(SubtitleSetMods, mods=mod_ident, mode="add", randomize=timestamp(), **kwargs),
-            title="%s fps -> %s fps" % (fps, target_fps)
+            title="%s fps -> %s fps (%s)" % (fps, target_fps, indicator)
         ))
 
     return oc
