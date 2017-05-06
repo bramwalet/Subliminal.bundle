@@ -71,7 +71,6 @@ def SubtitleModificationsMenu(**kwargs):
 
 
 @route(PREFIX + '/item/sub_mod_fps/{rating_key}/{part_id}', force=bool)
-@debounce
 def SubtitleFPSModMenu(**kwargs):
     rating_key = kwargs["rating_key"]
     part_id = kwargs["part_id"]
@@ -110,7 +109,6 @@ POSSIBLE_UNITS_D = dict(POSSIBLE_UNITS)
 
 
 @route(PREFIX + '/item/sub_mod_shift_unit/{rating_key}/{part_id}', force=bool)
-@debounce
 def SubtitleShiftModUnitMenu(**kwargs):
     oc = SubFolderObjectContainer(title2=kwargs["title"], replace_parent=True)
 
@@ -126,7 +124,6 @@ def SubtitleShiftModUnitMenu(**kwargs):
 
 
 @route(PREFIX + '/item/sub_mod_shift/{rating_key}/{part_id}/{unit}', force=bool)
-@debounce
 def SubtitleShiftModMenu(unit=None, **kwargs):
     if unit not in POSSIBLE_UNITS_D:
         raise NotImplementedError
