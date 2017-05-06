@@ -71,6 +71,7 @@ class Config(object):
     enabled_sections = None
     remove_hi = False
     fix_ocr = False
+    fix_common = False
     enforce_encoding = False
     chmod = None
     forced_only = False
@@ -114,6 +115,7 @@ class Config(object):
         self.notify_executable = self.check_notify_executable()
         self.remove_hi = cast_bool(Prefs['subtitles.remove_hi'])
         self.fix_ocr = cast_bool(Prefs['subtitles.fix_ocr'])
+        self.fix_common = cast_bool(Prefs['subtitles.fix_common'])
         self.enforce_encoding = cast_bool(Prefs['subtitles.enforce_encoding'])
         self.chmod = self.check_chmod()
         self.forced_only = cast_bool(Prefs["subtitles.only_foreign"])

@@ -402,6 +402,12 @@
     "default": "false"
   },
   {
+    "id": "subtitles.fix_common",
+    "label": "Fixes common whitespace/punctuation issues in subtitles",
+    "type": "bool",
+    "default": "true"
+  },
+  {
     "id": "subtitles.fix_ocr",
     "label": "Fix common OCR errors in downloaded subtitles",
     "type": "bool",

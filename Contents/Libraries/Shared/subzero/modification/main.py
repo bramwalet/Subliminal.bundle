@@ -70,7 +70,6 @@ class SubtitleModifications(object):
         line_mods = []
         non_line_mods = []
 
-        print parsed_mods
         for identifier, args in parsed_mods:
             if identifier not in registry.mods:
                 raise NotImplementedError("Mod %s not loaded" % identifier)
