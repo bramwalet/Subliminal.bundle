@@ -332,7 +332,7 @@
   },
   {
     "id": "providers.multithreading",
-    "label": "Search enabled providers simuntaneously (multithreading)",
+    "label": "Search enabled providers simultaneously (multithreading)",
     "type": "bool",
     "default": "true"
   },
