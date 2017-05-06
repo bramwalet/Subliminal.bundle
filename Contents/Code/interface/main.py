@@ -87,7 +87,7 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
             key=Callback(RecentlyAddedMenu),
             title="Recently Added items",
             summary="Shows the recently added items per section.",
-            thumb=R("icon-recent.jpg")
+            thumb=R("icon-added.jpg")
         ))
         oc.add(DirectoryObject(
             key=Callback(RecentMissingSubtitlesMenu, randomize=timestamp()),
