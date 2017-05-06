@@ -79,7 +79,7 @@ class Config(object):
     treat_und_as_first = False
     ext_match_strictness = False
     default_mods = None
-    use_activities = False
+    react_to_activities = False
     activity_mode = None
 
     initialized = False
@@ -444,10 +444,10 @@ class Config(object):
     def set_activity_modes(self):
         val = Prefs["activity.on_playback"]
         if val == "never":
-            self.use_activities = False
+            self.react_to_activities = False
             return
 
-        self.use_activities = True
+        self.react_to_activities = True
         if val == "current media item":
             self.activity_mode = "refresh"
         elif val == "hybrid: current item or next episode":

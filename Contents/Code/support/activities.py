@@ -27,9 +27,6 @@ class PlexActivityManager(object):
 
     @throttle(5, instance_method=True)
     def on_playing(self, info):
-        if not config.use_activities:
-            return
-
         # ignore non-playing states and anything too far in
         if info["state"] != "playing" or info["viewOffset"] > 60000:
             return
@@ -47,6 +44,9 @@ class PlexActivityManager(object):
             Dict["last_played_items"] = Dict["last_played_items"][:10]
 
             Dict.Save()
+
+            if not config.react_to_activities:
+                return
 
             debug_msg = "Started playing %s. Refreshing it." % rating_key
 

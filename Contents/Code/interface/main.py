@@ -75,7 +75,7 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
                     "subtitles.",
             thumb=R("icon-ondeck.jpg")
         ))
-        if config.use_activities and "last_played_items" in Dict and Dict["last_played_items"]:
+        if "last_played_items" in Dict and Dict["last_played_items"]:
             oc.add(DirectoryObject(
                 key=Callback(RecentlyPlayedMenu),
                 title=pad_title("Recently played items"),
