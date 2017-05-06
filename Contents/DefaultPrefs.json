@@ -382,7 +382,7 @@
     "id": "subtitles.search.minimumMovieScore2",
     "label": "Minimum score for movies (min: 60, def/sane: 69, min-ideal: 82; see http://v.ht/szscores)",
     "type": "text",
-    "default": "69"
+    "default": "60"
   },
   {
     "id": "subtitles.search.hearingImpaired",
