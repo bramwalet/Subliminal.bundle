@@ -24,12 +24,14 @@ def SubtitleModificationsMenu(**kwargs):
     current_sub, stored_subs, storage = get_current_sub(rating_key, part_id, language)
     kwargs.pop("randomize")
 
+    current_mods = current_sub.mods or []
+
     oc = SubFolderObjectContainer(title2=kwargs["title"], replace_parent=True)
     for identifier, mod in mod_registry.mods.iteritems():
         if mod.advanced:
             continue
 
-        if mod.exclusive and identifier in current_sub.mods:
+        if mod.exclusive and identifier in current_mods:
             continue
 
         oc.add(DirectoryObject(
@@ -49,22 +51,22 @@ def SubtitleModificationsMenu(**kwargs):
         title=pad_title(shift_mod.description), summary=shift_mod.long_description or ""
     ))
 
-    if current_sub.mods:
+    if current_mods:
         oc.add(DirectoryObject(
             key=Callback(SubtitleSetMods, mods=None, mode="remove_last", randomize=timestamp(), **kwargs),
-            title=pad_title("Remove last applied mod (%s)" % current_sub.mods[-1]),
-            summary=u"Currently applied mods: %s" % (", ".join(current_sub.mods) if current_sub.mods else "none")
+            title=pad_title("Remove last applied mod (%s)" % current_mods[-1]),
+            summary=u"Currently applied mods: %s" % (", ".join(current_mods) if current_mods else "none")
         ))
         oc.add(DirectoryObject(
             key=Callback(SubtitleListMods, randomize=timestamp(), **kwargs),
             title=pad_title("Manage applied mods"),
-            summary=u"Currently applied mods: %s" % (", ".join(current_sub.mods))
+            summary=u"Currently applied mods: %s" % (", ".join(current_mods))
         ))
 
     oc.add(DirectoryObject(
         key=Callback(SubtitleSetMods, mods=None, mode="clear", randomize=timestamp(), **kwargs),
         title=pad_title("Restore original version"),
-        summary=u"Currently applied mods: %s" % (", ".join(current_sub.mods) if current_sub.mods else "none")
+        summary=u"Currently applied mods: %s" % (", ".join(current_mods) if current_mods else "none")
     ))
 
     return oc
