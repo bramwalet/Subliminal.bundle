@@ -10,6 +10,22 @@ Checkout **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)**
 
 ## Changelog
 
+2.0.12.1180 RC1
+- core: update subliminal to version 2
+- core: update all dependencies
+- core: add new providers: legendastv (pt-BR), napiprojekt (pl), shooter (cn), subscenter (heb)
+- core: rewritten all subliminal patches for version 2
+- menu: add icons for menu items; update main channel icon
+- core: use SSL again for opensubtitles
+- core: improved matching due to subliminal 2 (and SZ custom) tvdb/omdb refiners
+- menu: add "Get my logs" function to the advanced menu, which zips up all necessary logs suitable for posting in the forums
+- core: on non-windows systems, utilize a file-based cache database for provider media lists and subliminal refiner results
+- core: add manual and automatic subtitle modification framework (fix common OCR issues, remove hearing impaired etc.)
+- menu: add subtitle modifications (subtitle content fixes, offset-based shifting, framerate conversion)
+- menu: add recently played menu
+- improve almost everything Sub-Zero did in 1.4 :)
+
+
 1.4.27.973
 - core: ignore "obfuscated" and "scrambled" tags in filenames when searching for subtitles
 - core: exotic embedded subtitles are now also considered when searching (and when the option is enabled); fixes #264
