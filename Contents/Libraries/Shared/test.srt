@@ -5,24 +5,24 @@
 2
 00:00:10,759 --> 00:00:12,678
 ROSE: So what is it?
-What's wrong?
+What's "wrong"?
 
 3
 00:00:12,679 --> 00:00:16,097
-I don't know. Some kind
+I don't know. Some kind of wrong "1 00" number
 of signal, drawing the Tardis off course.
 
 4
 00:00:16,099 --> 00:00:17,224
-this is a subtitle test with a text before colons: Where are we?
+this is a"subtitle" test "with a"text before colons and "peter"following: Where are we?
 
 5
 00:00:17,225 --> 00:00:19,684
-less text before colons: Earth. Utah, North America.
+"less text before colons: Earth. Utah, North America."
 
 6
 00:00:19,686 --> 00:00:21,103
-Ithinkyou're About half a mile underground.
+Ithinkyou're About half a miIe underground.
 
 7
 00:00:21,103 --> 00:00:23,603
@@ -30,7 +30,7 @@ lrn gonna And when are we?
 
 8
 00:00:24,274 --> 00:00:26,649
-2012.  it's 1 2:00 o'clock
+...2012.  it's 1 2:00 o'clock
 
 9
 00:00:26,650 --> 00:00:29,370
@@ -43,23 +43,23 @@ lrn gonna And when are we?
 11
 00:00:33,658 --> 00:00:34,783
 (WHOO
-SHING) geil
+SHING) >>geil
 
 12
 00:00:34,783 --> 00:00:36,826
-Blimey.
+-- Blimey.
 
 13
 00:00:36,828 --> 00:00:39,328
-ROSE: Like a great big museum.
+ROSE: Like a "great...big museum".
 
 14
 00:00:40,414 --> 00:00:42,914
-DOCTOR's MOM: An alien museum.
+DOCTOR's MOM: ''An alien museum".
 
 15
 00:00:43,542 --> 00:00:46,042
-Someone's got a hobby.
+Someone's got a   hobby.
 
 16
 00:00:46,378 --> 00:00:49,048

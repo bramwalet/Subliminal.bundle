@@ -27,11 +27,11 @@ class CommonFixes(SubtitleTextModification):
         # no space after starting dash
         NReProcessor(re.compile(r'(?u)^-(?![\s-])'), "- ", name="CM_dash_space"),
 
-        # space missing after doublequote
-        NReProcessor(re.compile(r'(?u)("[^"\s][^"]+")([^\s.,!?]+)'), r"\1 \2", name="CM_space_after_dblquote"),
-
         # space missing before doublequote
-        NReProcessor(re.compile(r'(?u)(?<!^)(?<!\s)("[^"]+")'), r" \1", name="CM_space_before_dblquote"),
+        NReProcessor(re.compile(r'(?u)(?<!^)(?<![\s(\[])("[^"]+")'), r" \1", name="CM_space_before_dblquote"),
+
+        # space missing after doublequote
+        NReProcessor(re.compile(r'(?u)("[^"\s][^"]+")([^\s.,!?)\]]+)'), r"\1 \2", name="CM_space_after_dblquote"),
 
         # '' = "
         StringProcessor("''", '"', name="CM_double_apostrophe"),
