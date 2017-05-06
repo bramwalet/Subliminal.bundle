@@ -27,20 +27,22 @@ class CommonFixes(SubtitleTextModification):
         # no space after starting dash
         NReProcessor(re.compile(r'(?u)^-(?![\s-])'), "- ", name="CM_dash_space"),
 
-        # space missing before doublequote
-        NReProcessor(re.compile(r'(?u)(?<!^)(?<![\s(\[])("[^"]+")'), r" \1", name="CM_space_before_dblquote"),
-
-        # space missing after doublequote
-        NReProcessor(re.compile(r'(?u)("[^"\s][^"]+")([^\s.,!?)\]]+)'), r"\1 \2", name="CM_space_after_dblquote"),
-
         # '' = "
         StringProcessor("''", '"', name="CM_double_apostrophe"),
+
+        # space missing before doublequote
+        #ReProcessor(re.compile(r'(?u)(?<!^)(?<![\s(\["])("[^"]+")'), r' \1', name="CM_space_before_dblquote"),
+
+        # space missing after doublequote
+        #ReProcessor(re.compile(r'(?u)("[^"\s][^"]+")([^\s.,!?)\]]+)'), r"\1 \2", name="CM_space_after_dblquote"),
+
+        # space before ending doublequote?
 
         # -- = ...
         StringProcessor("-- ", '... ', name="CM_doubledash"),
 
         # remove >>
-        NReProcessor(re.compile(r'(?u)^>>[\s]*'), "", name="CM_starting_crocodiles"),
+        NReProcessor(re.compile(r'(?u)^>>[\s]*'), "", name="CM_leading_crocodiles"),
 
         # remove leading ...
         NReProcessor(re.compile(r'(?u)^\.\.\.[\s]*'), "", name="CM_leading_ellipsis"),
