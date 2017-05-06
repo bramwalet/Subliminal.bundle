@@ -2,10 +2,11 @@
 
 from subzero.constants import PREFIX, TITLE, ART
 from support.config import config
-from support.helpers import pad_title, timestamp, df
+from support.helpers import pad_title, timestamp, df, get_plex_item_display_title
 from support.scheduler import scheduler
 from support.ignore import ignore_list
-from support.items import get_item_thumb, get_on_deck_items, get_all_items, get_items_info
+from support.items import get_item_thumb, get_on_deck_items, get_all_items, get_items_info, get_item, \
+    get_item_kind_from_item
 from menu_helpers import main_icon, debounce, SubFolderObjectContainer, default_thumb, dig_tree, add_ignore_options
 from item_details import ItemDetailsMenu
 
@@ -74,6 +75,14 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
                     "subtitles.",
             thumb=R("icon-ondeck.jpg")
         ))
+        if config.use_activities and "last_played_items" in Dict and Dict["last_played_items"]:
+            oc.add(DirectoryObject(
+                key=Callback(RecentlyPlayedMenu),
+                title=pad_title("Recently played items"),
+                summary="Shows the 10 recently played items and allows you to individually (force-) refresh their "
+                        "metadata/subtitles.",
+                thumb=R("icon-played.jpg")
+            ))
         oc.add(DirectoryObject(
             key=Callback(RecentlyAddedMenu),
             title="Recently Added items",
@@ -166,6 +175,31 @@ def OnDeckMenu(message=None):
     :return:
     """
     return mergedItemsMenu(title="Items On Deck", base_title="Items On Deck", itemGetter=get_on_deck_items)
+
+
+@route(PREFIX + '/recently_played')
+def RecentlyPlayedMenu():
+    base_title = "Recently Played"
+    oc = SubFolderObjectContainer(title2=base_title, replace_parent=True)
+
+    for item in [get_item(rating_key) for rating_key in Dict["last_played_items"]]:
+        kind = get_item_kind_from_item(item)
+        if kind not in ("episode", "movie"):
+            continue
+
+        if kind == "episode":
+            item_title = get_plex_item_display_title(item, "show", parent=item.season, section_title=None,
+                                                     parent_title=item.show.title)
+        else:
+            item_title = get_plex_item_display_title(item, kind, section_title=None)
+
+        oc.add(DirectoryObject(
+            title=item_title,
+            key=Callback(ItemDetailsMenu, title=base_title + " > " + item.title, item_title=item.title,
+                         rating_key=item.rating_key)
+        ))
+
+    return oc
 
 
 @route(PREFIX + '/recently_added')
