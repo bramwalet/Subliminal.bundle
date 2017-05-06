@@ -103,6 +103,7 @@ class Config(object):
 
         self.lang_list = self.get_lang_list()
         self.subtitle_destination_folder = self.get_subtitle_destination_folder()
+        self.forced_only = cast_bool(Prefs["subtitles.only_foreign"])
         self.providers = self.get_providers()
         self.provider_settings = self.get_provider_settings()
         self.max_recent_items_per_library = int_or_default(Prefs["scheduler.max_recent_items_per_library"], 2000)
@@ -118,7 +119,6 @@ class Config(object):
         self.fix_common = cast_bool(Prefs['subtitles.fix_common'])
         self.enforce_encoding = cast_bool(Prefs['subtitles.enforce_encoding'])
         self.chmod = self.check_chmod()
-        self.forced_only = cast_bool(Prefs["subtitles.only_foreign"])
         self.exotic_ext = cast_bool(Prefs["subtitles.scan.exotic_ext"])
         self.treat_und_as_first = cast_bool(Prefs["subtitles.language.treat_und_as_first"])
         self.ext_match_strictness = self.determine_ext_sub_strictness()
@@ -371,10 +371,13 @@ class Config(object):
                      }
 
         # ditch non-forced-subtitles-reporting providers
-        if cast_bool(Prefs['subtitles.only_foreign']):
+        if self.forced_only:
             providers["addic7ed"] = False
             providers["tvsubtitles"] = False
             providers["legendastv"] = False
+            providers["napiprojekt"] = False
+            providers["shooter"] = False
+            providers["subscenter"] = False
 
         return filter(lambda prov: providers[prov], providers)
 
