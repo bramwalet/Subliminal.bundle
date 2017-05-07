@@ -184,6 +184,9 @@ class SubZeroAgent(object):
             config.init_subliminal_patches()
             videos = media_to_videos(media, kind=self.agent_type)
 
+            # find local media
+            update_local_media(metadata, media, media_type=self.agent_type)
+
             # media ignored?
             use_any_parts = False
             for video in videos:
@@ -203,9 +206,6 @@ class SubZeroAgent(object):
                 return
 
             set_refresh_menu_state(media, media_type=self.agent_type)
-
-            # find local media
-            update_local_media(metadata, media, media_type=self.agent_type)
 
             # scanned_video_part_map = {subliminal.Video: plex_part, ...}
             scanned_video_part_map = scan_videos(videos, kind=self.agent_type)
