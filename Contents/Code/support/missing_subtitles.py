@@ -67,7 +67,7 @@ def items_get_all_missing_subs(items, leeway=False):
         except:
             Log.Error("Something went wrong when getting the state of item %s: %s", key, traceback.format_exc())
         if leeway:
-            time.sleep(0.1)
+            time.sleep(leeway)
     return missing
 
 

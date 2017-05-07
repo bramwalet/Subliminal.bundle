@@ -124,7 +124,7 @@ class SearchAllRecentlyAddedMissing(Task):
     def prepare(self, *args, **kwargs):
         self.items_done = []
         recent_items = get_recent_items()
-        missing = items_get_all_missing_subs(recent_items, leeway=True)
+        missing = items_get_all_missing_subs(recent_items, leeway=0.2)
         ids = set([id for added_at, id, title, item, missing_languages in missing if not is_ignored(id, item=item)])
         self.items_searching = missing
         self.items_searching_ids = ids
