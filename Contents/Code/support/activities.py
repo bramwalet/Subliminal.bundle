@@ -38,10 +38,16 @@ class PlexActivityManager(object):
             return
 
         rating_key = info["ratingKey"]
-        if rating_key not in Dict["last_played_items"]:
+        if rating_key in Dict["last_played_items"] and rating_key != Dict["last_played_items"][0]:
+            # shift last played
+            Dict["last_played_items"].insert(0,
+                                             Dict["last_played_items"].pop(Dict["last_played_items"].index(rating_key)))
+            Dict.Save()
+
+        elif rating_key not in Dict["last_played_items"]:
             # new playing; store last 10 recently played items
             Dict["last_played_items"].insert(0, rating_key)
-            Dict["last_played_items"] = Dict["last_played_items"][:10]
+            Dict["last_played_items"] = Dict["last_played_items"][:20]
 
             Dict.Save()
 
@@ -107,5 +113,6 @@ class PlexActivityManager(object):
                             for ep in next_season.children():
                                 if ep.index == 1:
                                     return ep
+
 
 activity = PlexActivityManager()
