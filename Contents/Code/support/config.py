@@ -83,6 +83,8 @@ class Config(object):
     react_to_activities = False
     activity_mode = None
 
+    store_recently_played_amount = 20
+
     initialized = False
 
     def initialize(self):
@@ -443,6 +445,8 @@ class Config(object):
             mods.append("remove_HI")
         if self.fix_ocr:
             mods.append("OCR_fixes")
+        if self.fix_common:
+            mods.append("common")
 
         return mods
 

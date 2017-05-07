@@ -45,9 +45,9 @@ class PlexActivityManager(object):
             Dict.Save()
 
         elif rating_key not in Dict["last_played_items"]:
-            # new playing; store last 10 recently played items
+            # new playing; store last X recently played items
             Dict["last_played_items"].insert(0, rating_key)
-            Dict["last_played_items"] = Dict["last_played_items"][:20]
+            Dict["last_played_items"] = Dict["last_played_items"][:config.store_recently_played_amount]
 
             Dict.Save()
 
