@@ -209,3 +209,5 @@ def save_subtitles(scanned_video_part_map, downloaded_subtitles, mode="a", bare_
     if not bare_save:
         store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage, mode=mode)
 
+    return save_successful
+
