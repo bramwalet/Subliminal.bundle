@@ -6,7 +6,7 @@ import types
 from babelfish import Language
 
 from menu_helpers import debounce, SubFolderObjectContainer
-from subliminal_patch import PatchedSubtitle as Subtitle
+from subliminal_patch.subtitle import ModifiedSubtitle
 from subzero.modification import registry as mod_registry, SubtitleModifications
 from subzero.constants import PREFIX
 from support.plex_media import get_plex_metadata, scan_videos
@@ -193,11 +193,12 @@ def SubtitleSetMods(mods=None, mode=None, **kwargs):
     scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
     video, plex_part = scanned_parts.items()[0]
 
-    subtitle = Subtitle(language, mods=current_sub.mods)
+    subtitle = ModifiedSubtitle(language, mods=current_sub.mods)
     subtitle.content = current_sub.content
     subtitle.plex_media_fps = plex_part.fps
     subtitle.page_link = "modify subtitles with: %s" % (", ".join(current_sub.mods) if current_sub.mods else "none")
     subtitle.language = language
+    subtitle.id = current_sub.id
 
     try:
         save_subtitles(scanned_parts, {video: [subtitle]}, mode="m", bare_save=True)

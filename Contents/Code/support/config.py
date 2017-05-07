@@ -79,6 +79,7 @@ class Config(object):
     treat_und_as_first = False
     ext_match_strictness = False
     default_mods = None
+    debug_mods = False
     react_to_activities = False
     activity_mode = None
 
@@ -123,6 +124,7 @@ class Config(object):
         self.treat_und_as_first = cast_bool(Prefs["subtitles.language.treat_und_as_first"])
         self.ext_match_strictness = self.determine_ext_sub_strictness()
         self.default_mods = self.get_default_mods()
+        self.debug_mods = cast_bool(Prefs['log_debug_mods'])
         self.initialized = True
 
     def init_cache(self):

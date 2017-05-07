@@ -636,6 +636,12 @@
     "default": "WARNING"
   },
   {
+    "id": "log_debug_mods",
+    "label": "Log subtitle modification (debug)",
+    "type": "bool",
+    "default": "false"
+  },
+  {
     "id": "log_console",
     "label": "Log to console (for development/debugging)",
     "type": "bool",

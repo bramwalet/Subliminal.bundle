@@ -460,7 +460,7 @@ def get_subtitle_path(video_path, language=None, extension='.srt', forced_tag=Fa
 
 
 def save_subtitles(video, subtitles, single=False, directory=None, encoding=None, encode_with=None, chmod=None,
-                   forced_tag=False, path_decoder=None):
+                   forced_tag=False, path_decoder=None, debug_mods=False):
     """Save subtitles on filesystem.
 
     Subtitles are saved in the order of the list. If a subtitle with a language has already been saved, other subtitles
@@ -515,7 +515,8 @@ def save_subtitles(video, subtitles, single=False, directory=None, encoding=None
 
         # save normalized subtitle if encoder or no encoding is given
         if has_encoder or encoding is None:
-            content = encode_with(subtitle.get_modified_text()) if has_encoder else subtitle.get_modified_content()
+            content = encode_with(subtitle.get_modified_text(debug=debug_mods)) if has_encoder else \
+                subtitle.get_modified_content(debug=debug_mods)
             with io.open(subtitle_path, 'wb') as f:
                 f.write(content)
 

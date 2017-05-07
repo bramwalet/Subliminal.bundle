@@ -136,7 +136,7 @@ class PatchedSubtitle(Subtitle):
 
         return True
 
-    def get_modified_content(self):
+    def get_modified_content(self, debug=False):
         """
         :return: string 
         """
@@ -144,16 +144,20 @@ class PatchedSubtitle(Subtitle):
             return self.content
 
         encoding = self.guess_encoding()
-
-        submods = SubtitleModifications()
+        submods = SubtitleModifications(debug=debug)
         submods.load(content=self.text, language=self.language)
         submods.modify(*self.mods)
+
         return submods.to_string("srt", encoding=encoding).encode(encoding=encoding)
 
-    def get_modified_text(self):
+    def get_modified_text(self, debug=False):
         """
         :return: unicode 
         """
-        content = self.get_modified_content()
+        content = self.get_modified_content(debug=debug)
         encoding = self.guess_encoding()
         return content.decode(encoding=encoding)
+
+
+class ModifiedSubtitle(PatchedSubtitle):
+    id = None

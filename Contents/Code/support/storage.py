@@ -137,7 +137,8 @@ def save_subtitles_to_file(subtitles):
                 os.makedirs(fld)
         subliminal.save_subtitles(video, video_subtitles, directory=fld, single=cast_bool(Prefs['subtitles.only_one']),
                                       encode_with=force_utf8 if config.enforce_encoding else None,
-                                      chmod=config.chmod, forced_tag=config.forced_only, path_decoder=force_unicode)
+                                      chmod=config.chmod, forced_tag=config.forced_only, path_decoder=force_unicode,
+                                      debug_mods=config.debug_mods)
     return True
 
 
@@ -145,7 +146,8 @@ def save_subtitles_to_metadata(videos, subtitles):
     for video, video_subtitles in subtitles.items():
         mediaPart = videos[video]
         for subtitle in video_subtitles:
-            content = force_utf8(subtitle.text) if config.enforce_encoding else subtitle.content
+            content = force_utf8(subtitle.get_modified_text(debug=config.debug_mods)) if config.enforce_encoding else \
+                subtitle.get_modified_content(debug=config.debug_mods)
 
             if not isinstance(mediaPart, Framework.api.agentkit.MediaPart):
                 # we're being handed a Plex.py model instance here, not an internal PMS MediaPart object.
