@@ -456,6 +456,8 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
 
         if better_found:
             Log.Debug("Task: %s, done. Better subtitles found for %s items", self.name, better_found)
+        else:
+            Log.Debug("Task: %s, done. No better subtitles found for %s items", self.name, len(recent_subs))
 
 
 class SubtitleStorageMaintenance(Task):
