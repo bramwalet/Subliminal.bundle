@@ -185,7 +185,8 @@ class DefaultScheduler(object):
                     continue
 
                 if not task.last_run or (task.last_run + datetime.timedelta(**{frequency_key: frequency_num}) <= now):
-                    self.run_task(name)
+                    # fixme: scheduled tasks run synchronously. is this the best idea?
+                    Thread.Create(self.run_task, True, name)
 
             Thread.Sleep(5.0)
 
