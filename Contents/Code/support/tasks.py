@@ -460,6 +460,8 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
                         pass
                 subtitle_storage.save(stored_subs)
 
+            time.sleep(1)
+
         if better_found:
             Log.Debug("Task: %s, done. Better subtitles found for %s items", self.name, better_found)
         else:
