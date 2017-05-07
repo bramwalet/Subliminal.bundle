@@ -2,12 +2,15 @@
 
 import logging
 import re
+import traceback
 import types
 import os
 from ignore import ignore_list
-from helpers import is_recent, get_plex_item_display_title, query_plex
+from helpers import is_recent, get_plex_item_display_title, query_plex, PartUnknownException
 from lib import Plex, get_intent
 from config import config, IGNORE_FN
+from subliminal_patch.subtitle import ModifiedSubtitle
+from subzero.modification import registry as mod_registry, SubtitleModifications
 
 logger = logging.getLogger(__name__)
 
@@ -40,11 +43,11 @@ PLEX_API_TYPE_MAP = {
 
 def get_item_kind_from_rating_key(key):
     item = get_item(key)
-    return PLEX_API_TYPE_MAP[get_item_kind(item)]
+    return PLEX_API_TYPE_MAP.get(get_item_kind(item))
 
 
 def get_item_kind_from_item(item):
-    return PLEX_API_TYPE_MAP[get_item_kind(item)]
+    return PLEX_API_TYPE_MAP.get(get_item_kind(item))
 
 
 def get_item_thumb(item):
@@ -293,3 +296,51 @@ def get_current_sub(rating_key, part_id, language):
     stored_subs = subtitle_storage.load_or_new(item)
     current_sub = stored_subs.get_any(part_id, language)
     return current_sub, stored_subs, subtitle_storage
+
+
+def set_mods_for_part(rating_key, part_id, language, item_type, mods, mode="add"):
+    from support.plex_media import get_plex_metadata, scan_videos
+    from support.storage import save_subtitles
+
+    current_sub, stored_subs, storage = get_current_sub(rating_key, part_id, language)
+    if mode == "add":
+        for mod in mods:
+            identifier, args = SubtitleModifications.parse_identifier(mod)
+            if identifier not in mod_registry.mods_available:
+                raise NotImplementedError("Mod unknown or not registered")
+
+            current_sub.add_mod(mod)
+    elif mode == "clear":
+        current_sub.add_mod(None)
+    elif mode == "remove":
+        for mod in mods:
+            current_sub.mods.remove(mod)
+
+    elif mode == "remove_last":
+        if current_sub.mods:
+            current_sub.mods.pop()
+    else:
+        raise NotImplementedError("Wrong mode given")
+    storage.save(stored_subs)
+
+    try:
+        metadata = get_plex_metadata(rating_key, part_id, item_type)
+    except PartUnknownException:
+        return
+
+    scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
+    video, plex_part = scanned_parts.items()[0]
+
+    subtitle = ModifiedSubtitle(language, mods=current_sub.mods)
+    subtitle.content = current_sub.content
+    subtitle.plex_media_fps = plex_part.fps
+    subtitle.page_link = "modify subtitles with: %s" % (", ".join(current_sub.mods) if current_sub.mods else "none")
+    subtitle.language = language
+    subtitle.id = current_sub.id
+
+    try:
+        save_subtitles(scanned_parts, {video: [subtitle]}, mode="m", bare_save=True)
+        Log.Debug("Modified %s subtitle for: %s:%s with: %s", language.name, rating_key, part_id,
+                  ", ".join(current_sub.mods) if current_sub.mods else "none")
+    except:
+        Log.Error("Something went wrong when modifying subtitle: %s", traceback.format_exc())

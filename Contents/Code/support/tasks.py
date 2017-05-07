@@ -16,8 +16,8 @@ from storage import save_subtitles, whack_missing_parts, get_subtitle_storage
 from support.config import config
 from support.items import get_recent_items, is_ignored, get_item
 from support.lib import Plex
-from support.helpers import track_usage, get_title_for_video_metadata, cast_bool
-from support.plex_media import scan_videos, get_plex_metadata, PartUnknownException
+from support.helpers import track_usage, get_title_for_video_metadata, cast_bool, PartUnknownException
+from support.plex_media import scan_videos, get_plex_metadata
 
 
 class Task(object):

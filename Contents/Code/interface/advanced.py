@@ -7,6 +7,8 @@ import urlparse
 
 from zipfile import ZipFile, ZIP_DEFLATED
 
+from babelfish import Language
+
 from subzero.lib.io import FileIO
 from subzero.constants import PREFIX, PLUGIN_IDENTIFIER
 from menu_helpers import SubFolderObjectContainer, debounce, set_refresh_menu_state, ZipObject
@@ -14,8 +16,9 @@ from main import fatality
 from support.helpers import timestamp, pad_title
 from support.config import config
 from support.lib import Plex
-from support.storage import reset_storage, log_storage
+from support.storage import reset_storage, log_storage, get_subtitle_storage
 from support.scheduler import scheduler
+from support.items import set_mods_for_part, get_item_kind_from_rating_key
 
 
 @route(PREFIX + '/advanced')
@@ -48,6 +51,14 @@ def AdvancedMenu(randomize=None, header=None, message=None):
     oc.add(DirectoryObject(
         key=Callback(TriggerStorageMaintenance, randomize=timestamp()),
         title=pad_title("Trigger subtitle storage maintenance"),
+    ))
+    oc.add(DirectoryObject(
+        key=Callback(ApplyDefaultMods, randomize=timestamp()),
+        title=pad_title("Apply configured default subtitle mods to all (active) stored subtitles"),
+    ))
+    oc.add(DirectoryObject(
+        key=Callback(ReApplyMods, randomize=timestamp()),
+        title=pad_title("Re-Apply mods of all stored subtitles"),
     ))
     oc.add(DirectoryObject(
         key=Callback(LogStorage, key="tasks", randomize=timestamp()),
@@ -143,6 +154,57 @@ def TriggerStorageMaintenance(randomize=None):
         randomize=timestamp(),
         header='Success',
         message='SubtitleStorageMaintenance triggered'
+    )
+
+
+def apply_default_mods(reapply_current=False):
+    storage = get_subtitle_storage()
+    for fn in storage.get_all_files():
+        data = storage.load(None, filename=fn)
+        if data:
+            video_id = data.video_id
+            item_type = get_item_kind_from_rating_key(video_id)
+            if not item_type:
+                continue
+
+            for part_id, part in data.parts.iteritems():
+                for lang, subs in part.iteritems():
+                    current_sub = subs.get("current")
+                    if not current_sub:
+                        continue
+                    sub = subs[current_sub]
+
+                    if not sub.content:
+                        continue
+
+                    current_mods = sub.mods or []
+                    if not reapply_current:
+                        add_mods = list(set(config.default_mods).difference(set(current_mods)))
+                    else:
+                        if not current_mods:
+                            continue
+                        add_mods = []
+
+                    set_mods_for_part(video_id, part_id, Language.fromietf(lang), item_type, add_mods, mode="add")
+
+
+@route(PREFIX + '/applydefaultmods')
+def ApplyDefaultMods(randomize=None):
+    Thread.CreateTimer(1.0, apply_default_mods)
+    return AdvancedMenu(
+        randomize=timestamp(),
+        header='Success',
+        message='This may take some time ...'
+    )
+
+
+@route(PREFIX + '/reapplyallmods')
+def ReApplyMods(randomize=None):
+    Thread.CreateTimer(1.0, apply_default_mods, reapply_current=True)
+    return AdvancedMenu(
+        randomize=timestamp(),
+        header='Success',
+        message='This may take some time ...'
     )
 
 

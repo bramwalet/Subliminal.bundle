@@ -6,13 +6,11 @@ import types
 from babelfish import Language
 
 from menu_helpers import debounce, SubFolderObjectContainer
-from subliminal_patch.subtitle import ModifiedSubtitle
 from subzero.modification import registry as mod_registry, SubtitleModifications
 from subzero.constants import PREFIX
 from support.plex_media import get_plex_metadata, scan_videos
-from support.storage import save_subtitles
 from support.helpers import timestamp, pad_title
-from support.items import get_current_sub
+from support.items import get_current_sub, set_mods_for_part
 
 
 @route(PREFIX + '/item/sub_mods/{rating_key}/{part_id}', force=bool)
@@ -168,44 +166,7 @@ def SubtitleSetMods(mods=None, mode=None, **kwargs):
 
     language = Language.fromietf(lang_a2)
 
-    current_sub, stored_subs, storage = get_current_sub(rating_key, part_id, language)
-    if mode == "add":
-        for mod in mods:
-            identifier, args = SubtitleModifications.parse_identifier(mod)
-            if identifier not in mod_registry.mods_available:
-                raise NotImplementedError("Mod unknown or not registered")
-
-            current_sub.add_mod(mod)
-    elif mode == "clear":
-        current_sub.add_mod(None)
-    elif mode == "remove":
-        for mod in mods:
-            current_sub.mods.remove(mod)
-
-    elif mode == "remove_last":
-        if current_sub.mods:
-            current_sub.mods.pop()
-    else:
-        raise NotImplementedError("Wrong mode given")
-    storage.save(stored_subs)
-
-    metadata = get_plex_metadata(rating_key, part_id, item_type)
-    scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
-    video, plex_part = scanned_parts.items()[0]
-
-    subtitle = ModifiedSubtitle(language, mods=current_sub.mods)
-    subtitle.content = current_sub.content
-    subtitle.plex_media_fps = plex_part.fps
-    subtitle.page_link = "modify subtitles with: %s" % (", ".join(current_sub.mods) if current_sub.mods else "none")
-    subtitle.language = language
-    subtitle.id = current_sub.id
-
-    try:
-        save_subtitles(scanned_parts, {video: [subtitle]}, mode="m", bare_save=True)
-        Log.Debug("Modified %s subtitle for: %s:%s with: %s", language.name, rating_key, part_id,
-                  ", ".join(current_sub.mods) if current_sub.mods else "none")
-    except:
-        Log.Error("Something went wrong when modifying subtitle: %s", traceback.format_exc())
+    set_mods_for_part(rating_key, part_id, language, item_type, mods, mode=mode)
 
     kwargs.pop("randomize")
     return SubtitleModificationsMenu(randomize=timestamp(), **kwargs)

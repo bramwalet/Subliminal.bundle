@@ -303,3 +303,7 @@ def dispatch_track_usage(*args, **kwargs):
 
 def get_language(lang_short):
     return Language.fromietf(lang_short)
+
+
+class PartUnknownException(Exception):
+    pass

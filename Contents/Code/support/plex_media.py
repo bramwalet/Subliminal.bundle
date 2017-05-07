@@ -3,12 +3,10 @@
 import os
 
 import helpers
-
+from config import config
 from items import get_item
 from lib import get_intent, Plex
-from config import config
 from subzero.video import parse_video
-
 
 def get_metadata_dict(item, part, add):
     data = {
@@ -179,10 +177,6 @@ def scan_videos(videos, kind="series", ignore_all=False):
     return ret
 
 
-class PartUnknownException(Exception):
-    pass
-
-
 def get_plex_metadata(rating_key, part_id, item_type):
     """
     uses the Plex 3rd party API accessor to get metadata information
@@ -202,7 +196,7 @@ def get_plex_metadata(rating_key, part_id, item_type):
             current_part = part
 
     if not current_part:
-        raise PartUnknownException("Part unknown")
+        raise helpers.PartUnknownException("Part unknown")
 
     # get normalized metadata
     if item_type == "episode":
