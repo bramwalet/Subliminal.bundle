@@ -136,7 +136,7 @@ def SubtitleShiftModMenu(unit=None, **kwargs):
     if unit == "h":
         rng = range(-10, 11)
     elif unit in ("m", "s"):
-        rng = range(-59, 60)
+        rng = range(-15, 15)
     elif unit == "ms":
         rng = range(-900, 1000, 100)
 
