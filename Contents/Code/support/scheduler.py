@@ -168,6 +168,7 @@ class DefaultScheduler(object):
                 for args, kwargs in queue:
                     Log.Debug("Dispatching single task: %s, %s", args, kwargs)
                     Thread.Create(self.run_task, True, *args, **kwargs)
+                    Thread.Sleep(5.0)
 
             # scheduled tasks
             for name, info in self.tasks.iteritems():
@@ -187,8 +188,9 @@ class DefaultScheduler(object):
                 if not task.last_run or (task.last_run + datetime.timedelta(**{frequency_key: frequency_num}) <= now):
                     # fixme: scheduled tasks run synchronously. is this the best idea?
                     Thread.Create(self.run_task, True, name)
+                    Thread.Sleep(5.0)
 
-            Thread.Sleep(5.0)
+            Thread.Sleep(1.5)
 
 
 scheduler = DefaultScheduler()
