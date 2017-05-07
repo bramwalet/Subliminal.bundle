@@ -202,11 +202,15 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
         return oc
 
     for subtitle in search_results:
+        wrong_fps_addon = ""
+        if subtitle.wrong_fps:
+            wrong_fps_addon = " (wrong FPS, sub: %s, media: %s)" % (subtitle.fps, plex_part.fps)
+
         oc.add(DirectoryObject(
             key=Callback(TriggerDownloadSubtitle, rating_key=rating_key, randomize=timestamp(), item_title=item_title,
                          subtitle_id=str(subtitle.id), language=language),
-            title=u"%s: %s, score: %s" % ("Available" if current_id != subtitle.id else "Current",
-                                          subtitle.provider_name, subtitle.score),
+            title=u"%s: %s, score: %s%s" % ("Available" if current_id != subtitle.id else "Current",
+                                          subtitle.provider_name, subtitle.score, wrong_fps_addon),
             summary=u"Release: %s, Matches: %s" % (subtitle.release_info, ", ".join(subtitle.matches)),
             thumb=default_thumb
         ))

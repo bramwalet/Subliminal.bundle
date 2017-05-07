@@ -181,7 +181,7 @@ class SearchAllRecentlyAddedMissing(Task):
 
 
 class SubtitleListingMixin(object):
-    def list_subtitles(self, rating_key, item_type, part_id, language):
+    def list_subtitles(self, rating_key, item_type, part_id, language, skip_wrong_fps=True):
         metadata = get_plex_metadata(rating_key, part_id, item_type)
 
         if item_type == "episode":
@@ -197,9 +197,14 @@ class SubtitleListingMixin(object):
         video, plex_part = scanned_parts.items()[0]
         config.init_subliminal_patches()
 
+        provider_settings = config.provider_settings.copy()
+        if not skip_wrong_fps:
+            provider_settings = config.provider_settings.copy()
+            provider_settings["opensubtitles"]["skip_wrong_fps"] = False
+
         available_subs = list_all_subtitles(scanned_parts, {Language.fromietf(language)},
                                             providers=config.providers,
-                                            provider_configs=config.provider_settings,
+                                            provider_configs=provider_settings,
                                             pool_class=config.provider_pool)
 
         use_hearing_impaired = Prefs['subtitles.search.hearingImpaired'] in ("prefer", "force HI")
@@ -293,7 +298,8 @@ class AvailableSubsForItem(SubtitleListingMixin, Task):
         super(AvailableSubsForItem, self).run()
         self.running = True
         track_usage("Subtitle", "manual", "list", 1)
-        self.data = self.list_subtitles(self.rating_key, self.item_type, self.part_id, self.language)
+        self.data = self.list_subtitles(self.rating_key, self.item_type, self.part_id, self.language,
+                                        skip_wrong_fps=False)
 
     def post_run(self, task_data):
         super(AvailableSubsForItem, self).post_run(task_data)

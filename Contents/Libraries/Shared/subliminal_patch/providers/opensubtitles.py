@@ -19,7 +19,7 @@ class OpenSubtitlesSubtitle(_OpenSubtitlesSubtitle):
 
     def __init__(self, language, hearing_impaired, page_link, subtitle_id, matched_by, movie_kind, hash, movie_name,
                  movie_release_name, movie_year, movie_imdb_id, series_season, series_episode, query_parameters,
-                 filename, encoding, fps):
+                 filename, encoding, fps, skip_wrong_fps=True):
         super(OpenSubtitlesSubtitle, self).__init__(language, hearing_impaired, page_link, subtitle_id,
                                                     matched_by, movie_kind, hash,
                                                     movie_name, movie_release_name, movie_year, movie_imdb_id,
@@ -27,6 +27,8 @@ class OpenSubtitlesSubtitle(_OpenSubtitlesSubtitle):
         self.query_parameters = query_parameters or {}
         self.fps = fps
         self.release_info = movie_release_name
+        self.wrong_fps = False
+        self.skip_wrong_fps = skip_wrong_fps
 
     def get_matches(self, video, hearing_impaired=False):
         matches = super(OpenSubtitlesSubtitle, self).get_matches(video)
@@ -39,9 +41,14 @@ class OpenSubtitlesSubtitle(_OpenSubtitlesSubtitle):
 
         # video has fps info, sub also, and sub's fps is greater than 0
         if video.fps and sub_fps and (video.fps != self.fps):
-            logger.debug("Wrong FPS (expected: %s, got: %s, lowering score massively)", video.fps, self.fps)
-            # fixme: may be too harsh
-            return set()
+            self.wrong_fps = True
+
+            if self.skip_wrong_fps:
+                logger.debug("Wrong FPS (expected: %s, got: %s, lowering score massively)", video.fps, self.fps)
+                # fixme: may be too harsh
+                return set()
+            else:
+                logger.debug("Wrong FPS (expected: %s, got: %s, continuing)", video.fps, self.fps)
 
         # matched by tag?
         if self.matched_by == "tag":
@@ -57,8 +64,9 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
     only_foreign = True
     subtitle_class = OpenSubtitlesSubtitle
     hash_verifiable = True
+    skip_wrong_fps = True
 
-    def __init__(self, username=None, password=None, use_tag_search=False, only_foreign=False):
+    def __init__(self, username=None, password=None, use_tag_search=False, only_foreign=False, skip_wrong_fps=True):
         if username is not None and password is None or username is None and password is not None:
             raise ConfigurationError('Username and password must be specified')
 
@@ -66,6 +74,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         self.password = password or ''
         self.use_tag_search = use_tag_search
         self.only_foreign = only_foreign
+        self.skip_wrong_fps = skip_wrong_fps
 
         if use_tag_search:
             logger.info("Using tag/exact filename search")
@@ -176,7 +185,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
                                            movie_kind,
                                            hash, movie_name, movie_release_name, movie_year, movie_imdb_id,
                                            series_season, series_episode, query_parameters, filename, encoding,
-                                           movie_fps)
+                                           movie_fps, skip_wrong_fps=self.skip_wrong_fps)
             logger.debug('Found subtitle %r by %s', subtitle, matched_by)
             subtitles.append(subtitle)
 

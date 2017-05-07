@@ -20,6 +20,8 @@ class PatchedSubtitle(Subtitle):
     hash_verifiable = False
     mods = None
     plex_media_fps = None
+    skip_wrong_fps = False
+    wrong_fps = False
 
     def __init__(self, language, hearing_impaired=False, page_link=None, encoding=None, mods=None):
         super(PatchedSubtitle, self).__init__(language, hearing_impaired=hearing_impaired, page_link=page_link,
