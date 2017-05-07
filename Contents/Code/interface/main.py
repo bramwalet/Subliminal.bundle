@@ -70,7 +70,7 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
 
         oc.add(DirectoryObject(
             key=Callback(OnDeckMenu),
-            title="On Deck items",
+            title="On-deck items",
             summary="Shows the current on deck items and allows you to individually (force-) refresh their metadata/"
                     "subtitles.",
             thumb=R("icon-ondeck.jpg")
@@ -79,13 +79,13 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
             oc.add(DirectoryObject(
                 key=Callback(RecentlyPlayedMenu),
                 title=pad_title("Recently played items"),
-                summary="Shows the 10 recently played items and allows you to individually (force-) refresh their "
-                        "metadata/subtitles.",
+                summary="Shows the %i recently played items and allows you to individually (force-) refresh their "
+                        "metadata/subtitles." % config.store_recently_played_amount,
                 thumb=R("icon-played.jpg")
             ))
         oc.add(DirectoryObject(
             key=Callback(RecentlyAddedMenu),
-            title="Recently Added items",
+            title="Recently-added items",
             summary="Shows the recently added items per section.",
             thumb=R("icon-added.jpg")
         ))
