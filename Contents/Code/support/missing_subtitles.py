@@ -1,5 +1,6 @@
 # coding=utf-8
 import traceback
+import time
 
 from support.config import config
 from support.helpers import get_plex_item_display_title, cast_bool
@@ -47,7 +48,7 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
         return added_at, item_id, item_title, item, missing
 
 
-def items_get_all_missing_subs(items):
+def items_get_all_missing_subs(items, leeway=False):
     missing = []
     for added_at, kind, section_title, key in items:
         try:
@@ -65,6 +66,8 @@ def items_get_all_missing_subs(items):
                 missing.append(state)
         except:
             Log.Error("Something went wrong when getting the state of item %s: %s", key, traceback.format_exc())
+        if leeway:
+            time.sleep(0.1)
     return missing
 
 
