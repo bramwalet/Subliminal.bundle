@@ -30,6 +30,9 @@ class CommonFixes(SubtitleTextModification):
         # '' = "
         StringProcessor("''", '"', name="CM_double_apostrophe"),
 
+        # remove starting spaced dots (not matching ellipses
+        NReProcessor(re.compile(r'(?u)^(?!\s?(\.\s\.\s\.)|(\s?\.{3}))[\s.]*'), "", name="CM_starting_spacedots"),
+
         # space missing before doublequote
         #ReProcessor(re.compile(r'(?u)(?<!^)(?<![\s(\["])("[^"]+")'), r' \1', name="CM_space_before_dblquote"),
 
