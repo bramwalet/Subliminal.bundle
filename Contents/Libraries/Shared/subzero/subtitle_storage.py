@@ -178,9 +178,11 @@ class StoredSubtitlesManager(object):
         try:
             subs_for_video = self.storage.LoadObject(fn)
         except:
-            logger.error("Failed to load item %s: %s" % (fn, traceback.format_exc()))
+            logger.error("Failed to load item \"%s\": %s" % (fn, traceback.format_exc()))
 
-        if not subs_for_video:
+        if not subs_for_video or not hasattr(subs_for_video, "version"):
+            logger.error("Invalid subtitle storage for \"%s\", removing" % fn)
+            self.delete(fn)
             return
 
         # apply possible migrations

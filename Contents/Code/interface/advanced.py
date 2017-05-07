@@ -159,6 +159,7 @@ def TriggerStorageMaintenance(randomize=None):
 
 def apply_default_mods(reapply_current=False):
     storage = get_subtitle_storage()
+    subs_applied = 0
     for fn in storage.get_all_files():
         data = storage.load(None, filename=fn)
         if data:
@@ -180,12 +181,16 @@ def apply_default_mods(reapply_current=False):
                     current_mods = sub.mods or []
                     if not reapply_current:
                         add_mods = list(set(config.default_mods).difference(set(current_mods)))
+                        if not add_mods:
+                            continue
                     else:
                         if not current_mods:
                             continue
                         add_mods = []
 
                     set_mods_for_part(video_id, part_id, Language.fromietf(lang), item_type, add_mods, mode="add")
+                    subs_applied += 1
+    Log.Debug("Applied mods to %i items" % subs_applied)
 
 
 @route(PREFIX + '/applydefaultmods')
