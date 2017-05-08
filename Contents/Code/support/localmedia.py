@@ -108,7 +108,8 @@ def find_subtitles(part):
                     if ext.lower()[1:] in config.SUBTITLE_EXTS:
                         # get fn without forced/default/normal tag
                         split_tag = root.rsplit(".", 1)
-                        if len(split_tag) > 1 and split_tag[1].lower() in ['forced', 'normal', 'default']:
+                        if len(split_tag) > 1 and split_tag[1].lower() in ['forced', 'normal', 'default', 'embedded',
+                                                                           'custom']:
                             root = split_tag[0]
 
                         # get associated media file name without language
@@ -160,9 +161,8 @@ def find_subtitles(part):
         # determine whether to pick up the subtitle based on our match strictness
         elif not filename_matches_part:
             if sz_config.ext_match_strictness == "strict" or (
-                    sz_config.ext_match_strictness == "loose" and not filename_contains_part):
-
-                #Log.Debug("%s doesn't match %s, skipping" % (helpers.unicodize(local_filename),
+                            sz_config.ext_match_strictness == "loose" and not filename_contains_part):
+                # Log.Debug("%s doesn't match %s, skipping" % (helpers.unicodize(local_filename),
                 #                                             helpers.unicodize(part_basename)))
                 continue
 
