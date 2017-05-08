@@ -10,6 +10,12 @@ Checkout **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)**
 
 ## Changelog
 
+2.0.15.1216 RC3
+- core: fixes
+- scheduler: revert some of the aggressive changes in RC2
+- submod: be smarter about WholeLine matches
+
+
 2.0.15.1209 RC2
 - core: fixes
 - core: submod-common: fix multiple dots at start of line
