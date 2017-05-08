@@ -4,7 +4,7 @@ from xmlrpclib import SafeTransport
 import certifi
 import ssl
 import os
-from requests import Session
+from requests import Session, exceptions
 from retry.api import retry_call
 
 pem_file = os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", certifi.where()))
@@ -23,7 +23,8 @@ class RetryingSession(Session):
         self.verify = pem_file
 
     def retry_method(self, method, *args, **kwargs):
-        return retry_call(getattr(super(RetryingSession, self), method), fargs=args, fkwargs=kwargs, tries=3, delay=1)
+        return retry_call(getattr(super(RetryingSession, self), method), fargs=args, fkwargs=kwargs, tries=3, delay=1,
+                          exceptions=exceptions.RequestException)
 
     def get(self, *args, **kwargs):
         return self.retry_method("get", *args, **kwargs)
