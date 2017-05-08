@@ -16,7 +16,7 @@ from support.config import config
 from support.helpers import timestamp, df
 from support.ignore import ignore_list
 from support.items import get_all_items, get_items_info, \
-    get_item_kind_from_rating_key
+    get_item_kind_from_rating_key, get_item
 
 # init GUI
 ObjectContainer.art = R(ART)
@@ -55,7 +55,7 @@ def FirstLetterMetadataMenu(rating_key, key, title=None, base_title=None, displa
 
 @route(PREFIX + '/section/contents', display_items=bool)
 def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, previous_item_type=None,
-                 previous_rating_key=None):
+                 previous_rating_key=None, randomize=None):
     """
     displays the contents of a section based on whether it has a deeper tree or not (movies->movie (item) list; series->series list)
     :param rating_key:
@@ -74,6 +74,22 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
     current_kind = get_item_kind_from_rating_key(rating_key)
 
     if display_items:
+        timeout = 30
+
+        # add back to series for season
+        if current_kind == "season":
+            timeout = 360
+
+            show = get_item(previous_rating_key)
+            oc.add(DirectoryObject(
+                key=Callback(MetadataMenu, rating_key=show.rating_key, title=show.title, base_title=show.section.title,
+                             previous_item_type="section", display_items=True, randomize=timestamp()),
+                title=u"< Back to %s" % show.title,
+                thumb=show.thumb or default_thumb
+            ))
+        elif current_kind == "series":
+            timeout = 1800
+
         items = get_all_items(key="children", value=rating_key, base="library/metadata")
         kind, deeper = get_items_info(items)
         dig_tree(oc, items, MetadataMenu,
@@ -82,12 +98,6 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
         # we don't know exactly where we are here, only add ignore option to series
         if should_display_ignore(items, previous=previous_item_type):
             add_ignore_options(oc, "series", title=item_title, rating_key=rating_key, callback_menu=IgnoreMenu)
-
-        timeout = 30
-        if current_kind == "season":
-            timeout = 360
-        elif current_kind == "series":
-            timeout = 1800
 
         # add refresh
         oc.add(DirectoryObject(

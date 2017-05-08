@@ -37,6 +37,22 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
     timeout = 30
 
     oc = SubFolderObjectContainer(title2=title, replace_parent=True)
+
+    # add back to season for episode
+    if current_kind == "episode":
+        from interface.menu import MetadataMenu
+        show = get_item(item.show.rating_key)
+        season = get_item(item.season.rating_key)
+
+        oc.add(DirectoryObject(
+            key=Callback(MetadataMenu, rating_key=season.rating_key, title=season.title, base_title=show.title,
+                         previous_item_type="show", previous_rating_key=show.rating_key,
+                         display_items=True, randomize=timestamp()),
+            title=u"< Back to %s" % season.title,
+            summary="Back to %s > %s" % (show.title, season.title),
+            thumb=season.thumb or default_thumb
+        ))
+
     oc.add(DirectoryObject(
         key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title, randomize=timestamp(),
                      timeout=timeout * 1000),
@@ -210,7 +226,7 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
             key=Callback(TriggerDownloadSubtitle, rating_key=rating_key, randomize=timestamp(), item_title=item_title,
                          subtitle_id=str(subtitle.id), language=language),
             title=u"%s: %s, score: %s%s" % ("Available" if current_id != subtitle.id else "Current",
-                                          subtitle.provider_name, subtitle.score, wrong_fps_addon),
+                                            subtitle.provider_name, subtitle.score, wrong_fps_addon),
             summary=u"Release: %s, Matches: %s" % (subtitle.release_info, ", ".join(subtitle.matches)),
             thumb=default_thumb
         ))
