@@ -48,7 +48,7 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
         return added_at, item_id, item_title, item, missing
 
 
-def items_get_all_missing_subs(items, leeway=False):
+def items_get_all_missing_subs(items, sleep_after_request=False):
     missing = []
     for added_at, kind, section_title, key in items:
         try:
@@ -66,8 +66,8 @@ def items_get_all_missing_subs(items, leeway=False):
                 missing.append(state)
         except:
             Log.Error("Something went wrong when getting the state of item %s: %s", key, traceback.format_exc())
-        if leeway:
-            time.sleep(leeway)
+        if sleep_after_request:
+            time.sleep(sleep_after_request)
     return missing
 
 
