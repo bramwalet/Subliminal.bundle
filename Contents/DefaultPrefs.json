@@ -538,6 +538,12 @@
     "default": "true"
   },
   {
+    "id": "scheduler.tasks.FindBetterSubtitles.overwrite_manually_modified",
+    "label": "Scheduler: Overwrite subtitles with non-default subtitle modifications when better found",
+    "type": "bool",
+    "default": "false"
+  },
+  {
     "id": "history_size",
     "label": "History: amount of items to store historical data for",
     "type": "enum",

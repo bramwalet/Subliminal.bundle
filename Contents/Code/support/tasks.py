@@ -372,6 +372,10 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
         now = datetime.datetime.now()
         min_score_series = int(Prefs["subtitles.search.minimumTVScore2"].strip())
         min_score_movies = int(Prefs["subtitles.search.minimumMovieScore2"].strip())
+        overwrite_manually_modified = cast_bool(
+            Prefs["scheduler.tasks.FindBetterSubtitles.overwrite_manually_modified"])
+        overwrite_manually_selected = cast_bool(
+            Prefs["scheduler.tasks.FindBetterSubtitles.overwrite_manually_selected"])
 
         subtitle_storage = get_subtitle_storage()
         recent_subs = subtitle_storage.load_recent_files(age_days=max_search_days)
@@ -419,9 +423,13 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
                         continue
 
                     # got manual subtitle but don't want to touch those?
-                    if current_mode == "m" and \
-                            not cast_bool(Prefs["scheduler.tasks.FindBetterSubtitles.overwrite_manually_selected"]):
+                    if current_mode == "m" and not overwrite_manually_selected:
                         Log.Debug(u"Skipping finding better subs, had manual: %s", stored_subs.title)
+                        continue
+
+                    # subtitle modifications different from default
+                    if not overwrite_manually_modified and set(current.mods).difference(set(config.default_mods)):
+                        Log.Debug(u"Skipping finding better subs, it has manual modifications: %s", stored_subs.title)
                         continue
 
                     try:
