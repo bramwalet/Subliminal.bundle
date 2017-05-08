@@ -11,7 +11,7 @@ from support.config import config
 from support.helpers import timestamp, cast_bool, df, get_language
 from support.items import get_item_kind_from_rating_key, get_item, get_current_sub
 from support.lib import Plex
-from support.plex_media import get_plex_metadata, scan_videos
+from support.plex_media import get_plex_metadata, scan_videos, PMSMediaProxy
 from support.scheduler import scheduler
 from support.storage import get_subtitle_storage
 
@@ -53,6 +53,13 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
             thumb=season.thumb or default_thumb
         ))
 
+    oc.add(DirectoryObject(
+        key=Callback(UpdateLocalMedia, rating_key=rating_key, title=title, item_title=item_title, base_title=base_title,
+                     randomize=timestamp()),
+        title=u"Find local subtitles (doesn't necessarily refresh all metadata)",
+        summary="Searches for locally available subtitles",
+        thumb=item.thumb or default_thumb
+    ))
     oc.add(DirectoryObject(
         key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title, randomize=timestamp(),
                      timeout=timeout * 1000),
@@ -119,6 +126,22 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
     add_ignore_options(oc, "videos", title=item_title, rating_key=rating_key, callback_menu=IgnoreMenu)
 
     return oc
+
+
+@route(PREFIX + '/item/update_local_media/{rating_key}/{part_id}', force=bool)
+@debounce
+def UpdateLocalMedia(**kwargs):
+    from support.localmedia import find_subtitles
+    rating_key = kwargs["rating_key"]
+    part_id = kwargs["part_id"]
+    part = PMSMediaProxy(rating_key).get_part(part_id)
+    find_subtitles(part)
+
+    kwargs.pop("randomize")
+
+    print kwargs
+
+    return ItemDetailsMenu(**kwargs)
 
 
 @route(PREFIX + '/item/current_sub/{rating_key}/{part_id}', force=bool)

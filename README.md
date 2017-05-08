@@ -18,7 +18,7 @@ Checkout **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)**
 - core/menu: advanced-menu: add apply-all-default-mods menu item; add re-apply all mods menu item
 - core: always look for currently (not-) existing subtitles when called; hopefully fixes #276
 - scheduler/menu: be faster; also launch scheduled tasks in threads, not just manually launched ones
-- core: don't delete subtitles with .custom or .embedded in their filenames when running auto cleanup
+- core: don't delete subtitles with .custom or .embedded in their filenames when running auto cleanup, if the correct media file exists
 - menu: add back-to-previous menu items
 
 
