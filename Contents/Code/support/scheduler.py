@@ -190,6 +190,7 @@ class DefaultScheduler(object):
                     #Thread.Create(self.run_task, True, name)
                     #Thread.Sleep(5.0)
                     self.run_task(name)
+                    Thread.Sleep(5.0)
 
             Thread.Sleep(1)
 
