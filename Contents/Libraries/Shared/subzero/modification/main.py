@@ -18,9 +18,10 @@ class SubtitleModifications(object):
         self.debug = debug
         self.initialized_mods = {}
 
-    def load(self, fn=None, content=None, language=None):
+    def load(self, fn=None, content=None, language=None, encoding="utf-8"):
         """
         
+        :param encoding: used for decoding the content when fn is given, not used in case content is given
         :param language: babelfish.Language language of the subtitle
         :param fn:  filename
         :param content: unicode 
@@ -30,7 +31,7 @@ class SubtitleModifications(object):
         self.initialized_mods = {}
         try:
             if fn:
-                self.f = pysubs2.load(fn)
+                self.f = pysubs2.load(fn, encoding=encoding)
             elif content:
                 self.f = pysubs2.SSAFile.from_string(content)
         except (IOError,

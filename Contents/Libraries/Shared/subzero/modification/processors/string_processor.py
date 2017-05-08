@@ -52,6 +52,23 @@ class MultipleLineProcessor(Processor):
         return ur"\N".join(out)
 
 
+class WholeLineProcessor(MultipleLineProcessor):
+    def process(self, content, debug=False):
+        if not self.snr_dict["data"]:
+            return content
+        content = content.strip()
+
+        for key, value in self.snr_dict["data"].iteritems():
+            if content == key:
+                if debug:
+                    logger.debug(u"Replacing '%s' with '%s'", key, value)
+
+                content = value
+                break
+
+        return content
+
+
 class MultipleWordProcessor(MultipleLineProcessor):
     """
     replaces words

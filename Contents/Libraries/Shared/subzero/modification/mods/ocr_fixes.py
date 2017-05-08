@@ -2,7 +2,7 @@
 import logging
 
 from subzero.modification.mods import SubtitleTextModification
-from subzero.modification.processors.string_processor import MultipleLineProcessor
+from subzero.modification.processors.string_processor import MultipleLineProcessor, WholeLineProcessor
 from subzero.modification.processors.re_processor import MultipleWordReProcessor
 from subzero.modification import registry
 from subzero.modification.dictionaries.data import data as OCR_fix_data
@@ -35,7 +35,7 @@ class FixOCR(SubtitleTextModification):
             return []
 
         return [
-            MultipleLineProcessor(self.data_dict["WholeLines"], name="SE_replace_line"),
+            WholeLineProcessor(self.data_dict["WholeLines"], name="SE_replace_line"),
             MultipleWordReProcessor(self.data_dict["WholeWords"], name="SE_replace_word"),
             MultipleWordReProcessor(self.data_dict["BeginLines"], name="SE_replace_beginline"),
             MultipleWordReProcessor(self.data_dict["EndLines"], name="SE_replace_endline"),
