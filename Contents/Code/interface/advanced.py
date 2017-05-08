@@ -103,6 +103,7 @@ def Restart():
 
 
 @route(PREFIX + '/storage/reset', sure=bool)
+@debounce
 def ResetStorage(key, randomize=None, sure=False):
     if not sure:
         oc = SubFolderObjectContainer(no_history=True, title1="Reset subtitle storage", title2="Are you sure?")
@@ -138,6 +139,7 @@ def LogStorage(key, randomize=None):
 
 
 @route(PREFIX + '/triggerbetter')
+@debounce
 def TriggerBetterSubtitles(randomize=None):
     scheduler.dispatch_task("FindBetterSubtitles")
     return AdvancedMenu(
@@ -148,6 +150,7 @@ def TriggerBetterSubtitles(randomize=None):
 
 
 @route(PREFIX + '/triggermaintenance')
+@debounce
 def TriggerStorageMaintenance(randomize=None):
     scheduler.dispatch_task("SubtitleStorageMaintenance")
     return AdvancedMenu(
@@ -194,6 +197,7 @@ def apply_default_mods(reapply_current=False):
 
 
 @route(PREFIX + '/applydefaultmods')
+@debounce
 def ApplyDefaultMods(randomize=None):
     Thread.CreateTimer(1.0, apply_default_mods)
     return AdvancedMenu(
@@ -204,6 +208,7 @@ def ApplyDefaultMods(randomize=None):
 
 
 @route(PREFIX + '/reapplyallmods')
+@debounce
 def ReApplyMods(randomize=None):
     Thread.CreateTimer(1.0, apply_default_mods, reapply_current=True)
     return AdvancedMenu(
@@ -266,6 +271,7 @@ def DownloadLogs():
 
 
 @route(PREFIX + '/invalidatecache')
+@debounce
 def InvalidateCache(randomize=None):
     from subliminal.cache import region
     region.invalidate()
