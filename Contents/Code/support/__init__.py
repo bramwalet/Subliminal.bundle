@@ -18,7 +18,7 @@ sys.modules["support.plex_media"] = plex_media
 
 import localmedia
 
-sys.modules["subzero.localmedia"] = localmedia
+sys.modules["support.localmedia"] = localmedia
 
 import subtitlehelpers
 

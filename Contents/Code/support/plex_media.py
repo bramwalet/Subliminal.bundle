@@ -251,3 +251,24 @@ class PMSMediaProxy(object):
                 break
 
             m = m.children[0]
+
+    def get_all_parts(self):
+        """
+        walk the mediatree until the given part was found; if no part was given, return the first one
+        :param part_id:
+        :return:
+        """
+        m = self.mediatree
+        parts = []
+        while 1:
+            if m.items:
+                media_item = m.items[0]
+                for part in media_item.parts:
+                    parts.append(part)
+                break
+
+            if not m.children:
+                break
+
+            m = m.children[0]
+        return parts

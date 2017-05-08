@@ -56,7 +56,7 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
     oc.add(DirectoryObject(
         key=Callback(UpdateLocalMedia, rating_key=rating_key, title=title, item_title=item_title, base_title=base_title,
                      randomize=timestamp()),
-        title=u"Find local subtitles (doesn't necessarily refresh all metadata)",
+        title=u"Find local subtitles (doesn't refresh metadata)",
         summary="Searches for locally available subtitles",
         thumb=item.thumb or default_thumb
     ))
@@ -128,18 +128,16 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
     return oc
 
 
-@route(PREFIX + '/item/update_local_media/{rating_key}/{part_id}', force=bool)
+@route(PREFIX + '/item/update_local_media/{rating_key}', force=bool)
 @debounce
 def UpdateLocalMedia(**kwargs):
     from support.localmedia import find_subtitles
     rating_key = kwargs["rating_key"]
-    part_id = kwargs["part_id"]
-    part = PMSMediaProxy(rating_key).get_part(part_id)
-    find_subtitles(part)
+    parts = PMSMediaProxy(rating_key).get_all_parts()
+    for part in parts:
+        find_subtitles(part)
 
     kwargs.pop("randomize")
-
-    print kwargs
 
     return ItemDetailsMenu(**kwargs)
 
