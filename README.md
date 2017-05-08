@@ -10,6 +10,18 @@ Checkout **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)**
 
 ## Changelog
 
+2.0.15.1209 RC2
+- core: fixes
+- core: submod-common: fix multiple dots at start of line
+- core/menu: add subtitle modification debug setting
+- core/menu: when manually listing available subtitles in menu, display those with wrong FPS also (opensubtitles), because you can fix them later
+- core/menu: advanced-menu: add apply-all-default-mods menu item; add re-apply all mods menu item
+- core: always look for currently (not-) existing subtitles when called; hopefully fixes #276
+- scheduler/menu: be faster; also launch scheduled tasks in threads, not just manually launched ones
+- core: don't delete subtitles with .custom or .embedded in their filenames when running auto cleanup
+- menu: add back-to-previous menu items
+
+
 2.0.12.1180 RC1
 - core: update subliminal to version 2
 - core: update all dependencies
