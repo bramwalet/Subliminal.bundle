@@ -5,7 +5,7 @@ import types
 
 from babelfish import Language
 
-from menu_helpers import debounce, SubFolderObjectContainer
+from menu_helpers import debounce, SubFolderObjectContainer, default_thumb
 from subzero.modification import registry as mod_registry, SubtitleModifications
 from subzero.constants import PREFIX
 from support.plex_media import get_plex_metadata, scan_videos
@@ -25,6 +25,15 @@ def SubtitleModificationsMenu(**kwargs):
     current_mods = current_sub.mods or []
 
     oc = SubFolderObjectContainer(title2=kwargs["title"], replace_parent=True)
+
+    from interface.item_details import SubtitleOptionsMenu
+    oc.add(DirectoryObject(
+        key=Callback(SubtitleOptionsMenu, randomize=timestamp(), **kwargs),
+        title=u"< Back to subtitle options for: %s" % kwargs["title"],
+        summary=kwargs["current_data"],
+        thumb=default_thumb
+    ))
+
     for identifier, mod in mod_registry.mods.iteritems():
         if mod.advanced:
             continue
@@ -76,15 +85,20 @@ def SubtitleFPSModMenu(**kwargs):
     part_id = kwargs["part_id"]
     item_type = kwargs["item_type"]
 
+    kwargs.pop("randomize")
+
     oc = SubFolderObjectContainer(title2=kwargs["title"], replace_parent=True)
+
+    oc.add(DirectoryObject(
+        key=Callback(SubtitleModificationsMenu, randomize=timestamp(), **kwargs),
+        title="< Back to subtitle modification menu"
+    ))
 
     metadata = get_plex_metadata(rating_key, part_id, item_type)
     scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
     video, plex_part = scanned_parts.items()[0]
 
     target_fps = plex_part.fps
-
-    kwargs.pop("randomize")
 
     for fps in ["23.976", "24.000", "25.000", "29.970", "30.000", "50.000", "59.940", "60.000"]:
         if float(fps) == float(target_fps):
@@ -114,6 +128,11 @@ def SubtitleShiftModUnitMenu(**kwargs):
 
     kwargs.pop("randomize")
 
+    oc.add(DirectoryObject(
+        key=Callback(SubtitleModificationsMenu, randomize=timestamp(), **kwargs),
+        title="< Back to subtitle modifications"
+    ))
+
     for unit, title in POSSIBLE_UNITS:
         oc.add(DirectoryObject(
             key=Callback(SubtitleShiftModMenu, unit=unit, randomize=timestamp(), **kwargs),
@@ -128,9 +147,14 @@ def SubtitleShiftModMenu(unit=None, **kwargs):
     if unit not in POSSIBLE_UNITS_D:
         raise NotImplementedError
 
+    kwargs.pop("randomize")
+
     oc = SubFolderObjectContainer(title2=kwargs["title"], replace_parent=True)
 
-    kwargs.pop("randomize")
+    oc.add(DirectoryObject(
+        key=Callback(SubtitleShiftModUnitMenu, randomize=timestamp(), **kwargs),
+        title="< Back to unit selection"
+    ))
 
     rng = []
     if unit == "h":
@@ -183,6 +207,12 @@ def SubtitleListMods(**kwargs):
     kwargs.pop("randomize")
 
     oc = SubFolderObjectContainer(title2=kwargs["title"], replace_parent=True)
+
+    oc.add(DirectoryObject(
+        key=Callback(SubtitleModificationsMenu, randomize=timestamp(), **kwargs),
+        title="< Back to subtitle modifications"
+    ))
+
     for identifier in current_sub.mods:
         oc.add(DirectoryObject(
             key=Callback(SubtitleSetMods, mods=identifier, mode="remove", randomize=timestamp(), **kwargs),

@@ -135,7 +135,7 @@ def SubtitleOptionsMenu(**kwargs):
     oc.add(DirectoryObject(
         key=Callback(ItemDetailsMenu, rating_key=kwargs["rating_key"], item_title=kwargs["item_title"],
                      title=kwargs["title"], randomize=timestamp()),
-        title=u"Back to: %s" % kwargs["title"],
+        title=u"< Back to %s" % kwargs["title"],
         summary=kwargs["current_data"],
         thumb=default_thumb
     ))
@@ -172,7 +172,7 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
     oc = SubFolderObjectContainer(title2=unicode(title), replace_parent=True)
     oc.add(DirectoryObject(
         key=Callback(ItemDetailsMenu, rating_key=rating_key, item_title=item_title, title=title, randomize=timestamp()),
-        title=u"Back to: %s" % title,
+        title=u"< Back to %s" % title,
         summary=current_data,
         thumb=default_thumb
     ))
