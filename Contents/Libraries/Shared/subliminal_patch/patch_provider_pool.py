@@ -218,9 +218,10 @@ class PatchedProviderPool(ProviderPool):
                     requests.exceptions.SSLError,
                     requests.Timeout,
                     socket.timeout):
-                logger.error('Provider %r timed out', subtitle.provider_name)
+                logger.error('Provider %r connection error', subtitle.provider_name)
             except:
                 logger.exception('Unexpected error in provider %r, Traceback: %s', subtitle.provider_name, traceback.format_exc())
+                self.discarded_providers.add(subtitle.provider_name)
                 return False
 
             if tries == DOWNLOAD_TRIES:
