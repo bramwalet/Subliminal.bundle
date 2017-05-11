@@ -10,6 +10,10 @@ Checkout **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)**
 
 ## Changelog
 
+1.4.27.980
+- core: don't retry if the subtitle downloading failed and the issue was not the connection (#277)
+
+
 1.4.27.974
 - core: fix duplicate subtitles issue on QNAP/Synology/libraries with symlinks (#215)
 
