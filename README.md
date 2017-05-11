@@ -10,6 +10,10 @@ Checkout **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)**
 
 ## Changelog
 
+2.0.15.x RC4
+- backport provider-download-retry implementation
+
+
 2.0.15.1216 RC3
 - core: fixes
 - scheduler: revert some of the aggressive changes in RC2
