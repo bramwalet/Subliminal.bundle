@@ -15,7 +15,7 @@ from subliminal_patch.patch_subtitle import compute_score
 logger = logging.getLogger(__name__)
 
 DOWNLOAD_TRIES = 0
-DOWNLOAD_RETRY_SLEEP = 2
+DOWNLOAD_RETRY_SLEEP = 5
 
 
 class OldToNewProvider(object):
@@ -213,12 +213,15 @@ class PatchedProviderPool(ProviderPool):
             try:
                 self[subtitle.provider_name].download_subtitle(subtitle)
                 break
-            except (requests.Timeout, socket.timeout):
+            except (requests.ConnectionError,
+                    requests.exceptions.ProxyError,
+                    requests.exceptions.SSLError,
+                    requests.Timeout,
+                    socket.timeout):
                 logger.error('Provider %r timed out', subtitle.provider_name)
-            except ProviderError:
-                logger.error('Unexpected error in provider %r, Traceback: %s', subtitle.provider_name, traceback.format_exc())
             except:
                 logger.exception('Unexpected error in provider %r, Traceback: %s', subtitle.provider_name, traceback.format_exc())
+                return False
 
             if tries == DOWNLOAD_TRIES:
                 self.discarded_providers.add(subtitle.provider_name)
