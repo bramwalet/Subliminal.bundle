@@ -9,6 +9,10 @@ class NapiProjektSubtitle(_NapiProjektSubtitle):
         super(NapiProjektSubtitle, self).__init__(language, hash)
         self.release_info = hash
 
+    def __repr__(self):
+        return '<%s %r [%s]>' % (
+            self.__class__.__name__, self.release_info, self.language)
+
 
 class NapiProjektProvider(_NapiProjektProvider):
     subtitle_class = NapiProjektSubtitle
