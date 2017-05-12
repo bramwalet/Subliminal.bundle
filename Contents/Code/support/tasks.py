@@ -192,6 +192,9 @@ class SubtitleListingMixin(object):
     def list_subtitles(self, rating_key, item_type, part_id, language, skip_wrong_fps=True):
         metadata = get_plex_metadata(rating_key, part_id, item_type)
 
+        if not metadata:
+            return
+
         if item_type == "episode":
             min_score = 240
         else:

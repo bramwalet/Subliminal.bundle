@@ -1,6 +1,7 @@
 # coding=utf-8
 
 import os
+from urllib2 import URLError
 
 import helpers
 from config import config
@@ -190,7 +191,10 @@ def get_plex_metadata(rating_key, part_id, item_type):
     :return:
     """
 
-    plex_item = list(Plex["library"].metadata(rating_key))[0]
+    try:
+        plex_item = list(Plex["library"].metadata(rating_key))[0]
+    except URLError:
+        return None
 
     # find current part
     current_part = None
