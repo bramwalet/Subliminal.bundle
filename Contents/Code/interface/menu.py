@@ -1,4 +1,5 @@
 # coding=utf-8
+import locale
 import logging
 import os
 
@@ -227,6 +228,7 @@ def ValidatePrefs():
             else:
                 outval = value
             Log.Debug("%s: %s", key, outval)
+    Log.Debug("Locale: %s", locale.getdefaultlocale())
     Log.Debug("-----------------------")
 
     Log.Debug("Setting log-level to %s", Prefs["log_level"])
