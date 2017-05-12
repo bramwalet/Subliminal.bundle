@@ -4,6 +4,7 @@ import datetime
 import time
 import operator
 import traceback
+from urllib2 import URLError
 
 from subliminal_patch.score import compute_score
 from subliminal_patch.core import download_subtitles
@@ -140,7 +141,11 @@ class SearchAllRecentlyAddedMissing(Task):
 
         for added_at, item_id, title, item, missing_languages in self.items_searching:
             Log.Debug(u"Task: %s, triggering refresh for %s (%s)", self.name, title, item_id)
-            refresh_item(item_id)
+            try:
+                refresh_item(item_id)
+            except URLError:
+                # timeout
+                pass
             search_started = datetime.datetime.now()
             tries = 1
             while 1:
@@ -160,7 +165,10 @@ class SearchAllRecentlyAddedMissing(Task):
                     Log.Debug(u"Task: %s, item stalled for %s seconds: %s, retrying", self.name, self.stall_time,
                               item_id)
                     tries += 1
-                    refresh_item(item_id)
+                    try:
+                        refresh_item(item_id)
+                    except URLError:
+                        pass
                     search_started = datetime.datetime.now()
                     time.sleep(1)
                 time.sleep(0.1)
@@ -428,7 +436,8 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
                         continue
 
                     # subtitle modifications different from default
-                    if not overwrite_manually_modified and set(current.mods).difference(set(config.default_mods)):
+                    if not overwrite_manually_modified and current.mods \
+                            and set(current.mods).difference(set(config.default_mods)):
                         Log.Debug(u"Skipping finding better subs, it has manual modifications: %s", stored_subs.title)
                         continue
 
