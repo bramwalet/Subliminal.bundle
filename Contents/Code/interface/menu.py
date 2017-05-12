@@ -220,7 +220,7 @@ def ValidatePrefs():
     Log.Debug("OS: %s", Core.runtime.os)
     Log.Debug("----- Environment -----")
     for key, value in os.environ.iteritems():
-        if key.startswith("PLEX"):
+        if key.startswith("PLEX") or key.startswith("SZ_"):
             if "TOKEN" in key:
                 outval = "xxxxxxxxxxxxxxxxxxx"
 
