@@ -82,46 +82,53 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
     # get the plex item
     plex_item = list(Plex["library"].metadata(rating_key))[0]
 
-    # get current media info for that item
-    media = plex_item.media
-
     # look for subtitles for all available media parts and all of their languages
-    for part in media.parts:
-        filename = os.path.basename(part.file)
-        part_id = str(part.id)
+    has_multiple_parts = len(plex_item.media) > 1
+    part_index = 0
+    for media in plex_item.media:
+        for part in media.parts:
+            filename = os.path.basename(part.file)
+            part_id = str(part.id)
+            part_index += 1
 
-        # iterate through all configured languages
-        for lang in config.lang_list:
-            lang_a2 = lang.alpha2
-            # ietf lang?
-            if cast_bool(Prefs["subtitles.language.ietf"]) and "-" in lang_a2:
-                lang_a2 = lang_a2.split("-")[0]
+            # iterate through all configured languages
+            for lang in config.lang_list:
+                lang_a2 = lang.alpha2
+                # ietf lang?
+                if cast_bool(Prefs["subtitles.language.ietf"]) and "-" in lang_a2:
+                    lang_a2 = lang_a2.split("-")[0]
 
-            # get corresponding stored subtitle data for that media part (physical media item), for language
-            current_sub = stored_subs.get_any(part_id, lang_a2)
-            current_sub_id = None
-            current_sub_provider_name = None
+                # get corresponding stored subtitle data for that media part (physical media item), for language
+                current_sub = stored_subs.get_any(part_id, lang_a2)
+                current_sub_id = None
+                current_sub_provider_name = None
 
-            summary = u"No current subtitle in storage"
-            current_score = None
-            if current_sub:
-                current_sub_id = current_sub.id
-                current_sub_provider_name = current_sub.provider_name
-                current_score = current_sub.score
+                part_index_addon = ""
+                part_summary_addon = ""
+                if has_multiple_parts:
+                    part_index_addon = u"File %s: " % part_index
+                    part_summary_addon = "%s " % filename
 
-                summary = u"Current subtitle: %s (added: %s, %s), Language: %s, Score: %i, Storage: %s" % \
-                          (current_sub.provider_name, df(current_sub.date_added), current_sub.mode_verbose, lang,
-                           current_sub.score, current_sub.storage_type)
+                summary = u"%sNo current subtitle in storage" % part_summary_addon
+                current_score = None
+                if current_sub:
+                    current_sub_id = current_sub.id
+                    current_sub_provider_name = current_sub.provider_name
+                    current_score = current_sub.score
 
-            oc.add(DirectoryObject(
-                key=Callback(SubtitleOptionsMenu, rating_key=rating_key, part_id=part_id, title=title,
-                             item_title=item_title, language=lang, language_name=lang.name, current_id=current_sub_id,
-                             item_type=plex_item.type, filename=filename, current_data=summary,
-                             randomize=timestamp(), current_provider=current_sub_provider_name,
-                             current_score=current_score),
-                title=u"Actions for %s subtitle" % lang.name,
-                summary=summary
-            ))
+                    summary = u"%sCurrent subtitle: %s (added: %s, %s), Language: %s, Score: %i, Storage: %s" % \
+                              (part_summary_addon, current_sub.provider_name, df(current_sub.date_added),
+                               current_sub.mode_verbose, lang, current_sub.score, current_sub.storage_type)
+
+                oc.add(DirectoryObject(
+                    key=Callback(SubtitleOptionsMenu, rating_key=rating_key, part_id=part_id, title=title,
+                                 item_title=item_title, language=lang, language_name=lang.name, current_id=current_sub_id,
+                                 item_type=plex_item.type, filename=filename, current_data=summary,
+                                 randomize=timestamp(), current_provider=current_sub_provider_name,
+                                 current_score=current_score),
+                    title=u"%sActions for %s subtitle" % (part_index_addon, lang.name),
+                    summary=summary
+                ))
 
     add_ignore_options(oc, "videos", title=item_title, rating_key=rating_key, callback_menu=IgnoreMenu)
 

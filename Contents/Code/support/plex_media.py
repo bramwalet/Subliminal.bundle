@@ -109,7 +109,10 @@ def scan_video(plex_part, ignore_all=False, hints=None, rating_key=None):
         plex_part.file, external_subtitles, embedded_subtitles))
 
     known_embedded = []
-    parts = list(Plex["library"].metadata(rating_key))[0].media.parts
+    parts = []
+    for media in list(Plex["library"].metadata(rating_key))[0].media:
+        parts += media.parts
+
     plexpy_part = None
     for part in parts:
         if int(part.id) == int(plex_part.id):
@@ -191,9 +194,10 @@ def get_plex_metadata(rating_key, part_id, item_type):
 
     # find current part
     current_part = None
-    for part in plex_item.media.parts:
-        if str(part.id) == part_id:
-            current_part = part
+    for media in plex_item.media:
+        for part in media.parts:
+            if str(part.id) == part_id:
+                current_part = part
 
     if not current_part:
         raise helpers.PartUnknownException("Part unknown")

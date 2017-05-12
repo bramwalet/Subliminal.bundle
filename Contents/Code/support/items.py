@@ -167,14 +167,17 @@ def get_recent_items():
         "X-Plex-Container-Size": "%s" % config.max_recent_items_per_library
     }
 
-    episode_re = re.compile(ur'ratingKey="(?P<key>\d+)"'
+    episode_re = re.compile(ur'(?su)ratingKey="(?P<key>\d+)"'
                             ur'.+?grandparentRatingKey="(?P<parent_key>\d+)"'
                             ur'.+?title="(?P<title>.*?)"'
                             ur'.+?grandparentTitle="(?P<parent_title>.*?)"'
                             ur'.+?index="(?P<episode>\d+?)"'
-                            ur'.+?parentIndex="(?P<season>\d+?)".+?addedAt="(?P<added>\d+)"')
-    movie_re = re.compile(ur'ratingKey="(?P<key>\d+)".+?title="(?P<title>.*?)".+?addedAt="(?P<added>\d+)"')
-    available_keys = ("key", "title", "parent_key", "parent_title", "season", "episode", "added")
+                            ur'.+?parentIndex="(?P<season>\d+?)".+?addedAt="(?P<added>\d+)"'
+                            ur'.+?<Part.+? file="(?P<filename>[^"]+?)"')
+    movie_re = re.compile(ur'(?su)ratingKey="(?P<key>\d+)".+?title="(?P<title>.*?)'
+                          ur'".+?addedAt="(?P<added>\d+)"'
+                          ur'.+?<Part.+? file="(?P<filename>[^"]+?)"')
+    available_keys = ("key", "title", "parent_key", "parent_title", "season", "episode", "added", "filename")
     recent = []
 
     for section in Plex["library"].sections():
@@ -185,8 +188,10 @@ def get_recent_items():
             continue
 
         use_args = args.copy()
+        plex_item_type = "Movie"
         if section.type == "show":
             use_args["type"] = "4"
+            plex_item_type = "Episode"
 
         url = "http://127.0.0.1:32400/library/sections/%s/all" % int(section.key)
         response = query_plex(url, use_args)
@@ -201,6 +206,10 @@ def get_recent_items():
             if data["key"] in ignore_list.videos:
                 Log.Debug(u"Skipping item: %s" % data["title"])
                 continue
+            if is_physically_ignored(data["filename"], plex_item_type):
+                Log.Debug(u"Skipping item: %s" % data["title"])
+                continue
+
             if is_recent(int(data["added"])):
                 recent.append((int(data["added"]), section.type, section.title, data["key"]))
 
@@ -246,24 +255,31 @@ def is_ignored(rating_key, item=None):
 
     # physical/path ignore
     if config.ignore_sz_files or config.ignore_paths:
+        for media in item.media:
+            for part in media.parts:
+                if is_physically_ignored(part.file, kind):
+                    return True
+
+    return False
+
+
+def is_physically_ignored(fn, kind):
+    if config.ignore_sz_files or config.ignore_paths:
         # normally check current item folder and the library
         check_ignore_paths = [".", "../"]
         if kind == "Episode":
             # series/episode, we've got a season folder here, also
             check_ignore_paths.append("../../")
 
-        for part in item.media.parts:
-            if config.ignore_paths and config.is_path_ignored(part.file):
-                Log.Debug("Item %s's path is manually ignored" % rating_key)
-                return True
+        if config.ignore_paths and config.is_path_ignored(fn):
+            Log.Debug("Item %s's path is manually ignored" % fn)
+            return True
 
-            if config.ignore_sz_files:
-                for sub_path in check_ignore_paths:
-                    if config.is_physically_ignored(os.path.abspath(os.path.join(os.path.dirname(part.file), sub_path))):
-                        Log.Debug("An ignore file exists in either the items or its parent folders")
-                        return True
-
-    return False
+        if config.ignore_sz_files:
+            for sub_path in check_ignore_paths:
+                if config.is_physically_ignored(os.path.normpath(os.path.join(os.path.dirname(fn), sub_path))):
+                    Log.Debug("An ignore file exists in either the items or its parent folders")
+                    return True
 
 
 def refresh_item(rating_key, force=False, timeout=8000, refresh_kind=None, parent_rating_key=None):
