@@ -90,7 +90,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         # fixme: retry on SSLError
         response = self.retry(
             lambda: checked(
-                self.server.LogIn(self.username, self.password, 'eng', 'subliminal v%s' % __short_version__)
+                self.server.LogIn(self.username, self.password, 'eng', os.environ.get("SZ_USER_AGENT", "Sub-Zero/2"))
             )
         )
         self.token = response['token']

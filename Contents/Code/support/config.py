@@ -100,6 +100,8 @@ class Config(object):
         self.universal_plex_token = self.get_universal_plex_token()
         self.plex_token = os.environ.get("PLEXTOKEN", self.universal_plex_token)
 
+        os.environ["SZ_USER_AGENT"] = self.get_user_agent()
+
         self.set_plugin_mode()
         self.set_plugin_lock()
         self.set_activity_modes()
@@ -245,11 +247,17 @@ class Config(object):
         return all_permissions_ok
 
     def get_version(self):
+        return self.get_bare_version() + ("" if not self.is_development else " DEV")
+
+    def get_bare_version(self):
         result = VERSION_RE.search(self.plugin_info)
-        add = "" if not self.is_development else " DEV"
 
         if result:
-            return result.group(1) + add
+            return result.group(1)
+        return "2.x.x.x"
+
+    def get_user_agent(self):
+        return "Sub-Zero/%s" % (self.get_bare_version() + ("" if not self.is_development else "-dev"))
 
     def get_dev_mode(self):
         dev = DEV_RE.search(self.plugin_info)

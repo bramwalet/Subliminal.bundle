@@ -3,6 +3,7 @@
 import re
 import time
 import logging
+import traceback
 
 logger = logging.getLogger(__name__)
 
@@ -33,10 +34,11 @@ class ProviderRetryMixin(object):
         while i <= amount:
             try:
                 return f()
-            except exc, e:
+            except exc:
+                formatted_exc = traceback.format_exc()
                 i += 1
                 if i == amount:
                     raise
 
-            logger.debug(u"Retrying %s, try: %i/%i, exception: %s" % (self.__class__.__name__, i, amount, e))
+            logger.debug(u"Retrying %s, try: %i/%i, exception: %s" % (self.__class__.__name__, i, amount, formatted_exc))
             time.sleep(retry_timeout)
