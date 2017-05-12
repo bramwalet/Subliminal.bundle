@@ -9,14 +9,23 @@ import time
 import re
 import platform
 import subprocess
-
-from bs4 import UnicodeDammit
-
+import sys
 import chardet
 
+from bs4 import UnicodeDammit
 from babelfish import Language
-
 from subzero.analytics import track_event
+
+mswindows = (sys.platform == "win32")
+if mswindows:
+    from subprocess import list2cmdline
+    quote_args = list2cmdline
+else:
+    # POSIX
+    from pipes import quote
+
+    def quote_args(seq):
+        return ' '.join(quote(arg) for arg in seq)
 
 # Unicode control characters can appear in ID3v2 tags but are not legal in XML.
 RE_UNICODE_CONTROL = u'([\u0000-\u0008\u000b-\u000c\u000e-\u001f\ufffe-\uffff])' + \
@@ -274,8 +283,9 @@ def notify_executable(exe_info, videos, subtitles, storage):
 
             Log.Debug(u"Calling %s with arguments: %s" % (exe, prepared_arguments))
             try:
-                output = subprocess.check_output(subprocess.list2cmdline([exe] + prepared_arguments),
-                                                 stderr=subprocess.STDOUT, shell=True)
+                output = subprocess.check_output(quote_args([exe] + prepared_arguments),
+                                                 stderr=subprocess.STDOUT, shell=True,
+                                                 env={"PATH": "/usr/local/bin/:/usr/bin"})
             except subprocess.CalledProcessError:
                 Log.Error(u"Calling %s failed: %s" % (exe, traceback.format_exc()))
             else:
