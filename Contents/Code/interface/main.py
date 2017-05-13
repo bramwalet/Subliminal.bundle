@@ -250,8 +250,6 @@ def RecentMissingSubtitlesMenu(force=False, randomize=None):
                 thumb=get_item_thumb(item) or default_thumb
             ))
 
-        scheduler.clear_task_data("MissingSubtitles")
-
     return oc
 
 
