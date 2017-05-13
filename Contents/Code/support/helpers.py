@@ -282,10 +282,21 @@ def notify_executable(exe_info, videos, subtitles, storage):
             prepared_arguments = [arg % prepared_data for arg in arguments]
 
             Log.Debug(u"Calling %s with arguments: %s" % (exe, prepared_arguments))
+            env = os.environ
+            if not mswindows:
+                env_path = {"PATH": os.pathsep.join(
+                                        [
+                                            "/usr/local/bin",
+                                            "/usr/bin",
+                                            os.environ.get("PATH", "")
+                                        ]
+                                    )
+                            }
+                env = dict(os.environ, **env_path)
+
             try:
                 output = subprocess.check_output(quote_args([exe] + prepared_arguments),
-                                                 stderr=subprocess.STDOUT, shell=True,
-                                                 env={"PATH": "/usr/local/bin/:/usr/bin"})
+                                                 stderr=subprocess.STDOUT, shell=True, env=env)
             except subprocess.CalledProcessError:
                 Log.Error(u"Calling %s failed: %s" % (exe, traceback.format_exc()))
             else:
