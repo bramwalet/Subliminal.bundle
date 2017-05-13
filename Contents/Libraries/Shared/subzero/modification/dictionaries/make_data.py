@@ -35,11 +35,14 @@ if __name__ == "__main__":
             fetch_data = (
                     # group, item_name, pattern
                     ("WholeLines", "Line", None),
-                    ("WholeWords", "Word", lambda d: (ur"(?um)" + u"|".join([ur'\b' + re.escape(k) + ur'\b' for k in d.keys()])) if d else None),
+                    ("WholeWords", "Word", lambda d: (ur"(?um)\b(?:" + u"|".join([re.escape(k) for k in d.keys()])
+                                                      + ur')\b') if d else None),
                     ("PartialWordsAlways", "WordPart", None),
                     ("PartialLines", "LinePart", None),
-                    ("BeginLines", "Beginning", lambda d: (ur"(?um)^"+u"|".join([ur'\b' + re.escape(k) + ur'\b' for k in d.keys()])) if d else None),
-                    ("EndLines", "Ending", lambda d: (ur"(?um)" + u"|".join([ur'\b' + re.escape(k) + ur'\b' for k in d.keys()]) + ur"$") if d else None,),
+                    ("BeginLines", "Beginning", lambda d: (ur"(?um)^"+u"|".join([re.escape(k) for k in d.keys()])
+                                                           ) if d else None),
+                    ("EndLines", "Ending", lambda d: (ur"(?um)" + u"|".join([re.escape(k) for k in d.keys()]) + ur"$"
+                                                      ) if d else None,),
             )
 
             data[lang] = dict((grp, {"data": OrderedDict(), "pattern": None}) for grp, item_name, pattern in fetch_data)
