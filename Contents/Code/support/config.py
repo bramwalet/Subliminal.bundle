@@ -83,6 +83,7 @@ class Config(object):
     debug_mods = False
     react_to_activities = False
     activity_mode = None
+    subtitles_save_to = None
 
     store_recently_played_amount = 20
 
@@ -131,6 +132,7 @@ class Config(object):
         self.ext_match_strictness = self.determine_ext_sub_strictness()
         self.default_mods = self.get_default_mods()
         self.debug_mods = cast_bool(Prefs['log_debug_mods'])
+        self.subtitles_save_to = Prefs['subtitles.save.filesystem']
         self.initialized = True
 
     def init_cache(self):

@@ -200,7 +200,8 @@ def ValidatePrefs():
     Log.Debug("--- SZ Config-Debug ---")
     for attr in [
             "app_support_path", "data_path", "data_items_path", "enable_agent",
-            "enable_channel", "permissions_ok", "missing_permissions", "fs_encoding"]:
+            "enable_channel", "permissions_ok", "missing_permissions", "fs_encoding",
+            "subtitle_destination_folder"]:
         Log.Debug("config.%s: %s", attr, getattr(config, attr))
 
     for attr in ["plugin_log_path", "server_log_path"]:
@@ -215,6 +216,10 @@ def ValidatePrefs():
                 access = False
 
         Log.Debug("config.%s: %s (accessible: %s)", attr, value, access)
+
+    for attr in [
+            "subtitles.save.filesystem", ]:
+        Log.Debug("Pref.%s: %s", attr, Prefs[attr])
 
     # fixme: check existance of and os access of logs
     Log.Debug("Platform: %s", Core.runtime.platform)
