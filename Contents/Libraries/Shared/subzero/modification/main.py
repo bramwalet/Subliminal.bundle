@@ -146,7 +146,7 @@ class SubtitleModifications(object):
             end = ms_to_timestamp(line.end)
             text = prepare_text(line.text, self.f.styles.get(line.style, SSAStyle.DEFAULT_STYLE))
 
-            out.append(u"%d" % i)
+            out.append(u"%d\n" % i)
             out.append(u"%s --> %s\n" % (start, end))
             out.append(u"%s%s" % (text, "\n\n"))
 
