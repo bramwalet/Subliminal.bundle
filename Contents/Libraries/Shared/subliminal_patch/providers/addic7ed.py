@@ -28,6 +28,10 @@ class Addic7edSubtitle(_Addic7edSubtitle):
         if not subliminal.score.episode_scores.get("addic7ed_boost"):
             return matches
 
+        # if the release group matches, the format is most likely correct, as well
+        if "release_group" in matches:
+            matches.add("format")
+
         if {"series", "season", "episode", "year"}.issubset(matches) and "format" in matches:
             matches.add("addic7ed_boost")
             logger.info("Boosting Addic7ed subtitle by %s" % subliminal.score.episode_scores.get("addic7ed_boost"))
