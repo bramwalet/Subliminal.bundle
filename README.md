@@ -10,8 +10,14 @@ Checkout **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)**
 
 ## Changelog
 
-2.0.15.x RC4
-- backport provider-download-retry implementation
+2.0.17.1234 RC4
+- core: backport provider-download-retry implementation
+- core: implement custom user agent (for OpenSubtitles)
+- core/menu: correct handling of media with multiple files
+- core: fix SearchAllRecentlyMissing; also wait 5 seconds between searches
+- submod: pattern fixes
+- submod: better unicode handling
+- submod: add color mod (only automatic by now)
 
 
 2.0.15.1216 RC3
