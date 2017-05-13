@@ -173,7 +173,7 @@ class SearchAllRecentlyAddedMissing(Task):
                     time.sleep(1)
                 time.sleep(0.1)
             # we can't hammer the PMS, otherwise requests will be stalled
-            time.sleep(1)
+            time.sleep(5)
 
         Log.Debug("Task: %s, done. Failed items: %s", self.name, self.items_failed)
         self.running = False
