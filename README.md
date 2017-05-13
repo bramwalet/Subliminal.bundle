@@ -15,6 +15,7 @@ Checkout **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)**
 - core: implement custom user agent (for OpenSubtitles)
 - core/menu: correct handling of media with multiple files
 - core: fix SearchAllRecentlyMissing; also wait 5 seconds between searches
+- core: SearchAllRecentlyMissing: honor physical ignores
 - submod: pattern fixes
 - submod: better unicode handling
 - submod: add color mod (only automatic by now)
