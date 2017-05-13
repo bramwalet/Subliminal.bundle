@@ -153,10 +153,7 @@ class PatchedSubtitle(Subtitle):
         try:
             return submods.to_unicode().encode(encoding=encoding)
         except UnicodeEncodeError:
-            try:
-                return submods.to_unicode().encode(encoding="utf-8")
-            except UnicodeEncodeError:
-                return None
+            return submods.to_unicode().encode(encoding="utf-8")
 
     def get_modified_text(self, debug=False):
         """
