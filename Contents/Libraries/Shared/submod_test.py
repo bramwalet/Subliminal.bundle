@@ -18,11 +18,13 @@ if debug:
 
 submod = SubMod(debug=debug)
 submod.load(fn, language=Language.fromietf("spa"), encoding="latin-1")
-submod.modify("remove_HI", "OCR_fixes", "common", "shift_offset(s=20)")
-#srt = submod.to_string("srt", "utf-8")
-#f = codecs.open("testout.srt", "w+", encoding="utf-8")
-#f.write(srt)
-#f.close()
+submod.modify("remove_HI", "OCR_fixes", "common", "shift_offset(s=20)", "color(color=#FF0000)")
+
+srt = submod.to_unicode()
+#print repr(srt)
+f = codecs.open("testout.srt", "w+", encoding="latin-1")
+f.write(srt)
+f.close()
 #print submod.f.to_string("srt")
 #submod.modify("OCR_fixes")
 #submod.modify("change_FPS(from=24,to=25)")

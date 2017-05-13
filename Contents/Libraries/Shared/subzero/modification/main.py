@@ -1,9 +1,15 @@
 # coding=utf-8
 
 import traceback
+
+import re
+
 import pysubs2
 import logging
 
+from pysubs2 import SSAStyle
+from pysubs2.subrip import ms_to_timestamp
+from pysubs2.substation import parse_tags
 from registry import registry
 
 logger = logging.getLogger(__name__)
@@ -73,7 +79,8 @@ class SubtitleModifications(object):
 
         for identifier, args in parsed_mods:
             if identifier not in registry.mods:
-                raise NotImplementedError("Mod %s not loaded" % identifier)
+                logger.error("Mod %s not loaded", identifier)
+                continue
 
             mod_cls = registry.mods[identifier]
             if mod_cls.modifies_whole_file:
@@ -102,9 +109,6 @@ class SubtitleModifications(object):
                     if mod.exclusive and identifier in applied_mods:
                         continue
 
-                    if not mod.processors:
-                        continue
-
                     new_content = mod.modify(line.text, debug=self.debug, parent=self, **args)
                     if not new_content:
                         if self.debug:
@@ -119,12 +123,34 @@ class SubtitleModifications(object):
 
         self.f.events = new_f
 
-    def to_string(self, format="srt", encoding="utf-8"):
-        return self.f.to_string(format, encoding=encoding)
+    def to_unicode(self):
+        def prepare_text(text, style):
+            body = []
+            for fragment, sty in parse_tags(text, style, self.f.styles):
+                fragment = fragment.replace(ur"\h", u" ")
+                fragment = fragment.replace(ur"\n", u"\n")
+                fragment = fragment.replace(ur"\N", u"\n")
+                if sty.italic: fragment = u"<i>%s</i>" % fragment
+                if sty.underline: fragment = u"<u>%s</u>" % fragment
+                if sty.strikeout: fragment = u"<s>%s</s>" % fragment
+                body.append(fragment)
 
-    def save(self, fn):
-        self.f.save(fn)
+            return re.sub(u"\n+", u"\n", u"".join(body).strip())
 
+        visible_lines = (line for line in self.f if not line.is_comment)
+
+        out = []
+
+        for i, line in enumerate(visible_lines, 1):
+            start = ms_to_timestamp(line.start)
+            end = ms_to_timestamp(line.end)
+            text = prepare_text(line.text, self.f.styles.get(line.style, SSAStyle.DEFAULT_STYLE))
+
+            out.append(u"%d" % i)
+            out.append(u"%s --> %s\n" % (start, end))
+            out.append(u"%s%s" % (text, "\n\n"))
+
+        return u"".join(out)
 
 SubMod = SubtitleModifications
 

@@ -421,6 +421,12 @@
     "default": "true"
   },
   {
+    "id": "subtitles.colors",
+    "label": "Change colors of subtitles to (#XXXXXX)",
+    "type": "text",
+    "default": ""
+  },
+  {
     "id": "subtitles.save.filesystem",
     "label": "Store subtitles next to media files (instead of metadata)",
     "type": "bool",

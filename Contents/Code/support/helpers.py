@@ -39,7 +39,7 @@ RE_UNICODE_CONTROL = u'([\u0000-\u0008\u000b-\u000c\u000e-\u001f\ufffe-\uffff])'
 
 
 def cast_bool(value):
-    return str(value) in ("true", "True")
+    return str(value).strip() in ("true", "True")
 
 
 # A platform independent way to split paths which might come in with different separators.

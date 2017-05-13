@@ -150,13 +150,21 @@ class PatchedSubtitle(Subtitle):
         submods.load(content=self.text, language=self.language)
         submods.modify(*self.mods)
 
-        return submods.to_string("srt", encoding=encoding).encode(encoding=encoding)
+        try:
+            return submods.to_unicode().encode(encoding=encoding)
+        except UnicodeEncodeError:
+            try:
+                return submods.to_unicode().encode(encoding="utf-8")
+            except UnicodeEncodeError:
+                return None
 
     def get_modified_text(self, debug=False):
         """
         :return: unicode 
         """
         content = self.get_modified_content(debug=debug)
+        if not content:
+            return
         encoding = self.guess_encoding()
         return content.decode(encoding=encoding)
 
