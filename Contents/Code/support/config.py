@@ -124,7 +124,7 @@ class Config(object):
         self.remove_hi = cast_bool(Prefs['subtitles.remove_hi'])
         self.fix_ocr = cast_bool(Prefs['subtitles.fix_ocr'])
         self.fix_common = cast_bool(Prefs['subtitles.fix_common'])
-        self.colors = Prefs['subtitles.colors'].strip() if Prefs['subtitles.colors'] else ""
+        self.colors = Prefs['subtitles.colors'] if Prefs['subtitles.colors'] != "don't change" else None
         self.enforce_encoding = cast_bool(Prefs['subtitles.enforce_encoding'])
         self.chmod = self.check_chmod()
         self.exotic_ext = cast_bool(Prefs["subtitles.scan.exotic_ext"])
@@ -460,8 +460,7 @@ class Config(object):
         if self.fix_common:
             mods.append("common")
         if self.colors:
-            if self.colors.startswith("#"):
-                mods.append("color(color=%s)" % self.colors)
+            mods.append("color(name=%s)" % self.colors)
 
         return mods
 

@@ -58,6 +58,12 @@ def SubtitleModificationsMenu(**kwargs):
         title=pad_title(shift_mod.description), summary=shift_mod.long_description or ""
     ))
 
+    color_mod = SubtitleModifications.get_mod_class("color")
+    oc.add(DirectoryObject(
+        key=Callback(SubtitleColorModMenu, randomize=timestamp(), **kwargs),
+        title=pad_title(color_mod.description), summary=color_mod.long_description or ""
+    ))
+
     if current_mods:
         oc.add(DirectoryObject(
             key=Callback(SubtitleSetMods, mods=None, mode="remove_last", randomize=timestamp(), **kwargs),
@@ -172,6 +178,29 @@ def SubtitleShiftModMenu(unit=None, **kwargs):
         oc.add(DirectoryObject(
             key=Callback(SubtitleSetMods, mods=mod_ident, mode="add", randomize=timestamp(), **kwargs),
             title="%s %s" % (("%s" if i < 0 else "+%s") % i, unit)
+        ))
+
+    return oc
+
+
+@route(PREFIX + '/item/sub_mod_colors/{rating_key}/{part_id}', force=bool)
+def SubtitleColorModMenu(**kwargs):
+    kwargs.pop("randomize")
+
+    color_mod = SubtitleModifications.get_mod_class("color")
+
+    oc = SubFolderObjectContainer(title2=kwargs["title"], replace_parent=True)
+
+    oc.add(DirectoryObject(
+        key=Callback(SubtitleModificationsMenu, randomize=timestamp(), **kwargs),
+        title="< Back to subtitle modification menu"
+    ))
+
+    for color, code in color_mod.colors.iteritems():
+        mod_ident = SubtitleModifications.get_mod_signature("color", **{"name": color})
+        oc.add(DirectoryObject(
+            key=Callback(SubtitleSetMods, mods=mod_ident, mode="add", randomize=timestamp(), **kwargs),
+            title="%s (%s)" % (color, code)
         ))
 
     return oc

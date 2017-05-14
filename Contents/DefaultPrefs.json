@@ -422,9 +422,28 @@
   },
   {
     "id": "subtitles.colors",
-    "label": "Change colors of subtitles to (#XXXXXX)",
-    "type": "text",
-    "default": ""
+    "label": "Change colors of subtitles to",
+    "type": "enum",
+    "values": [
+      "don't change",
+      "white",
+      "light-grey",
+      "red",
+      "green",
+      "yellow",
+      "blue",
+      "magenta",
+      "cyan",
+      "black",
+      "dark-red",
+      "dark-green",
+      "dark-yellow",
+      "dark-blue",
+      "dark-magenta",
+      "dark-cyan",
+      "dark-grey"
+    ],
+    "default": "don't change"
   },
   {
     "id": "subtitles.save.filesystem",

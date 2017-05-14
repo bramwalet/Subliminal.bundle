@@ -322,8 +322,17 @@ def set_mods_for_part(rating_key, part_id, language, item_type, mods, mode="add"
     if mode == "add":
         for mod in mods:
             identifier, args = SubtitleModifications.parse_identifier(mod)
+            mod_class = SubtitleModifications.get_mod_class(identifier)
+
             if identifier not in mod_registry.mods_available:
                 raise NotImplementedError("Mod unknown or not registered")
+
+            # clean exclusive mods
+            if mod_class.exclusive and current_sub.mods:
+                for current_mod in current_sub.mods[:]:
+                    if current_mod.startswith(identifier):
+                        current_sub.mods.remove(current_mod)
+                        Log.Info("Removing superseded mod %s" % current_mod)
 
             current_sub.add_mod(mod)
     elif mode == "clear":
