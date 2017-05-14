@@ -10,6 +10,15 @@ Checkout **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)**
 
 ## Changelog
 
+2.0.18.1245 RC5
+- core: add more debug info
+- core: fix subtitle modifications (was broken in RC4, created non-usable subtitles)
+- submod: add ANSI colors
+- menu/submod: add color mod menu
+- submod: exclusive mods now are mutually exclusive and get cleaned on duplicate
+- menu/core: naming
+
+
 2.0.17.1234 RC4
 - core: backport provider-download-retry implementation
 - core: implement custom user agent (for OpenSubtitles)
