@@ -174,7 +174,7 @@ class Config(object):
             except:
                 Log.Warn("Couldn't determine Plex Token")
         else:
-            Log("Did NOT find Preferences file - please check logfile and hierarchy. Aborting!")
+            Log("Did NOT find Preferences file - most likely Windows OS. Otherwise please check logfile and hierarchy.")
 
         # fixme: windows
 
