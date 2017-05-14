@@ -70,7 +70,7 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
     oc.add(DirectoryObject(
         key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title, force=True, randomize=timestamp(),
                      timeout=timeout * 1000),
-        title=u"Auto-search: %s" % item_title,
+        title=u"Force-find subtitles: %s" % item_title,
         summary="Issues a forced refresh, ignoring known subtitles and searching for new ones",
         thumb=item.thumb or default_thumb
     ))
