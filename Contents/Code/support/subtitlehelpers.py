@@ -193,7 +193,10 @@ def get_subtitles_from_metadata(part):
 def force_utf8(content):
     a = UnicodeDammit(content)
 
-    Log.Debug("detected encoding: %s (None: most likely already successfully decoded)" % a.original_encoding)
+    if a.original_encoding:
+        Log.Debug("detected encoding: %s (None: most likely already successfully decoded)" % a.original_encoding)
+    else:
+        Log.Debug("detected encoding: unicode (already decoded)")
 
     # easy way out - already utf-8
     if a.original_encoding and a.original_encoding == "utf-8":
