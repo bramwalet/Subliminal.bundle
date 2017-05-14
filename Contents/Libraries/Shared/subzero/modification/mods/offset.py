@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 class ShiftOffset(SubtitleModification):
     identifier = "shift_offset"
     description = "Change the timing of the subtitle"
-    exclusive = True
+    exclusive = False
     advanced = True
     modifies_whole_file = True
 
