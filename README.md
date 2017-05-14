@@ -18,6 +18,8 @@ Checkout **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)**
 - submod: exclusive mods now are mutually exclusive and get cleaned on duplicate
 - menu/core: naming
 
+For everyone who runs RC4: your subtitles are broken. Go to the advanced menu and trigger `Re-Apply mods of all stored subtitles` to fix them.
+
 
 2.0.17.1234 RC4
 - core: backport provider-download-retry implementation
