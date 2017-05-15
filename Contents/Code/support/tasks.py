@@ -505,9 +505,27 @@ class SubtitleStorageMaintenance(Task):
             Log.Info("Nothing to do")
 
 
+class MigrateSubtitleStorage(Task):
+    periodic = False
+    frequency = None
+
+    def run(self):
+        super(MigrateSubtitleStorage, self).run()
+        self.running = True
+        Log.Info("Running subtitle storage migration")
+        storage = get_subtitle_storage()
+        for fn in storage.get_all_files():
+            if fn.endswith(".json.gz"):
+                continue
+            Log.Debug("Migrating %s", fn)
+            storage.load(None, fn)
+
+
 scheduler.register(SearchAllRecentlyAddedMissing)
 scheduler.register(AvailableSubsForItem)
 scheduler.register(DownloadSubtitleForItem)
 scheduler.register(MissingSubtitles)
 scheduler.register(FindBetterSubtitles)
 scheduler.register(SubtitleStorageMaintenance)
+scheduler.register(MigrateSubtitleStorage)
+

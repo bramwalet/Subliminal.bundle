@@ -6,10 +6,13 @@ import logging
 import traceback
 import gzip
 
-from json_tricks.nonp import dumps, loads
+from babelfish import Language
+
+from json_tricks.nonp import loads, dumps
 
 
 from constants import mode_map
+from subliminal_patch.subtitle import ModifiedSubtitle
 
 logger = logging.getLogger(__name__)
 
@@ -63,9 +66,10 @@ class JSONStoredSubtitle(object):
     mode = "a"  # auto/manual/auto-better (a/m/b)
     content = None
     mods = None
+    encoding = None
 
     def initialize(self, score, storage_type, hash, provider_name, id, date_added=None, mode="a", content=None,
-                 mods=None):
+                 mods=None, encoding=None):
         self.score = int(score)
         self.storage_type = storage_type
         self.hash = hash
@@ -75,6 +79,7 @@ class JSONStoredSubtitle(object):
         self.mode = mode
         self.content = content
         self.mods = mods or []
+        self.encoding = encoding
 
     def add_mod(self, identifier):
         self.mods = self.mods or []
@@ -89,9 +94,13 @@ class JSONStoredSubtitle(object):
         return mode_map.get(self.mode, "Unknown")
 
     def serialize(self):
+        if self.content:
+            self.content = self.content.decode(self.encoding)
         return self.__dict__
 
     def deserialize(self, data):
+        if data["content"]:
+            data["content"] = data["content"].encode(data["encoding"])
         self.initialize(**data)
 
 
@@ -222,11 +231,19 @@ class JSONStoredVideoSubtitles(object):
             for language, sub_data in part.iteritems():
                 data["parts"][part_id][language] = {}
 
-                for sub_key, subtitle in sub_data.iteritems():
+                for sub_key, stored_subtitle in sub_data.iteritems():
                     if sub_key == "current":
-                        data["parts"][part_id][language]["current"] = "__".join(subtitle)
+                        data["parts"][part_id][language]["current"] = "__".join(stored_subtitle)
                     else:
-                        data["parts"][part_id][language]["__".join(sub_key)] = subtitle.serialize()
+                        # migrate missing encoding data
+                        if stored_subtitle.content and not stored_subtitle.encoding:
+                            # correctly serialize the content
+                            lang = Language.fromietf(language)
+                            subtitle = ModifiedSubtitle(lang)
+                            subtitle.content = stored_subtitle.content
+                            stored_subtitle.encoding = subtitle.guess_encoding()
+
+                        data["parts"][part_id][language]["__".join(sub_key)] = stored_subtitle.serialize()
 
         return data
 
@@ -246,7 +263,7 @@ class JSONStoredVideoSubtitles(object):
         subs[sub_key] = JSONStoredSubtitle()
         subs[sub_key].initialize(subtitle.score, storage_type, hashlib.md5(subtitle.content).hexdigest(),
                                  subtitle.provider_name, subtitle.id, date_added=date_added, mode=mode,
-                                 content=subtitle.content, mods=subtitle.mods)
+                                 content=subtitle.content, mods=subtitle.mods, encoding=subtitle.guess_encoding())
         subs["current"] = sub_key
 
         return True
