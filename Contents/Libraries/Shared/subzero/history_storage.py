@@ -76,7 +76,6 @@ class SubtitleHistory(object):
             self.history_items = []
 
     def add(self, item_title, rating_key, section_title=None, subtitle=None, mode="a", time=None):
-        # create copy
         items = self.history_items
         item = SubtitleHistoryItem(item_title, rating_key, section_title=section_title, subtitle=subtitle, mode=mode, time=time)
 
