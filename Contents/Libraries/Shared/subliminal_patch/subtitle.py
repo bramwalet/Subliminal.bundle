@@ -23,6 +23,8 @@ class PatchedSubtitle(Subtitle):
     skip_wrong_fps = False
     wrong_fps = False
 
+    _guessed_encoding = None
+
     def __init__(self, language, hearing_impaired=False, page_link=None, encoding=None, mods=None):
         super(PatchedSubtitle, self).__init__(language, hearing_impaired=hearing_impaired, page_link=page_link,
                                               encoding=encoding)
@@ -39,6 +41,9 @@ class PatchedSubtitle(Subtitle):
         :rtype: str
 
         """
+        if self._guessed_encoding:
+            return self._guessed_encoding
+
         logger.info('Guessing encoding for language %s', self.language.alpha3)
 
         encodings = ['utf-8']
@@ -88,6 +93,7 @@ class PatchedSubtitle(Subtitle):
                 pass
             else:
                 logger.info('Guessed encoding %s', encoding)
+                self._guessed_encoding = encoding
                 return encoding
 
         logger.warning('Could not guess encoding from language')
@@ -104,9 +110,11 @@ class PatchedSubtitle(Subtitle):
             Log.Debug("bs4 detected encoding: %s" % a.original_encoding)
 
             if a.original_encoding:
+                self._guessed_encoding = a.original_encoding
                 return a.original_encoding
             raise ValueError(u"Couldn't guess the proper encoding for %s" % self)
 
+        self._guessed_encoding = encoding
         return encoding
 
     def is_valid(self):
