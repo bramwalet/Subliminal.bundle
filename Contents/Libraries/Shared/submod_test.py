@@ -22,9 +22,9 @@ submod.modify("remove_HI", "OCR_fixes", "common", "shift_offset(s=20)", "color(c
 
 srt = submod.to_unicode()
 #print repr(srt)
-f = codecs.open("testout.srt", "w+", encoding="latin-1")
-f.write(srt)
-f.close()
+#f = codecs.open("testout.srt", "w+", encoding="latin-1")
+#f.write(srt)
+#f.close()
 #print submod.f.to_string("srt")
 #submod.modify("OCR_fixes")
 #submod.modify("change_FPS(from=24,to=25)")
