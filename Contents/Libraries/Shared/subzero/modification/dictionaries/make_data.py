@@ -39,10 +39,10 @@ if __name__ == "__main__":
                                                       + ur')\b') if d else None),
                     ("PartialWordsAlways", "WordPart", None),
                     ("PartialLines", "LinePart", None),
-                    ("BeginLines", "Beginning", lambda d: (ur"(?um)^"+u"|".join([re.escape(k) for k in d.keys()])
-                                                           ) if d else None),
-                    ("EndLines", "Ending", lambda d: (ur"(?um)" + u"|".join([re.escape(k) for k in d.keys()]) + ur"$"
-                                                      ) if d else None,),
+                    ("BeginLines", "Beginning", lambda d: (ur"(?um)^(?:"+u"|".join([re.escape(k) for k in d.keys()])
+                                                           + ur')') if d else None),
+                    ("EndLines", "Ending", lambda d: (ur"(?um)(?:" + u"|".join([re.escape(k) for k in d.keys()]) +
+                                                      ur")$") if d else None,),
             )
 
             data[lang] = dict((grp, {"data": OrderedDict(), "pattern": None}) for grp, item_name, pattern in fetch_data)
