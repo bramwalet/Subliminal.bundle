@@ -39,7 +39,7 @@ class FixOCR(SubtitleTextModification):
             MultipleWordReProcessor(self.data_dict["WholeWords"], name="SE_replace_word"),
             MultipleWordReProcessor(self.data_dict["BeginLines"], name="SE_replace_beginline"),
             MultipleWordReProcessor(self.data_dict["EndLines"], name="SE_replace_endline"),
-            MultipleLineProcessor(self.data_dict["PartialLines"], name="SE_replace_partialline"),
+            MultipleWordReProcessor(self.data_dict["PartialLines"], name="SE_replace_partialline"),
             MultipleLineProcessor(self.data_dict["PartialWordsAlways"], name="SE_replace_partialwordsalways")
         ]
 

@@ -17,7 +17,7 @@ if debug:
     logging.basicConfig(level=logging.DEBUG)
 
 submod = SubMod(debug=debug)
-submod.load(fn, language=Language.fromietf("spa"), encoding="latin-1")
+submod.load(fn, language=Language.fromietf("eng"), encoding="utf-8")
 submod.modify("remove_HI", "OCR_fixes", "common", "shift_offset(s=20)", "color(color=#FF0000)")
 
 srt = submod.to_unicode()

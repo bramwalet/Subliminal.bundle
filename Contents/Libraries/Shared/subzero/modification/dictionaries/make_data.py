@@ -52,7 +52,9 @@ if __name__ == "__main__":
                     ("WholeWords", "Word", lambda d: (ur"(?um)\b(?:" + u"|".join([re.escape(k) for k in d.keys()])
                                                       + ur')\b') if d else None),
                     ("PartialWordsAlways", "WordPart", None),
-                    ("PartialLines", "LinePart", None),
+                    ("PartialLines", "LinePart", lambda d: (ur"(?um)(?:(?<=\s)|(?<=^)|(?<=\b))(?:" +
+                                                            u"|".join([re.escape(k) for k in d.keys()]) +
+                                                            ur")(?:(?=\s)|(?=$)|(?=\b))") if d else None),
                     ("BeginLines", "Beginning", lambda d: (ur"(?um)^(?:"+u"|".join([re.escape(k) for k in d.keys()])
                                                            + ur')') if d else None),
                     ("EndLines", "Ending", lambda d: (ur"(?um)(?:" + u"|".join([re.escape(k) for k in d.keys()]) +
