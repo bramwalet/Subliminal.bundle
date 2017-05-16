@@ -168,9 +168,13 @@ def parse(stream, specs, size=None, ignore_element_types=None, ignore_element_na
     while size is None or stream.tell() - start < size:
         try:
             element = parse_element(stream, specs)
+            if not element or not hasattr(element, "type"):
+                stream.seek(element.size, 1)
+                continue
+
             if element.type is None:
-                logger.error('Element with id 0x%x is not in the specs' % element_id)
-                stream.seek(element_size, 1)
+                logger.error('Element with id 0x%x is not in the specs' % element.id)
+                stream.seek(element.size, 1)
                 continue
             elif element.type in ignore_element_types or element.name in ignore_element_names:
                 logger.info('%s %s %s ignored', element.__class__.__name__, element.name, element.type)
