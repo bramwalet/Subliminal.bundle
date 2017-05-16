@@ -24,12 +24,14 @@ for lang, grps in data.iteritems():
 SZ_FIX_DATA = {
     "eng": {
         "PartialWordsAlways": {
-            u"°x°": u"%"
+            u"°x°": u"%",
+            u"compiete": u"complete",
         },
         "WholeWords": {
             u"I'11": u"I'll",
             u"Tun": u"Run",
             u"pan'": u"part",
+            u"al'": u"at",
         }
     }
 }

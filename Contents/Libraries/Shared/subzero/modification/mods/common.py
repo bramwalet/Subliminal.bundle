@@ -53,8 +53,8 @@ class CommonFixes(SubtitleTextModification):
         # replace uppercase I with lowercase L in words
         NReProcessor(re.compile(r'(?u)([A-z]+)I([a-z]+)'), r"\1l\2", name="CM_uppercase_i_in_word"),
 
-        # fix spaces in numbers
-        NReProcessor(re.compile(r'(?u)([0-9]+)[\s]+([0-9:.]*[0-9]+)'), r"\1\2", name="CM_spaces_in_numbers"),
+        # fix spaces in numbers (allows for punctuation: ,.:'
+        NReProcessor(re.compile(r'(?u)([0-9]+[0-9,.:\']*)\s+([0-9,.:\']*[0-9]+)'), r"\1\2", name="CM_spaces_in_numbers"),
     ]
 
 
