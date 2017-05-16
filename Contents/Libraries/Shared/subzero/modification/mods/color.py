@@ -45,6 +45,7 @@ class Color(SubtitleModification):
         color = self.colors.get(kwargs.get("name"))
         if color:
             return u'<font color="%s">%s</font>' % (color, content)
+        return content
 
 
 registry.register(Color)
