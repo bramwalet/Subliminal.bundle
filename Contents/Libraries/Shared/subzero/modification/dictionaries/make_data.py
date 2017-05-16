@@ -20,6 +20,20 @@ for lang, grps in data.iteritems():
             data[lang][grp]["pattern"] = re.compile(data[lang][grp]["pattern"])
 """
 
+
+SZ_FIX_DATA = {
+    "eng": {
+        "PartialWordsAlways": {
+            u"°x°": u"%"
+        },
+        "WholeWords": {
+            u"I'11": u"I'll",
+            u"Tun": u"Run",
+            u"pan'": u"part",
+        }
+    }
+}
+
 if __name__ == "__main__":
     cur_dir = os.path.dirname(os.path.realpath(__file__))
     xml_dir = os.path.join(cur_dir, "xml")
@@ -51,6 +65,10 @@ if __name__ == "__main__":
                 for grp_data in soup.find_all(grp):
                     for line in grp_data.find_all(item_name):
                         data[lang][grp]["data"][line["from"]] = line["to"]
+
+                # add our own dictionaries
+                if lang in SZ_FIX_DATA and grp in SZ_FIX_DATA[lang]:
+                    data[lang][grp]["data"].update(SZ_FIX_DATA[lang][grp])
 
                 if pattern:
                     data[lang][grp]["pattern"] = pattern(data[lang][grp]["data"])
