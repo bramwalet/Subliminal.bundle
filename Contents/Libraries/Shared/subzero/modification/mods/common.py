@@ -18,6 +18,12 @@ class CommonFixes(SubtitleTextModification):
     """
 
     processors = [
+        # -- = ...
+        StringProcessor("-- ", '... ', name="CM_doubledash"),
+
+        # remove leading ...
+        NReProcessor(re.compile(r'(?u)^\.\.\.[\s]*'), "", name="CM_leading_ellipsis"),
+
         # no space after ellipsis
         NReProcessor(re.compile(r'(?u)\.\.\.(?![\s.,!?\'"])(?!$)'), "... ", name="CM_ellipsis_no_space"),
 
@@ -41,14 +47,8 @@ class CommonFixes(SubtitleTextModification):
 
         # space before ending doublequote?
 
-        # -- = ...
-        StringProcessor("-- ", '... ', name="CM_doubledash"),
-
         # remove >>
         NReProcessor(re.compile(r'(?u)^>>[\s]*'), "", name="CM_leading_crocodiles"),
-
-        # remove leading ...
-        NReProcessor(re.compile(r'(?u)^\.\.\.[\s]*'), "", name="CM_leading_ellipsis"),
 
         # replace uppercase I with lowercase L in words
         NReProcessor(re.compile(r'(?u)([A-z]+)I([a-z]+)'), r"\1l\2", name="CM_uppercase_i_in_word"),
