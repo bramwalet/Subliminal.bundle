@@ -10,6 +10,19 @@ Checkout **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)**
 
 ## Changelog
 
+2.0.19.1267 RC6
+- core: add new SZ subtitle storage format
+  - smaller data files and less cumbersome
+  - it will auto migrate when old data is accessed - to speed this up, use "Trigger subtitle storage migration (expensive)" in advanced menu)
+- core: performance optimizations
+- addic7ed: when release group matches, assume the format matches, too (leftover change from RC5)
+- submod: fix patterns for beginlines/endlines
+- submod: add our own dictionaries to OCR fixes (english)
+- submod: hearing impaired: also remove full-caps with punctuation inside
+- submod: correctly handle partiallines
+- submod: in numbers with spaces (incorrect), also allow for some punctuation (,.:')
+
+
 2.0.18.1245 RC5
 - core: add more debug info
 - core: fix subtitle modifications (was broken in RC4, created non-usable subtitles)
