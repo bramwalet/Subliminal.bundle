@@ -88,7 +88,7 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
     for media in plex_item.media:
         for part in media.parts:
             filename = os.path.basename(part.file)
-            if not os.path.exists(filename):
+            if not os.path.exists(part.file):
                 continue
 
             part_id = str(part.id)
