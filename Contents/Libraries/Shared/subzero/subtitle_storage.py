@@ -314,7 +314,9 @@ class StoredSubtitlesManager(object):
         return os.path.join(getattr(self.storage, "_core").storage.data_path, "DataItems")
 
     def get_json_data_path(self, bare_fn):
-        return os.path.join(self.dataitems_path, "%s%s" % (bare_fn, self.extension))
+        if not bare_fn.endswith(self.extension):
+            return os.path.join(self.dataitems_path, "%s%s" % (bare_fn, self.extension))
+        return os.path.join(self.dataitems_path, bare_fn)
 
     def get_all_files(self):
         return [fn for fn in os.listdir(self.dataitems_path) if fn.startswith("subs_")]
@@ -400,10 +402,11 @@ class StoredSubtitlesManager(object):
 
             subs_for_video.deserialize(data)
 
-        elif os.path.exists(os.path.join(self.dataitems_path, bare_fn)):
+        elif not bare_fn.endswith(".json.gz") and os.path.exists(os.path.join(self.dataitems_path, bare_fn)):
             subs_for_video = self.migrate_legacy_data(bare_fn, json_path)
-            if not subs_for_video:
-                return
+
+        if not subs_for_video:
+            return
 
         # apply possible migrations
         cur_ver = old_ver = subs_for_video.version
