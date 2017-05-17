@@ -60,14 +60,14 @@ class CommonFixes(SubtitleTextModification):
         NReProcessor(re.compile(r'(?u)^>>[\s]*'), "", name="CM_leading_crocodiles"),
 
         # replace uppercase I with lowercase L in words
-        NReProcessor(re.compile(r'(?u)([A-z]+)I([a-z]+)'), r"\1l\2", name="CM_uppercase_i_in_word"),
+        NReProcessor(re.compile(r'(?u)([À-ž]+)I([à-ž]+)'), r"\1l\2", name="CM_uppercase_i_in_word"),
 
         # fix spaces in numbers (allows for punctuation: ,.:' (comma only fixed if after space, those may be
         # countdowns otherwise)
         NReProcessor(re.compile(r'(?u)([0-9]+[0-9.:\']*)\s+([0-9,.:\']*[0-9]+)'), r"\1\2", name="CM_spaces_in_numbers"),
 
         # uppercase after dot
-        NReProcessor(re.compile(r'(?u)(.+\.\s+)([a-z])'),
+        NReProcessor(re.compile(r'(?u)(.+\.\s+)([à-ž])'),
                      lambda match: ur'%s%s' % (match.group(1), match.group(2).upper()), name="CM_uppercase_after_dot"),
     ]
 
