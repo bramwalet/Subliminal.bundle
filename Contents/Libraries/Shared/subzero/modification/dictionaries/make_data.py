@@ -26,6 +26,7 @@ SZ_FIX_DATA = {
         "PartialWordsAlways": {
             u"°x°": u"%",
             u"compiete": u"complete",
+            u"Âs": u"'s",
         },
         "WholeWords": {
             u"I'11": u"I'll",
