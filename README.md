@@ -45,9 +45,9 @@ With Sub-Zero 2.0 automatic and manual subtitle modifications have been included
 They currently consist of six individual mods:
 - **Offset**: Your subtitle is out of sync? Manually adjust the timing of your subtitles
 - **FPS**: Your subtitle is getting slower over time, or faster over time? Maybe the framerate is wrong. The FPS mod can fix that.
-- **Hearing Impaired**: Removes HI-tags from subtitles (such as *(SIRENS WAIL)*, *DOCTOR: Rose!*)
+- **Hearing Impaired**: Removes HI-tags from subtitles (such as `(SIRENS WAIL)`, `DOCTOR: Rose!`)
 - **Color**: Adds color to your subtitles (for playback devices/software that don't ship their own color modes; only works for players that support color tags)
-- **Common**: fixes common issues in subtitles, such as punctuation (*-- I don't know!* -> *... I don't know!*; *over 9 000!* -> *over 9000!*)
+- **Common**: fixes common issues in subtitles, such as punctuation (`-- I don't know!` -> `... I don't know!`; `over 9 000!` -> `over 9000!`)
 - **OCR**: fixes problems in subtitles introduced by OCR (custom implementation of [SubtitleEdit](https://github.com/SubtitleEdit/subtitleedit)'s dictionaries) (`hands agaInst the waII!` -> `hands against the wall!`)
 
 Hearing Impaired, Common and OCR can be applied automatically on every subtitle downloaded. All mods are manually managable via the channel menu.
