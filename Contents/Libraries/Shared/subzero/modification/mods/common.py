@@ -49,10 +49,10 @@ class CommonFixes(SubtitleTextModification):
         NReProcessor(re.compile(r'(?u)^(?!\s?(\.\s\.\s\.)|(\s?\.{3}))[\s.]*'), "", name="CM_starting_spacedots"),
 
         # space missing before doublequote
-        #ReProcessor(re.compile(r'(?u)(?<!^)(?<![\s(\["])("[^"]+")'), r' \1', name="CM_space_before_dblquote"),
+        # ReProcessor(re.compile(r'(?u)(?<!^)(?<![\s(\["])("[^"]+")'), r' \1', name="CM_space_before_dblquote"),
 
         # space missing after doublequote
-        #ReProcessor(re.compile(r'(?u)("[^"\s][^"]+")([^\s.,!?)\]]+)'), r"\1 \2", name="CM_space_after_dblquote"),
+        # ReProcessor(re.compile(r'(?u)("[^"\s][^"]+")([^\s.,!?)\]]+)'), r"\1 \2", name="CM_space_after_dblquote"),
 
         # space before ending doublequote?
 
@@ -65,6 +65,10 @@ class CommonFixes(SubtitleTextModification):
         # fix spaces in numbers (allows for punctuation: ,.:' (comma only fixed if after space, those may be
         # countdowns otherwise)
         NReProcessor(re.compile(r'(?u)([0-9]+[0-9.:\']*)\s+([0-9,.:\']*[0-9]+)'), r"\1\2", name="CM_spaces_in_numbers"),
+
+        # uppercase after dot
+        NReProcessor(re.compile(r'(?u)(.+\.\s+)([a-z])'),
+                     lambda match: ur'%s%s' % (match.group(1), match.group(2).upper()), name="CM_uppercase_after_dot"),
     ]
 
 
