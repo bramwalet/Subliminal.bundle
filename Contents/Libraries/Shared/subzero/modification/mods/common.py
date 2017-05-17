@@ -67,7 +67,7 @@ class CommonFixes(SubtitleTextModification):
         NReProcessor(re.compile(r'(?u)([0-9]+[0-9.:\']*)\s+([0-9,.:\']*[0-9]+)'), r"\1\2", name="CM_spaces_in_numbers"),
 
         # uppercase after dot
-        NReProcessor(re.compile(r'(?u)(.+\.\s+)([à-ž])'),
+        NReProcessor(re.compile(r'(?u)((?:[^.\s])+\.\s+)([à-ž])'),
                      lambda match: ur'%s%s' % (match.group(1), match.group(2).upper()), name="CM_uppercase_after_dot"),
     ]
 
