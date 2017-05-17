@@ -32,6 +32,9 @@ SZ_FIX_DATA = {
             u"Tun": u"Run",
             u"pan'": u"part",
             u"al'": u"at",
+            u"a re": u"are",
+            u"Mr": u"Mr.",
+            u"wail'": u"wait",
         }
     }
 }
