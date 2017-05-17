@@ -26,6 +26,8 @@ take them balls it
 6
 00:00:19,686 --> 00:00:21,103
 Ithinkyou're About half a miIe underground. ls it
+Don't fix this countdown: 81, 80, 79, 78
+But fix this: 81 ,00
 
 7
 00:00:21,103 --> 00:00:23,603
