@@ -13,7 +13,7 @@ Checkout **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)**
 Sub-Zero is a metadata agent and channel at the same time, for the popular Plex Media Server environment.
 
 #### Why not use the builtin OpenSubtitles agent?
-Because it doesn't deliver. Especially for very new media items it may pick up none or bad subtitles for your media.
+Because it doesn't deliver. Especially for very new media items it may pick up none or bad subtitles for your media. Also it doesn't know when "better" subtitles get released for your media file.
 
 ## Key-Features
 This is just a tiny peek at the full feature-set of Sub-Zero.
@@ -43,12 +43,12 @@ It allows you to trigger background tasks, browse your library based on several 
 #### Subtitle Modifications
 With Sub-Zero 2.0 automatic and manual subtitle modifications have been included.
 They currently consist of six individual mods:
-- **Offset**: your subtitle is out of sync? Offset can manipulate the timing of the subtitles
-- **FPS**: your subtitle is getting slower over time, or faster over time? Maybe the framerate is wrong. The FPS mod can fix that.
-- **Hearing Impaired**: removes HI-tags from subtitles
-- **Color**: adds color to your subtitles (for playback devices/software that don't ship their own color modes; only works for players that support color tags)
-- **Common**: fixes common issues in subtitles, such as punctuation
-- **OCR**: fixes problems in subtitles introduced by OCR (custom implementation of [SubtitleEdit](https://github.com/SubtitleEdit/subtitleedit)'s dictionaries)
+- **Offset**: Your subtitle is out of sync? Manually adjust the timing of your subtitles
+- **FPS**: Your subtitle is getting slower over time, or faster over time? Maybe the framerate is wrong. The FPS mod can fix that.
+- **Hearing Impaired**: Removes HI-tags from subtitles (such as `(SIRENS WAIL)`, `DOCTOR: Rose!`
+- **Color**: Adds color to your subtitles (for playback devices/software that don't ship their own color modes; only works for players that support color tags)
+- **Common**: fixes common issues in subtitles, such as punctuation (`-- I don't know!` -> `... I don't know!`; `over 9 000!` -> `over 9000!`)
+- **OCR**: fixes problems in subtitles introduced by OCR (custom implementation of [SubtitleEdit](https://github.com/SubtitleEdit/subtitleedit)'s dictionaries) (`hands agaInst the waII!` -> `hands against the wall!`)
 
 Hearing Impaired, Common and OCR can be applied automatically on every subtitle downloaded. All mods are manually managable via the channel menu.
 
