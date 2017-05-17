@@ -15,6 +15,8 @@ Sub-Zero is a metadata agent and channel at the same time, for the popular Plex 
 #### Why not use the builtin OpenSubtitles agent?
 Because it doesn't deliver. Especially for very new media items it may pick up none or bad subtitles for your media. Also it doesn't know when "better" subtitles get released for your media file.
 
+*Mostly all of the key-features listed below don't apply to the default OpenSubtitles subtitle agent in Plex.*
+
 ## Key-Features
 This is just a tiny peek at the full feature-set of Sub-Zero.
 
@@ -53,7 +55,7 @@ They currently consist of six individual mods:
 - **Common**: fixes common issues in subtitles, such as punctuation (`-- I don't know!` -> `... I don't know!`; `over 9 000!` -> `over 9000!`)
 - **OCR**: fixes problems in subtitles introduced by OCR (custom implementation of [SubtitleEdit](https://github.com/SubtitleEdit/subtitleedit)'s dictionaries) (`hands agaInst the waII!` -> `hands against the wall!`)
 
-Hearing Impaired, Common and OCR can be applied automatically on every subtitle downloaded. All mods are manually managable via the channel menu.
+Hearing Impaired, Common, OCR and Color can be applied automatically on every subtitle downloaded. All mods are manually managable via the channel menu.
 
 Mods are applied on-the-fly, the original content of the subtitle stays available, so mods are completely reversible.
 
