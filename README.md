@@ -30,6 +30,9 @@ Additionally you can specify a fixed location for *all* your subtitles, or pre-d
 
 If you don't want SRT files lying around in your library, you also have the option to store subtitles inside the internal metadata storage of the Plex Media Server.
 
+#### Automation
+Sub-Zero comes with its own background task scheduler. It periodically searches for missing subtitles and better subtitles for your media files.
+
 #### Personalization
 Via the preferences you can configure almost every parameter Sub-Zero uses when handling your subtitles.
 
