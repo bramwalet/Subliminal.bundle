@@ -453,10 +453,10 @@ class Config(object):
 
     def get_default_mods(self):
         mods = []
-        if self.remove_hi:
-            mods.append("remove_HI")
         if self.fix_ocr:
             mods.append("OCR_fixes")
+        if self.remove_hi:
+            mods.append("remove_HI")
         if self.fix_common:
             mods.append("common")
         if self.colors:
