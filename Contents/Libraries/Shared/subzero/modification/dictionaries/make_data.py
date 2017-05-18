@@ -27,6 +27,7 @@ SZ_FIX_DATA = {
             u"°x°": u"%",
             u"compiete": u"complete",
             u"Âs": u"'s",
+            u"ÃÂs": u"'s",
         },
         "WholeWords": {
             u"I'11": u"I'll",
@@ -35,6 +36,7 @@ SZ_FIX_DATA = {
             u"al'": u"at",
             u"a re": u"are",
             u"wail'": u"wait",
+            u"he)'": u"hey",
         }
     }
 }
