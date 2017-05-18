@@ -57,7 +57,7 @@ class CommonFixes(SubtitleTextModification):
         # space before ending doublequote?
 
         # remove >>
-        NReProcessor(re.compile(r'(?u)^>>[\s]*'), "", name="CM_leading_crocodiles"),
+        NReProcessor(re.compile(r'(?u)^\s?>>\s*'), "", name="CM_leading_crocodiles"),
 
         # replace uppercase I with lowercase L in words
         NReProcessor(re.compile(ur'(?u)([A-zÀ-ž]+)I([à-ž]+)'), r"\1l\2", name="CM_uppercase_i_in_word"),
