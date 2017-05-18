@@ -32,10 +32,20 @@ class NReProcessor(ReProcessor):
         lines = []
         for line in content.split(r"\N"):
             a = line.strip()
+            # clean {\i0} tags
+            start_tag = u""
+            end_tag = u""
+            if a.startswith(u"{\\"):
+                start_tag = a[:5]
+                a = a[5:]
+            if a.endswith(u"0}"):
+                end_tag = a[-5:]
+                a = a[:-5]
+
             a = super(NReProcessor, self).process(a, debug=debug)
             if not a:
                 continue
-            lines.append(a)
+            lines.append(start_tag + a + end_tag)
         return r"\N".join(lines)
 
 
