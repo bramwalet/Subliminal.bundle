@@ -30,6 +30,10 @@ class HearingImpaired(SubtitleTextModification):
 
         # dash in front
         # NReProcessor(re.compile(r'(?u)^\s*-\s*'), "", name="HI_starting_dash"),
+
+        # all caps at start before new sentence (?u)^(?=[A-ZÀ-Ž]{4,})[A-ZÀ-Ž-_\s]+\s([A-ZÀ-Ž][a-zà-ž].+)
+        NReProcessor(re.compile(ur'(?u)^(?=[A-ZÀ-Ž]{4,})[A-ZÀ-Ž-_\s]+\s([A-ZÀ-Ž][a-zà-ž].+)'), r"\1",
+                     name="HI_starting_upper_then_sentence"),
     ]
 
 

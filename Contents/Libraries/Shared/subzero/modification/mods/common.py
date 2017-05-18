@@ -64,6 +64,7 @@ class CommonFixes(SubtitleTextModification):
 
         # fix spaces in numbers (allows for punctuation: ,.:' (comma only fixed if after space, those may be
         # countdowns otherwise)
+        # fixme: maybe check whether it's a countdown (second part smaller than the first), otherwise handle default?
         NReProcessor(re.compile(r'(?u)([0-9]+[0-9.:\']*)\s+([0-9,.:\']*[0-9]+)'), r"\1\2", name="CM_spaces_in_numbers"),
 
         # uppercase after dot
