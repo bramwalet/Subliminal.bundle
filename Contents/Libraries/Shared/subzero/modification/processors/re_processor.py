@@ -28,17 +28,19 @@ class NReProcessor(ReProcessor):
     Single line regex processor
     """
 
+    font_style_tag_start = u"{\\"
+
     def process(self, content, debug=False):
         lines = []
         for line in content.split(r"\N"):
             a = line.strip()
-            # clean {\i0} tags
+            # clean {\X0} tags
             start_tag = u""
             end_tag = u""
-            if a.startswith(u"{\\"):
+            if a.startswith(self.font_style_tag_start):
                 start_tag = a[:5]
                 a = a[5:]
-            if a.endswith(u"0}"):
+            if a[-5:-3] == self.font_style_tag_start:
                 end_tag = a[-5:]
                 a = a[:-5]
 
