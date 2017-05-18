@@ -31,7 +31,8 @@ But fix this: 81 ,00
 
 7
 00:00:21,103 --> 00:00:23,603
-lrn gonna And when are we?
+<i>(laughing): lrn gonna And when are we? (chuckles)
+lrn gonna And when are we?</i>
 
 8
 00:00:24,274 --> 00:00:26,649
@@ -70,6 +71,7 @@ Someone's got a   hobby.
 00:00:46,378 --> 00:00:49,048
 FULL UPPERCASE LINE HERE
 and some text
+- (chuckles)
 
 17
 00:00:49,631 --> 00:00:51,924
