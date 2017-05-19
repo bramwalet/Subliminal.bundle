@@ -76,6 +76,7 @@ class SubtitleModifications(object):
         new_f = []
 
         parsed_mods = [SubtitleModifications.parse_identifier(mod) for mod in mods]
+        final_mods = {}
         line_mods = []
         non_line_mods = []
 
@@ -85,11 +86,25 @@ class SubtitleModifications(object):
                 continue
 
             mod_cls = registry.mods[identifier]
+            # exclusive mod, kill old, use newest
+            if identifier in final_mods and mod_cls.exclusive:
+                final_mods.pop(identifier)
+
+            # merge args of duplicate mods if possible
+            elif identifier in final_mods and mod_cls.args_mergeable:
+                final_mods[identifier] = mod_cls.merge_args(final_mods[identifier], args)
+                continue
+            final_mods[identifier] = args
+
+        # separate all mods into line and non-line mods
+        for identifier, args in final_mods.iteritems():
+            mod_cls = registry.mods[identifier]
             if mod_cls.modifies_whole_file:
                 non_line_mods.append((identifier, args))
             else:
                 line_mods.append((mod_cls.order, identifier, args))
 
+            # initialize the mods
             if identifier not in self.initialized_mods:
                 self.initialized_mods[identifier] = mod_cls(self)
 
@@ -128,10 +143,6 @@ class SubtitleModifications(object):
 
                     for order, identifier, args in line_mods:
                         mod = self.initialized_mods[identifier]
-
-                        # don't bother reapplying exclusive mods multiple times
-                        if mod.exclusive and identifier in applied_mods:
-                            continue
 
                         line = mod.modify(line.strip(), debug=self.debug, parent=self, **args)
                         if not line:

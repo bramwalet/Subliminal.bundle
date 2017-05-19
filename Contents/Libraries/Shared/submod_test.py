@@ -18,7 +18,7 @@ if debug:
 
 submod = SubMod(debug=debug)
 submod.load(fn, language=Language.fromietf("eng"), encoding="utf-8")
-submod.modify("remove_HI", "OCR_fixes", "common", "shift_offset(s=20)", "color(color=#FF0000)")
+submod.modify("remove_HI", "OCR_fixes", "common", "OCR_fixes", "shift_offset(s=20)", "OCR_fixes", "color(color=#FF0000)", "shift_offset(s=-5, ms=-350)")
 
 srt = submod.to_unicode()
 #print repr(srt)

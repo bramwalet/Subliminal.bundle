@@ -13,6 +13,7 @@ class SubtitleModification(object):
     long_description = None
     exclusive = False
     advanced = False  # has parameters
+    args_mergeable = False
     order = None
     modifies_whole_file = False  # operates on the whole file, not individual entries
     pre_processors = []
@@ -72,6 +73,10 @@ class SubtitleModification(object):
     def get_signature(cls, **kwargs):
         string_args = ",".join(["%s=%s" % (key, value) for key, value in kwargs.iteritems()])
         return "%s(%s)" % (cls.identifier, string_args)
+
+    @classmethod
+    def merge_args(cls, args1, args2):
+        raise NotImplementedError
 
 
 class SubtitleTextModification(SubtitleModification):
