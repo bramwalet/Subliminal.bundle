@@ -105,14 +105,14 @@ class SubtitleModifications(object):
         return line_mods, non_line_mods
 
     def modify(self, *mods):
-        new_f = []
+        new_entries = []
         start = time.time()
         line_mods, non_line_mods = self.prepare_mods(*mods)
 
         # apply file mods
         if non_line_mods:
             non_line_mods_start = time.time()
-            self.apply_non_line_mods(new_f, non_line_mods)
+            self.apply_non_line_mods(non_line_mods)
 
             if self.debug:
                 logger.debug("Non-Line mods took %ss", time.time() - non_line_mods_start)
@@ -123,21 +123,21 @@ class SubtitleModifications(object):
         # apply line mods
         if line_mods:
             line_mods_start = time.time()
-            self.apply_line_mods(new_f, line_mods)
+            self.apply_line_mods(new_entries, line_mods)
 
             if self.debug:
                 logger.debug("Line mods took %ss", time.time() - line_mods_start)
 
-        self.f.events = new_f
+        self.f.events = new_entries
         if self.debug:
             logger.debug("Subtitle Modification took %ss", time.time() - start)
 
-    def apply_non_line_mods(self, new_f, mods):
+    def apply_non_line_mods(self, mods):
         for identifier, args in mods:
             mod = self.initialized_mods[identifier]
             mod.modify(None, debug=self.debug, parent=self, **args)
 
-    def apply_line_mods(self, new_f, mods):
+    def apply_line_mods(self, new_entries, mods):
         for entry in self.f:
             applied_mods = []
             lines = []
@@ -185,7 +185,7 @@ class SubtitleModifications(object):
 
             # fixme: check for leftover start/endtags
             entry.text = ur"\N".join(lines)
-            new_f.append(entry)
+            new_entries.append(entry)
 
 SubMod = SubtitleModifications
 
