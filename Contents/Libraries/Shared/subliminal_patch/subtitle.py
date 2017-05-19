@@ -54,6 +54,8 @@ class PatchedSubtitle(Subtitle):
         encodings = ['utf-8']
 
         # add language-specific encodings
+        # http://scratchpad.wikia.com/wiki/Character_Encoding_Recommendation_for_Languages
+
         if self.language.alpha3 == 'zho':
             encodings.extend(['gb18030', 'big5'])
         elif self.language.alpha3 == 'jpn':
@@ -81,13 +83,13 @@ class PatchedSubtitle(Subtitle):
             # Eastern European Group 1
             encodings.extend(['iso-8859-2', 'windows-1250'])
 
-        # Bulgarian, Serbian and Macedonian
-        elif self.language.alpha3 in ('bul', 'srp', 'mkd', 'mac'):
+        # Bulgarian, Serbian and Macedonian, Ukranian and Russian
+        elif self.language.alpha3 in ('bul', 'srp', 'mkd', 'mac', 'rus', 'ukr'):
             # Eastern European Group 2
-            encodings.append('windows-1251')
+            encodings.extend(['iso-8859-5', 'windows-1251'])
         else:
-            # Western European (windows-1252)
-            encodings.append('latin-1')
+            # Western European (windows-1252) / Northern European
+            encodings.extend(['iso-8859-15', 'iso-8859-9', 'iso-8859-4', 'iso-8859-1', 'latin-1'])
 
         # try to decode
         logger.debug('Trying encodings %r', encodings)
