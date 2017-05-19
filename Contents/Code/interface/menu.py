@@ -200,7 +200,7 @@ def ValidatePrefs():
     Log.Debug("--- SZ Config-Debug ---")
     for attr in [
             "app_support_path", "data_path", "data_items_path", "enable_agent",
-            "enable_channel", "permissions_ok", "missing_permissions", "fs_encoding",
+            "enable_channel", "permissions_ok", "missing_permissions", "fs_encoding", "enforce_encoding",
             "subtitle_destination_folder"]:
         Log.Debug("config.%s: %s", attr, getattr(config, attr))
 
