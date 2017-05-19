@@ -2,6 +2,7 @@
 
 
 import logging
+import traceback
 
 import chardet
 import pysrt
@@ -130,8 +131,8 @@ class PatchedSubtitle(Subtitle):
         # valid srt
         try:
             pysrt.from_string(self.text, error_handling=pysrt.ERROR_RAISE)
-        except Exception, e:
-            logger.error("PySRT-parsing failed: %s, trying pysubs2", e)
+        except Exception:
+            logger.error("PySRT-parsing failed, trying pysubs2")
         else:
             return True
 
@@ -141,7 +142,7 @@ class PatchedSubtitle(Subtitle):
             subs = pysubs2.SSAFile.from_string(self.text)
             self.content = subs.to_string("srt")
         except:
-            logger.exception("Couldn't convert subtitle %s to .srt format", self)
+            logger.exception("Couldn't convert subtitle %s to .srt format: %s", self, traceback.format_exc())
             return False
 
         return True
