@@ -140,7 +140,7 @@ class PatchedSubtitle(Subtitle):
         # something else, try to return srt
         try:
             logger.debug("Trying parsing with PySubs2")
-            subs = pysubs2.SSAFile.from_string(text)
+            subs = pysubs2.SSAFile.from_string(text, fps=self.plex_media_fps)
             self.content = subs.to_string("srt")
         except:
             logger.exception("Couldn't convert subtitle %s to .srt format: %s", self, traceback.format_exc())
