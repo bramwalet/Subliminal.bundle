@@ -358,6 +358,9 @@ def set_mods_for_part(rating_key, part_id, language, item_type, mods, mode="add"
 
     subtitle = ModifiedSubtitle(language, mods=current_sub.mods)
     subtitle.content = current_sub.content
+    if current_sub.encoding:
+        subtitle._guessed_encoding = current_sub.encoding
+
     subtitle.plex_media_fps = plex_part.fps
     subtitle.page_link = "modify subtitles with: %s" % (", ".join(current_sub.mods) if current_sub.mods else "none")
     subtitle.language = language

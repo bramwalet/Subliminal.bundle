@@ -55,6 +55,7 @@ class PatchedSubtitle(Subtitle):
 
         """
         if self._guessed_encoding:
+            logger.info('Encoding already guessed: %s', self._guessed_encoding)
             return self._guessed_encoding
 
         logger.info('Guessing encoding for language %s', self.language.alpha3)
