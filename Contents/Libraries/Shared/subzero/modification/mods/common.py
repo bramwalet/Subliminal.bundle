@@ -18,6 +18,7 @@ class CommonFixes(SubtitleTextModification):
     identifier = "common"
     description = "Basic common fixes"
     exclusive = True
+    order = 40
 
     long_description = """\
     Fix common whitespace/punctuation issues in subtitles

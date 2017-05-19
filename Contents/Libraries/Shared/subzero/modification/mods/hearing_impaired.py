@@ -10,6 +10,7 @@ class HearingImpaired(SubtitleTextModification):
     identifier = "remove_HI"
     description = "Remove Hearing Impaired tags"
     exclusive = True
+    order = 10
 
     long_description = """\
     Removes tags, text and characters from subtitles that are meant for hearing impaired people
@@ -35,7 +36,7 @@ class HearingImpaired(SubtitleTextModification):
         # dash in front
         # NReProcessor(re.compile(r'(?u)^\s*-\s*'), "", name="HI_starting_dash"),
 
-        # all caps at start before new sentence (?u)^(?=[A-ZÀ-Ž]{4,})[A-ZÀ-Ž-_\s]+\s([A-ZÀ-Ž][a-zà-ž].+)
+        # all caps at start before new sentence
         NReProcessor(re.compile(ur'(?u)^(?=[A-ZÀ-Ž]{4,})[A-ZÀ-Ž-_\s]+\s([A-ZÀ-Ž][a-zà-ž].+)'), r"\1",
                      name="HI_starting_upper_then_sentence"),
     ]

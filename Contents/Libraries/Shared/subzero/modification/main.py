@@ -86,7 +86,7 @@ class SubtitleModifications(object):
             if mod_cls.modifies_whole_file:
                 non_line_mods.append((identifier, args))
             else:
-                line_mods.append((identifier, args))
+                line_mods.append((mod_cls.order, identifier, args))
 
             if identifier not in self.initialized_mods:
                 self.initialized_mods[identifier] = mod_cls(self)
@@ -97,12 +97,15 @@ class SubtitleModifications(object):
                 mod = self.initialized_mods[identifier]
                 mod.modify(None, debug=self.debug, parent=self, **args)
 
+        # sort line mods
+        line_mods.sort(key=lambda x: (x is None, x))
+
         # apply line mods
         if line_mods:
             for line in self.f:
                 applied_mods = []
                 skip_line = False
-                for identifier, args in line_mods:
+                for order, identifier, args in line_mods:
                     mod = self.initialized_mods[identifier]
 
                     # don't bother reapplying exclusive mods multiple times

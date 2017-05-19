@@ -14,6 +14,7 @@ class FixOCR(SubtitleTextModification):
     identifier = "OCR_fixes"
     description = "Fix common OCR issues"
     exclusive = True
+    order = 20
     data_dict = None
 
     long_description = """\
