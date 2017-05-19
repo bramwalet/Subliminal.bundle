@@ -4,10 +4,14 @@
 import logging
 import traceback
 
+import re
+
 import chardet
 import pysrt
 import pysubs2
 from bs4 import UnicodeDammit
+from pysubs2 import SSAStyle
+from pysubs2.subrip import ms_to_timestamp, parse_tags
 from subzero.modification import SubtitleModifications
 from subliminal import Subtitle
 
@@ -75,7 +79,7 @@ class PatchedSubtitle(Subtitle):
         elif self.language.alpha3 in ('pol', 'cze', 'ces', 'slk', 'slo', 'slv', 'hun', 'bos', 'hbs', 'hrv', 'rsb',
                                       'ron', 'rum', 'sqi', 'alb'):
             # Eastern European Group 1
-            encodings.append('windows-1250')
+            encodings.extend(['iso-8859-2', 'windows-1250'])
 
         # Bulgarian, Serbian and Macedonian
         elif self.language.alpha3 in ('bul', 'srp', 'mkd', 'mac'):
@@ -141,12 +145,43 @@ class PatchedSubtitle(Subtitle):
         try:
             logger.debug("Trying parsing with PySubs2")
             subs = pysubs2.SSAFile.from_string(text, fps=self.plex_media_fps)
-            self.content = subs.to_string("srt")
+            unicontent = self.pysubs2_to_unicode(subs)
+            self.content = unicontent.encode(self.guess_encoding())
         except:
             logger.exception("Couldn't convert subtitle %s to .srt format: %s", self, traceback.format_exc())
             return False
 
         return True
+
+    @classmethod
+    def pysubs2_to_unicode(cls, sub):
+        def prepare_text(text, style):
+            body = []
+            for fragment, sty in parse_tags(text, style, sub.styles):
+                fragment = fragment.replace(ur"\h", u" ")
+                fragment = fragment.replace(ur"\n", u"\n")
+                fragment = fragment.replace(ur"\N", u"\n")
+                if sty.italic: fragment = u"<i>%s</i>" % fragment
+                if sty.underline: fragment = u"<u>%s</u>" % fragment
+                if sty.strikeout: fragment = u"<s>%s</s>" % fragment
+                body.append(fragment)
+
+            return re.sub(u"\n+", u"\n", u"".join(body).strip())
+
+        visible_lines = (line for line in sub if not line.is_comment)
+
+        out = []
+
+        for i, line in enumerate(visible_lines, 1):
+            start = ms_to_timestamp(line.start)
+            end = ms_to_timestamp(line.end)
+            text = prepare_text(line.text, sub.styles.get(line.style, SSAStyle.DEFAULT_STYLE))
+
+            out.append(u"%d\n" % i)
+            out.append(u"%s --> %s\n" % (start, end))
+            out.append(u"%s%s" % (text, "\n\n"))
+
+        return u"".join(out)
 
     def get_modified_content(self, debug=False):
         """
@@ -161,9 +196,9 @@ class PatchedSubtitle(Subtitle):
         submods.modify(*self.mods)
 
         try:
-            return submods.to_unicode().encode(encoding=encoding)
+            return self.pysubs2_to_unicode(submods.f).encode(encoding=encoding)
         except UnicodeEncodeError:
-            return submods.to_unicode().encode(encoding="utf-8")
+            return self.pysubs2_to_unicode(submods.f).encode(encoding="utf-8")
 
     def get_modified_text(self, debug=False):
         """

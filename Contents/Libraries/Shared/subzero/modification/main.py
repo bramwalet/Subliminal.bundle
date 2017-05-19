@@ -170,35 +170,6 @@ class SubtitleModifications(object):
 
         self.f.events = new_f
 
-    def to_unicode(self):
-        def prepare_text(text, style):
-            body = []
-            for fragment, sty in parse_tags(text, style, self.f.styles):
-                fragment = fragment.replace(ur"\h", u" ")
-                fragment = fragment.replace(ur"\n", u"\n")
-                fragment = fragment.replace(ur"\N", u"\n")
-                if sty.italic: fragment = u"<i>%s</i>" % fragment
-                if sty.underline: fragment = u"<u>%s</u>" % fragment
-                if sty.strikeout: fragment = u"<s>%s</s>" % fragment
-                body.append(fragment)
-
-            return re.sub(u"\n+", u"\n", u"".join(body).strip())
-
-        visible_lines = (line for line in self.f if not line.is_comment)
-
-        out = []
-
-        for i, line in enumerate(visible_lines, 1):
-            start = ms_to_timestamp(line.start)
-            end = ms_to_timestamp(line.end)
-            text = prepare_text(line.text, self.f.styles.get(line.style, SSAStyle.DEFAULT_STYLE))
-
-            out.append(u"%d\n" % i)
-            out.append(u"%s --> %s\n" % (start, end))
-            out.append(u"%s%s" % (text, "\n\n"))
-
-        return u"".join(out)
-
 SubMod = SubtitleModifications
 
 
