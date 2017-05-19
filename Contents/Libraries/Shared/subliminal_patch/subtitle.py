@@ -154,7 +154,17 @@ class PatchedSubtitle(Subtitle):
         # something else, try to return srt
         try:
             logger.debug("Trying parsing with PySubs2")
-            subs = pysubs2.SSAFile.from_string(text, fps=self.plex_media_fps)
+            try:
+                # in case of microdvd, try parsing the fps from the subtitle
+                subs = pysubs2.SSAFile.from_string(text)
+                if subs.format == "microdvd":
+                    logger.info("Got FPS from MicroDVD subtitle: %s", subs.fps)
+            except pysubs2.UnknownFPSError:
+                # if parsing failed, suggest our media file's fps
+                subs = pysubs2.SSAFile.from_string(text, fps=self.plex_media_fps)
+                if subs.format == "microdvd":
+                    logger.info("Suggested our own media FPS for the MicroDVD subtitle: %s", subs.fps)
+
             unicontent = self.pysubs2_to_unicode(subs)
             self.content = unicontent.encode(self.guess_encoding())
         except:

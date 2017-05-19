@@ -95,11 +95,13 @@ class JSONStoredSubtitle(object):
 
     def serialize(self):
         if self.content:
+            # content is always stored in unicode (gets converted to string with escaped unicode chars by json)
             self.content = self.content.decode(self.encoding)
         return self.__dict__
 
     def deserialize(self, data):
         if data["content"]:
+            # content is always present in encoded form
             data["content"] = data["content"].encode(data["encoding"])
         self.initialize(**data)
 
