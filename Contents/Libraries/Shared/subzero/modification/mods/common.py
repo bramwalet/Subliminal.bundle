@@ -23,6 +23,9 @@ class CommonFixes(SubtitleTextModification):
         # -- = ...
         StringProcessor("-- ", '... ', name="CM_doubledash"),
 
+        # '' = "
+        StringProcessor("''", '"', name="CM_double_apostrophe"),
+
         # remove leading ...
         NReProcessor(re.compile(r'(?u)^\.\.\.[\s]*'), "", name="CM_leading_ellipsis"),
 
@@ -34,9 +37,6 @@ class CommonFixes(SubtitleTextModification):
 
         # no space after starting dash
         NReProcessor(re.compile(r'(?u)^-(?![\s-])'), "- ", name="CM_dash_space"),
-
-        # '' = "
-        StringProcessor("''", '"', name="CM_double_apostrophe"),
 
         # remove starting spaced dots (not matching ellipses
         NReProcessor(re.compile(r'(?u)^(?!\s?(\.\s\.\s\.)|(\s?\.{3}))[\s.]*'), "", name="CM_starting_spacedots"),
