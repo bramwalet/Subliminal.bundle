@@ -530,7 +530,7 @@
       "5 weeks",
       "6 weeks"
     ],
-    "default": "2 weeks"
+    "default": "1 weeks"
   },
   {
     "id": "scheduler.max_recent_items_per_library",

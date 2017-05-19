@@ -3,6 +3,7 @@ import datetime
 import StringIO
 import glob
 import os
+import traceback
 import urlparse
 
 from zipfile import ZipFile, ZIP_DEFLATED
@@ -206,7 +207,12 @@ def apply_default_mods(reapply_current=False):
                             continue
                         add_mods = []
 
-                    set_mods_for_part(video_id, part_id, Language.fromietf(lang), item_type, add_mods, mode="add")
+                    try:
+                        set_mods_for_part(video_id, part_id, Language.fromietf(lang), item_type, add_mods, mode="add")
+                    except:
+                        Log.Error("Couldn't set mods for %s:%s: %s", video_id, part_id, traceback.format_exc())
+                        continue
+
                     subs_applied += 1
     Log.Debug("Applied mods to %i items" % subs_applied)
 
