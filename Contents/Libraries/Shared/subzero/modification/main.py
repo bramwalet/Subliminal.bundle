@@ -164,6 +164,7 @@ class SubtitleModifications(object):
                         logger.debug(u"%r -> ''", entry.text)
                     continue
 
+                # fixme: check for leftover start/endtags
                 entry.text = ur"\N".join(lines)
                 new_f.append(entry)
 
