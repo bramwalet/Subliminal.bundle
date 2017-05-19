@@ -2,14 +2,10 @@
 
 import traceback
 
-import re
-
 import pysubs2
 import logging
+import time
 
-from pysubs2 import SSAStyle
-from pysubs2.subrip import ms_to_timestamp
-from pysubs2.substation import parse_tags
 from registry import registry
 
 logger = logging.getLogger(__name__)
@@ -75,6 +71,8 @@ class SubtitleModifications(object):
     def modify(self, *mods):
         new_f = []
 
+        start = time.time()
+
         parsed_mods = [SubtitleModifications.parse_identifier(mod) for mod in mods]
         final_mods = {}
         line_mods = []
@@ -110,15 +108,20 @@ class SubtitleModifications(object):
 
         # apply file mods
         if non_line_mods:
+            non_line_mods_start = time.time()
             for identifier, args in non_line_mods:
                 mod = self.initialized_mods[identifier]
                 mod.modify(None, debug=self.debug, parent=self, **args)
+
+            if self.debug:
+                logger.debug("Non-Line mods took %ss", time.time() - non_line_mods_start)
 
         # sort line mods
         line_mods.sort(key=lambda x: (x is None, x))
 
         # apply line mods
         if line_mods:
+            line_mods_start = time.time()
             for entry in self.f:
                 applied_mods = []
                 lines = []
@@ -168,7 +171,12 @@ class SubtitleModifications(object):
                 entry.text = ur"\N".join(lines)
                 new_f.append(entry)
 
+            if self.debug:
+                logger.debug("Line mods took %ss", time.time() - line_mods_start)
+
         self.f.events = new_f
+        if self.debug:
+            logger.debug("Subtitle Modification took %ss", time.time() - start)
 
 SubMod = SubtitleModifications
 
