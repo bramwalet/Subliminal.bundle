@@ -68,11 +68,7 @@ class SubtitleModifications(object):
     def get_mod_signature(cls, identifier, **kwargs):
         return cls.get_mod_class(identifier).get_signature(**kwargs)
 
-    def modify(self, *mods):
-        new_f = []
-
-        start = time.time()
-
+    def prepare_mods(self, *mods):
         parsed_mods = [SubtitleModifications.parse_identifier(mod) for mod in mods]
         final_mods = {}
         line_mods = []
@@ -106,12 +102,17 @@ class SubtitleModifications(object):
             if identifier not in self.initialized_mods:
                 self.initialized_mods[identifier] = mod_cls(self)
 
+        return line_mods, non_line_mods
+
+    def modify(self, *mods):
+        new_f = []
+        start = time.time()
+        line_mods, non_line_mods = self.prepare_mods(*mods)
+
         # apply file mods
         if non_line_mods:
             non_line_mods_start = time.time()
-            for identifier, args in non_line_mods:
-                mod = self.initialized_mods[identifier]
-                mod.modify(None, debug=self.debug, parent=self, **args)
+            self.apply_non_line_mods(new_f, non_line_mods)
 
             if self.debug:
                 logger.debug("Non-Line mods took %ss", time.time() - non_line_mods_start)
@@ -122,54 +123,7 @@ class SubtitleModifications(object):
         # apply line mods
         if line_mods:
             line_mods_start = time.time()
-            for entry in self.f:
-                applied_mods = []
-                lines = []
-
-                line_count = 0
-                for line in entry.text.split(ur"\N"):
-                    # don't bother the mods with surrounding tags
-                    old_line = line
-                    line = line.strip()
-                    skip_line = False
-                    line_count += 1
-
-                    # clean {\X0} tags before processing
-                    start_tag = u""
-                    end_tag = u""
-                    if line.startswith(self.font_style_tag_start):
-                        start_tag = line[:5]
-                        line = line[5:]
-                    if line[-5:-3] == self.font_style_tag_start:
-                        end_tag = line[-5:]
-                        line = line[:-5]
-
-                    for order, identifier, args in line_mods:
-                        mod = self.initialized_mods[identifier]
-
-                        line = mod.modify(line.strip(), debug=self.debug, parent=self, **args)
-                        if not line:
-                            if self.debug:
-                                logger.debug(u"%s: %r -> ''", identifier, old_line)
-                            skip_line = True
-                            break
-
-                        applied_mods.append(identifier)
-
-                    if skip_line:
-                        continue
-
-                    lines.append(start_tag + line + end_tag)
-
-                if not lines:
-                    # don't bother logging when the entry only had one line
-                    if self.debug and line_count > 1:
-                        logger.debug(u"%r -> ''", entry.text)
-                    continue
-
-                # fixme: check for leftover start/endtags
-                entry.text = ur"\N".join(lines)
-                new_f.append(entry)
+            self.apply_line_mods(new_f, line_mods)
 
             if self.debug:
                 logger.debug("Line mods took %ss", time.time() - line_mods_start)
@@ -177,6 +131,61 @@ class SubtitleModifications(object):
         self.f.events = new_f
         if self.debug:
             logger.debug("Subtitle Modification took %ss", time.time() - start)
+
+    def apply_non_line_mods(self, new_f, mods):
+        for identifier, args in mods:
+            mod = self.initialized_mods[identifier]
+            mod.modify(None, debug=self.debug, parent=self, **args)
+
+    def apply_line_mods(self, new_f, mods):
+        for entry in self.f:
+            applied_mods = []
+            lines = []
+
+            line_count = 0
+            for line in entry.text.split(ur"\N"):
+                # don't bother the mods with surrounding tags
+                old_line = line
+                line = line.strip()
+                skip_line = False
+                line_count += 1
+
+                # clean {\X0} tags before processing
+                start_tag = u""
+                end_tag = u""
+                if line.startswith(self.font_style_tag_start):
+                    start_tag = line[:5]
+                    line = line[5:]
+                if line[-5:-3] == self.font_style_tag_start:
+                    end_tag = line[-5:]
+                    line = line[:-5]
+
+                for order, identifier, args in mods:
+                    mod = self.initialized_mods[identifier]
+
+                    line = mod.modify(line.strip(), debug=self.debug, parent=self, **args)
+                    if not line:
+                        if self.debug:
+                            logger.debug(u"%s: %r -> ''", identifier, old_line)
+                        skip_line = True
+                        break
+
+                    applied_mods.append(identifier)
+
+                if skip_line:
+                    continue
+
+                lines.append(start_tag + line + end_tag)
+
+            if not lines:
+                # don't bother logging when the entry only had one line
+                if self.debug and line_count > 1:
+                    logger.debug(u"%r -> ''", entry.text)
+                continue
+
+            # fixme: check for leftover start/endtags
+            entry.text = ur"\N".join(lines)
+            new_f.append(entry)
 
 SubMod = SubtitleModifications
 
