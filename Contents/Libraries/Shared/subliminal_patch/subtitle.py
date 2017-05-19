@@ -163,7 +163,8 @@ class PatchedSubtitle(Subtitle):
                 # if parsing failed, suggest our media file's fps
                 subs = pysubs2.SSAFile.from_string(text, fps=self.plex_media_fps)
                 if subs.format == "microdvd":
-                    logger.info("Suggested our own media FPS for the MicroDVD subtitle: %s", subs.fps)
+                    logger.info("No FPS info in subtitle. Using our own media FPS for the MicroDVD subtitle: %s",
+                                subs.fps)
 
             unicontent = self.pysubs2_to_unicode(subs)
             self.content = unicontent.encode(self.guess_encoding())
