@@ -106,47 +106,55 @@ class SubtitleModifications(object):
         if line_mods:
             for entry in self.f:
                 applied_mods = []
-                skip_entry = False
-                for order, identifier, args in line_mods:
-                    mod = self.initialized_mods[identifier]
+                lines = []
 
-                    # don't bother reapplying exclusive mods multiple times
-                    if mod.exclusive and identifier in applied_mods:
-                        continue
+                line_count = 0
+                for line in entry.text.split(ur"\N"):
+                    # don't bother the mods with surrounding tags
+                    old_line = line
+                    line = line.strip()
+                    skip_line = False
+                    line_count += 1
 
-                    lines = []
+                    # clean {\X0} tags before processing
+                    start_tag = u""
+                    end_tag = u""
+                    if line.startswith(self.font_style_tag_start):
+                        start_tag = line[:5]
+                        line = line[5:]
+                    if line[-5:-3] == self.font_style_tag_start:
+                        end_tag = line[-5:]
+                        line = line[:-5]
 
-                    for line in entry.text.split(ur"\N"):
-                        # don't bother the mods with surrounding tags
-                        line = line.strip()
+                    for order, identifier, args in line_mods:
+                        mod = self.initialized_mods[identifier]
 
-                        # clean {\X0} tags before processing
-                        start_tag = u""
-                        end_tag = u""
-                        if line.startswith(self.font_style_tag_start):
-                            start_tag = line[:5]
-                            line = line[5:]
-                        if line[-5:-3] == self.font_style_tag_start:
-                            end_tag = line[-5:]
-                            line = line[:-5]
+                        # don't bother reapplying exclusive mods multiple times
+                        if mod.exclusive and identifier in applied_mods:
+                            continue
 
                         line = mod.modify(line.strip(), debug=self.debug, parent=self, **args)
                         if not line:
-                            continue
+                            if self.debug:
+                                logger.debug(u"%s: %r -> ''", identifier, old_line)
+                            skip_line = True
+                            break
 
-                        lines.append(start_tag + line + end_tag)
+                        applied_mods.append(identifier)
 
-                    if not lines:
-                        if self.debug:
-                            logger.debug("%s: deleting %s", identifier, entry)
-                        skip_entry = True
-                        break
+                    if skip_line:
+                        continue
 
-                    entry.text = ur"\N".join(lines)
-                    applied_mods.append(identifier)
+                    lines.append(start_tag + line + end_tag)
 
-                if not skip_entry:
-                    new_f.append(entry)
+                if not lines:
+                    # don't bother logging when the entry only had one line
+                    if self.debug and line_count > 1:
+                        logger.debug(u"%r -> ''", entry.text)
+                    continue
+
+                entry.text = ur"\N".join(lines)
+                new_f.append(entry)
 
         self.f.events = new_f
 

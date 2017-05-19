@@ -57,8 +57,13 @@ class SubtitleModification(object):
         return self._process(content, self.post_processors, debug=debug, parent=parent, **kwargs)
 
     def modify(self, content, debug=False, parent=None, **kwargs):
+        if not content:
+            return
+
         new_content = content
         for method in ("pre_process", "process", "post_process"):
+            if not new_content:
+                return
             new_content = getattr(self, method)(new_content, debug=debug, parent=parent, **kwargs)
 
         return new_content
