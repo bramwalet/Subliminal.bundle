@@ -53,12 +53,14 @@ class CommonFixes(SubtitleTextModification):
         NReProcessor(re.compile(r'(?u)^\s?>>\s*'), "", name="CM_leading_crocodiles"),
 
         # replace uppercase I with lowercase L in words
-        NReProcessor(re.compile(ur'(?u)([A-zÀ-ž]+)I([a-zà-ž]+)'), r"\1l\2", name="CM_uppercase_i_in_word"),
+        NReProcessor(re.compile(ur'(?u)([A-zÀ-ž][a-zà-ž]+)(I+)'),
+                     lambda match: ur'%s%s' % (match.group(1), "l"*len(match.group(2))), name="CM_uppercase_i_in_word"),
 
         # fix spaces in numbers (allows for punctuation: ,.:' (comma only fixed if after space, those may be
         # countdowns otherwise); don't break up ellipses
         # fixme: maybe check whether it's a countdown (second part smaller than the first), otherwise handle default?
-        NReProcessor(re.compile(r'(?u)([0-9]+[0-9.:\']*(?<!\.\.))\s+((?!\.\.)[0-9,.:\']*[0-9]+)'), r"\1\2", name="CM_spaces_in_numbers"),
+        NReProcessor(re.compile(r'(?u)([0-9]+[0-9.:\']*(?<!\.\.))\s+((?!\.\.)[0-9,.:\']*[0-9]+)'), r"\1\2",
+                     name="CM_spaces_in_numbers"),
 
         # uppercase after dot
         NReProcessor(re.compile(ur'(?u)((?:[^.\s])+\.\s+)([a-zà-ž])'),
