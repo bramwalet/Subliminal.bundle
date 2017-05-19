@@ -53,7 +53,7 @@ class CommonFixes(SubtitleTextModification):
         NReProcessor(re.compile(r'(?u)^\s?>>\s*'), "", name="CM_leading_crocodiles"),
 
         # replace uppercase I with lowercase L in words
-        NReProcessor(re.compile(ur'(?u)([A-zÀ-ž]+)I([à-ž]+)'), r"\1l\2", name="CM_uppercase_i_in_word"),
+        NReProcessor(re.compile(ur'(?u)([A-zÀ-ž]+)I([a-zà-ž]+)'), r"\1l\2", name="CM_uppercase_i_in_word"),
 
         # fix spaces in numbers (allows for punctuation: ,.:' (comma only fixed if after space, those may be
         # countdowns otherwise); don't break up ellipses
