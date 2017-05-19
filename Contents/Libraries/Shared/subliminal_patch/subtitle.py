@@ -125,12 +125,13 @@ class PatchedSubtitle(Subtitle):
         :rtype: bool
 
         """
-        if not self.text:
+        text = self.text
+        if not text:
             return False
 
         # valid srt
         try:
-            pysrt.from_string(self.text, error_handling=pysrt.ERROR_RAISE)
+            pysrt.from_string(text, error_handling=pysrt.ERROR_RAISE)
         except Exception:
             logger.error("PySRT-parsing failed, trying pysubs2")
         else:
@@ -139,7 +140,7 @@ class PatchedSubtitle(Subtitle):
         # something else, try to return srt
         try:
             logger.debug("Trying parsing with PySubs2")
-            subs = pysubs2.SSAFile.from_string(self.text)
+            subs = pysubs2.SSAFile.from_string(text)
             self.content = subs.to_string("srt")
         except:
             logger.exception("Couldn't convert subtitle %s to .srt format: %s", self, traceback.format_exc())
