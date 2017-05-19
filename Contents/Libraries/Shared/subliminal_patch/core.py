@@ -125,6 +125,10 @@ class SZProviderPool(ProviderPool):
                          subtitle.provider_name, DOWNLOAD_RETRY_SLEEP)
             time.sleep(DOWNLOAD_RETRY_SLEEP)
 
+        if os.environ.get("SZ_ENFORCE_ENCODING", "False") == "True":
+            logger.info("Enforcing encoding of %s from %s to %s", subtitle, subtitle.guess_encoding(), "utf-8")
+            subtitle.set_encoding("utf-8")
+
         # check subtitle validity
         if not subtitle.is_valid():
             logger.error('Invalid subtitle')

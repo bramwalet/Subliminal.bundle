@@ -39,6 +39,14 @@ class PatchedSubtitle(Subtitle):
         return '<%s %r [%s]>' % (
             self.__class__.__name__, self.page_link, self.language)
 
+    def set_encoding(self, encoding):
+        if encoding == self.guess_encoding():
+            return
+
+        unicontent = self.text
+        self.content = unicontent.encode(encoding)
+        self._guessed_encoding = encoding
+
     def guess_encoding(self):
         """Guess encoding using the language, falling back on chardet.
 
