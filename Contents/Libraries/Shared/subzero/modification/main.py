@@ -20,6 +20,8 @@ class SubtitleModifications(object):
     language = None
     initialized_mods = {}
 
+    font_style_tag_start = u"{\\"
+
     def __init__(self, debug=False):
         self.debug = debug
         self.initialized_mods = {}
@@ -102,9 +104,9 @@ class SubtitleModifications(object):
 
         # apply line mods
         if line_mods:
-            for line in self.f:
+            for entry in self.f:
                 applied_mods = []
-                skip_line = False
+                skip_entry = False
                 for order, identifier, args in line_mods:
                     mod = self.initialized_mods[identifier]
 
@@ -112,17 +114,39 @@ class SubtitleModifications(object):
                     if mod.exclusive and identifier in applied_mods:
                         continue
 
-                    new_content = mod.modify(line.text, debug=self.debug, parent=self, **args)
-                    if not new_content:
+                    lines = []
+
+                    for line in entry.text.split(ur"\N"):
+                        # don't bother the mods with surrounding tags
+                        line = line.strip()
+
+                        # clean {\X0} tags before processing
+                        start_tag = u""
+                        end_tag = u""
+                        if line.startswith(self.font_style_tag_start):
+                            start_tag = line[:5]
+                            line = line[5:]
+                        if line[-5:-3] == self.font_style_tag_start:
+                            end_tag = line[-5:]
+                            line = line[:-5]
+
+                        line = mod.modify(line.strip(), debug=self.debug, parent=self, **args)
+                        if not line:
+                            continue
+
+                        lines.append(start_tag + line + end_tag)
+
+                    if not lines:
                         if self.debug:
-                            logger.debug("%s: deleting %s", identifier, line)
-                        skip_line = True
+                            logger.debug("%s: deleting %s", identifier, entry)
+                        skip_entry = True
                         break
 
-                    line.text = new_content
+                    entry.text = ur"\N".join(lines)
                     applied_mods.append(identifier)
-                if not skip_line:
-                    new_f.append(line)
+
+                if not skip_entry:
+                    new_f.append(entry)
 
         self.f.events = new_f
 

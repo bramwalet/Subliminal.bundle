@@ -39,17 +39,13 @@ class MultipleLineProcessor(Processor):
         if not self.snr_dict["data"]:
             return content
 
-        out = []
-        for cnt in content.split(ur"\N"):
-            cnt_ = cnt
-            for key, value in self.snr_dict["data"].iteritems():
-                if debug and key in cnt_:
-                    logger.debug(u"Replacing '%s' with '%s' in '%s'", key, value, cnt_)
+        for key, value in self.snr_dict["data"].iteritems():
+            if debug and key in content:
+                logger.debug(u"Replacing '%s' with '%s' in '%s'", key, value, content)
 
-                cnt_ = cnt_.replace(key, value)
-            out.append(cnt_)
+            content = content.replace(key, value)
 
-        return ur"\N".join(out)
+        return content
 
 
 class WholeLineProcessor(MultipleLineProcessor):
@@ -80,13 +76,9 @@ class MultipleWordProcessor(MultipleLineProcessor):
     }
     """
     def process(self, content, debug=False):
-        new_lines = []
-        for line in content.split(u"\\N"):
-            words = line.split(u" ")
-            new_words = []
-            for word in words:
-                new_words.append(self.snr_dict.get(word, word))
+        words = content.split(u" ")
+        new_words = []
+        for word in words:
+            new_words.append(self.snr_dict.get(word, word))
 
-            new_lines.append(u" ".join(new_words))
-
-        return u"\\N".join(new_lines)
+        return u" ".join(new_words)

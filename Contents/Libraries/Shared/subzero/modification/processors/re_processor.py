@@ -24,31 +24,7 @@ class ReProcessor(Processor):
 
 
 class NReProcessor(ReProcessor):
-    """
-    Single line regex processor
-    """
-
-    font_style_tag_start = u"{\\"
-
-    def process(self, content, debug=False):
-        lines = []
-        for line in content.split(r"\N"):
-            a = line.strip()
-            # clean {\X0} tags
-            start_tag = u""
-            end_tag = u""
-            if a.startswith(self.font_style_tag_start):
-                start_tag = a[:5]
-                a = a[5:]
-            if a[-5:-3] == self.font_style_tag_start:
-                end_tag = a[-5:]
-                a = a[:-5]
-
-            a = super(NReProcessor, self).process(a, debug=debug)
-            if not a:
-                continue
-            lines.append(start_tag + a + end_tag)
-        return r"\N".join(lines)
+    pass
 
 
 class MultipleWordReProcessor(ReProcessor):
@@ -68,8 +44,5 @@ class MultipleWordReProcessor(ReProcessor):
         if not self.snr_dict["data"]:
             return content
 
-        out = []
-        for a in content.split(ur"\N"):
-            out.append(self.snr_dict["pattern"].sub(lambda x: self.snr_dict["data"][x.group(0)], a))
-        return ur"\N".join(out)
+        return self.snr_dict["pattern"].sub(lambda x: self.snr_dict["data"][x.group(0)], content)
 

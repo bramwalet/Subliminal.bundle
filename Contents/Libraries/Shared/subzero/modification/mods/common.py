@@ -9,11 +9,6 @@ from subzero.modification.processors.re_processor import NReProcessor
 from subzero.modification import registry
 
 
-class CleanLineProcessor(Processor):
-    def process(self, content, debug=False):
-        return r"\N".join(line.strip() for line in content.split(r"\N"))
-
-
 class CommonFixes(SubtitleTextModification):
     identifier = "common"
     description = "Basic common fixes"
@@ -25,9 +20,6 @@ class CommonFixes(SubtitleTextModification):
     """
 
     processors = [
-        # surrounding spaces
-        CleanLineProcessor(name="CM_cleanline"),
-
         # -- = ...
         StringProcessor("-- ", '... ', name="CM_doubledash"),
 

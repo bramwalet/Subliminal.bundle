@@ -75,11 +75,5 @@ class SubtitleTextModification(SubtitleModification):
         ReProcessor(re.compile(r'({\\\w1})[\s.,-_!?]+({\\\w0})'), "", name="empty_tag"),
 
         # empty line (needed?)
-        NReProcessor(re.compile(r'^\s+$'), "", name="empty_line"),
-
-        # empty dash line (needed?)
-        NReProcessor(re.compile(r'(^[\s]*[\-]+[\s]*)$'), "", name="empty_dash_line"),
-
-        # clean whitespace at start and end
-        ReProcessor(re.compile(r'^\s*([^\s]+)\s*$'), r"\1", name="surrounding_whitespace"),
+        NReProcessor(re.compile(r'^[\s-]+$'), "", name="empty_line"),
     ]

@@ -18,6 +18,7 @@ class HearingImpaired(SubtitleTextModification):
 
     processors = [
         # brackets (only remove if at least 3 consecutive uppercase chars in brackets
+        # fixme: may be superseded by HI_brackets_special
         NReProcessor(re.compile(ur'(?sux)[([].+(?=[A-ZÀ-Ž]{3,}).+[)\]]'), "", name="HI_brackets"),
 
         # text before colon (and possible dash in front), max 11 chars after the first whitespace (if any)
@@ -27,7 +28,8 @@ class HearingImpaired(SubtitleTextModification):
         NReProcessor(re.compile(ur'(?u)(^(?=.*[A-ZÀ-Ž]{4,})[A-ZÀ-Ž-_\s]+:[^0-9]\s*)'), "", name="HI_before_colon"),
 
         # text in brackets at start, after optional dash, before colon or at end of line
-        NReProcessor(re.compile(ur'(?um)(^-?\s?[([][A-zÀ-ž-_\s]+[)\]](?:(?=$)|:[^0-9]\s*))'), "",
+        # fixme: may be too aggressive
+        NReProcessor(re.compile(ur'(?um)(^-?\s?[([][A-zÀ-ž-_\s]{3,}[)\]](?:(?=$)|:[^0-9]\s*))'), "",
                      name="HI_brackets_special"),
 
         # all caps line (at least 4 consecutive uppercase chars)
