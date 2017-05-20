@@ -151,8 +151,9 @@ class SearchAllRecentlyAddedMissing(Task):
             while 1:
                 if item_id in self.items_done:
                     items_done_count += 1
-                    Log.Debug(u"Task: %s, item %s done", self.name, item_id)
                     self.percentage = int(items_done_count * 100 / missing_count)
+                    Log.Debug(u"Task: %s, item %s done (%s%%, %s/%s)", self.name, item_id, self.percentage,
+                              items_done_count, missing_count)
                     break
 
                 # item considered stalled after self.stall_time seconds passed after last refresh
@@ -175,7 +176,8 @@ class SearchAllRecentlyAddedMissing(Task):
             # we can't hammer the PMS, otherwise requests will be stalled
             time.sleep(5)
 
-        Log.Debug("Task: %s, done. Failed items: %s", self.name, self.items_failed)
+        Log.Debug("Task: %s, done (%s%%, %s/%s). Failed items: %s", self.name, self.percentage,
+                  items_done_count, missing_count, self.items_failed)
         self.running = False
 
     def post_run(self, task_data):
