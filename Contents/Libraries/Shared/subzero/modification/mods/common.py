@@ -2,8 +2,7 @@
 
 import re
 
-from subzero.modification.processors import Processor
-from subzero.modification.mods import SubtitleTextModification
+from subzero.modification.mods import SubtitleTextModification, empty_line_post_processors
 from subzero.modification.processors.string_processor import StringProcessor
 from subzero.modification.processors.re_processor import NReProcessor
 from subzero.modification import registry
@@ -66,6 +65,8 @@ class CommonFixes(SubtitleTextModification):
         NReProcessor(re.compile(ur'(?u)((?:[^.\s])+\.\s+)([a-zà-ž])'),
                      lambda match: ur'%s%s' % (match.group(1), match.group(2).upper()), name="CM_uppercase_after_dot"),
     ]
+
+    post_processors = empty_line_post_processors
 
 
 registry.register(CommonFixes)

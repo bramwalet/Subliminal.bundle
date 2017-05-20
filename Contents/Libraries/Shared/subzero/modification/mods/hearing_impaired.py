@@ -1,7 +1,7 @@
 # coding=utf-8
 import re
 
-from subzero.modification.mods import SubtitleTextModification
+from subzero.modification.mods import SubtitleTextModification, empty_line_post_processors
 from subzero.modification.processors.re_processor import NReProcessor
 from subzero.modification import registry
 
@@ -41,6 +41,8 @@ class HearingImpaired(SubtitleTextModification):
         NReProcessor(re.compile(ur'(?u)^(?=[A-ZÀ-Ž]{4,})[A-ZÀ-Ž-_\s]+\s([A-ZÀ-Ž][a-zà-ž].+)'), r"\1",
                      name="HI_starting_upper_then_sentence"),
     ]
+
+    post_processors = empty_line_post_processors
 
 
 registry.register(HearingImpaired)

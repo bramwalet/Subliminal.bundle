@@ -80,10 +80,13 @@ class SubtitleModification(object):
 
 
 class SubtitleTextModification(SubtitleModification):
-    post_processors = [
-        # empty tag
-        ReProcessor(re.compile(r'({\\\w1})[\s.,-_!?]+({\\\w0})'), "", name="empty_tag"),
+    pass
 
-        # empty line (needed?)
-        NReProcessor(re.compile(r'^[\s-]+$'), "", name="empty_line"),
-    ]
+
+empty_line_post_processors = [
+    # empty tag
+    ReProcessor(re.compile(r'({\\\w1})[\s.,-_!?]+({\\\w0})'), "", name="empty_tag"),
+
+    # empty line (needed?)
+    NReProcessor(re.compile(r'^[\s-]+$'), "", name="empty_line"),
+]
