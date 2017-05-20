@@ -37,6 +37,7 @@ SZ_FIX_DATA = {
             u"a re": u"are",
             u"wail'": u"wait",
             u"he)'": u"hey",
+            u"He)'": u"Hey",
             u"Yea h": u"Yeah",
             u"yea h": u"yeah",
         }
