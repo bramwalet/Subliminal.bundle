@@ -21,6 +21,10 @@ def get_metadata_dict(item, part, add):
     return data
 
 
+imdb_guid_identifier = "com.plexapp.agents.imdb://"
+tvdb_guid_identifier = "com.plexapp.agents.thetvdb://"
+
+
 def media_to_videos(media, kind="series"):
     """
     iterates through media and returns the associated parts (videos)
@@ -30,11 +34,21 @@ def media_to_videos(media, kind="series"):
     """
     videos = []
 
+    item = get_item(media.id)
+    year = item.year
+    original_title = item.title_original
+
     if kind == "series":
         for season in media.seasons:
             season_object = media.seasons[season]
             for episode in media.seasons[season].episodes:
                 ep = media.seasons[season].episodes[episode]
+
+                tvdb_id = None
+                series_tvdb_id = None
+                if tvdb_guid_identifier in ep.guid:
+                    tvdb_id = ep.guid[len(tvdb_guid_identifier):].split("?")[0]
+                    series_tvdb_id = tvdb_id.split("/")[0]
 
                 # get plex item via API for additional metadata
                 plex_episode = get_item(ep.id)
@@ -44,21 +58,28 @@ def media_to_videos(media, kind="series"):
                         videos.append(
                             get_metadata_dict(plex_episode, part,
                                               {"plex_part": part, "type": "episode", "title": ep.title,
-                                               "series": media.title, "id": ep.id,
+                                               "series": media.title, "id": ep.id, "year": year,
                                                "series_id": media.id, "season_id": season_object.id,
+                                               "imdb_id": None, "series_tvdb_id": series_tvdb_id, "tvdb_id": tvdb_id,
+                                               "original_title": original_title,
                                                "episode": plex_episode.index, "season": plex_episode.season.index,
                                                "section": plex_episode.section.title
                                                })
                         )
     else:
         plex_item = get_item(media.id)
+        imdb_id = None
+        if imdb_guid_identifier in media.guid:
+            imdb_id = media.guid[len(imdb_guid_identifier):].split("?")[0]
         for item in media.items:
             for part in item.parts:
                 videos.append(
                     get_metadata_dict(plex_item, part, {"plex_part": part, "type": "movie",
                                                         "title": media.title, "id": media.id,
-                                                        "series_id": None,
-                                                        "season_id": None,
+                                                        "series_id": None, "year": year,
+                                                        "season_id": None, "imdb_id": imdb_id,
+                                                        "original_title": original_title,
+                                                        "series_tvdb_id": None, "tvdb_id": None,
                                                         "section": plex_item.section.title})
                 )
     return videos
@@ -91,10 +112,10 @@ def get_media_item_ids(media, kind="series"):
     return ids
 
 
-def scan_video(plex_part, ignore_all=False, hints=None, rating_key=None):
+def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None):
     """
     returnes a subliminal/guessit-refined parsed video
-    :param plex_part: 
+    :param pms_video_info: 
     :param ignore_all: 
     :param hints: 
     :param rating_key: 
@@ -102,6 +123,8 @@ def scan_video(plex_part, ignore_all=False, hints=None, rating_key=None):
     """
     embedded_subtitles = not ignore_all and Prefs['subtitles.scan.embedded']
     external_subtitles = not ignore_all and Prefs['subtitles.scan.external']
+
+    plex_part = pms_video_info["plex_part"]
 
     if ignore_all:
         Log.Debug("Force refresh intended.")
@@ -141,7 +164,7 @@ def scan_video(plex_part, ignore_all=False, hints=None, rating_key=None):
 
     try:
         # get basic video info scan (filename)
-        video = parse_video(plex_part.file, hints, external_subtitles=external_subtitles,
+        video = parse_video(plex_part.file, pms_video_info, hints, external_subtitles=external_subtitles,
                             embedded_subtitles=embedded_subtitles, known_embedded=known_embedded,
                             forced_only=config.forced_only, video_fps=plex_part.fps)
 
@@ -167,7 +190,7 @@ def scan_videos(videos, kind="series", ignore_all=False):
 
         hints = helpers.get_item_hints(video)
         video["plex_part"].fps = get_stream_fps(video["plex_part"].streams)
-        scanned_video = scan_video(video["plex_part"], ignore_all=force_refresh or ignore_all, hints=hints,
+        scanned_video = scan_video(video, ignore_all=force_refresh or ignore_all, hints=hints,
                                    rating_key=video["id"])
 
         if not scanned_video:

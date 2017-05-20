@@ -10,8 +10,8 @@ from subliminal_patch import scan_video, refine, search_external_subtitles
 logger = logging.getLogger(__name__)
 
 
-def parse_video(fn, hints, external_subtitles=False, embedded_subtitles=False, known_embedded=None, forced_only=False,
-                video_fps=None, dry_run=False):
+def parse_video(fn, video_info, hints, external_subtitles=False, embedded_subtitles=False, known_embedded=None,
+                forced_only=False, video_fps=None, dry_run=False):
 
     logger.debug("Parsing video: %s, hints: %s", os.path.basename(fn), hints)
     video = scan_video(fn, hints=hints, dont_use_actual_file=dry_run)
@@ -19,28 +19,40 @@ def parse_video(fn, hints, external_subtitles=False, embedded_subtitles=False, k
     # refiners
 
     refine_kwargs = {
-        "episode_refiners": ('sz_metadata', 'tvdb', 'omdb'),
-        "movie_refiners": ('sz_metadata', 'omdb',),
+        "episode_refiners": ('sz_metadata', 'tvdb'),#, 'omdb'),
+        "movie_refiners": ('sz_metadata',), #'omdb',),
         "embedded_subtitles": False,
     }
 
+    logger.info("got video info: %s", video_info)
+
+    video.imdb_id = video_info["imdb_id"]
+    video.title = plex_title = video_info["original_title"] or video_info["title"]
+    video.series_tvdb_id = video_info["series_tvdb_id"]
+    video.tvdb_id = video_info["tvdb_id"]
+
+    if hints["type"] == "episode":
+        video.series = plex_title = video_info["original_title"] or video_info["series"]
+
     refine(video, **refine_kwargs)
+
+    video.year = video_info["year"]
 
     # re-refine with plex's known data?
     refine_with_plex = False
 
     # episode but wasn't able to match title
     if hints["type"] == "episode" and not video.series_tvdb_id and not video.tvdb_id and not video.series_imdb_id \
-            and video.series != hints["title"]:
-        logger.info(u"Re-refining with series title: '%s' instead of '%s'", hints["title"], video.series)
-        video.series = hints["title"]
+            and video.series != plex_title:
+        logger.info(u"Re-refining with series title: '%s' instead of '%s'", plex_title, video.series)
+        video.series = plex_title
         refine_with_plex = True
 
     # movie
-    elif hints["type"] == "movie" and not video.imdb_id and video.title != hints["title"]:
+    elif hints["type"] == "movie" and not video.imdb_id and video.title != plex_title:
         # movie
-        logger.info(u"Re-refining with series title: '%s' instead of '%s'", hints["title"], video.title)
-        video.title = hints["title"]
+        logger.info(u"Re-refining with series title: '%s' instead of '%s'", plex_title, video.title)
+        video.title = plex_title
         refine_with_plex = True
 
     # title not matched? try plex title hint
