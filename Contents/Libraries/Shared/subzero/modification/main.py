@@ -143,6 +143,8 @@ class SubtitleModifications(object):
             lines = []
 
             line_count = 0
+            start_tags = []
+            end_tags = []
             for line in entry.text.split(ur"\N"):
                 # don't bother the mods with surrounding tags
                 old_line = line
@@ -151,6 +153,7 @@ class SubtitleModifications(object):
                 line_count += 1
 
                 # clean {\X0} tags before processing
+                # fixme: handle nested tags?
                 start_tag = u""
                 end_tag = u""
                 if line.startswith(self.font_style_tag_start):
@@ -175,6 +178,12 @@ class SubtitleModifications(object):
                 if skip_line:
                     continue
 
+                if start_tag:
+                    start_tags.append(start_tag)
+
+                if end_tag:
+                    end_tags.append(end_tag)
+
                 lines.append(start_tag + line + end_tag)
 
             if not lines:
@@ -183,8 +192,25 @@ class SubtitleModifications(object):
                     logger.debug(u"%r -> ''", entry.text)
                 continue
 
-            # fixme: check for leftover start/endtags
-            entry.text = ur"\N".join(lines)
+            new_text = ur"\N".join(lines)
+
+            # cheap man's approach to avoid open tags
+            add_start_tags = []
+            add_end_tags = []
+            if len(start_tags) != len(end_tags):
+                for tag in start_tags:
+                    end_tag = tag.replace("1", "0")
+                    if end_tag not in end_tags and new_text.count(tag) != new_text.count(end_tag):
+                        add_end_tags.append(end_tag)
+                for tag in end_tags:
+                    start_tag = tag.replace("0", "1")
+                    if start_tag not in start_tags and new_text.count(tag) != new_text.count(start_tag):
+                        add_start_tags.append(start_tag)
+
+                entry.text = u"".join(add_start_tags) + new_text + u"".join(add_end_tags)
+            else:
+                entry.text = new_text
+
             new_entries.append(entry)
 
 SubMod = SubtitleModifications

@@ -75,8 +75,8 @@ and some text
 
 17
 00:00:49,631 --> 00:00:51,924
-AGUGU
-pepipi
+<i>AGUGU
+pepipi</i>
 
 18
 00:00:51,926 --> 00:00:55,304
@@ -271,12 +271,13 @@ Is it talking?
 
 60
 00:03:45,641 --> 00:03:48,141
-(DRILLING)
+<u>This will end up with an open end tag
+<i>(DRILLING)</i></u>
 
 61
 00:03:53,233 --> 00:03:56,151
-- Not exactly talking, no.
-- Then what's it doing?
+- (REMOVE ME <s> PLEASE)
+- Then <i>what's</i> it doing?</s>
 
 62
 00:03:56,151 --> 00:03:57,235
