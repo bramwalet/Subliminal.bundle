@@ -530,13 +530,13 @@
       "5 weeks",
       "6 weeks"
     ],
-    "default": "1 weeks"
+    "default": "2 weeks"
   },
   {
     "id": "scheduler.max_recent_items_per_library",
     "label": "Scheduler: Recent items to consider per library",
     "type": "text",
-    "default": "500"
+    "default": "1000"
   },
   {
     "id": "scheduler.tasks.FindBetterSubtitles.frequency",
