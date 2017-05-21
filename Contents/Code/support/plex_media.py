@@ -34,9 +34,9 @@ def media_to_videos(media, kind="series"):
     """
     videos = []
 
-    item = get_item(media.id)
-    year = item.year
-    original_title = item.title_original
+    plex_item = get_item(media.id)
+    year = plex_item.year
+    original_title = plex_item.title_original
 
     if kind == "series":
         for season in media.seasons:
@@ -67,7 +67,6 @@ def media_to_videos(media, kind="series"):
                                                })
                         )
     else:
-        plex_item = get_item(media.id)
         imdb_id = None
         if imdb_guid_identifier in media.guid:
             imdb_id = media.guid[len(imdb_guid_identifier):].split("?")[0]
