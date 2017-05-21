@@ -37,7 +37,7 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
             existing_flat = set((existing_subs["internal"] if internal else []) + (existing_subs["external"] if external else []))
             if languages_set.issubset(existing_flat) or (len(existing_flat) >= 1 and Prefs['subtitles.only_one']):
                 # all subs found
-                Log.Info(u"All subtitles exist for '%s'", item_title)
+                #Log.Info(u"All subtitles exist for '%s'", item_title)
                 continue
 
             missing_from_part = languages_set - existing_flat
