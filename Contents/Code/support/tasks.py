@@ -392,6 +392,7 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
 
         subtitle_storage = get_subtitle_storage()
         recent_subs = subtitle_storage.load_recent_files(age_days=max_search_days)
+        viable_item_count = 0
 
         for fn, stored_subs in recent_subs.iteritems():
             video_id = stored_subs.video_id
@@ -412,6 +413,7 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
             if stored_subs.added_at + datetime.timedelta(days=max_search_days) <= now:
                 continue
 
+            viable_item_count += 1
             ditch_parts = []
 
             # look through all stored subtitle data
@@ -431,19 +433,21 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
 
                     # late cutoff met? skip
                     if current_score >= cutoff:
-                        Log.Debug(u"Skipping finding better subs, cutoff met (current: %s, cutoff: %s): %s",
-                                  current_score, cutoff, stored_subs.title)
+                        Log.Debug(u"Skipping finding better subs, cutoff met (current: %s, cutoff: %s): %s (%s)",
+                                  current_score, cutoff, stored_subs.title, stored_subs.rating_key)
                         continue
 
                     # got manual subtitle but don't want to touch those?
                     if current_mode == "m" and not overwrite_manually_selected:
-                        Log.Debug(u"Skipping finding better subs, had manual: %s", stored_subs.title)
+                        Log.Debug(u"Skipping finding better subs, had manual: %s (%s)", stored_subs.title,
+                                  stored_subs.rating_key)
                         continue
 
                     # subtitle modifications different from default
                     if not overwrite_manually_modified and current.mods \
                             and set(current.mods).difference(set(config.default_mods)):
-                        Log.Debug(u"Skipping finding better subs, it has manual modifications: %s", stored_subs.title)
+                        Log.Debug(u"Skipping finding better subs, it has manual modifications: %s (%s)",
+                                  stored_subs.title, stored_subs.rating_key)
                         continue
 
                     try:
@@ -485,9 +489,10 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
             time.sleep(1)
 
         if better_found:
-            Log.Debug("Task: %s, done. Better subtitles found for %s items", self.name, better_found)
+            Log.Debug("Task: %s, done. Better subtitles found for %s/%s items", self.name, better_found,
+                      viable_item_count)
         else:
-            Log.Debug("Task: %s, done. No better subtitles found for %s items", self.name, len(recent_subs))
+            Log.Debug("Task: %s, done. No better subtitles found for %s items", self.name, viable_item_count)
 
 
 class SubtitleStorageMaintenance(Task):
