@@ -24,8 +24,6 @@ def parse_video(fn, video_info, hints, external_subtitles=False, embedded_subtit
         "embedded_subtitles": False,
     }
 
-    #logger.info("got video info: %s", video_info)
-
     plex_title = video_info["original_title"] or video_info["title"]
     if hints["type"] == "episode":
         plex_title = video_info["original_title"] or video_info["series"]
@@ -36,13 +34,16 @@ def parse_video(fn, video_info, hints, external_subtitles=False, embedded_subtit
     refine(video, **refine_kwargs)
 
     if not video.imdb_id:
+        logger.info(u"Adding PMS imdb_id info: %s", video_info["imdb_id"])
         video.imdb_id = video_info["imdb_id"]
 
     if hints["type"] == "episode":
         if not video.series_tvdb_id:
+            logger.info(u"Adding PMS series_tvdb_id info: %s", video_info["series_tvdb_id"])
             video.series_tvdb_id = video_info["series_tvdb_id"]
 
         if not video.tvdb_id:
+            logger.info(u"Adding PMS tvdb_id info: %s", video_info["tvdb_id"])
             video.tvdb_id = video_info["tvdb_id"]
 
     # re-refine with plex's known data?

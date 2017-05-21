@@ -239,5 +239,6 @@ def ValidatePrefs():
     Log.Debug("Setting log-level to %s", Prefs["log_level"])
     logger.register_logging_handler(DEPENDENCY_MODULE_NAMES, level=Prefs["log_level"])
     Core.log.setLevel(logging.getLevelName(Prefs["log_level"]))
+    os.environ['U1pfT01EQl9LRVk'] = '789CF30DAC2C8B0AF433F5C9AD34290A712DF30D7135F12D0FB3E502006FDE081E'
 
     return

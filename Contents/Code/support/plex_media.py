@@ -231,19 +231,41 @@ def get_plex_metadata(rating_key, part_id, item_type):
 
     # get normalized metadata
     if item_type == "episode":
+        show = list(Plex["library"].metadata(plex_item.show.rating_key))[0]
+        year = show.year
+        tvdb_id = None
+        series_tvdb_id = None
+        original_title = show.title_original
+        if tvdb_guid_identifier in plex_item.guid:
+            tvdb_id = plex_item.guid[len(tvdb_guid_identifier):].split("?")[0]
+            series_tvdb_id = tvdb_id.split("/")[0]
         metadata = get_metadata_dict(plex_item, current_part,
                                      {"plex_part": current_part, "type": "episode", "title": plex_item.title,
                                       "series": plex_item.show.title, "id": plex_item.rating_key,
                                       "series_id": plex_item.show.rating_key,
                                       "season_id": plex_item.season.rating_key,
+                                      "imdb_id": None,
+                                      "year": year,
+                                      "tvdb_id": tvdb_id,
+                                      "series_tvdb_id": series_tvdb_id,
+                                      "original_title": original_title,
                                       "season": plex_item.season.index,
                                       "episode": plex_item.index
                                       })
     else:
+        imdb_id = None
+        original_title = plex_item.title_original
+        if imdb_guid_identifier in plex_item.guid:
+            imdb_id = plex_item.guid[len(imdb_guid_identifier):].split("?")[0]
         metadata = get_metadata_dict(plex_item, current_part, {"plex_part": current_part, "type": "movie",
                                                                "title": plex_item.title, "id": plex_item.rating_key,
                                                                "series_id": None,
                                                                "season_id": None,
+                                                               "imdb_id": imdb_id,
+                                                               "year": plex_item.year,
+                                                               "tvdb_id": None,
+                                                               "series_tvdb_id": None,
+                                                               "original_title": original_title,
                                                                "season": None,
                                                                "episode": None,
                                                                "section": plex_item.section.title})

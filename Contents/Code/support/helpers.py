@@ -245,13 +245,13 @@ def get_item_hints(data):
     :param data: video item dict of media_to_videos 
     :return: 
     """
-    hints = {"title": data["title"], "type": "movie"}
+    hints = {"title": data["original_title"] or data["title"], "type": "movie"}
     if data["type"] == "episode":
         hints.update(
             {
                 "type": "episode",
                 "episode_title": data["title"],
-                "title": data["series"],
+                "title": data["original_title"] or data["series"],
             }
         )
     return hints
