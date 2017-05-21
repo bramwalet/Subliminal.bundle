@@ -1,3 +1,16 @@
+2.0.19.1299 RC7
+- submod: offset mods now get merged internally when applied multiple times (to avoid errors and increase performance)
+- submod: improve performance
+- submod: core mods (OCR, common, remove_HI) now are always applied in a fixed order internally, regardless of the order they were added in
+- submod: CM_spaces_in_numbers: don't break up ellipses (30... 29... 28...)
+- submod: CM_spaces_in_numbers: don't fix countdown numbers (30, 29, 28)
+- submod: remove_HI: make bracket removal more aggressive
+- submod: remove_HI: be less aggressive when removing text-before-colon
+- submod: remove_HI: remove all-uppercase-before-sentence (THIS IS ALL UPPERCASE And here starts a sentence -> And here starts a sentence)
+- submod: fix all character ranges to include non-ASCII characters
+- add new README for 2.0
+
+
 2.0.19.1267 RC6
 - core: add new SZ subtitle storage format
   - smaller data files and less cumbersome

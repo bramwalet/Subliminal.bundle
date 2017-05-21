@@ -68,17 +68,16 @@ For further help or manual installation, [please go to the wiki](https://github.
 
 ## Changelog
 
-2.0.19.1299 RC7
-- submod: offset mods now get merged internally when applied multiple times (to avoid errors and increase performance)
-- submod: improve performance
-- submod: core mods (OCR, common, remove_HI) now are always applied in a fixed order internally, regardless of the order they were added in
-- submod: CM_spaces_in_numbers: don't break up ellipses (30... 29... 28...)
-- submod: CM_spaces_in_numbers: don't fix countdown numbers (30, 29, 28)
-- submod: remove_HI: make bracket removal more aggressive
-- submod: remove_HI: be less aggressive when removing text-before-colon
-- submod: remove_HI: remove all-uppercase-before-sentence (THIS IS ALL UPPERCASE And here starts a sentence -> And here starts a sentence)
-- submod: fix all character ranges to include non-ASCII characters
-- add new README for 2.0
+2.0.19.1337 RC8
+- napiprojekt: fixed: couldn't convert microdvd to SRT in certain occasions
+- core: when normalize to UTF-8 is enabled, also store the subtitle in UTF-8 encoding in the internal storage
+- core: add more encodings for western/eastern/northern europe
+- submod: OCR: update dictionaries from SubtitleEdit
+- submod: common: be smarter about uppercase i's in words that should have lowercase L's
+- submod: fix unopened/unclosed font style tags after modification
+- core: re-enable OMDB support
+- core: update guessit for better matching
+- core: fix SearchAllRecentlyMissing (was broken since RC3)
 
 
 [older changes](CHANGELOG.md)
