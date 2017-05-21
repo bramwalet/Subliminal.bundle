@@ -434,20 +434,19 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
                     # late cutoff met? skip
                     if current_score >= cutoff:
                         Log.Debug(u"Skipping finding better subs, cutoff met (current: %s, cutoff: %s): %s (%s)",
-                                  current_score, cutoff, stored_subs.title, stored_subs.rating_key)
+                                  current_score, cutoff, stored_subs.title, video_id)
                         continue
 
                     # got manual subtitle but don't want to touch those?
                     if current_mode == "m" and not overwrite_manually_selected:
-                        Log.Debug(u"Skipping finding better subs, had manual: %s (%s)", stored_subs.title,
-                                  stored_subs.rating_key)
+                        Log.Debug(u"Skipping finding better subs, had manual: %s (%s)", stored_subs.title, video_id)
                         continue
 
                     # subtitle modifications different from default
                     if not overwrite_manually_modified and current.mods \
                             and set(current.mods).difference(set(config.default_mods)):
                         Log.Debug(u"Skipping finding better subs, it has manual modifications: %s (%s)",
-                                  stored_subs.title, stored_subs.rating_key)
+                                  stored_subs.title, video_id)
                         continue
 
                     try:
