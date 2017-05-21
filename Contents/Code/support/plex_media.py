@@ -230,6 +230,7 @@ def get_plex_metadata(rating_key, part_id, item_type):
         raise helpers.PartUnknownException("Part unknown")
 
     # get normalized metadata
+    # fixme: duplicated logic of media_to_videos
     if item_type == "episode":
         show = list(Plex["library"].metadata(plex_item.show.rating_key))[0]
         year = show.year
