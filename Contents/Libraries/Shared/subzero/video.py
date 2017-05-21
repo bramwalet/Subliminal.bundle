@@ -19,24 +19,31 @@ def parse_video(fn, video_info, hints, external_subtitles=False, embedded_subtit
     # refiners
 
     refine_kwargs = {
-        "episode_refiners": ('sz_metadata', 'tvdb'),#, 'omdb'),
-        "movie_refiners": ('sz_metadata',), #'omdb',),
+        "episode_refiners": ('sz_metadata', 'tvdb', 'sz_omdb'),
+        "movie_refiners": ('sz_metadata', 'sz_omdb',),
         "embedded_subtitles": False,
     }
 
-    logger.info("got video info: %s", video_info)
+    #logger.info("got video info: %s", video_info)
 
-    video.imdb_id = video_info["imdb_id"]
-    video.title = plex_title = video_info["original_title"] or video_info["title"]
-    video.series_tvdb_id = video_info["series_tvdb_id"]
-    video.tvdb_id = video_info["tvdb_id"]
-
+    plex_title = video_info["original_title"] or video_info["title"]
     if hints["type"] == "episode":
-        video.series = plex_title = video_info["original_title"] or video_info["series"]
+        plex_title = video_info["original_title"] or video_info["series"]
+
+    if not video.year:
+        video.year = video_info["year"]
 
     refine(video, **refine_kwargs)
 
-    video.year = video_info["year"]
+    if not video.imdb_id:
+        video.imdb_id = video_info["imdb_id"]
+
+    if hints["type"] == "episode":
+        if not video.series_tvdb_id:
+            video.series_tvdb_id = video_info["series_tvdb_id"]
+
+        if not video.tvdb_id:
+            video.tvdb_id = video_info["tvdb_id"]
 
     # re-refine with plex's known data?
     refine_with_plex = False
