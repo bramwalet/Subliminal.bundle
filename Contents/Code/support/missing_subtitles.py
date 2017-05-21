@@ -18,6 +18,7 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
         item_title = get_plex_item_display_title(item, kind, section_title=section_title)
 
     missing = set()
+    languages_set = set(languages)
     for media in item.media:
         existing_subs = {"internal": [], "external": [], "count": 0}
         for part in media.parts:
@@ -31,20 +32,20 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
                     existing_subs[key].append(Locale.Language.Match(stream.language_code or ""))
                     existing_subs["count"] = existing_subs["count"] + 1
 
+        missing_from_part = set(languages_set)
         if existing_subs["count"]:
-            existing_flat = (existing_subs["internal"] if internal else []) + (existing_subs["external"] if external else [])
-            languages_set = set(languages)
+            existing_flat = set((existing_subs["internal"] if internal else []) + (existing_subs["external"] if external else []))
             if languages_set.issubset(existing_flat) or (len(existing_flat) >= 1 and Prefs['subtitles.only_one']):
                 # all subs found
-                #Log.Info(u"All subtitles exist for '%s'", item_title)
+                Log.Info(u"All subtitles exist for '%s'", item_title)
                 continue
 
-            missing_from_part = languages_set - set(existing_flat)
+            missing_from_part = languages_set - existing_flat
 
-            if missing_from_part:
-                Log.Info(u"Subs still missing for '%s' (%s: %s): %s", item_title, rating_key, media.id,
-                         missing_from_part)
-                missing.update(missing_from_part)
+        if missing_from_part:
+            Log.Info(u"Subs still missing for '%s' (%s: %s): %s", item_title, rating_key, media.id,
+                     missing_from_part)
+            missing.update(missing_from_part)
 
     if missing:
         return added_at, item_id, item_title, item, missing
