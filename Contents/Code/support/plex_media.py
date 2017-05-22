@@ -64,6 +64,7 @@ def get_plexapi_stream_info(plex_item, part_id=None):
             # video stream
             data["resolution"] = "%s%s" % (current_media.video_resolution,
                                            "i" if stream.scan_type != "progressive" else "p")
+            break
 
     return d
 
