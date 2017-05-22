@@ -416,7 +416,7 @@
   },
   {
     "id": "subtitles.enforce_encoding",
-    "label": "Normalize subtitle encoding to UTF-8",
+    "label": "Normalize subtitle encoding to UTF-8 (highly recommended!)",
     "type": "bool",
     "default": "true"
   },
