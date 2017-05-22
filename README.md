@@ -68,6 +68,10 @@ For further help or manual installation, [please go to the wiki](https://github.
 
 ## Changelog
 
+2.0.19.1341 DEV
+- core: add more missing stream info #270
+
+
 2.0.19.1337 RC8
 - napiprojekt: fixed: couldn't convert microdvd to SRT in certain occasions
 - core: when normalize to UTF-8 is enabled, also store the subtitle in UTF-8 encoding in the internal storage
