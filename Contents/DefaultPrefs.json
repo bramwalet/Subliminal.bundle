@@ -643,7 +643,7 @@
   },
   {
     "id": "notify_executable",
-    "label": "Call this executable upon successful subtitle download",
+    "label": "Call this executable upon successful subtitle download (see Wiki for details)",
     "type": "text",
     "default": ""
   },
