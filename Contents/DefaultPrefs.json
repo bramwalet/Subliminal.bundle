@@ -357,7 +357,7 @@
   },
   {
     "id": "subtitles.scan.exotic_ext",
-    "label": "Scan: include \"exotic\" external subtitle formats (anything else than .srt/.ssa/.ass)",
+    "label": "Scan: include \"exotic\" subtitle formats (anything else than .srt/.ssa/.ass; embedded or external)",
     "type": "bool",
     "default": "false"
   },
