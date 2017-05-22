@@ -19,10 +19,16 @@ def parse_video(fn, video_info, hints, external_subtitles=False, embedded_subtit
     # refiners
 
     refine_kwargs = {
-        "episode_refiners": ('sz_metadata', 'tvdb', 'sz_omdb'),
-        "movie_refiners": ('sz_metadata', 'sz_omdb',),
+        "episode_refiners": ('tvdb', 'sz_omdb'),
+        "movie_refiners": ('sz_omdb',),
         "embedded_subtitles": False,
     }
+
+    # our own metadata refiner :)
+    for key, value in video_info["stream"].iteritems():
+        if hasattr(video, key) and not getattr(video, key):
+            logger.info(u"Adding stream %s info: %s", key, value)
+            setattr(video, key, value)
 
     plex_title = video_info["original_title"] or video_info["title"]
     if hints["type"] == "episode":
