@@ -6,6 +6,7 @@ import pysubs2
 import logging
 import time
 
+from mods import EMPTY_TAG_PROCESSOR
 from registry import registry
 
 logger = logging.getLogger(__name__)
@@ -184,7 +185,20 @@ class SubtitleModifications(object):
                 if end_tag:
                     end_tags.append(end_tag)
 
-                lines.append(start_tag + line + end_tag)
+                # append new line and clean possibly newly added empty tags
+                cleaned_line = EMPTY_TAG_PROCESSOR.process(start_tag + line + end_tag, debug=self.debug).strip()
+                if cleaned_line:
+                    # we may have a single closing tag, if so, try appending it to the previous line
+                    if len(cleaned_line) == 5 and cleaned_line.startswith("{\\") and cleaned_line.endswith("0}"):
+                        if lines:
+                            prev_line = lines.pop()
+                            lines.append(prev_line + cleaned_line)
+                            continue
+
+                    lines.append(cleaned_line)
+                else:
+                    if self.debug:
+                        logger.debug(u"Ditching now empty line (%r -> %r)", line)
 
             if not lines:
                 # don't bother logging when the entry only had one line
@@ -200,14 +214,18 @@ class SubtitleModifications(object):
             if len(start_tags) != len(end_tags):
                 for tag in start_tags:
                     end_tag = tag.replace("1", "0")
-                    if end_tag not in end_tags and new_text.count(tag) != new_text.count(end_tag):
+                    if end_tag not in end_tags and new_text.count(tag) > new_text.count(end_tag):
                         add_end_tags.append(end_tag)
                 for tag in end_tags:
                     start_tag = tag.replace("0", "1")
-                    if start_tag not in start_tags and new_text.count(tag) != new_text.count(start_tag):
+                    if start_tag not in start_tags and new_text.count(tag) > new_text.count(start_tag):
                         add_start_tags.append(start_tag)
 
-                entry.text = u"".join(add_start_tags) + new_text + u"".join(add_end_tags)
+                if add_end_tags or add_start_tags:
+                    entry.text = u"".join(add_start_tags) + new_text + u"".join(add_end_tags)
+                    if self.debug:
+                        logger.debug(u"Fixing tags: %s (%r -> %r)", str(add_start_tags+add_end_tags), new_text,
+                                     entry.text)
             else:
                 entry.text = new_text
 
