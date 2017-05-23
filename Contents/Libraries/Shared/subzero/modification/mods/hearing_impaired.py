@@ -24,11 +24,11 @@ class HearingImpaired(SubtitleTextModification):
         # NReProcessor(re.compile(r'(?u)(^[A-z\-\'"_]+[\w\s]{0,11}:[^0-9{2}][\s]*)'), "", name="HI_before_colon"),
 
         # text before colon (at least 4 consecutive uppercase chars)
-        NReProcessor(re.compile(ur'(?u)(^(?=.*[A-ZÀ-Ž]{4,})[A-ZÀ-Ž-_\s]+:[^0-9]\s*)'), "", name="HI_before_colon"),
+        NReProcessor(re.compile(ur'(?u)(^(?=.*[A-ZÀ-Ž]{4,})[A-ZÀ-Ž-_\s]+:\s*)'), "", name="HI_before_colon"),
 
         # text in brackets at start, after optional dash, before colon or at end of line
         # fixme: may be too aggressive
-        NReProcessor(re.compile(ur'(?um)(^-?\s?[([][A-zÀ-ž-_\s]{3,}[)\]](?:(?=$)|:[^0-9]\s*))'), "",
+        NReProcessor(re.compile(ur'(?um)(^-?\s?[([][A-zÀ-ž-_\s]{3,}[)\]](?:(?=$)|:\s*))'), "",
                      name="HI_brackets_special"),
 
         # all caps line (at least 4 consecutive uppercase chars)
