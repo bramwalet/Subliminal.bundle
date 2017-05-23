@@ -157,7 +157,12 @@ def debounce(func):
                 return ObjectContainer()
             else:
                 Dict["menu_history"][key] = datetime.datetime.now() + datetime.timedelta(days=1)
-                Dict.Save()
+                try:
+                    Dict.Save()
+                except TypeError:
+                    Log.Error("Can't save menu history for: %r", key)
+                    del Dict["menu_history"][key]
+
         return func(*args, **kwargs)
 
     return wrap
