@@ -29,6 +29,8 @@ SZ_FIX_DATA = {
             u"Âs": u"'s",
             u"ÃÂs": u"'s",
             u"a/ion": u"ation",
+            u"at/on": u"ation",
+            u"l/an": u"lian",
         },
         "WholeWords": {
             u"I'11": u"I'll",
@@ -42,6 +44,7 @@ SZ_FIX_DATA = {
             u"Yea h": u"Yeah",
             u"yea h": u"yeah",
             u"h is": u"his",
+            u" 're ": u"'re ",
         }
     }
 }
