@@ -311,8 +311,13 @@ class AvailableSubsForItem(SubtitleListingMixin, Task):
         super(AvailableSubsForItem, self).run()
         self.running = True
         track_usage("Subtitle", "manual", "list", 1)
-        self.data = self.list_subtitles(self.rating_key, self.item_type, self.part_id, self.language,
-                                        skip_wrong_fps=False)
+        subs = self.list_subtitles(self.rating_key, self.item_type, self.part_id, self.language, skip_wrong_fps=False)
+        if not subs:
+            self.data = None
+            return
+
+        # we can't have nasty unpicklable stuff like ZipFile, BytesIO etc in self.data
+        self.data = [s.make_picklable() for s in subs]
 
     def post_run(self, task_data):
         super(AvailableSubsForItem, self).post_run(task_data)

@@ -13,6 +13,10 @@ class LegendasTVSubtitle(_LegendasTVSubtitle):
         self.release_info = archive.name
         self.page_link = archive.link
 
+    def make_picklable(self):
+        self.archive.content = None
+        return self
+
 
 class LegendasTVProvider(_LegendasTVProvider):
     subtitle_class = LegendasTVSubtitle

@@ -40,6 +40,9 @@ class PatchedSubtitle(Subtitle):
         return '<%s %r [%s]>' % (
             self.__class__.__name__, self.page_link, self.language)
 
+    def make_picklable(self):
+        return self
+
     def set_encoding(self, encoding):
         if encoding == self.guess_encoding():
             return
