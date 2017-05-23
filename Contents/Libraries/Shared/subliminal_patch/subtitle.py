@@ -41,6 +41,10 @@ class PatchedSubtitle(Subtitle):
             self.__class__.__name__, self.page_link, self.language)
 
     def make_picklable(self):
+        """
+        some subtitle instances might have unpicklable objects stored; clean them up here 
+        :return: self
+        """
         return self
 
     def set_encoding(self, encoding):
