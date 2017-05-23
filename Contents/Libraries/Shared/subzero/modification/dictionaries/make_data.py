@@ -28,6 +28,7 @@ SZ_FIX_DATA = {
             u"compiete": u"complete",
             u"Âs": u"'s",
             u"ÃÂs": u"'s",
+            u"a/ion": u"ation",
         },
         "WholeWords": {
             u"I'11": u"I'll",
@@ -40,6 +41,7 @@ SZ_FIX_DATA = {
             u"He)'": u"Hey",
             u"Yea h": u"Yeah",
             u"yea h": u"yeah",
+            u"h is": u"his",
         }
     }
 }
