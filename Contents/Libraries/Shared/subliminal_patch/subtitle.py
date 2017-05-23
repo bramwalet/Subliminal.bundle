@@ -23,6 +23,7 @@ class PatchedSubtitle(Subtitle):
     release_info = None
     matches = None
     hash_verifiable = False
+    hearing_impaired_verifiable = False
     mods = None
     plex_media_fps = None
     skip_wrong_fps = False

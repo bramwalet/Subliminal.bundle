@@ -5,6 +5,8 @@ from subliminal.providers.subscenter import SubsCenterProvider as _SubsCenterPro
 
 
 class SubsCenterSubtitle(_SubsCenterSubtitle):
+    hearing_impaired_verifiable = True
+
     def __init__(self, language, hearing_impaired, page_link, series, season, episode, title, subtitle_id, subtitle_key,
                  subtitle_version, downloaded, releases):
         super(SubsCenterSubtitle, self).__init__(language, hearing_impaired, page_link, series, season, episode, title,
@@ -20,3 +22,4 @@ class SubsCenterSubtitle(_SubsCenterSubtitle):
 
 class SubsCenterProvider(_SubsCenterProvider):
     subtitle_class = SubsCenterSubtitle
+    hearing_impaired_verifiable = True

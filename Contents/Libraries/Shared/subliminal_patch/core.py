@@ -200,7 +200,8 @@ class SZProviderPool(ProviderPool):
                 continue
 
             # bail out if hearing_impaired was wrong
-            if "hearing_impaired" not in matches and hearing_impaired in ("force HI", "force non-HI"):
+            if subtitle.hearing_impaired_verifiable and "hearing_impaired" not in matches and \
+                            hearing_impaired in ("force HI", "force non-HI"):
                 logger.debug('%r: Skipping subtitle with score %d because hearing-impaired set to %s', subtitle,
                              score, hearing_impaired)
                 continue

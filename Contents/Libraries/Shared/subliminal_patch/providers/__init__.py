@@ -5,5 +5,6 @@ from subliminal.providers import Provider as _Provider
 
 class Provider(_Provider):
     hash_verifiable = False
+    hearing_impaired_verifiable = False
     skip_wrong_fps = True
 

@@ -45,6 +45,7 @@ SZ_FIX_DATA = {
             u"yea h": u"yeah",
             u"h is": u"his",
             u" 're ": u"'re ",
+            u"LAst": u"Last",
         }
     }
 }

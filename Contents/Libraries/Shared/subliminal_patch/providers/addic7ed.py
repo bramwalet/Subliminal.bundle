@@ -17,6 +17,8 @@ series_year_re = re.compile(r'^(?P<series>[ \w\'.:(),&!?-]+?)(?: \((?P<year>\d{4
 
 
 class Addic7edSubtitle(_Addic7edSubtitle):
+    hearing_impaired_verifiable = True
+
     def __init__(self, language, hearing_impaired, page_link, series, season, episode, title, year, version,
                  download_link):
         super(Addic7edSubtitle, self).__init__(language, hearing_impaired, page_link, series, season, episode,
@@ -44,6 +46,7 @@ class Addic7edSubtitle(_Addic7edSubtitle):
 
 class Addic7edProvider(_Addic7edProvider):
     USE_ADDICTED_RANDOM_AGENTS = False
+    hearing_impaired_verifiable = True
     subtitle_class = Addic7edSubtitle
 
     def __init__(self, username=None, password=None, use_random_agents=False):

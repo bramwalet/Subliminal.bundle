@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 
 class PodnapisiSubtitle(_PodnapisiSubtitle):
     provider_name = 'podnapisi'
+    hearing_impaired_verifiable = True
 
     def __init__(self, language, hearing_impaired, page_link, pid, releases, title, season=None, episode=None,
                  year=None):
@@ -33,6 +34,7 @@ class PodnapisiSubtitle(_PodnapisiSubtitle):
 class PodnapisiProvider(_PodnapisiProvider):
     only_foreign = False
     subtitle_class = PodnapisiSubtitle
+    hearing_impaired_verifiable = True
 
     def __init__(self, only_foreign=False):
         self.only_foreign = only_foreign
