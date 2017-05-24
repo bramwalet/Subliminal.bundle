@@ -9,12 +9,6 @@ from .providers import Provider
 from .http import RetryingSession
 subliminal.subtitle.Subtitle = PatchedSubtitle
 
-try:
-    subliminal.provider_manager.register('napiprojekt = subliminal.providers.napiprojekt:NapiProjektProvider',)
-except ValueError:
-    # already registered
-    pass
-
 # add our patched base classes
 for name in ("Addic7ed", "Podnapisi", "TVsubtitles", "OpenSubtitles", "LegendasTV", "NapiProjekt", "Shooter",
              "SubsCenter"):
@@ -28,13 +22,18 @@ for name in ("Addic7ed", "Podnapisi", "TVsubtitles", "OpenSubtitles", "LegendasT
 from .core import scan_video, search_external_subtitles, list_all_subtitles, save_subtitles, refine
 from .score import compute_score
 from .extensions import provider_manager
+from .video import Video
 
 # patch subliminal's core functions
 subliminal.scan_video = subliminal.core.scan_video = scan_video
 subliminal.core.search_external_subtitles = search_external_subtitles
 subliminal.save_subtitles = subliminal.core.save_subtitles = save_subtitles
 subliminal.refine = subliminal.core.refine = refine
+subliminal.video.Video = subliminal.Video = Video
+subliminal.video.Episode.__bases__ = (Video,)
+subliminal.video.Movie.__bases__ = (Video,)
 
 # add our own list_all_subtitles
 subliminal.list_all_subtitles = subliminal.core.list_all_subtitles = list_all_subtitles
-subliminal.provider_manager = subliminal.core.provider_manager = provider_manager
+subliminal.provider_manager = subliminal.core.provider_manager = subliminal.extensions.provider_manager = \
+    provider_manager

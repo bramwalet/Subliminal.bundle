@@ -112,6 +112,12 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
             query = video.series
             season = video.season
             episode = video.episode
+
+            if video.is_special:
+                season = None
+                episode = None
+                query = u"%s %s" % (video.series, video.title)
+                logger.info("%s: Searching for special: %r", self.__class__, query)
         # elif ('opensubtitles' not in video.hashes or not video.size) and not video.imdb_id:
         #    query = video.name.split(os.sep)[-1]
         else:

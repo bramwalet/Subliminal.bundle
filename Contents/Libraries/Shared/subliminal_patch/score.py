@@ -49,7 +49,7 @@ def compute_score(matches, subtitle, video, hearing_impaired=None):
                 # series, season and episode matched, hash is valid
                 logger.debug('%r: Using valid hash, as %s are correct (%r) and (%r)', subtitle, hash_valid_if, matches,
                              video)
-                matches &= {'hash', 'hearing_impaired'}
+                matches |= {'hash', 'hearing_impaired'}
             else:
                 # no match, invalidate hash
                 logger.debug('%r: Ignoring hash as other matches are wrong (missing: %r) and (%r)', subtitle,
@@ -75,6 +75,12 @@ def compute_score(matches, subtitle, video, hearing_impaired=None):
         if 'series_tvdb_id' in matches:
             logger.debug('Adding series_tvdb_id match equivalents')
             matches |= {'series', 'year'}
+
+        # specials
+        if video.is_special and 'title' in matches and 'series' in matches and 'year' in matches:
+            logger.debug('Adding special title match equivalent')
+            matches |= {'season', 'episode'}
+
     elif is_movie:
         if 'imdb_id' in matches:
             logger.debug('Adding imdb_id match equivalents')

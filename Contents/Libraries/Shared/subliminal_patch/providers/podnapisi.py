@@ -45,6 +45,10 @@ class PodnapisiProvider(_PodnapisiProvider):
         super(PodnapisiProvider, self).__init__()
 
     def list_subtitles(self, video, languages):
+        if video.is_special:
+            logger.info("%s can't search for specials right now, skipping", self)
+            return []
+
         if isinstance(video, Episode):
             return [s for l in languages for s in self.query(l, video.series, season=video.season,
                                                              episode=video.episode, year=video.year,

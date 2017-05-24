@@ -3,7 +3,7 @@ import subliminal
 import babelfish
 from subliminal.extensions import RegistrableExtensionManager
 
-provider_manager = RegistrableExtensionManager('subliminal.providers', [
+provider_manager = RegistrableExtensionManager('subliminal_patch.providers', [
     'addic7ed = subliminal_patch.providers.addic7ed:Addic7edProvider',
     'legendastv = subliminal_patch.providers.legendastv:LegendasTVProvider',
     'opensubtitles = subliminal_patch.providers.opensubtitles:OpenSubtitlesProvider',

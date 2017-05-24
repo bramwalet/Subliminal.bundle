@@ -197,11 +197,6 @@ class SubtitleListingMixin(object):
         if not metadata:
             return
 
-        if item_type == "episode":
-            min_score = 240
-        else:
-            min_score = 60
-
         scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
         if not scanned_parts:
             Log.Error("Couldn't list available subtitles for %s", rating_key)
@@ -214,6 +209,13 @@ class SubtitleListingMixin(object):
         if not skip_wrong_fps:
             provider_settings = config.provider_settings.copy()
             provider_settings["opensubtitles"]["skip_wrong_fps"] = False
+
+        if item_type == "episode":
+            min_score = 240
+            if video.is_special:
+                min_score = 180
+        else:
+            min_score = 60
 
         available_subs = list_all_subtitles(scanned_parts, {Language.fromietf(language)},
                                             providers=config.providers,

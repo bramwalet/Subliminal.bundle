@@ -25,49 +25,52 @@ def parse_video(fn, video_info, hints, external_subtitles=False, embedded_subtit
     }
 
     # our own metadata refiner :)
-    for key, value in video_info["stream"].iteritems():
-        if hasattr(video, key) and not getattr(video, key):
-            logger.info(u"Adding stream %s info: %s", key, value)
-            setattr(video, key, value)
+    if "stream" in video_info:
+        for key, value in video_info["stream"].iteritems():
+            if hasattr(video, key) and not getattr(video, key):
+                logger.info(u"Adding stream %s info: %s", key, value)
+                setattr(video, key, value)
 
-    plex_title = video_info["original_title"] or video_info["title"]
+    plex_title = video_info.get("original_title", video_info.get("title"))
     if hints["type"] == "episode":
-        plex_title = video_info["original_title"] or video_info["series"]
+        plex_title = video_info.get("original_title", video_info.get("series"))
 
     if not video.year:
-        video.year = video_info["year"]
+        video.year = video_info.get("year")
 
     refine(video, **refine_kwargs)
 
     if not video.imdb_id:
-        logger.info(u"Adding PMS imdb_id info: %s", video_info["imdb_id"])
-        video.imdb_id = video_info["imdb_id"]
+        video.imdb_id = video_info.get("imdb_id")
+        if video.imdb_id:
+            logger.info(u"Adding PMS imdb_id info: %s", video.imdb_id)
 
     if hints["type"] == "episode":
         if not video.series_tvdb_id:
-            logger.info(u"Adding PMS series_tvdb_id info: %s", video_info["series_tvdb_id"])
-            video.series_tvdb_id = video_info["series_tvdb_id"]
+            logger.info(u"Adding PMS series_tvdb_id info: %s", video_info.get("series_tvdb_id"))
+            video.series_tvdb_id = video_info.get("series_tvdb_id")
 
         if not video.tvdb_id:
-            logger.info(u"Adding PMS tvdb_id info: %s", video_info["tvdb_id"])
-            video.tvdb_id = video_info["tvdb_id"]
+            logger.info(u"Adding PMS tvdb_id info: %s", video_info.get("tvdb_id"))
+            video.tvdb_id = video_info.get("tvdb_id")
 
     # re-refine with plex's known data?
     refine_with_plex = False
 
     # episode but wasn't able to match title
-    if hints["type"] == "episode" and not video.series_tvdb_id and not video.tvdb_id and not video.series_imdb_id \
-            and video.series != plex_title:
-        logger.info(u"Re-refining with series title: '%s' instead of '%s'", plex_title, video.series)
-        video.series = plex_title
-        refine_with_plex = True
+    if plex_title:
+        if hints["type"] == "episode" and not video.series_tvdb_id and not video.tvdb_id and not video.series_imdb_id \
+                and video.series != plex_title:
+            logger.info(u"Re-refining with series title: '%s' instead of '%s'", plex_title, video.series)
+            video.series = plex_title
+            refine_with_plex = True
 
-    # movie
-    elif hints["type"] == "movie" and not video.imdb_id and video.title != plex_title:
         # movie
-        logger.info(u"Re-refining with series title: '%s' instead of '%s'", plex_title, video.title)
-        video.title = plex_title
-        refine_with_plex = True
+        elif hints["type"] == "movie" and not video.imdb_id and video.title != plex_title:
+            # movie
+            logger.info(u"Re-refining with series title: '%s' instead of '%s'", plex_title, video.title)
+            video.title = plex_title
+            refine_with_plex = True
 
     # title not matched? try plex title hint
     if refine_with_plex:
@@ -86,7 +89,6 @@ def parse_video(fn, video_info, hints, external_subtitles=False, embedded_subtit
         )
 
     # add video fps info
-    # fixme: still needed?
     video.fps = video_fps
 
     # add known embedded subtitles
@@ -102,5 +104,14 @@ def parse_video(fn, video_info, hints, external_subtitles=False, embedded_subtit
 
             logger.debug('Found embedded subtitle %r', embedded_subtitle_languages)
             video.subtitle_languages.update(embedded_subtitle_languages)
+
+    # guess special
+    if hints["type"] == "episode":
+        if video.season == 0 or video.episode == 0:
+            video.is_special = True
+        else:
+            # check parent folder name
+            if os.path.dirname(fn).split(os.path.sep)[-1].lower() in ("specials", "season 00"):
+                video.is_special = True
 
     return video

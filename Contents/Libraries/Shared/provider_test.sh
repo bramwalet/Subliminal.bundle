@@ -2,13 +2,13 @@
 python -c "import logging; logging.basicConfig(level=logging.DEBUG); import subliminal_patch, subliminal; subliminal.region.configure('dogpile.cache.memory'); from subliminal_patch.core import SZProviderPool; ProviderPool(providers=['addic7ed'], provider_configs={'addic7ed': {'use_random_agents': True}})['addic7ed'].query('Game of Thrones', 2)"
 
 # opensubtitles
-python -c "import logging; logging.basicConfig(level=logging.DEBUG); import subliminal_patch, subliminal; subliminal.region.configure('dogpile.cache.memory'); from subliminal_patch.core import SZProviderPool; from babelfish import Language; ProviderPool(providers=['opensubtitles'], )['opensubtitles'].query([Language('eng')], query='Game of Thrones', season=2, episode=1, tag='Game.of.Thrones.S06E01.The.Red.Woman.720p.WEB-DL.DD5.1.H.264-NTB.mkv', use_tag_search=True)"
+python -c "import logging; logging.basicConfig(level=logging.DEBUG); logging.getLogger('rebulk').setLevel(logging.WARNING); import subliminal_patch, subliminal; subliminal.region.configure('dogpile.cache.memory'); from subliminal_patch.core import SZProviderPool; from babelfish import Language; from subzero.video import parse_video; SZProviderPool(providers=['opensubtitles'], )['opensubtitles'].list_subtitles(parse_video('FULL_PATH', {}, {'type': 'episode'}), languages=[Language('eng')])"
 
 # podnapisi
-python -c "import logging; logging.basicConfig(level=logging.DEBUG); import subliminal_patch, subliminal; subliminal.region.configure('dogpile.cache.memory'); from subliminal_patch.core import SZProviderPool; from babelfish import Language; ProviderPool(providers=['podnapisi'], )['podnapisi'].query([Language('eng')], 'Game of Thrones', season=2, episode=1)"
+python -c "import logging; logging.basicConfig(level=logging.DEBUG); import subliminal_patch, subliminal; subliminal.region.configure('dogpile.cache.memory'); from subliminal_patch.core import SZProviderPool; from babelfish import Language; SZProviderPool(providers=['podnapisi'], )['podnapisi'].query([Language('eng')], 'Game of Thrones', season=2, episode=1)"
 
 # tvsubtitles
-python -c "import logging; logging.basicConfig(level=logging.DEBUG); import subliminal_patch, subliminal; subliminal.region.configure('dogpile.cache.memory'); from subliminal_patch.core import SZProviderPool; from babelfish import Language; ProviderPool(providers=['tvsubtitles'], )['tvsubtitles'].query('Game of Thrones', 2, 1)"
+python -c "import logging; logging.basicConfig(level=logging.DEBUG); import subliminal_patch, subliminal; subliminal.region.configure('dogpile.cache.memory'); from subliminal_patch.core import SZProviderPool; from babelfish import Language; SZProviderPool(providers=['tvsubtitles'], )['tvsubtitles'].query('Game of Thrones', 2, 1)"
 
 # napiprojekt:list
 python -c "import logging; logging.basicConfig(level=logging.DEBUG); logging.getLogger('rebulk').setLevel(logging.WARNING); import subliminal_patch, subliminal; subliminal.region.configure('dogpile.cache.memory'); from subliminal_patch.core import SZProviderPool; from babelfish import Language; from subliminal.core import scan_video; print SZProviderPool(providers=['napiprojekt'], )['napiprojekt'].list_subtitles(scan_video('FULL_PATH'), languages=[Language('pol')])"
