@@ -70,20 +70,15 @@ For further help or manual installation, [please go to the wiki](https://github.
 
 ## Changelog
 
-2.0.19.1341 DEV
-- core: add more missing stream info #270
-
-
-2.0.19.1337 RC8
-- napiprojekt: fixed: couldn't convert microdvd to SRT in certain occasions
-- core: when normalize to UTF-8 is enabled, also store the subtitle in UTF-8 encoding in the internal storage
-- core: add more encodings for western/eastern/northern europe
-- submod: OCR: update dictionaries from SubtitleEdit
-- submod: common: be smarter about uppercase i's in words that should have lowercase L's
-- submod: fix unopened/unclosed font style tags after modification
-- core: re-enable OMDB support
-- core: update guessit for better matching
-- core: fix SearchAllRecentlyMissing (was broken since RC3)
+2.0.20.1364 RC9
+- core: performance improvements
+- core: if info couldn't be guessed from the filename, fill missing info from PMS #270
+- submod: OCR: add more to the eng dictionary
+- submod: HI: fixed some issues with font style tags
+- core: don't ignore subtitles from providers that don't have hearing impaired info, when hearing impaired mode is set to "force non-HI"
+- legendastv/menu: fix manual subtitle selection issues in menu
+- core: improve specials matching on OpenSubtitles
+- core: update guessit
 
 
 [older changes](CHANGELOG.md)

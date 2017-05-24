@@ -1,3 +1,15 @@
+2.0.19.1337 RC8
+- napiprojekt: fixed: couldn't convert microdvd to SRT in certain occasions
+- core: when normalize to UTF-8 is enabled, also store the subtitle in UTF-8 encoding in the internal storage
+- core: add more encodings for western/eastern/northern europe
+- submod: OCR: update dictionaries from SubtitleEdit
+- submod: common: be smarter about uppercase i's in words that should have lowercase L's
+- submod: fix unopened/unclosed font style tags after modification
+- core: re-enable OMDB support
+- core: update guessit for better matching
+- core: fix SearchAllRecentlyMissing (was broken since RC3)
+
+
 2.0.19.1299 RC7
 - submod: offset mods now get merged internally when applied multiple times (to avoid errors and increase performance)
 - submod: improve performance
