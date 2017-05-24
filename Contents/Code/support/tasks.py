@@ -366,8 +366,8 @@ class MissingSubtitles(Task):
 class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
     periodic = True
 
-    # TV: episode, format, series, year, season, video_codec, release_group, hearing_impaired
-    series_cutoff = 355
+    # TV: episode, format, series, year, season, video_codec, release_group, hearing_impaired, resolution
+    series_cutoff = 357
 
     # movies: format, title, release_group, year, video_codec, resolution, hearing_impaired
     movies_cutoff = 117
