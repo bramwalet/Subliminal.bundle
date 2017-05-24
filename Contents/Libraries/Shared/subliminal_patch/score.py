@@ -45,16 +45,18 @@ def compute_score(matches, subtitle, video, hearing_impaired=None):
             # hash is error-prone, try to fix that
             hash_valid_if = episode_hash_valid_if if is_episode else movie_hash_valid_if
 
-            if hash_valid_if <= set(matches):
-                # series, season and episode matched, hash is valid
-                logger.debug('%r: Using valid hash, as %s are correct (%r) and (%r)', subtitle, hash_valid_if, matches,
-                             video)
-                matches |= {'hash', 'hearing_impaired'}
-            else:
-                # no match, invalidate hash
-                logger.debug('%r: Ignoring hash as other matches are wrong (missing: %r) and (%r)', subtitle,
-                             hash_valid_if - matches, video)
-                matches -= {"hash"}
+            # don't validate hashes of specials, as season and episode tend to be wrong
+            if is_movie or not video.is_special:
+                if hash_valid_if <= set(matches):
+                    # series, season and episode matched, hash is valid
+                    logger.debug('%r: Using valid hash, as %s are correct (%r) and (%r)', subtitle, hash_valid_if, matches,
+                                 video)
+                    matches &= {'hash'}
+                else:
+                    # no match, invalidate hash
+                    logger.debug('%r: Ignoring hash as other matches are wrong (missing: %r) and (%r)', subtitle,
+                                 hash_valid_if - matches, video)
+                    matches -= {"hash"}
     elif 'hash' in matches:
         logger.debug('%r: Hash not verifiable for this provider. Keeping it', subtitle)
 
@@ -77,7 +79,8 @@ def compute_score(matches, subtitle, video, hearing_impaired=None):
             matches |= {'series', 'year'}
 
         # specials
-        if video.is_special and 'title' in matches and 'series' in matches and 'year' in matches:
+        if video.is_special and 'title' in matches and 'series' in matches \
+                and 'year' in matches:
             logger.debug('Adding special title match equivalent')
             matches |= {'season', 'episode'}
 
