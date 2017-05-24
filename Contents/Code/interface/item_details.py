@@ -123,15 +123,27 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                               (part_summary_addon, current_sub.provider_name, df(current_sub.date_added),
                                current_sub.mode_verbose, lang, current_sub.score, current_sub.storage_type)
 
-                oc.add(DirectoryObject(
-                    key=Callback(SubtitleOptionsMenu, rating_key=rating_key, part_id=part_id, title=title,
-                                 item_title=item_title, language=lang, language_name=lang.name, current_id=current_sub_id,
-                                 item_type=plex_item.type, filename=filename, current_data=summary,
-                                 randomize=timestamp(), current_provider=current_sub_provider_name,
-                                 current_score=current_score),
-                    title=u"%sActions for %s subtitle" % (part_index_addon, lang.name),
-                    summary=summary
-                ))
+                    oc.add(DirectoryObject(
+                        key=Callback(SubtitleOptionsMenu, rating_key=rating_key, part_id=part_id, title=title,
+                                     item_title=item_title, language=lang, language_name=lang.name,
+                                     current_id=current_sub_id,
+                                     item_type=plex_item.type, filename=filename, current_data=summary,
+                                     randomize=timestamp(), current_provider=current_sub_provider_name,
+                                     current_score=current_score),
+                        title=u"%sActions for %s subtitle" % (part_index_addon, lang.name),
+                        summary=summary
+                    ))
+                else:
+                    oc.add(DirectoryObject(
+                        key=Callback(ListAvailableSubsForItemMenu, rating_key=rating_key, part_id=part_id, title=title,
+                                     item_title=item_title, language=lang, language_name=lang.name,
+                                     current_id=current_sub_id,
+                                     item_type=plex_item.type, filename=filename, current_data=summary,
+                                     randomize=timestamp(), current_provider=current_sub_provider_name,
+                                     current_score=current_score),
+                        title=u"%sList %s subtitles" % (part_index_addon, lang.name),
+                        summary=summary
+                    ))
 
     add_ignore_options(oc, "videos", title=item_title, rating_key=rating_key, callback_menu=IgnoreMenu)
 
