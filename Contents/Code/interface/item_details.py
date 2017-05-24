@@ -16,6 +16,8 @@ from support.scheduler import scheduler
 from support.storage import get_subtitle_storage
 
 
+# fixme: needs kwargs cleanup
+
 @route(PREFIX + '/item/{rating_key}/actions')
 @debounce
 def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, randomize=None):
