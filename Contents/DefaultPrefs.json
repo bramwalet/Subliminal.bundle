@@ -452,6 +452,17 @@
     "default": "true"
   },
   {
+    "id": "subtitles.save.formats",
+    "label": "Subtitle formats to save (non-SRT only works if the previous option is enabled)",
+    "type": "enum",
+    "values": [
+      "SRT",
+      "VTT",
+      "SRT+VTT"
+    ],
+    "default": "SRT"
+  },
+  {
     "id": "subtitles.save.subFolder",
     "label": "Subtitle Folder (\"current folder\" is the folder the current media file lives in)",
     "type": "enum",

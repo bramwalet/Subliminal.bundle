@@ -469,7 +469,7 @@ def get_subtitle_path(video_path, language=None, extension='.srt', forced_tag=Fa
 
 
 def save_subtitles(video, subtitles, single=False, directory=None, encoding=None, encode_with=None, chmod=None,
-                   forced_tag=False, path_decoder=None, debug_mods=False):
+                   formats=("srt",), forced_tag=False, path_decoder=None, debug_mods=False):
     """Save subtitles on filesystem.
 
     Subtitles are saved in the order of the list. If a subtitle with a language has already been saved, other subtitles
@@ -478,6 +478,7 @@ def save_subtitles(video, subtitles, single=False, directory=None, encoding=None
     The extension used is `.lang.srt` by default or `.srt` is `single` is `True`, with `lang` being the IETF code for
     the :attr:`~subliminal.subtitle.Subtitle.language` of the subtitle.
 
+    :param formats: list of "srt" and "vtt"
     :param video: video of the subtitles.
     :type video: :class:`~subliminal.video.Video`
     :param subtitles: subtitles to save.
@@ -524,14 +525,18 @@ def save_subtitles(video, subtitles, single=False, directory=None, encoding=None
 
         # save normalized subtitle if encoder or no encoding is given
         if has_encoder or encoding is None:
-            content = encode_with(subtitle.get_modified_text(debug=debug_mods)) if has_encoder else \
-                subtitle.get_modified_content(debug=debug_mods)
-            with io.open(subtitle_path, 'wb') as f:
-                f.write(content)
+            for format in formats:
+                if format != "srt":
+                    subtitle_path = os.path.splitext(subtitle_path)[0] + (u".%s" % format)
 
-            # change chmod if requested
-            if chmod:
-                os.chmod(subtitle_path, chmod)
+                content = encode_with(subtitle.get_modified_text(debug=debug_mods, format=format)) if has_encoder else \
+                    subtitle.get_modified_content(debug=debug_mods, format=format)
+                with io.open(subtitle_path, 'wb') as f:
+                    f.write(content)
+
+                # change chmod if requested
+                if chmod:
+                    os.chmod(subtitle_path, chmod)
 
             if single:
                 break
@@ -539,8 +544,12 @@ def save_subtitles(video, subtitles, single=False, directory=None, encoding=None
 
         # save subtitle if encoding given
         if encoding is not None:
-            with io.open(subtitle_path, 'w', encoding=encoding) as f:
-                f.write(subtitle.get_modified_text())
+            for format in formats:
+                if format != "srt":
+                    subtitle_path = os.path.splitext(subtitle_path)[0] + (u".%s" % format)
+
+                with io.open(subtitle_path, 'w', encoding=encoding) as f:
+                    f.write(subtitle.get_modified_text(format=format))
 
         # change chmod if requested
         if chmod:

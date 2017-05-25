@@ -58,6 +58,7 @@ class Config(object):
     pin_valid_minutes = 10
     lang_list = None
     subtitle_destination_folder = None
+    subtitle_formats = None
     providers = None
     provider_settings = None
     max_recent_items_per_library = 200
@@ -110,6 +111,7 @@ class Config(object):
 
         self.lang_list = self.get_lang_list()
         self.subtitle_destination_folder = self.get_subtitle_destination_folder()
+        self.subtitle_formats = self.get_subtitle_formats()
         self.forced_only = cast_bool(Prefs["subtitles.only_foreign"])
         self.providers = self.get_providers()
         self.provider_settings = self.get_provider_settings()
@@ -376,6 +378,15 @@ class Config(object):
             Prefs["subtitles.save.subFolder.Custom"]) else None
         return fld_custom or (
             Prefs["subtitles.save.subFolder"] if Prefs["subtitles.save.subFolder"] != "current folder" else None)
+
+    def get_subtitle_formats(self):
+        formats = Prefs["subtitles.save.formats"]
+        out = []
+        if "SRT" in formats:
+            out.append("srt")
+        if "VTT" in formats:
+            out.append("vtt")
+        return out
 
     def get_providers(self):
         providers = {'opensubtitles': cast_bool(Prefs['provider.opensubtitles.enabled']),

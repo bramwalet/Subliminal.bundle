@@ -11,7 +11,8 @@ import pysrt
 import pysubs2
 from bs4 import UnicodeDammit
 from pysubs2 import SSAStyle
-from pysubs2.subrip import ms_to_timestamp, parse_tags
+from pysubs2.subrip import parse_tags, MAX_REPRESENTABLE_TIME
+from pysubs2.time import ms_to_times
 from subzero.modification import SubtitleModifications
 from subliminal import Subtitle
 
@@ -184,16 +185,36 @@ class PatchedSubtitle(Subtitle):
         return True
 
     @classmethod
-    def pysubs2_to_unicode(cls, sub):
+    def pysubs2_to_unicode(cls, sub, format="srt"):
+        def ms_to_timestamp(ms, mssep=","):
+            """Convert ms to 'HH:MM:SS,mmm'"""
+            # XXX throw on overflow/underflow?
+            if ms < 0: ms = 0
+            if ms > MAX_REPRESENTABLE_TIME: ms = MAX_REPRESENTABLE_TIME
+            h, m, s, ms = ms_to_times(ms)
+            return "%02d:%02d:%02d%s%03d" % (h, m, s, mssep, ms)
+
         def prepare_text(text, style):
             body = []
             for fragment, sty in parse_tags(text, style, sub.styles):
                 fragment = fragment.replace(ur"\h", u" ")
                 fragment = fragment.replace(ur"\n", u"\n")
                 fragment = fragment.replace(ur"\N", u"\n")
-                if sty.italic: fragment = u"<i>%s</i>" % fragment
-                if sty.underline: fragment = u"<u>%s</u>" % fragment
-                if sty.strikeout: fragment = u"<s>%s</s>" % fragment
+                if format == "srt":
+                    if sty.italic:
+                        fragment = u"<i>%s</i>" % fragment
+                    if sty.underline:
+                        fragment = u"<u>%s</u>" % fragment
+                    if sty.strikeout:
+                        fragment = u"<s>%s</s>" % fragment
+                elif format == "vtt":
+                    if sty.bold:
+                        fragment = u"<b>%s</b>" % fragment
+                    if sty.italic:
+                        fragment = u"<i>%s</i>" % fragment
+                    if sty.underline:
+                        fragment = u"<u>%s</u>" % fragment
+
                 body.append(fragment)
 
             return re.sub(u"\n+", u"\n", u"".join(body).strip())
@@ -201,10 +222,15 @@ class PatchedSubtitle(Subtitle):
         visible_lines = (line for line in sub if not line.is_comment)
 
         out = []
+        mssep = ","
+
+        if format == "vtt":
+            out.append("WEBVTT\n\n")
+            mssep = "."
 
         for i, line in enumerate(visible_lines, 1):
-            start = ms_to_timestamp(line.start)
-            end = ms_to_timestamp(line.end)
+            start = ms_to_timestamp(line.start, mssep=mssep)
+            end = ms_to_timestamp(line.end, mssep=mssep)
             text = prepare_text(line.text, sub.styles.get(line.style, SSAStyle.DEFAULT_STYLE))
 
             out.append(u"%d\n" % i)
@@ -213,7 +239,7 @@ class PatchedSubtitle(Subtitle):
 
         return u"".join(out)
 
-    def get_modified_content(self, debug=False):
+    def get_modified_content(self, format="srt", debug=False):
         """
         :return: string 
         """
@@ -225,13 +251,13 @@ class PatchedSubtitle(Subtitle):
         submods.load(content=self.text, language=self.language)
         submods.modify(*self.mods)
 
-        return self.pysubs2_to_unicode(submods.f).encode(encoding=encoding)
+        return self.pysubs2_to_unicode(submods.f, format=format).encode(encoding=encoding)
 
-    def get_modified_text(self, debug=False):
+    def get_modified_text(self, format="srt", debug=False):
         """
         :return: unicode 
         """
-        content = self.get_modified_content(debug=debug)
+        content = self.get_modified_content(format=format, debug=debug)
         if not content:
             return
         encoding = self.guess_encoding()
