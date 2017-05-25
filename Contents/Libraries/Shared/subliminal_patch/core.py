@@ -21,7 +21,6 @@ from guessit.jsonutils import GuessitEncoder
 from subliminal import ProviderError, refiner_manager
 
 from subliminal.score import compute_score as default_compute_score
-from subliminal.subtitle import SUBTITLE_EXTENSIONS
 from subliminal.utils import hash_napiprojekt, hash_opensubtitles, hash_shooter, hash_thesubdb
 from subliminal.video import VIDEO_EXTENSIONS, Video, Episode, Movie
 from subliminal.core import guessit, Language, ProviderPool, io
@@ -36,6 +35,8 @@ DOWNLOAD_TRIES = 0
 DOWNLOAD_RETRY_SLEEP = 2
 
 REMOVE_CRAP_FROM_FILENAME = re.compile(r"(?i)[\s_-]+(obfuscated|scrambled)(\.\w+)$")
+
+SUBTITLE_EXTENSIONS = ('.srt', '.sub', '.smi', '.txt', '.ssa', '.ass', '.mpl', '.vtt')
 
 
 class SZProviderPool(ProviderPool):
@@ -336,7 +337,7 @@ def _search_external_subtitles(path, forced_tag=False):
             continue
 
         p_root, p_ext = os.path.splitext(p)
-        if not INCLUDE_EXOTIC_SUBS and p_ext not in (".srt", ".ass", ".ssa"):
+        if not INCLUDE_EXOTIC_SUBS and p_ext not in (".srt", ".ass", ".ssa", ".vtt"):
             continue
 
         # extract potential forced/normal/default tag

@@ -134,7 +134,7 @@ class DefaultSubtitleHelper(SubtitleHelper):
         language = Locale.Language.Match(match_ietf_language(file))
 
         # skip non-SRT if wanted
-        if not helpers.cast_bool(Prefs["subtitles.scan.exotic_ext"]) and ext not in ["srt", "ass", "ssa"]:
+        if not helpers.cast_bool(Prefs["subtitles.scan.exotic_ext"]) and ext not in ["srt", "ass", "ssa", "vtt"]:
             return lang_sub_map
 
         codec = None
@@ -157,7 +157,7 @@ class DefaultSubtitleHelper(SubtitleHelper):
                 Log("An error occurred while attempting to parse the subtitle file, skipping... : " + self.filename)
                 return lang_sub_map
 
-        if codec is None and ext in ['ass', 'ssa', 'smi', 'srt', 'psb']:
+        if codec is None and ext in ['ass', 'ssa', 'smi', 'srt', 'psb', 'vtt']:
             codec = ext.replace('ass', 'ssa')
 
         if format is None:
