@@ -30,7 +30,7 @@ IGNORE_FN = ("subzero.ignore", ".subzero.ignore", ".nosz")
 VERSION_RE = re.compile(ur'CFBundleVersion.+?<string>([0-9\.]+)</string>', re.DOTALL)
 DEV_RE = re.compile(ur'PlexPluginDevMode.+?<string>([01]+)</string>', re.DOTALL)
 
-impawrt = getattr(sys.modules['__main__'].__builtins__, "__import__")
+impawrt = getattr(sys.modules['__main__'], "__builtins__").get("__import__")
 
 
 def int_or_default(s, default):
@@ -149,13 +149,14 @@ class Config(object):
         names = ['dbhash', 'gdbm', 'dbm', 'dumbdbm']
         defaultmod = None
 
-        for name in names:
-            try:
-                mod = impawrt(name)
-            except ImportError:
-                continue
-            if not defaultmod:
-                defaultmod = mod
+        if impawrt:
+            for name in names:
+                try:
+                    mod = impawrt(name)
+                except:
+                    continue
+                if not defaultmod:
+                    defaultmod = mod
 
         if Core.runtime.os != "Windows" and not defaultmod:
             try:
@@ -163,6 +164,7 @@ class Config(object):
                                             arguments={'filename': os.path.join(config.data_items_path, 'subzero.dbm'),
                                                        'lock_factory': MutexLock})
                 use_fallback_cache = False
+                Log.Info("Using file based cache!")
             except:
                 pass
 
