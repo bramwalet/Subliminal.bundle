@@ -159,13 +159,23 @@ class Config(object):
                     continue
                 if not defaultmod:
                     defaultmod = mod
-                    self.dbm_supported = True
+                    self.dbm_supported = name
                     break
+
+        from whichdb import whichdb
+        dbfn = os.path.join(config.data_items_path, 'subzero.dbm')
+        db_which = whichdb(dbfn)
+        if db_which is not None and db_which != "":
+            try:
+                mod = impawrt(db_which)
+            except ImportError:
+                defaultmod = None
+                self.dbm_supported = False
 
         if Core.runtime.os != "Windows" and defaultmod:
             try:
                 subliminal.region.configure('dogpile.cache.dbm', expiration_time=datetime.timedelta(days=30),
-                                            arguments={'filename': os.path.join(config.data_items_path, 'subzero.dbm'),
+                                            arguments={'filename': dbfn,
                                                        'lock_factory': MutexLock})
                 use_fallback_cache = False
                 Log.Info("Using file based cache!")
