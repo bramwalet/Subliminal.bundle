@@ -159,6 +159,7 @@ class Config(object):
                     continue
                 if not defaultmod:
                     defaultmod = mod
+                    self.dbm_supported = True
 
         if Core.runtime.os != "Windows" and defaultmod:
             try:
@@ -166,10 +167,9 @@ class Config(object):
                                             arguments={'filename': os.path.join(config.data_items_path, 'subzero.dbm'),
                                                        'lock_factory': MutexLock})
                 use_fallback_cache = False
-                self.dbm_supported = True
                 Log.Info("Using file based cache!")
             except:
-                pass
+                self.dbm_supported = False
 
         if use_fallback_cache or not defaultmod:
             Log.Warn("Not using file based cache!")
