@@ -75,23 +75,24 @@ class PatchedSubtitle(Subtitle):
         # http://scratchpad.wikia.com/wiki/Character_Encoding_Recommendation_for_Languages
 
         if self.language.alpha3 == 'zho':
-            encodings.extend(['gb18030', 'big5'])
+            encodings.extend(['cp936', 'gb2312', 'cp950', 'gb18030', 'big5', 'big5hkscs'])
         elif self.language.alpha3 == 'jpn':
-            encodings.append('shift-jis')
+            encodings.extend(['shift-jis', 'cp932', 'euc_jp', 'iso2022_jp', 'iso2022_jp_1', 'iso2022_jp_2',
+                              'iso2022_jp_2004', 'iso2022_jp_3', 'iso2022_jp_ext', ])
         elif self.language.alpha3 == 'tha':
-            encodings.append('tis-620')
+            encodings.extend(['tis-620', 'cp874'])
 
         # arabian/farsi
         elif self.language.alpha3 in ('ara', 'fas', 'per'):
             encodings.append('windows-1256')
         elif self.language.alpha3 == 'heb':
-            encodings.append('windows-1255')
+            encodings.extend(['windows-1255', 'iso-8859-8'])
         elif self.language.alpha3 == 'tur':
-            encodings.extend(['iso-8859-9', 'windows-1254'])
+            encodings.extend(['iso-8859-9', 'iso-8859-3', 'windows-1254'])
 
         # Greek
         elif self.language.alpha3 in ('grc', 'gre', 'ell'):
-            encodings.extend(['windows-1253', 'cp1253', 'cp737', 'iso8859_7', 'cp875', 'cp869', 'iso2022_jp_2',
+            encodings.extend(['windows-1253', 'cp1253', 'cp737', 'iso8859-7', 'cp875', 'cp869', 'iso2022_jp_2',
                               'mac_greek'])
 
         # Polish, Czech, Slovak, Hungarian, Slovene, Bosnian, Croatian, Serbian (Latin script),
@@ -99,12 +100,22 @@ class PatchedSubtitle(Subtitle):
         elif self.language.alpha3 in ('pol', 'cze', 'ces', 'slk', 'slo', 'slv', 'hun', 'bos', 'hbs', 'hrv', 'rsb',
                                       'ron', 'rum', 'sqi', 'alb'):
             # Eastern European Group 1
+            if self.language.alpha3 == "slv":
+                encodings.append('iso-8859-4')
+
+            elif self.language.alpha3 in ("ron", "rum", "sqi", "alb"):
+                encodings.extend(['iso-8859-1', 'iso-8859-9', 'iso-8859-15', 'windows-1252'])
             encodings.extend(['iso-8859-2', 'windows-1250'])
 
         # Bulgarian, Serbian and Macedonian, Ukranian and Russian
         elif self.language.alpha3 in ('bul', 'srp', 'mkd', 'mac', 'rus', 'ukr'):
             # Eastern European Group 2
-            encodings.extend(['iso-8859-5', 'windows-1251'])
+            if self.language.alpha3 in ('bul', 'mkd', 'mac', 'rus', 'ukr'):
+                encodings.extend(['iso-8859-5', 'windows-1251'])
+
+            elif self.language.alpha3 == 'srp':
+                encodings.extend(['iso-8859-5', 'iso-8859-2', 'windows-1250', 'windows-1251'])
+
         else:
             # Western European (windows-1252) / Northern European
             encodings.extend(['iso-8859-15', 'iso-8859-9', 'iso-8859-4', 'iso-8859-1', 'latin-1'])
