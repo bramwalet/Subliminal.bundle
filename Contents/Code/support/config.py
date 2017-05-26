@@ -9,6 +9,8 @@ import datetime
 
 import subliminal
 import subliminal_patch
+
+from whichdb import whichdb
 from babelfish import Language
 from subliminal.cli import MutexLock
 from subzero.lib.io import FileIO, get_viable_encoding
@@ -146,46 +148,42 @@ class Config(object):
         self.initialized = True
 
     def init_cache(self):
-        use_fallback_cache = True
         names = ['dbhash', 'gdbm', 'dbm', 'dumbdbm']
         defaultmod = None
         self.dbm_supported = False
 
+        # try importing dbm modules
         if impawrt:
             for name in names:
                 try:
-                    mod = impawrt(name)
+                    impawrt(name)
                 except:
                     continue
                 if not defaultmod:
-                    defaultmod = mod
                     self.dbm_supported = name
                     break
 
-        from whichdb import whichdb
+        # anydbm checks; try guessing the format and importing the correct module
         dbfn = os.path.join(config.data_items_path, 'subzero.dbm')
         db_which = whichdb(dbfn)
-        if db_which is not None and db_which != "":
+        if impawrt and db_which is not None and db_which != "":
             try:
-                mod = impawrt(db_which)
+                impawrt(db_which)
             except ImportError:
-                defaultmod = None
                 self.dbm_supported = False
 
-        if Core.runtime.os != "Windows" and defaultmod:
+        if Core.runtime.os != "Windows" and self.dbm_supported:
             try:
                 subliminal.region.configure('dogpile.cache.dbm', expiration_time=datetime.timedelta(days=30),
                                             arguments={'filename': dbfn,
                                                        'lock_factory': MutexLock})
-                use_fallback_cache = False
                 Log.Info("Using file based cache!")
                 return
             except:
                 self.dbm_supported = False
 
-        if use_fallback_cache or not defaultmod:
-            Log.Warn("Not using file based cache!")
-            subliminal.region.configure('dogpile.cache.memory')
+        Log.Warn("Not using file based cache!")
+        subliminal.region.configure('dogpile.cache.memory')
 
     def set_log_paths(self):
         # find log handler
