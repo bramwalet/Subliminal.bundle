@@ -158,7 +158,7 @@ class Config(object):
                 if not defaultmod:
                     defaultmod = mod
 
-        if Core.runtime.os != "Windows" and not defaultmod:
+        if Core.runtime.os != "Windows" and defaultmod:
             try:
                 subliminal.region.configure('dogpile.cache.dbm', expiration_time=datetime.timedelta(days=30),
                                             arguments={'filename': os.path.join(config.data_items_path, 'subzero.dbm'),
