@@ -160,6 +160,7 @@ class Config(object):
                 if not defaultmod:
                     defaultmod = mod
                     self.dbm_supported = True
+                    break
 
         if Core.runtime.os != "Windows" and defaultmod:
             try:
