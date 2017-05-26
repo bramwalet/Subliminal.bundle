@@ -168,6 +168,7 @@ class Config(object):
                                                        'lock_factory': MutexLock})
                 use_fallback_cache = False
                 Log.Info("Using file based cache!")
+                return
             except:
                 self.dbm_supported = False
 
