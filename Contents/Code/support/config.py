@@ -52,6 +52,7 @@ class Config(object):
     universal_plex_token = None
     plex_token = None
     is_development = False
+    dbm_supported = False
 
     enable_channel = True
     enable_agent = True
@@ -148,6 +149,7 @@ class Config(object):
         use_fallback_cache = True
         names = ['dbhash', 'gdbm', 'dbm', 'dumbdbm']
         defaultmod = None
+        self.dbm_supported = False
 
         if impawrt:
             for name in names:
@@ -164,6 +166,7 @@ class Config(object):
                                             arguments={'filename': os.path.join(config.data_items_path, 'subzero.dbm'),
                                                        'lock_factory': MutexLock})
                 use_fallback_cache = False
+                self.dbm_supported = True
                 Log.Info("Using file based cache!")
             except:
                 pass
