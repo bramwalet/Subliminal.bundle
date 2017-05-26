@@ -24,6 +24,7 @@ from subliminal.score import compute_score as default_compute_score
 from subliminal.utils import hash_napiprojekt, hash_opensubtitles, hash_shooter, hash_thesubdb
 from subliminal.video import VIDEO_EXTENSIONS, Video, Episode, Movie
 from subliminal.core import guessit, Language, ProviderPool, io
+from .extensions import provider_manager
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +41,42 @@ SUBTITLE_EXTENSIONS = ('.srt', '.sub', '.smi', '.txt', '.ssa', '.ass', '.mpl', '
 
 
 class SZProviderPool(ProviderPool):
+    def list_subtitles_provider(self, provider, video, languages):
+        """List subtitles with a single provider.
+
+        The video and languages are checked against the provider.
+        
+        patch: add traceback info
+
+        :param str provider: name of the provider.
+        :param video: video to list subtitles for.
+        :type video: :class:`~subliminal.video.Video`
+        :param languages: languages to search for.
+        :type languages: set of :class:`~babelfish.language.Language`
+        :return: found subtitles.
+        :rtype: list of :class:`~subliminal.subtitle.Subtitle` or None
+
+        """
+        # check video validity
+        if not provider_manager[provider].plugin.check(video):
+            logger.info('Skipping provider %r: not a valid video', provider)
+            return []
+
+        # check supported languages
+        provider_languages = provider_manager[provider].plugin.languages & languages
+        if not provider_languages:
+            logger.info('Skipping provider %r: no language to search for', provider)
+            return []
+
+        # list subtitles
+        logger.info('Listing subtitles with provider %r and languages %r', provider, provider_languages)
+        try:
+            return self[provider].list_subtitles(video, provider_languages)
+        except (requests.Timeout, socket.timeout):
+            logger.error('Provider %r timed out', provider)
+        except:
+            logger.exception('Unexpected error in provider %r: %s', provider, traceback.format_exc())
+
     def list_subtitles(self, video, languages):
         """List subtitles.
         

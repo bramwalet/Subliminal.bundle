@@ -288,6 +288,8 @@ class DownloadSubtitleMixin(object):
                     history.add(item_title, video.id, section_title=video.plexapi_metadata["section"],
                                 subtitle=subtitle,
                                 mode=mode)
+        else:
+            set_refresh_menu_state("Subtitle download failed (%s)" % rating_key)
         return download_successful
 
 
