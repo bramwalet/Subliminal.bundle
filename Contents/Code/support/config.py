@@ -3,6 +3,7 @@
 import os
 import re
 import inspect
+import sys
 
 import datetime
 
@@ -28,6 +29,8 @@ IGNORE_FN = ("subzero.ignore", ".subzero.ignore", ".nosz")
 
 VERSION_RE = re.compile(ur'CFBundleVersion.+?<string>([0-9\.]+)</string>', re.DOTALL)
 DEV_RE = re.compile(ur'PlexPluginDevMode.+?<string>([01]+)</string>', re.DOTALL)
+
+impawrt = getattr(sys.modules['__main__'].__builtins__, "__import__")
 
 
 def int_or_default(s, default):
@@ -143,7 +146,18 @@ class Config(object):
 
     def init_cache(self):
         use_fallback_cache = True
-        if Core.runtime.os != "Windows":
+        names = ['dbhash', 'gdbm', 'dbm', 'dumbdbm']
+        defaultmod = None
+
+        for name in names:
+            try:
+                mod = impawrt(name)
+            except ImportError:
+                continue
+            if not defaultmod:
+                defaultmod = mod
+
+        if Core.runtime.os != "Windows" and not defaultmod:
             try:
                 subliminal.region.configure('dogpile.cache.dbm', expiration_time=datetime.timedelta(days=30),
                                             arguments={'filename': os.path.join(config.data_items_path, 'subzero.dbm'),
@@ -152,7 +166,7 @@ class Config(object):
             except:
                 pass
 
-        if use_fallback_cache:
+        if use_fallback_cache or not defaultmod:
             Log.Warn("Not using file based cache!")
             subliminal.region.configure('dogpile.cache.memory')
 

@@ -70,6 +70,10 @@ For further help or manual installation, [please go to the wiki](https://github.
 
 ## Changelog
 
+2.0.20.1372 DEV
+- core: support for VTT/WebVTT subtitle format output and handling
+
+
 2.0.20.1364 RC9
 - core: performance improvements
 - core: if info couldn't be guessed from the filename, fill missing info from PMS #270
