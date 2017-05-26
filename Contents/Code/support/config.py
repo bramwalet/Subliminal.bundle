@@ -149,7 +149,7 @@ class Config(object):
 
     def init_cache(self):
         names = ['dbhash', 'gdbm', 'dbm', 'dumbdbm']
-        defaultmod = None
+        dbfn = None
         self.dbm_supported = False
 
         # try importing dbm modules
@@ -159,18 +159,19 @@ class Config(object):
                     impawrt(name)
                 except:
                     continue
-                if not defaultmod:
+                if not self.dbm_supported:
                     self.dbm_supported = name
                     break
 
-        # anydbm checks; try guessing the format and importing the correct module
-        dbfn = os.path.join(config.data_items_path, 'subzero.dbm')
-        db_which = whichdb(dbfn)
-        if impawrt and db_which is not None and db_which != "":
-            try:
-                impawrt(db_which)
-            except ImportError:
-                self.dbm_supported = False
+            if self.dbm_supported:
+                # anydbm checks; try guessing the format and importing the correct module
+                dbfn = os.path.join(config.data_items_path, 'subzero.dbm')
+                db_which = whichdb(dbfn)
+                if db_which is not None and db_which != "":
+                    try:
+                        impawrt(db_which)
+                    except ImportError:
+                        self.dbm_supported = False
 
         if Core.runtime.os != "Windows" and self.dbm_supported:
             try:
