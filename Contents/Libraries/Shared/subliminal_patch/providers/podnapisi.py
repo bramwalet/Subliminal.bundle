@@ -60,8 +60,15 @@ class PodnapisiProvider(_PodnapisiProvider):
                                                              only_foreign=self.only_foreign)]
 
     def query(self, language, keyword, season=None, episode=None, year=None, hash=None, only_foreign=False):
+        search_language = str(language).lower()
+
+        # sr-Cyrl specialcase
+        if search_language == "sr-cyrl":
+            search_language = "sr"
+
         # set parameters, see http://www.podnapisi.net/forum/viewtopic.php?f=62&t=26164#p212652
-        params = {'sXML': 1, 'sL': str(language).lower(), 'sK': keyword}
+        params = {'sXML': 1, 'sL': search_language, 'sK': keyword}
+
         is_episode = False
         if season and episode:
             is_episode = True
