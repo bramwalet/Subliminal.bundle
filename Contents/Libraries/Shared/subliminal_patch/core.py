@@ -602,7 +602,6 @@ def save_subtitles(video, subtitles, single=False, directory=None, encoding=None
         subtitle.storage_path = subtitle_path
 
         # save content as is or in the specified encoding
-        logger.info('Saving %r to %r', subtitle, subtitle_path)
         has_encoder = callable(encode_with)
 
         if has_encoder:
@@ -617,7 +616,7 @@ def save_subtitles(video, subtitles, single=False, directory=None, encoding=None
                 content = encode_with(subtitle.get_modified_text(debug=debug_mods, format=format)) if has_encoder else \
                     subtitle.get_modified_content(debug=debug_mods, format=format)
 
-                logger.debug(u"Saving %r to %s", subtitle, subtitle_path)
+                logger.debug(u"Saving %r to %r", subtitle, subtitle_path)
                 with io.open(subtitle_path, 'wb') as f:
                     f.write(content)
 
@@ -635,7 +634,7 @@ def save_subtitles(video, subtitles, single=False, directory=None, encoding=None
                 if format != "srt":
                     subtitle_path = os.path.splitext(subtitle_path)[0] + (u".%s" % format)
 
-                logger.debug(u"Saving %r to %s", subtitle, subtitle_path)
+                logger.debug(u"Saving %r to %r", subtitle, subtitle_path)
                 with io.open(subtitle_path, 'w', encoding=encoding) as f:
                     f.write(subtitle.get_modified_text(format=format))
 
