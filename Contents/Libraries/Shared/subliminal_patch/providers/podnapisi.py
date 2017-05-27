@@ -11,7 +11,7 @@ except ImportError:
         import xml.etree.cElementTree as etree
     except ImportError:
         import xml.etree.ElementTree as etree
-from babelfish import Language
+from babelfish import Language, language_converters
 from subliminal import Episode
 from subliminal import Movie
 from subliminal.providers.podnapisi import PodnapisiProvider as _PodnapisiProvider, \
@@ -32,6 +32,9 @@ class PodnapisiSubtitle(_PodnapisiSubtitle):
 
 
 class PodnapisiProvider(_PodnapisiProvider):
+    languages = ({Language('por', 'BR'), Language('srp', script='Latn'), Language('srp', script='Cyrl')} |
+                 {Language.fromalpha2(l) for l in language_converters['alpha2'].codes})
+
     only_foreign = False
     subtitle_class = PodnapisiSubtitle
     hearing_impaired_verifiable = True
