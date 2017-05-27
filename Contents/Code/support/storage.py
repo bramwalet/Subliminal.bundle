@@ -5,7 +5,7 @@ import os
 import pprint
 import copy
 
-import subliminal
+from subliminal_patch.core import save_subtitles as subliminal_save_subtitles
 from subzero.subtitle_storage import StoredSubtitlesManager
 
 from subtitlehelpers import force_utf8
@@ -135,7 +135,7 @@ def save_subtitles_to_file(subtitles):
             fld = force_unicode(fld)
             if not os.path.exists(fld):
                 os.makedirs(fld)
-        subliminal.save_subtitles(video, video_subtitles, directory=fld, single=cast_bool(Prefs['subtitles.only_one']),
+        subliminal_save_subtitles(video, video_subtitles, directory=fld, single=cast_bool(Prefs['subtitles.only_one']),
                                       encode_with=force_utf8 if config.enforce_encoding else None,
                                       chmod=config.chmod, forced_tag=config.forced_only, path_decoder=force_unicode,
                                       debug_mods=config.debug_mods, formats=config.subtitle_formats)
