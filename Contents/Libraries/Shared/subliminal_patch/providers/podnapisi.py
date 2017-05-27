@@ -4,6 +4,8 @@ import logging
 import io
 import re
 
+from lxml.etree import XMLSyntaxError
+
 try:
     from lxml import etree
 except ImportError:
@@ -91,7 +93,13 @@ class PodnapisiProvider(_PodnapisiProvider):
         pids = set()
         while True:
             # query the server
-            xml = etree.fromstring(self.session.get(self.server_url + 'search/old', params=params, timeout=10).content)
+            content = None
+            try:
+                content = self.session.get(self.server_url + 'search/old', params=params, timeout=10).content
+                xml = etree.fromstring(content)
+            except XMLSyntaxError:
+                logger.error("Wrong data returned: %r", content)
+                break
 
             # exit if no results
             if not int(xml.find('pagination/results').text):
