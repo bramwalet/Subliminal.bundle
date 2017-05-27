@@ -8,3 +8,12 @@ class Provider(_Provider):
     hearing_impaired_verifiable = False
     skip_wrong_fps = True
 
+
+import addic7ed
+import legendastv
+import napiprojekt
+import opensubtitles
+import podnapisi
+import shooter
+import subscenter
+import tvsubtitles

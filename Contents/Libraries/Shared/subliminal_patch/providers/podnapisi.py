@@ -6,6 +6,8 @@ import re
 
 from lxml.etree import XMLSyntaxError
 
+from subliminal_patch.extensions import provider_registry
+
 try:
     from lxml import etree
 except ImportError:
@@ -153,3 +155,6 @@ class PodnapisiProvider(_PodnapisiProvider):
             logger.debug('Getting page %d', params['page'])
 
         return subtitles
+
+
+provider_registry.register("podnapisi", PodnapisiProvider)

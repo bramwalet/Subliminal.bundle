@@ -21,7 +21,6 @@ for name in ("Addic7ed", "Podnapisi", "TVsubtitles", "OpenSubtitles", "LegendasT
 
 from .core import scan_video, search_external_subtitles, list_all_subtitles, save_subtitles, refine
 from .score import compute_score
-from .extensions import provider_manager
 from .video import Video
 
 # patch subliminal's core functions
@@ -35,5 +34,3 @@ subliminal.video.Movie.__bases__ = (Video,)
 
 # add our own list_all_subtitles
 subliminal.list_all_subtitles = subliminal.core.list_all_subtitles = list_all_subtitles
-subliminal.provider_manager = subliminal.core.provider_manager = subliminal.extensions.provider_manager = \
-    provider_manager

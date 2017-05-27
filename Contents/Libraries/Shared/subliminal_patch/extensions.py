@@ -1,19 +1,52 @@
 # coding=utf-8
+from collections import OrderedDict
+
 import subliminal
 import babelfish
-from subliminal.extensions import RegistrableExtensionManager
 
-provider_manager = RegistrableExtensionManager('subliminal_patch.providers', [
-    'addic7ed = subliminal_patch.providers.addic7ed:Addic7edProvider',
-    'legendastv = subliminal_patch.providers.legendastv:LegendasTVProvider',
-    'opensubtitles = subliminal_patch.providers.opensubtitles:OpenSubtitlesProvider',
-    'podnapisi = subliminal_patch.providers.podnapisi:PodnapisiProvider',
-    'shooter = subliminal_patch.providers.shooter:ShooterProvider',
-    'napiprojekt = subliminal_patch.providers.napiprojekt:NapiProjektProvider',
-    'subscenter = subliminal_patch.providers.subscenter:SubsCenterProvider',
-    'thesubdb = subliminal.providers.thesubdb:TheSubDBProvider',
-    'tvsubtitles = subliminal_patch.providers.tvsubtitles:TVsubtitlesProvider'
-])
+
+class ProviderRegistry(object):
+    providers = None
+
+    def __init__(self):
+        self.providers = OrderedDict()
+
+    def __cmp__(self, d):
+        return cmp(self.providers, d)
+
+    def __contains__(self, item):
+        return item in self.providers
+
+    def __setitem__(self, key, item):
+        self.providers[key] = item
+
+    def __iter__(self):
+        return iter(self.providers)
+
+    def __getitem__(self, key):
+        if key in self.providers:
+            return self.providers[key]
+
+    def __repr__(self):
+        return repr(self.providers)
+
+    def __str__(self):
+        return str(self.providers)
+
+    def __len__(self):
+        return len(self.providers)
+
+    def __delitem__(self, key):
+        del self.providers[key]
+
+    def register(self, name, cls):
+        self.providers[name] = cls
+
+    def names(self):
+        return self.providers.keys()
+
+
+provider_registry = ProviderRegistry()
 
 # add language converters
 babelfish.language_converters.unregister('addic7ed = subliminal.converters.addic7ed:Addic7edConverter')

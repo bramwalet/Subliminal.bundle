@@ -3,6 +3,7 @@ import logging
 
 from subliminal.providers.napiprojekt import NapiProjektProvider as _NapiProjektProvider, \
     NapiProjektSubtitle as _NapiProjektSubtitle, get_subhash
+from subliminal_patch.extensions import provider_registry
 
 logger = logging.getLogger(__name__)
 
@@ -48,3 +49,6 @@ class NapiProjektProvider(_NapiProjektProvider):
 
     def list_subtitles(self, video, languages):
         return [s for s in [self.query(l, video.hashes['napiprojekt'], video.fps) for l in languages] if s is not None]
+
+
+provider_registry.register("napiprojekt", NapiProjektProvider)

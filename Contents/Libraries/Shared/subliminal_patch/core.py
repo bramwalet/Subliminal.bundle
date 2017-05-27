@@ -20,11 +20,11 @@ from babelfish import LanguageReverseError
 from guessit.jsonutils import GuessitEncoder
 from subliminal import ProviderError, refiner_manager
 
+from extensions import provider_registry
 from subliminal.score import compute_score as default_compute_score
 from subliminal.utils import hash_napiprojekt, hash_opensubtitles, hash_shooter, hash_thesubdb
 from subliminal.video import VIDEO_EXTENSIONS, Video, Episode, Movie
 from subliminal.core import guessit, Language, ProviderPool, io
-from .extensions import provider_manager
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +41,50 @@ SUBTITLE_EXTENSIONS = ('.srt', '.sub', '.smi', '.txt', '.ssa', '.ass', '.mpl', '
 
 
 class SZProviderPool(ProviderPool):
+    def __init__(self, providers=None, provider_configs=None):
+        #: Name of providers to use
+        self.providers = providers or provider_registry.names()
+
+        #: Provider configuration
+        self.provider_configs = provider_configs or {}
+
+        #: Initialized providers
+        self.initialized_providers = {}
+
+        #: Discarded providers
+        self.discarded_providers = set()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.terminate()
+
+    def __getitem__(self, name):
+        if name not in self.providers:
+            raise KeyError
+        if name not in self.initialized_providers:
+            logger.info('Initializing provider %s', name)
+            provider = provider_registry[name](**self.provider_configs.get(name, {}))
+            provider.initialize()
+            self.initialized_providers[name] = provider
+
+        return self.initialized_providers[name]
+
+    def __delitem__(self, name):
+        if name not in self.initialized_providers:
+            raise KeyError(name)
+
+        try:
+            logger.info('Terminating provider %s', name)
+            self.initialized_providers[name].terminate()
+        except (requests.Timeout, socket.timeout):
+            logger.error('Provider %r timed out, improperly terminated', name)
+        except:
+            logger.exception('Provider %r terminated unexpectedly', name)
+
+        del self.initialized_providers[name]
+
     def list_subtitles_provider(self, provider, video, languages):
         """List subtitles with a single provider.
 
@@ -58,12 +102,12 @@ class SZProviderPool(ProviderPool):
 
         """
         # check video validity
-        if not provider_manager[provider].plugin.check(video):
+        if not provider_registry[provider].check(video):
             logger.info('Skipping provider %r: not a valid video', provider)
             return []
 
         # check supported languages
-        provider_languages = provider_manager[provider].plugin.languages & languages
+        provider_languages = provider_registry[provider].languages & languages
         if not provider_languages:
             logger.info('Skipping provider %r: no language to search for', provider)
             return []

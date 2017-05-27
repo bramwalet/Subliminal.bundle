@@ -8,6 +8,7 @@ from subliminal.cache import SHOW_EXPIRATION_TIME, region
 from subliminal.providers.tvsubtitles import TVsubtitlesProvider as _TVsubtitlesProvider, \
     TVsubtitlesSubtitle as _TVsubtitlesSubtitle, link_re
 from subliminal.utils import sanitize
+from subliminal_patch.extensions import provider_registry
 
 logger = logging.getLogger(__name__)
 
@@ -89,3 +90,6 @@ class TVsubtitlesProvider(_TVsubtitlesProvider):
             subtitles.append(subtitle)
 
         return subtitles
+
+
+provider_registry.register("tvsubtitles", TVsubtitlesProvider)

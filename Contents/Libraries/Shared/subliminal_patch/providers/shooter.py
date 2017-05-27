@@ -1,6 +1,7 @@
 # coding=utf-8
 
 from subliminal.providers.shooter import ShooterProvider as _ShooterProvider, ShooterSubtitle as _ShooterSubtitle
+from subliminal_patch.extensions import provider_registry
 
 
 class ShooterSubtitle(_ShooterSubtitle):
@@ -12,3 +13,6 @@ class ShooterSubtitle(_ShooterSubtitle):
 
 class ShooterProvider(_ShooterProvider):
     subtitle_class = ShooterSubtitle
+
+
+provider_registry.register("shooter", ShooterProvider)

@@ -9,6 +9,7 @@ from subliminal.providers.addic7ed import Addic7edProvider as _Addic7edProvider,
     ParserBeautifulSoup, Language
 from subliminal.cache import SHOW_EXPIRATION_TIME, region
 from subliminal.utils import sanitize
+from subliminal_patch.extensions import provider_registry
 
 logger = logging.getLogger(__name__)
 
@@ -178,3 +179,5 @@ class Addic7edProvider(_Addic7edProvider):
             subtitles.append(subtitle)
 
         return subtitles
+
+provider_registry.register("addic7ed", Addic7edProvider)

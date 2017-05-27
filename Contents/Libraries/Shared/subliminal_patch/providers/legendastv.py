@@ -3,6 +3,7 @@ import logging
 
 from subliminal.providers.legendastv import LegendasTVSubtitle as _LegendasTVSubtitle, \
     LegendasTVProvider as _LegendasTVProvider
+from subliminal_patch.extensions import provider_registry
 
 logger = logging.getLogger(__name__)
 
@@ -20,3 +21,6 @@ class LegendasTVSubtitle(_LegendasTVSubtitle):
 
 class LegendasTVProvider(_LegendasTVProvider):
     subtitle_class = LegendasTVSubtitle
+
+
+provider_registry.register("legendastv", LegendasTVProvider)
