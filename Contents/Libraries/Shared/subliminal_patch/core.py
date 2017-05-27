@@ -573,6 +573,9 @@ def save_subtitles(video, subtitles, single=False, directory=None, encoding=None
 
     patch: unicode path problems
     """
+
+    logger.debug("Subtitle formats requested: %r", formats)
+
     saved_subtitles = []
     for subtitle in subtitles:
         # check content
