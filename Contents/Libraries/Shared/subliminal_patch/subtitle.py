@@ -88,7 +88,7 @@ class PatchedSubtitle(Subtitle):
         elif self.language.alpha3 == 'heb':
             encodings.extend(['windows-1255', 'iso-8859-8'])
         elif self.language.alpha3 == 'tur':
-            encodings.extend(['iso-8859-9', 'iso-8859-3', 'windows-1254'])
+            encodings.extend(['windows-1254', 'iso-8859-9', 'iso-8859-3'])
 
         # Greek
         elif self.language.alpha3 in ('grc', 'gre', 'ell'):
@@ -104,14 +104,14 @@ class PatchedSubtitle(Subtitle):
                 encodings.append('iso-8859-4')
 
             elif self.language.alpha3 in ("ron", "rum", "sqi", "alb"):
-                encodings.extend(['iso-8859-1', 'iso-8859-9', 'iso-8859-15', 'windows-1252'])
-            encodings.extend(['iso-8859-2', 'windows-1250'])
+                encodings.extend(['windows-1252', 'iso-8859-1', 'iso-8859-9', 'iso-8859-15'])
+            encodings.extend(['windows-1250', 'iso-8859-2'])
 
         # Bulgarian, Serbian and Macedonian, Ukranian and Russian
         elif self.language.alpha3 in ('bul', 'srp', 'mkd', 'mac', 'rus', 'ukr'):
             # Eastern European Group 2
             if self.language.alpha3 in ('bul', 'mkd', 'mac', 'rus', 'ukr'):
-                encodings.extend(['iso-8859-5', 'windows-1251'])
+                encodings.extend(['windows-1251', 'iso-8859-5'])
 
             elif self.language.alpha3 == 'srp':
                 if self.language.script == "Latn":
@@ -121,7 +121,7 @@ class PatchedSubtitle(Subtitle):
 
         else:
             # Western European (windows-1252) / Northern European
-            encodings.extend(['iso-8859-15', 'iso-8859-9', 'iso-8859-4', 'iso-8859-1', 'latin-1'])
+            encodings.extend(['latin-1', 'iso-8859-15', 'iso-8859-9', 'iso-8859-4', 'iso-8859-1'])
 
         # try to decode
         logger.debug('Trying encodings %r', encodings)
