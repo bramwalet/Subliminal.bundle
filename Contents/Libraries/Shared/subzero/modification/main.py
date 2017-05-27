@@ -198,7 +198,7 @@ class SubtitleModifications(object):
                     lines.append(cleaned_line)
                 else:
                     if self.debug:
-                        logger.debug(u"Ditching now empty line (%r -> %r)", line)
+                        logger.debug(u"Ditching now empty line (%r)", line)
 
             if not lines:
                 # don't bother logging when the entry only had one line
