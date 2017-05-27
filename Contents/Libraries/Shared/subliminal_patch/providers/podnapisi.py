@@ -59,7 +59,7 @@ class PodnapisiProvider(_PodnapisiProvider):
 
     def query(self, language, keyword, season=None, episode=None, year=None, only_foreign=False):
         # set parameters, see http://www.podnapisi.net/forum/viewtopic.php?f=62&t=26164#p212652
-        params = {'sXML': 1, 'sL': str(language), 'sK': keyword}
+        params = {'sXML': 1, 'sL': str(language).lower(), 'sK': keyword}
         is_episode = False
         if season and episode:
             is_episode = True
