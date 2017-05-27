@@ -136,9 +136,9 @@ def save_subtitles_to_file(subtitles):
             if not os.path.exists(fld):
                 os.makedirs(fld)
         subliminal_save_subtitles(video, video_subtitles, directory=fld, single=cast_bool(Prefs['subtitles.only_one']),
-                                      encode_with=force_utf8 if config.enforce_encoding else None,
-                                      chmod=config.chmod, forced_tag=config.forced_only, path_decoder=force_unicode,
-                                      debug_mods=config.debug_mods, formats=config.subtitle_formats)
+                                  encode_with=force_utf8 if config.enforce_encoding else None,
+                                  chmod=config.chmod, forced_tag=config.forced_only, path_decoder=force_unicode,
+                                  debug_mods=config.debug_mods, formats=config.subtitle_formats)
     return True
 
 
