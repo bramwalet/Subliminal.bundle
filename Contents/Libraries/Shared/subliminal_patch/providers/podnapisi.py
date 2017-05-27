@@ -52,12 +52,14 @@ class PodnapisiProvider(_PodnapisiProvider):
         if isinstance(video, Episode):
             return [s for l in languages for s in self.query(l, video.series, season=video.season,
                                                              episode=video.episode, year=video.year,
+                                                             hash=video.hashes.get('opensubtitles'),
                                                              only_foreign=self.only_foreign)]
         elif isinstance(video, Movie):
             return [s for l in languages for s in self.query(l, video.title, year=video.year,
+                                                             hash=video.hashes.get('opensubtitles'),
                                                              only_foreign=self.only_foreign)]
 
-    def query(self, language, keyword, season=None, episode=None, year=None, only_foreign=False):
+    def query(self, language, keyword, season=None, episode=None, year=None, hash=None, only_foreign=False):
         # set parameters, see http://www.podnapisi.net/forum/viewtopic.php?f=62&t=26164#p212652
         params = {'sXML': 1, 'sL': str(language).lower(), 'sK': keyword}
         is_episode = False
@@ -65,6 +67,11 @@ class PodnapisiProvider(_PodnapisiProvider):
             is_episode = True
             params['sTS'] = season
             params['sTE'] = episode
+            if hash:
+                params['sEH'] = hash
+        else:
+            if hash:
+                params['sMH'] = hash
         if year:
             params['sY'] = year
 
