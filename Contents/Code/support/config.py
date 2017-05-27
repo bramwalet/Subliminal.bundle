@@ -375,12 +375,12 @@ class Config(object):
 
     # Prepare a list of languages we want subs for
     def get_lang_list(self):
-        def parse_language(lang):
-            if lang == "Serbian (Cyrillic)":
-                lang = "sr-cyrl"
-            elif lang == "Serbian (Latin)":
-                lang = "sr-latn"
-            return Language.fromietf(lang)
+        def parse_language(lang_code):
+            if lang_code == "Serbian (Cyrillic)":
+                lang_code = "sr-cyrl"
+            elif lang_code == "Serbian (Latin)":
+                lang_code = "sr-latn"
+            return Language.fromietf(lang_code)
 
         l = {parse_language(Prefs["langPref1"])}
         lang_custom = Prefs["langPrefCustom"].strip()
