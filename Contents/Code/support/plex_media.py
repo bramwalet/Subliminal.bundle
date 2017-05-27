@@ -268,7 +268,7 @@ def get_plex_metadata(rating_key, part_id, item_type):
 
     try:
         plex_item = list(Plex["library"].metadata(rating_key))[0]
-    except URLError:
+    except (URLError, IndexError):
         return None
 
     # find current part
