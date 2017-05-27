@@ -118,6 +118,8 @@ class PatchedSubtitle(Subtitle):
                     encodings.extend(['windows-1250', 'iso-8859-2'])
                 elif self.language.script == "Cyrl":
                     encodings.extend(['windows-1251', 'iso-8859-5'])
+                else:
+                    encodings.extend(['windows-1251', 'windows-1250', 'iso-8859-5', 'iso-8859-2'])
 
         else:
             # Western European (windows-1252) / Northern European
