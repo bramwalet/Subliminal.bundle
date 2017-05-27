@@ -148,7 +148,7 @@ class Config(object):
         self.initialized = True
 
     def init_cache(self):
-        names = ['dbhash', 'gdbm', 'dbm', 'dumbdbm']
+        names = ['dbhash', 'gdbm', 'dbm']
         dbfn = None
         self.dbm_supported = False
 
