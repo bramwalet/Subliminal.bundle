@@ -19,7 +19,8 @@ for name in ("Addic7ed", "Podnapisi", "TVsubtitles", "OpenSubtitles", "LegendasT
     # inject our requests.Session wrapper for automatic retry
     setattr(mod, "Session", RetryingSession)
 
-from .core import scan_video, search_external_subtitles, list_all_subtitles, save_subtitles, refine
+from .core import scan_video, search_external_subtitles, list_all_subtitles, save_subtitles, refine, \
+    download_best_subtitles
 from .score import compute_score
 from .video import Video
 

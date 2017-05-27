@@ -18,7 +18,7 @@ import logger
 
 sys.modules["logger"] = logger
 
-import subliminal
+import subliminal_patch as subliminal
 import support
 
 import interface
