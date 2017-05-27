@@ -375,30 +375,23 @@ class Config(object):
 
     # Prepare a list of languages we want subs for
     def get_lang_list(self):
-        def parse_language(lang_code):
-            if lang_code == "Serbian (Cyrillic)":
-                lang_code = "sr-cyrl"
-            elif lang_code == "Serbian (Latin)":
-                lang_code = "sr-latn"
-            return Language.fromietf(lang_code)
-
-        l = {parse_language(Prefs["langPref1"])}
+        l = {Language.fromietf(Prefs["langPref1"])}
         lang_custom = Prefs["langPrefCustom"].strip()
 
         if Prefs['subtitles.only_one']:
             return l
 
         if Prefs["langPref2"] != "None":
-            l.update({parse_language(Prefs["langPref2"])})
+            l.update({Language.fromietf(Prefs["langPref2"])})
 
         if Prefs["langPref3"] != "None":
-            l.update({parse_language(Prefs["langPref3"])})
+            l.update({Language.fromietf(Prefs["langPref3"])})
 
         if len(lang_custom) and lang_custom != "None":
             for lang in lang_custom.split(u","):
                 lang = lang.strip()
                 try:
-                    real_lang = parse_language(lang)
+                    real_lang = Language.fromietf(lang)
                 except:
                     try:
                         real_lang = Language.fromname(lang)
