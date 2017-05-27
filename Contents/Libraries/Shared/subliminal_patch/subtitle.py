@@ -115,9 +115,9 @@ class PatchedSubtitle(Subtitle):
 
             elif self.language.alpha3 == 'srp':
                 if self.language.script == "Latn":
-                    encodings.extend(['iso-8859-2', 'windows-1250'])
+                    encodings.extend(['windows-1250', 'iso-8859-2'])
                 elif self.language.script == "Cyrl":
-                    encodings.extend(['iso-8859-5', 'windows-1251'])
+                    encodings.extend(['windows-1251', 'iso-8859-5'])
 
         else:
             # Western European (windows-1252) / Northern European
