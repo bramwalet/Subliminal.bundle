@@ -212,6 +212,8 @@ class SZProviderPool(ProviderPool):
             logger.error('Invalid subtitle')
             return False
 
+        subtitle.set_encoding("utf-8")
+
         return True
 
     def download_best_subtitles(self, subtitles, video, languages, min_score=0, hearing_impaired=False, only_one=False,
@@ -602,7 +604,7 @@ def save_subtitles(video, subtitles, single=False, directory=None, chmod=None, f
 
             logger.debug(u"Saving %r to %r", subtitle, subtitle_path)
             with io.open(subtitle_path, 'w') as f:
-                f.write(subtitle.get_modified_content(format=format))
+                f.write(subtitle.get_modified_content(format=format).decode("utf-8"))
 
         # change chmod if requested
         if chmod:
