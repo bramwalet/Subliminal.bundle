@@ -3,7 +3,7 @@
 import logging
 import os
 
-from babelfish import Language
+from babelfish import Language, language_converters
 from subliminal.exceptions import ConfigurationError
 from subliminal.providers.opensubtitles import OpenSubtitlesProvider as _OpenSubtitlesProvider, checked, \
     __short_version__, \
@@ -68,6 +68,9 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
     hash_verifiable = True
     hearing_impaired_verifiable = True
     skip_wrong_fps = True
+
+    languages = {Language.fromopensubtitles(l) for l in language_converters['szopensubtitles'].codes}# | {
+        #Language.fromietf("sr-latn"), Language.fromietf("sr-cyrl")}
 
     def __init__(self, username=None, password=None, use_tag_search=False, only_foreign=False, skip_wrong_fps=True):
         if username is not None and password is None or username is None and password is not None:

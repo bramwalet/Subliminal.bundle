@@ -51,6 +51,7 @@ provider_registry = ProviderRegistry()
 # add language converters
 babelfish.language_converters.unregister('addic7ed = subliminal.converters.addic7ed:Addic7edConverter')
 babelfish.language_converters.register('addic7ed = subliminal_patch.language:PatchedAddic7edConverter')
+babelfish.language_converters.register('szopensubtitles = subliminal_patch.language:PatchedOpenSubtitlesConverter')
 subliminal.refiner_manager.register('sz_metadata = subliminal_patch.refiners.metadata:refine')
 subliminal.refiner_manager.register('sz_omdb = subliminal_patch.refiners.omdb:refine')
 
