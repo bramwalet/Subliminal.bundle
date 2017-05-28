@@ -151,10 +151,9 @@ class PatchedSubtitle(Subtitle):
         logger.debug('Trying encodings %r', encodings)
         for encoding in encodings:
             try:
-                cnt = self.content.decode(encoding)
-                cnt.encode(encoding).decode(encoding)
+                self.content.decode(encoding)
 
-            except (UnicodeDecodeError, UnicodeEncodeError):
+            except UnicodeDecodeError:
                 pass
             else:
                 logger.info('Guessed encoding %s', encoding)
