@@ -602,7 +602,7 @@ def save_subtitles(video, subtitles, single=False, directory=None, chmod=None, f
 
             logger.debug(u"Saving %r to %r", subtitle, subtitle_path)
             with io.open(subtitle_path, 'w') as f:
-                f.write(subtitle.get_modified_content(format=format))
+                f.write(subtitle.get_modified_content(format=format).decode("utf-8"))
 
         # change chmod if requested
         if chmod:
