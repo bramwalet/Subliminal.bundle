@@ -91,7 +91,7 @@ class PatchedSubtitle(Subtitle):
             logger.info('Encoding already guessed: %s', self._guessed_encoding)
             return self._guessed_encoding
 
-        logger.info('Guessing encoding for language %s', self.language.alpha3)
+        logger.info('Guessing encoding for language %s', self.language)
 
         encodings = ['utf-8']
 
@@ -219,6 +219,7 @@ class PatchedSubtitle(Subtitle):
 
             unicontent = self.pysubs2_to_unicode(subs)
             self.content = unicontent.encode("utf-8")
+            self._guessed_encoding = "utf-8"
         except:
             logger.exception("Couldn't convert subtitle %s to .srt format: %s", self, traceback.format_exc())
             return False
