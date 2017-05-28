@@ -26,7 +26,6 @@ logger = logging.getLogger(__name__)
 
 class PodnapisiSubtitle(_PodnapisiSubtitle):
     provider_name = 'podnapisi'
-    server_url = 'https://podnapisi.net/subtitles/'
     hearing_impaired_verifiable = True
 
     def __init__(self, language, hearing_impaired, page_link, pid, releases, title, season=None, episode=None,
@@ -40,6 +39,7 @@ class PodnapisiProvider(_PodnapisiProvider):
     languages = ({Language('por', 'BR'), Language('srp', script='Latn'), Language('srp', script='Cyrl')} |
                  {Language.fromalpha2(l) for l in language_converters['alpha2'].codes})
 
+    server_url = 'https://podnapisi.net/subtitles/'
     only_foreign = False
     subtitle_class = PodnapisiSubtitle
     hearing_impaired_verifiable = True

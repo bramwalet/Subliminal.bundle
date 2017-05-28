@@ -260,7 +260,7 @@ class JSONStoredVideoSubtitles(object):
         subs[sub_key] = JSONStoredSubtitle()
         subs[sub_key].initialize(subtitle.score, storage_type, hashlib.md5(subtitle.content).hexdigest(),
                                  subtitle.provider_name, subtitle.id, date_added=date_added, mode=mode,
-                                 content=subtitle.content, mods=subtitle.mods, encoding=subtitle.guess_encoding())
+                                 content=subtitle.content, mods=subtitle.mods, encoding="utf-8")
         subs["current"] = sub_key
 
         return True

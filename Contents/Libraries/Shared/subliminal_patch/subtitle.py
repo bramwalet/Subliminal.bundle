@@ -219,7 +219,7 @@ class PatchedSubtitle(Subtitle):
                                 subs.fps)
 
             unicontent = self.pysubs2_to_unicode(subs)
-            self.content = unicontent.encode(self.guess_encoding())
+            self.content = unicontent.encode("utf-8")
         except:
             logger.exception("Couldn't convert subtitle %s to .srt format: %s", self, traceback.format_exc())
             return False
@@ -288,12 +288,11 @@ class PatchedSubtitle(Subtitle):
         if not self.mods:
             return self.content
 
-        encoding = self.guess_encoding()
         submods = SubtitleModifications(debug=debug)
         submods.load(content=self.text, language=self.language)
         submods.modify(*self.mods)
 
-        return self.pysubs2_to_unicode(submods.f, format=format).encode(encoding=encoding)
+        return self.pysubs2_to_unicode(submods.f, format=format).encode(encoding="utf-8")
 
 
 class ModifiedSubtitle(PatchedSubtitle):
