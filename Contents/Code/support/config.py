@@ -81,7 +81,6 @@ class Config(object):
     fix_ocr = False
     fix_common = False
     colors = ""
-    enforce_encoding = False
     chmod = None
     forced_only = False
     exotic_ext = False
@@ -134,10 +133,6 @@ class Config(object):
         self.fix_ocr = cast_bool(Prefs['subtitles.fix_ocr'])
         self.fix_common = cast_bool(Prefs['subtitles.fix_common'])
         self.colors = Prefs['subtitles.colors'] if Prefs['subtitles.colors'] != "don't change" else None
-        self.enforce_encoding = cast_bool(Prefs['subtitles.enforce_encoding'])
-
-        os.environ["SZ_ENFORCE_ENCODING"] = str(self.enforce_encoding)
-
         self.chmod = self.check_chmod()
         self.exotic_ext = cast_bool(Prefs["subtitles.scan.exotic_ext"])
         self.treat_und_as_first = cast_bool(Prefs["subtitles.language.treat_und_as_first"])

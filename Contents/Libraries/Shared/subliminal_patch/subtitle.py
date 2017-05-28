@@ -295,16 +295,6 @@ class PatchedSubtitle(Subtitle):
 
         return self.pysubs2_to_unicode(submods.f, format=format).encode(encoding=encoding)
 
-    def get_modified_text(self, format="srt", debug=False):
-        """
-        :return: unicode 
-        """
-        content = self.get_modified_content(format=format, debug=debug)
-        if not content:
-            return
-        encoding = self.guess_encoding()
-        return content.decode(encoding=encoding)
-
 
 class ModifiedSubtitle(PatchedSubtitle):
     id = None

@@ -546,8 +546,8 @@ def get_subtitle_path(video_path, language=None, extension='.srt', forced_tag=Fa
     return subtitle_root + extension
 
 
-def save_subtitles(video, subtitles, single=False, directory=None, encoding=None, encode_with=None, chmod=None,
-                   formats=("srt",), forced_tag=False, path_decoder=None, debug_mods=False):
+def save_subtitles(video, subtitles, single=False, directory=None, chmod=None, formats=("srt",), forced_tag=False,
+                   path_decoder=None, debug_mods=False):
     """Save subtitles on filesystem.
 
     Subtitles are saved in the order of the list. If a subtitle with a language has already been saved, other subtitles
@@ -563,7 +563,6 @@ def save_subtitles(video, subtitles, single=False, directory=None, encoding=None
     :type subtitles: list of :class:`~subliminal.subtitle.Subtitle`
     :param bool single: save a single subtitle, default is to save one subtitle per language.
     :param str directory: path to directory where to save the subtitles, default is next to the video.
-    :param str encoding: encoding in which to save the subtitles, default is to keep original encoding.
     :return: the saved subtitles
     :rtype: list of :class:`~subliminal.subtitle.Subtitle`
 
@@ -597,42 +596,13 @@ def save_subtitles(video, subtitles, single=False, directory=None, encoding=None
 
         subtitle.storage_path = subtitle_path
 
-        # save content as is or in the specified encoding
-        has_encoder = callable(encode_with)
+        for format in formats:
+            if format != "srt":
+                subtitle_path = os.path.splitext(subtitle_path)[0] + (u".%s" % format)
 
-        if has_encoder:
-            logger.info('Using encoder %s' % encode_with.__name__)
-
-        # save normalized subtitle if encoder or no encoding is given
-        if has_encoder or encoding is None:
-            for format in formats:
-                if format != "srt":
-                    subtitle_path = os.path.splitext(subtitle_path)[0] + (u".%s" % format)
-
-                content = encode_with(subtitle.get_modified_text(debug=debug_mods, format=format)) if has_encoder else \
-                    subtitle.get_modified_content(debug=debug_mods, format=format)
-
-                logger.debug(u"Saving %r to %r", subtitle, subtitle_path)
-                with io.open(subtitle_path, 'wb') as f:
-                    f.write(content)
-
-                # change chmod if requested
-                if chmod:
-                    os.chmod(subtitle_path, chmod)
-
-            if single:
-                break
-            continue
-
-        # save subtitle if encoding given
-        if encoding is not None:
-            for format in formats:
-                if format != "srt":
-                    subtitle_path = os.path.splitext(subtitle_path)[0] + (u".%s" % format)
-
-                logger.debug(u"Saving %r to %r", subtitle, subtitle_path)
-                with io.open(subtitle_path, 'w', encoding=encoding) as f:
-                    f.write(subtitle.get_modified_text(format=format))
+            logger.debug(u"Saving %r to %r", subtitle, subtitle_path)
+            with io.open(subtitle_path, 'w') as f:
+                f.write(subtitle.get_modified_content(format=format))
 
         # change chmod if requested
         if chmod:
