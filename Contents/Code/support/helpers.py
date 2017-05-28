@@ -265,7 +265,7 @@ def notify_executable(exe_info, videos, subtitles, storage):
     exe, arguments = exe_info
     for video, video_subtitles in subtitles.items():
         for subtitle in video_subtitles:
-            lang = Locale.Language.Match(subtitle.language.alpha2)
+            lang = str(subtitle.language)
             data = video.plexapi_metadata.copy()
             data.update({
                 "subtitle_language": lang,
