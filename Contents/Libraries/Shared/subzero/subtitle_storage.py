@@ -237,13 +237,8 @@ class JSONStoredVideoSubtitles(object):
                     if sub_key == "current":
                         data["parts"][part_id][language]["current"] = "__".join(stored_subtitle)
                     else:
-                        # migrate missing encoding data
                         if stored_subtitle.content and not stored_subtitle.encoding:
-                            # correctly serialize the content
-                            lang = Language.fromietf(language)
-                            subtitle = ModifiedSubtitle(lang)
-                            subtitle.content = stored_subtitle.content
-                            stored_subtitle.encoding = subtitle.guess_encoding()
+                            continue
 
                         data["parts"][part_id][language]["__".join(sub_key)] = stored_subtitle.serialize()
 

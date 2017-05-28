@@ -45,8 +45,8 @@ class PatchedSubtitle(Subtitle):
         self.mods = mods
 
     def __repr__(self):
-        return '<%s %r [%s]>' % (
-            self.__class__.__name__, self.page_link, self.language)
+        return '<%s %r [%s:%s]>' % (
+            self.__class__.__name__, self.page_link, self.language, self._guessed_encoding)
 
     @property
     def text(self):
