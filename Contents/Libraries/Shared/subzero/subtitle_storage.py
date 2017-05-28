@@ -101,7 +101,8 @@ class JSONStoredSubtitle(object):
             except UnicodeDecodeError:
                 try:
                     self.content = self.content.decode("utf-8")
-                except:
+                except UnicodeDecodeError:
+                    logger.error("Couldn't decode %s:%s (%s), ditching it", self.provider_name, self.id, self.encoding)
                     return
         return self.__dict__
 
