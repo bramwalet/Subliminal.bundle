@@ -96,7 +96,13 @@ class JSONStoredSubtitle(object):
     def serialize(self):
         if self.content:
             # content is always stored in unicode (gets converted to string with escaped unicode chars by json)
-            self.content = self.content.decode(self.encoding)
+            try:
+                self.content = self.content.decode(self.encoding)
+            except UnicodeDecodeError:
+                try:
+                    self.content = self.content.decode("utf-8")
+                except:
+                    return
         return self.__dict__
 
     def deserialize(self, data):
@@ -240,7 +246,9 @@ class JSONStoredVideoSubtitles(object):
                         if stored_subtitle.content and not stored_subtitle.encoding:
                             continue
 
-                        data["parts"][part_id][language]["__".join(sub_key)] = stored_subtitle.serialize()
+                        serialized_sub = stored_subtitle.serialize()
+                        if serialized_sub:
+                            data["parts"][part_id][language]["__".join(sub_key)] = serialized_sub
 
         return data
 
