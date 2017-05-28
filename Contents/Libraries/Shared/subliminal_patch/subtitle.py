@@ -58,8 +58,8 @@ class PatchedSubtitle(Subtitle):
         if not self.content:
             return
 
-        if self.encoding:
-            return fix_text(self.content.decode(self.encoding, errors='replace'), **ftfy_defaults)
+        #if self.encoding:
+        #    return fix_text(self.content.decode(self.encoding, errors='replace'), **ftfy_defaults)
 
         return fix_text(self.content.decode(self.guess_encoding(), errors='replace'), **ftfy_defaults)
 
