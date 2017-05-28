@@ -46,6 +46,12 @@ class Addic7edSubtitle(_Addic7edSubtitle):
 
 
 class Addic7edProvider(_Addic7edProvider):
+    languages = {Language('por', 'BR')} | {Language(l) for l in [
+        'ara', 'aze', 'ben', 'bos', 'bul', 'cat', 'ces', 'dan', 'deu', 'ell', 'eng', 'eus', 'fas', 'fin', 'fra', 'glg',
+        'heb', 'hrv', 'hun', 'hye', 'ind', 'ita', 'jpn', 'kor', 'mkd', 'msa', 'nld', 'nor', 'pol', 'por', 'ron', 'rus',
+        'slk', 'slv', 'spa', 'sqi', 'srp', 'swe', 'tha', 'tur', 'ukr', 'vie', 'zho'
+    ]} | {Language.fromietf(l) for l in ["sr-Latn", "sr-Cyrl"]}
+
     USE_ADDICTED_RANDOM_AGENTS = False
     hearing_impaired_verifiable = True
     subtitle_class = Addic7edSubtitle
