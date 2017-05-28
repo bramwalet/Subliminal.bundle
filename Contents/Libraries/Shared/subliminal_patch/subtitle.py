@@ -159,7 +159,7 @@ class PatchedSubtitle(Subtitle):
                 logger.info('Guessed encoding %s', encoding)
                 self._guessed_encoding = encoding
                 self.set_encoding("utf-8")
-                return encoding
+                return "utf-8"
 
         logger.warning('Could not guess encoding from language')
 
@@ -177,12 +177,12 @@ class PatchedSubtitle(Subtitle):
             if a.original_encoding:
                 self._guessed_encoding = a.original_encoding
                 self.set_encoding("utf-8")
-                return a.original_encoding
+                return "utf-8"
             raise ValueError(u"Couldn't guess the proper encoding for %s" % self)
 
         self._guessed_encoding = encoding
         self.set_encoding("utf-8")
-        return encoding
+        return "utf-8"
 
     def is_valid(self):
         """Check if a :attr:`text` is a valid SubRip format.
