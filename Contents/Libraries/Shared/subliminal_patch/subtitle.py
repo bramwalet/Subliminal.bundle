@@ -15,8 +15,15 @@ from pysubs2.subrip import parse_tags, MAX_REPRESENTABLE_TIME
 from pysubs2.time import ms_to_times
 from subzero.modification import SubtitleModifications
 from subliminal import Subtitle
+from ftfy import fix_text
 
 logger = logging.getLogger(__name__)
+
+
+ftfy_defaults = {
+    "uncurl_quotes": False,
+    "fix_character_width": False,
+}
 
 
 class PatchedSubtitle(Subtitle):
@@ -40,6 +47,21 @@ class PatchedSubtitle(Subtitle):
     def __repr__(self):
         return '<%s %r [%s]>' % (
             self.__class__.__name__, self.page_link, self.language)
+
+    @property
+    def text(self):
+        """Content as string
+
+        If :attr:`encoding` is None, the encoding is guessed with :meth:`guess_encoding`
+
+        """
+        if not self.content:
+            return
+
+        if self.encoding:
+            return fix_text(self.content.decode(self.encoding, errors='replace'), **ftfy_defaults)
+
+        return fix_text(self.content.decode(self.guess_encoding(), errors='replace'), **ftfy_defaults)
 
     def make_picklable(self):
         """
@@ -137,6 +159,7 @@ class PatchedSubtitle(Subtitle):
             else:
                 logger.info('Guessed encoding %s', encoding)
                 self._guessed_encoding = encoding
+                self.set_encoding("utf-8")
                 return encoding
 
         logger.warning('Could not guess encoding from language')
@@ -154,10 +177,12 @@ class PatchedSubtitle(Subtitle):
 
             if a.original_encoding:
                 self._guessed_encoding = a.original_encoding
+                self.set_encoding("utf-8")
                 return a.original_encoding
             raise ValueError(u"Couldn't guess the proper encoding for %s" % self)
 
         self._guessed_encoding = encoding
+        self.set_encoding("utf-8")
         return encoding
 
     def is_valid(self):
