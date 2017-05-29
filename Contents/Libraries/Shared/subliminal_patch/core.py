@@ -1,4 +1,5 @@
 # coding=utf-8
+import codecs
 import json
 import re
 import os
@@ -603,8 +604,8 @@ def save_subtitles(video, subtitles, single=False, directory=None, chmod=None, f
                 subtitle_path = os.path.splitext(subtitle_path)[0] + (u".%s" % format)
 
             logger.debug(u"Saving %r to %r", subtitle, subtitle_path)
-            with io.open(subtitle_path, 'w') as f:
-                f.write(subtitle.get_modified_content(format=format).decode("utf-8"))
+            with open(subtitle_path, 'w') as f:
+                f.write(subtitle.get_modified_content(format=format))
 
         # change chmod if requested
         if chmod:
