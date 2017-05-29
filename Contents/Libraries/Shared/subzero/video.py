@@ -31,7 +31,7 @@ def parse_video(fn, video_info, hints, external_subtitles=False, embedded_subtit
                 logger.info(u"Adding stream %s info: %s", key, value)
                 setattr(video, key, value)
 
-    plex_title = video_info.get("original_title", video_info.get("title")).replace("-", "")
+    plex_title = video_info.get("original_title", video_info.get("title"))
     if hints["type"] == "episode":
         plex_title = video_info.get("original_title", video_info.get("series"))
 
@@ -69,7 +69,7 @@ def parse_video(fn, video_info, hints, external_subtitles=False, embedded_subtit
         elif hints["type"] == "movie" and not video.imdb_id and video.title != plex_title:
             # movie
             logger.info(u"Re-refining with series title: '%s' instead of '%s'", plex_title, video.title)
-            video.title = plex_title
+            video.title = plex_title.replace("-", "")
             refine_with_plex = True
 
     # title not matched? try plex title hint
