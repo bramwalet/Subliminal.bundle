@@ -25,4 +25,4 @@ python -c "import logging; logging.basicConfig(level=logging.DEBUG); logging.get
 
 
 # refining
-python -c "import logging; logging.basicConfig(level=logging.DEBUG); logging.getLogger('rebulk').setLevel(logging.WARNING); import subliminal_patch, subliminal; subliminal.region.configure('dogpile.cache.memory'); from subzero.video import parse_video; print parse_video('FILE_NAME', hints={'type': 'episode'}, dry_run=True)"
+python -c "import logging; logging.basicConfig(level=logging.DEBUG); logging.getLogger('rebulk').setLevel(logging.WARNING); import os; os.environ['U1pfT01EQl9LRVk'] = '789CF30DAC2C8B0AF433F5C9AD34290A712DF30D7135F12D0FB3E502006FDE081E'; import subliminal_patch, subliminal; subliminal.region.configure('dogpile.cache.memory'); from subzero.video import parse_video; print parse_video('FILE_NAME', {}, hints={'type': 'episode'}, dry_run=True)"
