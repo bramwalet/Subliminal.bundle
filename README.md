@@ -70,19 +70,20 @@ For further help or manual installation, [please go to the wiki](https://github.
 
 ## Changelog
 
-2.0.20.1372 DEV
-- core: support for VTT/WebVTT subtitle format output and handling
+2.0.23.1456 RC10
+- core: findBetterSubtitles: increase series cutoff by 2 (resolution match)
+- core: add VTT format
+- core: fix crashes regarding DBM/cache management
+- core: update rarfile.py
+- core: add missing encodings
+- core: full support for Serbian subtitles (Cyrillic and Latin)
+- podnapisi: fix pt-BR, srp-cyrl and srp-latn
+- core: implement own provider registry and ditch the subliminal one
+- core: use ftfy library to fix re-encoding errors inside subtitles introduced by the subtitle author
+- core: always store and save subtitles normalized to UTF-8
+- core: replace spaced dashes in movie/series names before re-refining with plex metadata info
+- submod: remove_HI: handle multiline brackets correctly
 
-
-2.0.20.1364 RC9
-- core: performance improvements
-- core: if info couldn't be guessed from the filename, fill missing info from PMS #270
-- submod: OCR: add more to the eng dictionary
-- submod: HI: fixed some issues with font style tags
-- core: don't ignore subtitles from providers that don't have hearing impaired info, when hearing impaired mode is set to "force non-HI"
-- legendastv/menu: fix manual subtitle selection issues in menu
-- core: improve specials matching on OpenSubtitles
-- core: update guessit
 
 
 [older changes](CHANGELOG.md)
