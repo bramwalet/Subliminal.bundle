@@ -172,7 +172,8 @@ class SubtitleModifications(object):
                     try:
                         line = mod.modify(line.strip(), entry=entry.text, debug=self.debug, parent=self, **args)
                     except EmptyEntryError:
-                        logger.debug(u"%s: %r -> ''", identifier, entry.text)
+                        if self.debug:
+                            logger.debug(u"%s: %r -> ''", identifier, entry.text)
                         skip_entry = True
                         break
 
