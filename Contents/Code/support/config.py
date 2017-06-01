@@ -91,6 +91,7 @@ class Config(object):
     react_to_activities = False
     activity_mode = None
     subtitles_save_to = None
+    no_refresh = False
 
     store_recently_played_amount = 20
 
@@ -140,6 +141,7 @@ class Config(object):
         self.default_mods = self.get_default_mods()
         self.debug_mods = cast_bool(Prefs['log_debug_mods'])
         self.subtitles_save_to = Prefs['subtitles.save.filesystem']
+        self.no_refresh = os.environ.get("SZ_NO_REFRESH", False)
         self.initialized = True
 
     def init_cache(self):

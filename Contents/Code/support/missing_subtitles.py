@@ -75,9 +75,7 @@ def items_get_all_missing_subs(items, sleep_after_request=False):
 
 
 def refresh_item(item):
-    Plex["library/metadata"].refresh(item)
+    if not config.no_refresh:
+        Plex["library/metadata"].refresh(item)
 
 
-def refresh_items(items):
-    for item, title in items:
-        refresh_item(item)
