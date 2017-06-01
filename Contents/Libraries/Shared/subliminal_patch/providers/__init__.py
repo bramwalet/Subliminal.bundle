@@ -51,3 +51,12 @@ for name in os.listdir(os.path.dirname(__file__)):
             mod.Session = RetryingSession
 
             provider_registry.register(module_name, provider_class)
+
+    # try patching the correspondent subliminal provider
+    try:
+        subliminal_mod = importlib.import_module("subliminal.providers.%s" % module_name.lower())
+    except ImportError:
+        pass
+    else:
+        subliminal_mod.Session = RetryingSession
+
