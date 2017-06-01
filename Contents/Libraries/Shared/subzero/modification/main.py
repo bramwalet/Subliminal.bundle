@@ -6,7 +6,7 @@ import pysubs2
 import logging
 import time
 
-from mods import EMPTY_TAG_PROCESSOR
+from mods import EMPTY_TAG_PROCESSOR, EmptyEntryError
 from registry import registry
 
 logger = logging.getLogger(__name__)
@@ -146,6 +146,8 @@ class SubtitleModifications(object):
             line_count = 0
             start_tags = []
             end_tags = []
+
+            skip_entry = False
             for line in entry.text.split(ur"\N"):
                 # don't bother the mods with surrounding tags
                 old_line = line
@@ -167,7 +169,13 @@ class SubtitleModifications(object):
                 for order, identifier, args in mods:
                     mod = self.initialized_mods[identifier]
 
-                    line = mod.modify(line.strip(), debug=self.debug, parent=self, **args)
+                    try:
+                        line = mod.modify(line.strip(), entry=entry.text, debug=self.debug, parent=self, **args)
+                    except EmptyEntryError:
+                        logger.debug(u"%s: %r -> ''", identifier, entry.text)
+                        skip_entry = True
+                        break
+
                     if not line:
                         if self.debug:
                             logger.debug(u"%s: %r -> ''", identifier, old_line)
@@ -175,6 +183,10 @@ class SubtitleModifications(object):
                         break
 
                     applied_mods.append(identifier)
+
+                if skip_entry:
+                    lines = []
+                    break
 
                 if skip_line:
                     continue

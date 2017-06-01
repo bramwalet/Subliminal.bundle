@@ -19,7 +19,7 @@ class ReProcessor(Processor):
         self.pattern = pattern
         self.replace_with = replace_with
 
-    def process(self, content, debug=False):
+    def process(self, content, debug=False, **kwargs):
         return self.pattern.sub(self.replace_with, content)
 
 
@@ -40,7 +40,7 @@ class MultipleWordReProcessor(ReProcessor):
         super(ReProcessor, self).__init__(name=name)
         self.snr_dict = snr_dict
 
-    def process(self, content, debug=False):
+    def process(self, content, debug=False, **kwargs):
         if not self.snr_dict["data"]:
             return content
 

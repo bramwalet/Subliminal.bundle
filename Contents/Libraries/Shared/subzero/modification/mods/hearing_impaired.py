@@ -1,9 +1,19 @@
 # coding=utf-8
 import re
 
-from subzero.modification.mods import SubtitleTextModification, empty_line_post_processors
+from subzero.modification.mods import SubtitleTextModification, empty_line_post_processors, EmptyEntryError
 from subzero.modification.processors.re_processor import NReProcessor
 from subzero.modification import registry
+
+
+class FullBracketEntryProcessor(NReProcessor):
+    def process(self, content, debug=False, **kwargs):
+        entry = kwargs.get("entry")
+        if entry:
+            rep_content = super(FullBracketEntryProcessor, self).process(entry, debug=debug, **kwargs)
+            if not rep_content.strip():
+                raise EmptyEntryError()
+        return content
 
 
 class HearingImpaired(SubtitleTextModification):
@@ -17,6 +27,10 @@ class HearingImpaired(SubtitleTextModification):
     """
 
     processors = [
+        # full bracket entry, single or multiline; starting with brackets and ending with brackets
+        FullBracketEntryProcessor(re.compile(ur'(?sux)^-?\s?[([].+(?=[^)\]]{3,}).+[)\]]$'), "",
+                                  name="HI_brackets_full"),
+
         # brackets (only remove if at least 3 consecutive uppercase chars in brackets
         NReProcessor(re.compile(ur'(?sux)[([].+(?=[A-ZÀ-Ž]{3,}).+[)\]]'), "", name="HI_brackets"),
 

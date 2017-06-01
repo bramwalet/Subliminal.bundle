@@ -37,7 +37,7 @@ class SubtitleModification(object):
         new_content = content
         for processor in _processors:
             old_content = new_content
-            new_content = processor.process(new_content, debug=debug)
+            new_content = processor.process(new_content, debug=debug, **kwargs)
             if not new_content:
                 if debug:
                     logger.debug("Processor returned empty line: %s", processor)
@@ -92,3 +92,7 @@ empty_line_post_processors = [
     # empty line (needed?)
     NReProcessor(re.compile(r'^[\s-]+$'), "", name="empty_line"),
 ]
+
+
+class EmptyEntryError(Exception):
+    pass

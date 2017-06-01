@@ -16,7 +16,7 @@ class Processor(object):
     def info(self):
         return self.name
 
-    def process(self, content, debug=False):
+    def process(self, content, debug=False, **kwargs):
         return content
 
     def __repr__(self):

@@ -17,7 +17,7 @@ class StringProcessor(Processor):
         self.search = search
         self.replace = replace
 
-    def process(self, content, debug=False):
+    def process(self, content, debug=False, **kwargs):
         return content.replace(self.search, self.replace)
 
 
@@ -35,7 +35,7 @@ class MultipleLineProcessor(Processor):
         super(MultipleLineProcessor, self).__init__(name=name)
         self.snr_dict = snr_dict
 
-    def process(self, content, debug=False):
+    def process(self, content, debug=False, **kwargs):
         if not self.snr_dict["data"]:
             return content
 
@@ -49,7 +49,7 @@ class MultipleLineProcessor(Processor):
 
 
 class WholeLineProcessor(MultipleLineProcessor):
-    def process(self, content, debug=False):
+    def process(self, content, debug=False, **kwargs):
         if not self.snr_dict["data"]:
             return content
         content = content.strip()
@@ -75,7 +75,7 @@ class MultipleWordProcessor(MultipleLineProcessor):
         "data": {"old_value": "new_value"}
     }
     """
-    def process(self, content, debug=False):
+    def process(self, content, debug=False, **kwargs):
         words = content.split(u" ")
         new_words = []
         for word in words:
