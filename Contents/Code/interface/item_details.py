@@ -98,13 +98,8 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
 
             # iterate through all configured languages
             for lang in config.lang_list:
-                lang_a2 = lang.alpha2
-                # ietf lang?
-                if cast_bool(Prefs["subtitles.language.ietf"]) and "-" in lang_a2:
-                    lang_a2 = lang_a2.split("-")[0]
-
                 # get corresponding stored subtitle data for that media part (physical media item), for language
-                current_sub = stored_subs.get_any(part_id, lang_a2)
+                current_sub = stored_subs.get_any(part_id, lang)
                 current_sub_id = None
                 current_sub_provider_name = None
 

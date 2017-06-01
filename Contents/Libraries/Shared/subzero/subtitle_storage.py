@@ -223,6 +223,17 @@ class JSONStoredVideoSubtitles(object):
                             if isinstance(subtitle_data, StoredSubtitle):
                                 subtitle_data = subtitle_data.__dict__
 
+                                try:
+                                    lang = Language.fromietf(language)
+                                    subtitle = ModifiedSubtitle(lang)
+                                    subtitle.content = subtitle_data["content"]
+                                    subtitle.set_encoding("utf-8")
+                                    subtitle_data["content"] = subtitle.content
+                                    subtitle_data["encoding"] = "utf-8"
+                                except:
+                                    logger.error("Legacy subtitle data could not be converted to new storage format")
+                                    continue
+
                             sub.initialize(**subtitle_data)
                             if not isinstance(sub_key, tuple):
                                 sub_key = tuple(sub_key.split("__"))
@@ -280,7 +291,7 @@ class JSONStoredVideoSubtitles(object):
         if not part:
             return
 
-        subs = part.get(lang)
+        subs = part.get(str(lang))
         if not subs:
             return
 
