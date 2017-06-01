@@ -26,6 +26,9 @@ for name in os.listdir(os.path.dirname(__file__)):
         if item.endswith("Provider") and not item.startswith("_"):
             provider_class = getattr(mod, item)
 
+            if not issubclass(provider_class, _Provider):
+                continue
+
             # patch provider bases
             new_bases = []
             for base in provider_class.__bases__:
@@ -33,7 +36,7 @@ for name in os.listdir(os.path.dirname(__file__)):
                     base.__bases__ = (Provider,)
                 new_bases.append(base)
 
-            setattr(provider_class, "__bases__", tuple(new_bases))
+            provider_class.__bases__ = tuple(new_bases)
 
             # patch subtitle bases
             new_bases = []
@@ -42,9 +45,9 @@ for name in os.listdir(os.path.dirname(__file__)):
                     base.__bases__ = (PatchedSubtitle,)
                 new_bases.append(base)
 
-            setattr(provider_class.subtitle_class, "__bases__", tuple(new_bases))
+            provider_class.subtitle_class.__bases__ = tuple(new_bases)
 
             # inject our requests.Session wrapper for automatic retry
-            setattr(mod, "Session", RetryingSession)
+            mod.Session = RetryingSession
 
             provider_registry.register(module_name, provider_class)
