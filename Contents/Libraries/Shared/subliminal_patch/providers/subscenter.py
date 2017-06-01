@@ -25,5 +25,3 @@ class SubsCenterProvider(_SubsCenterProvider):
     subtitle_class = SubsCenterSubtitle
     hearing_impaired_verifiable = True
 
-
-provider_registry.register("subscenter", SubsCenterProvider)

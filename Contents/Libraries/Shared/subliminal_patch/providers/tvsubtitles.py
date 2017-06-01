@@ -90,6 +90,3 @@ class TVsubtitlesProvider(_TVsubtitlesProvider):
             subtitles.append(subtitle)
 
         return subtitles
-
-
-provider_registry.register("tvsubtitles", TVsubtitlesProvider)

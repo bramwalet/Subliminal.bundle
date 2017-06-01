@@ -50,5 +50,3 @@ class NapiProjektProvider(_NapiProjektProvider):
     def list_subtitles(self, video, languages):
         return [s for s in [self.query(l, video.hashes['napiprojekt'], video.fps) for l in languages] if s is not None]
 
-
-provider_registry.register("napiprojekt", NapiProjektProvider)

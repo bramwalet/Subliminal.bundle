@@ -21,6 +21,3 @@ class LegendasTVSubtitle(_LegendasTVSubtitle):
 
 class LegendasTVProvider(_LegendasTVProvider):
     subtitle_class = LegendasTVSubtitle
-
-
-provider_registry.register("legendastv", LegendasTVProvider)

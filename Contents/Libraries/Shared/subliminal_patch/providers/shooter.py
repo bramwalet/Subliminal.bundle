@@ -14,5 +14,3 @@ class ShooterSubtitle(_ShooterSubtitle):
 class ShooterProvider(_ShooterProvider):
     subtitle_class = ShooterSubtitle
 
-
-provider_registry.register("shooter", ShooterProvider)

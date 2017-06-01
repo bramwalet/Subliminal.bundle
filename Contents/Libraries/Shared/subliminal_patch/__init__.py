@@ -1,23 +1,11 @@
 # coding=utf-8
 
-import importlib
 import subliminal
 
 # patch subliminal's subtitle and provider base
 from .subtitle import PatchedSubtitle
 from .providers import Provider
-from .http import RetryingSession
 subliminal.subtitle.Subtitle = PatchedSubtitle
-
-# add our patched base classes
-for name in ("Addic7ed", "Podnapisi", "TVsubtitles", "OpenSubtitles", "LegendasTV", "NapiProjekt", "Shooter",
-             "SubsCenter"):
-    mod = importlib.import_module("subliminal.providers.%s" % name.lower())
-    setattr(getattr(mod, "%sSubtitle" % name), "__bases__", (PatchedSubtitle,))
-    setattr(getattr(mod, "%sProvider" % name), "__bases__", (Provider,))
-
-    # inject our requests.Session wrapper for automatic retry
-    setattr(mod, "Session", RetryingSession)
 
 from .core import scan_video, search_external_subtitles, list_all_subtitles, save_subtitles, refine, \
     download_best_subtitles

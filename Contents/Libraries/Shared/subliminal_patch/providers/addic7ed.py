@@ -185,5 +185,3 @@ class Addic7edProvider(_Addic7edProvider):
             subtitles.append(subtitle)
 
         return subtitles
-
-provider_registry.register("addic7ed", Addic7edProvider)

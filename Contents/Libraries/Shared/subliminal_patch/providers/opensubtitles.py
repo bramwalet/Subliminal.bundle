@@ -202,6 +202,3 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
             subtitles.append(subtitle)
 
         return subtitles
-
-
-provider_registry.register("opensubtitles", OpenSubtitlesProvider)

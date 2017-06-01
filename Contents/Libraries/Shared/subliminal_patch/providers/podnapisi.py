@@ -156,6 +156,3 @@ class PodnapisiProvider(_PodnapisiProvider):
             logger.debug('Getting page %d', params['page'])
 
         return subtitles
-
-
-provider_registry.register("podnapisi", PodnapisiProvider)
