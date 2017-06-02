@@ -82,7 +82,7 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
     stored_subs = subtitle_storage.load_or_new(item)
 
     # get the plex item
-    plex_item = list(Plex["library"].metadata(rating_key))[0]
+    plex_item = get_item(rating_key)
 
     # look for subtitles for all available media parts and all of their languages
     has_multiple_parts = len(plex_item.media) > 1

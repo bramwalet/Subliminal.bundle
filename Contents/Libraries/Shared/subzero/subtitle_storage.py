@@ -358,17 +358,67 @@ class StoredSubtitlesManager(object):
                 out[fn] = data
         return out
 
-    def delete_missing_files(self):
+    def delete_missing(self, wanted_languages=set()):
         deleted = []
+
+        def delete_fn(filename):
+            if filename.endswith(".json.gz"):
+                self.delete(self.get_json_data_path(filename))
+            else:
+                self.legacy_delete(filename)
+
         for fn in self.get_all_files():
             video_id = os.path.basename(fn).split(".")[0].split("subs_")[1]
             item = self.get_item(video_id)
+
+            # item missing, delete storage
             if not item:
-                if fn.endswith(".json.gz"):
-                    self.delete(self.get_json_data_path(fn))
-                else:
-                    self.legacy_delete(fn)
+                delete_fn(fn)
                 deleted.append(video_id)
+
+            else:
+                known_parts = []
+
+                # wrong (legacy) info, delete storage
+                if not hasattr(item, "media"):
+                    delete_fn(fn)
+                    deleted.append(video_id)
+                    continue
+
+                for media in item.media:
+                    for part in media.parts:
+                        known_parts.append(str(part.id))
+                stored_subs = self.load(filename=fn)
+                missing_parts = set(stored_subs.parts).difference(set(known_parts))
+
+                changed_any = False
+
+                # remove known info about deleted parts
+                if missing_parts:
+                    logger.debug("Parts removed: %s:%s, removing data", video_id, missing_parts)
+                    for missing_part in missing_parts:
+                        if missing_part in stored_subs.parts:
+                            try:
+                                del stored_subs.parts[missing_part]
+                                changed_any = True
+                            except:
+                                pass
+
+                # remove known info about non-existing languages
+                for part_id, part in stored_subs.parts.iteritems():
+                    missing_languages = set(part).difference(wanted_languages)
+                    if missing_languages:
+                        logger.debug("Languages removed: %s:%s:%s, removing data", video_id, part_id, missing_languages)
+                        for missing_language in missing_languages:
+                            try:
+                                del stored_subs.parts[part_id][missing_language]
+                                changed_any = True
+                            except:
+                                pass
+
+                if changed_any:
+                    self.save(stored_subs)
+
         return deleted
 
     def migrate_v2(self, subs_for_video):

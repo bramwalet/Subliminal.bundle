@@ -572,7 +572,7 @@ class SubtitleStorageMaintenance(Task):
         self.running = True
         Log.Info("Running subtitle storage maintenance")
         storage = get_subtitle_storage()
-        deleted_items = storage.delete_missing_files()
+        deleted_items = storage.delete_missing(wanted_languages=set(str(l) for l in config.lang_list))
         if deleted_items:
             Log.Info("Subtitle information for %d non-existant videos have been cleaned up" % len(deleted_items))
             Log.Debug("Videos: %s" % deleted_items)
