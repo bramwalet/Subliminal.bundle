@@ -25,7 +25,7 @@ def get_item(key):
 
     try:
         return list(item_container)[0]
-    except IndexError:
+    except:
         pass
 
 
