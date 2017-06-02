@@ -35,17 +35,41 @@ def parse_video(fn, video_info, hints, external_subtitles=False, embedded_subtit
     if hints["type"] == "episode":
         plex_title = video_info.get("original_title") or video_info.get("series")
 
-    if not video.year:
-        video.year = video_info.get("year")
+    year = video_info.get("year")
+    if not video.year and year:
+        logger.info(u"Adding PMS year info: %s", year)
+        video.year = year
 
     refine(video, **refine_kwargs)
 
-    if not video.imdb_id:
-        video.imdb_id = video_info.get("imdb_id")
-        if video.imdb_id:
-            logger.info(u"Adding PMS imdb_id info: %s", video.imdb_id)
+    if hints["type"] == "movie" and not video.imdb_id:
+        if plex_title:
+            logger.info(u"Adding PMS title/original_title info: %s", plex_title)
+            old_title = video.title
+            video.title = plex_title.replace(" - ", " ").replace(" -", " ").replace("- ", " ")
+
+            # re-refine with new info
+            logger.info(u"Re-refining with movie title: '%s' instead of '%s'", plex_title, old_title)
+            refine(video, **refine_kwargs)
+
+        # still no match? add our own data
+        if not video.imdb_id:
+            video.imdb_id = video_info.get("imdb_id")
+            if video.imdb_id:
+                logger.info(u"Adding PMS imdb_id info: %s", video.imdb_id)
 
     if hints["type"] == "episode":
+        if not video.series_tvdb_id and not video.tvdb_id and plex_title:
+            # add our title
+            logger.info(u"Adding PMS title/original_title info: %s", plex_title)
+            old_title = video.series
+            video.series = plex_title
+
+            # re-refine with new info
+            logger.info(u"Re-refining with series title: '%s' instead of '%s'", plex_title, old_title)
+            refine(video, **refine_kwargs)
+
+        # still no match? add our own data
         if not video.series_tvdb_id:
             logger.info(u"Adding PMS series_tvdb_id info: %s", video_info.get("series_tvdb_id"))
             video.series_tvdb_id = video_info.get("series_tvdb_id")
@@ -54,32 +78,10 @@ def parse_video(fn, video_info, hints, external_subtitles=False, embedded_subtit
             logger.info(u"Adding PMS tvdb_id info: %s", video_info.get("tvdb_id"))
             video.tvdb_id = video_info.get("tvdb_id")
 
-    # re-refine with plex's known data?
-    refine_with_plex = False
-
-    # episode but wasn't able to match title
-    if plex_title:
-        if hints["type"] == "episode" and not video.series_tvdb_id and not video.tvdb_id and not video.series_imdb_id \
-                and video.series != plex_title:
-            logger.info(u"Re-refining with series title: '%s' instead of '%s'", plex_title, video.series)
-            video.series = plex_title
-            refine_with_plex = True
-
-        # movie
-        elif hints["type"] == "movie" and not video.imdb_id and video.title != plex_title:
-            # movie
-            logger.info(u"Re-refining with series title: '%s' instead of '%s'", plex_title, video.title)
-            video.title = plex_title.replace(" - ", " ").replace(" -", " ").replace("- ", " ")
-            refine_with_plex = True
-
-    # title not matched? try plex title hint
-    if refine_with_plex:
-        refine(video, **refine_kwargs)
-
-        # did it match now?
-        if (hints["type"] == "episode" and not video.series_tvdb_id and not video.tvdb_id and
-                not video.series_imdb_id) or (hints["type"] == "movie" and not video.imdb_id):
-            logger.warning("Couldn't find corresponding series/movie in online databases, continuing")
+    # did it match?
+    if (hints["type"] == "episode" and not video.series_tvdb_id and not video.tvdb_id and
+            not video.series_imdb_id) or (hints["type"] == "movie" and not video.imdb_id):
+        logger.warning("Couldn't find corresponding series/movie in online databases, continuing")
 
     # scan for external subtitles
     if external_subtitles:
