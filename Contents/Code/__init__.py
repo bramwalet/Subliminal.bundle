@@ -205,7 +205,7 @@ class SubZeroAgent(object):
 
             # notify any running tasks about our finished update
             for item_id in item_ids:
-                scheduler.signal("updated_metadata", item_id)
+                #scheduler.signal("updated_metadata", item_id)
 
                 # resolve existing intent for that id
                 intent.resolve("force", item_id)
