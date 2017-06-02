@@ -110,6 +110,8 @@ def reset_storage(key):
 
 
 def log_storage(key):
+    if not key:
+        Log.Debug(pprint.pformat(getattr(Dict, "_dict")))
     if key in Dict:
         Log.Debug(pprint.pformat(Dict[key]))
 
