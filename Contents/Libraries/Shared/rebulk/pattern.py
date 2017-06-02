@@ -136,7 +136,7 @@ class Pattern(object):
         :return:
         :rtype:
         """
-        if len(match) == 0 or match.value == "":
+        if not match or match.value == "":
             return False
 
         pattern_value = get_first_defined(self.values, [match.name, '__parent__', None],
@@ -164,7 +164,7 @@ class Pattern(object):
         :return:
         :rtype:
         """
-        if len(child) == 0 or child.value == "":
+        if not child or child.value == "":
             return False
 
         pattern_value = get_first_defined(self.values, [child.name, '__children__', None],

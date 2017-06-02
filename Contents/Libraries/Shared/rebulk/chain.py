@@ -300,14 +300,14 @@ class Chain(Pattern):
 
         if not is_chain_start:
             separator = chain_input_string[0:chain_part_matches[0].initiator.raw_start]
-            if len(separator) > 0:
+            if separator:
                 return []
 
         j = 1
         for i in range(0, len(chain_part_matches) - 1):
             separator = chain_input_string[chain_part_matches[i].initiator.raw_end:
                                            chain_part_matches[i + 1].initiator.raw_start]
-            if len(separator) > 0:
+            if separator:
                 break
             j += 1
         truncated = chain_part_matches[:j]

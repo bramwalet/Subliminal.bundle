@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# pylint: disable=no-self-use, pointless-statement, missing-docstring, unbalanced-tuple-unpacking
+# pylint: disable=no-self-use, pointless-statement, missing-docstring, unbalanced-tuple-unpacking, len-as-condition
 
 import re
 import pytest
@@ -396,10 +396,10 @@ class TestRePattern(object):
 
         children = matches[0].children
         assert len(children) == 2
-        assert children[0].name is "test"
+        assert children[0].name == "test"
         assert children[0].value == "HE"
 
-        assert children[1].name is "test"
+        assert children[1].name == "test"
         assert children[1].value == "HE"
 
         pattern = RePattern("H(?P<first>e.)(?P<second>rew)", name="test", value="HE")
@@ -807,8 +807,7 @@ class TestValidator(object):
         def invalid_func(match):
             if match.name == 'intParam':
                 return True
-            else:
-                return match.value.startswith('abc')
+            return match.value.startswith('abc')
 
         pattern = RePattern(r"contains (?P<intParam>\d+)", formatter=int, validator=invalid_func, validate_all=True,
                             children=True)
@@ -819,8 +818,7 @@ class TestValidator(object):
         def func(match):
             if match.name == 'intParam':
                 return True
-            else:
-                return match.value.startswith('contains')
+            return match.value.startswith('contains')
 
         pattern = RePattern(r"contains (?P<intParam>\d+)", formatter=int, validator=func, validate_all=True,
                             children=True)
