@@ -326,8 +326,6 @@ class SearchAllRecentlyAddedMissing(DownloadSubtitleMixin, SubtitleListingMixin,
             if not stored_subs:
                 continue
 
-            #Log.Debug("Checking whether %s is viable for missing subtitles", stored_subs.video_id)
-
             if stored_subs.added_at + datetime.timedelta(days=max_search_days) <= now:
                 continue
 
@@ -340,7 +338,7 @@ class SearchAllRecentlyAddedMissing(DownloadSubtitleMixin, SubtitleListingMixin,
 
         config.init_subliminal_patches()
 
-        Log.Info("Searching for subtitles for %s items", self.items_searching)
+        Log.Info("%s: Searching for subtitles for %s items", self.name, self.items_searching)
 
         # search for subtitles in viable items
         for fn, stored_subs in viable_items.iteritems():
@@ -367,14 +365,14 @@ class SearchAllRecentlyAddedMissing(DownloadSubtitleMixin, SubtitleListingMixin,
                 try:
                     metadata = get_plex_metadata(video_id, part_id, stored_subs.item_type)
                 except PartUnknownException:
-                    Log.Info("Part %s:%s unknown", video_id, part_id)
+                    Log.Info("%s: Part %s:%s unknown", self.name, video_id, part_id)
                     continue
 
                 if not metadata:
-                    Log.Info("Part %s:%s unknown", video_id, part_id)
+                    Log.Info("%s: Part %s:%s unknown", self.name, video_id, part_id)
                     continue
 
-                Log.Debug("Looking for missing subtitles: %s:%s", video_id, part_id)
+                Log.Debug("%s: Looking for missing subtitles: %s:%s", self.name, video_id, part_id)
                 scanned_parts = scan_videos([metadata], kind="series"
                                             if stored_subs.item_type == "episode" else "movie")
 
@@ -384,12 +382,13 @@ class SearchAllRecentlyAddedMissing(DownloadSubtitleMixin, SubtitleListingMixin,
                 if downloaded_subtitles:
                     try:
                         save_subtitles(scanned_parts, downloaded_subtitles, mode="a", mods=config.default_mods)
-                        Log.Debug("Downloaded subtitle for item with missing subs: %s", video_id)
+                        Log.Debug("%s: Downloaded subtitle for item with missing subs: %s", self.name, video_id)
                         download_successful = True
                         refresh_item(video_id)
                         track_usage("Subtitle", "manual", "download", 1)
                     except:
-                        Log.Error("Something went wrong when downloading specific subtitle: %s", traceback.format_exc())
+                        Log.Error("%s: Something went wrong when downloading specific subtitle: %s", self.name,
+                                  traceback.format_exc())
                     finally:
                         item_title = get_title_for_video_metadata(metadata, add_section_title=False)
                         if download_successful:
@@ -399,11 +398,11 @@ class SearchAllRecentlyAddedMissing(DownloadSubtitleMixin, SubtitleListingMixin,
                                     continue
 
                                 for subtitle in video_subtitles:
+                                    downloads_per_video += 1
                                     history.add(item_title, video.id, section_title=metadata["section"], subtitle=subtitle,
                                                 mode="a")
 
-                    downloads_per_video += len(downloaded_subtitles)
-                    download_count += downloads_per_video
+            download_count += downloads_per_video
 
             if downloads_per_video:
                 videos_with_downloads += 1
