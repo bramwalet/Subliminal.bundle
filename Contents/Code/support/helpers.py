@@ -10,6 +10,8 @@ import re
 import platform
 import subprocess
 import sys
+from collections import OrderedDict
+
 import chardet
 
 from bs4 import UnicodeDammit
@@ -306,6 +308,17 @@ def notify_executable(exe_info, videos, subtitles, storage):
 def track_usage(category=None, action=None, label=None, value=None):
     if not cast_bool(Prefs["track_usage"]):
         return
+
+    if "last_tracked" not in Dict:
+        Dict["last_tracked"] = OrderedDict()
+        Dict.Save()
+
+    key = (category, action, label, value)
+    now = datetime.datetime.now()
+    if key in Dict["last_tracked"] and (Dict["last_tracked"][key] + datetime.timedelta(minutes=30)) < now:
+        return
+
+    Dict["last_tracked"][key] = now
 
     Thread.Create(dispatch_track_usage, category, action, label, value,
                   identifier=Dict["anon_id"], first_use=Dict["first_use"],
