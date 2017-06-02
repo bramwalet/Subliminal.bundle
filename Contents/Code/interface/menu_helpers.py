@@ -148,7 +148,7 @@ def debounce(func):
 
     def wrap(*args, **kwargs):
         if "randomize" in kwargs:
-            if not "menu_history" in Dict:
+            if "menu_history" not in Dict:
                 Dict["menu_history"] = {}
 
             key = get_lookup_key([func] + list(args), kwargs)
