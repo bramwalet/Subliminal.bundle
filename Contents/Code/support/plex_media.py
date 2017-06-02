@@ -256,7 +256,7 @@ def scan_videos(videos, kind="series", ignore_all=False):
     return ret
 
 
-def get_plex_metadata(rating_key, part_id, item_type):
+def get_plex_metadata(rating_key, part_id, item_type, plex_item=None):
     """
     uses the Plex 3rd party API accessor to get metadata information
 
@@ -266,16 +266,14 @@ def get_plex_metadata(rating_key, part_id, item_type):
     :return:
     """
 
-    try:
-        plex_item = list(Plex["library"].metadata(rating_key))[0]
-    except (URLError, IndexError):
-        return None
+    if not plex_item:
+        plex_item = get_item(rating_key)
 
     # find current part
     current_part = None
     for media in plex_item.media:
         for part in media.parts:
-            if str(part.id) == part_id:
+            if str(part.id) == str(part_id):
                 current_part = part
 
     if not current_part:

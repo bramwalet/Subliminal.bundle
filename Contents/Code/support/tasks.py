@@ -4,7 +4,6 @@ import datetime
 import time
 import operator
 import traceback
-from urllib2 import URLError
 
 from subliminal_patch.score import compute_score
 from subliminal_patch.core import download_subtitles
@@ -15,10 +14,10 @@ from missing_subtitles import items_get_all_missing_subs, refresh_item
 from scheduler import scheduler
 from storage import save_subtitles, whack_missing_parts, get_subtitle_storage
 from support.config import config
-from support.items import get_recent_items, is_ignored, get_item
-from support.lib import Plex
+from support.items import get_recent_items, get_item, is_ignored
 from support.helpers import track_usage, get_title_for_video_metadata, cast_bool, PartUnknownException
 from support.plex_media import scan_videos, get_plex_metadata
+from download import download_best_subtitles
 
 
 class Task(object):
@@ -93,114 +92,21 @@ class Task(object):
         Log.Info(u"Task: ran: %s", self.name)
 
 
-class SearchAllRecentlyAddedMissing(Task):
-    periodic = True
-    items_done = None
-    items_searching = None
-    items_searching_ids = None
-    items_failed = None
-    percentage = 0
-
-    stall_time = 30
-
-    def __init__(self, scheduler):
-        super(SearchAllRecentlyAddedMissing, self).__init__(scheduler)
-        self.items_done = None
-        self.items_searching = None
-        self.items_searching_ids = None
-        self.items_failed = None
-        self.percentage = 0
-
-    def signal(self, signal_name, *args, **kwargs):
-        handler = getattr(self, "signal_%s" % signal_name)
-        return handler(*args, **kwargs) if handler else None
-
-    def signal_updated_metadata(self, *args, **kwargs):
-        item_id = int(args[0])
-
-        if self.items_searching_ids is not None and item_id in self.items_searching_ids:
-            self.items_done.append(item_id)
-            return True
-
-    def prepare(self, *args, **kwargs):
-        self.items_done = []
-        recent_items = get_recent_items()
-        missing = items_get_all_missing_subs(recent_items, sleep_after_request=0.2)
-        ids = set([id for added_at, id, title, item, missing_languages in missing if not is_ignored(id, item=item)])
-        self.items_searching = missing
-        self.items_searching_ids = ids
-        self.items_failed = []
-        self.percentage = 0
-        self.ready_for_display = True
-
-    def run(self):
-        super(SearchAllRecentlyAddedMissing, self).run()
-        self.running = True
-        missing_count = len(self.items_searching)
-        items_done_count = 0
-
-        for added_at, item_id, title, item, missing_languages in self.items_searching:
-            Log.Debug(u"Task: %s, triggering refresh for %s (%s)", self.name, title, item_id)
-            try:
-                refresh_item(item_id)
-            except URLError:
-                # timeout
-                pass
-            search_started = datetime.datetime.now()
-            tries = 1
-            while 1:
-                if item_id in self.items_done:
-                    items_done_count += 1
-                    self.percentage = int(items_done_count * 100 / missing_count)
-                    Log.Debug(u"Task: %s, item %s done (%s%%, %s/%s)", self.name, item_id, self.percentage,
-                              items_done_count, missing_count)
-                    break
-
-                # item considered stalled after self.stall_time seconds passed after last refresh
-                if (datetime.datetime.now() - search_started).total_seconds() > self.stall_time:
-                    if tries > 3:
-                        self.items_failed.append(item_id)
-                        Log.Debug(u"Task: %s, item stalled for %s times: %s, skipping", self.name, tries, item_id)
-                        break
-
-                    Log.Debug(u"Task: %s, item stalled for %s seconds: %s, retrying", self.name, self.stall_time,
-                              item_id)
-                    tries += 1
-                    try:
-                        refresh_item(item_id)
-                    except URLError:
-                        pass
-                    search_started = datetime.datetime.now()
-                    time.sleep(1)
-                time.sleep(0.1)
-            # we can't hammer the PMS, otherwise requests will be stalled
-            time.sleep(5)
-
-        Log.Debug("Task: %s, done (%s%%, %s/%s). Failed items: %s", self.name, self.percentage,
-                  items_done_count, missing_count, self.items_failed)
-        self.running = False
-
-    def post_run(self, task_data):
-        super(SearchAllRecentlyAddedMissing, self).post_run(task_data)
-        self.ready_for_display = False
-        self.percentage = 0
-        self.items_done = None
-        self.items_failed = None
-        self.items_searching = None
-        self.items_searching_ids = None
-
-
 class SubtitleListingMixin(object):
-    def list_subtitles(self, rating_key, item_type, part_id, language, skip_wrong_fps=True):
-        metadata = get_plex_metadata(rating_key, part_id, item_type)
+    def list_subtitles(self, rating_key, item_type, part_id, language, skip_wrong_fps=True, metadata=None,
+                       scanned_parts=None):
+
+        if not metadata:
+            metadata = get_plex_metadata(rating_key, part_id, item_type)
 
         if not metadata:
             return
 
-        scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
         if not scanned_parts:
-            Log.Error("Couldn't list available subtitles for %s", rating_key)
-            return
+            scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
+            if not scanned_parts:
+                Log.Error("Couldn't list available subtitles for %s", rating_key)
+                return
 
         video, plex_part = scanned_parts.items()[0]
         config.init_subliminal_patches()
@@ -363,6 +269,152 @@ class MissingSubtitles(Task):
     def post_run(self, task_data):
         super(MissingSubtitles, self).post_run(task_data)
         task_data["missing_subtitles"] = self.data
+
+
+class SearchAllRecentlyAddedMissing(DownloadSubtitleMixin, SubtitleListingMixin, Task):
+    periodic = True
+
+    items_done = None
+    items_searching = None
+    percentage = 0
+
+    def __init__(self, scheduler):
+        super(SearchAllRecentlyAddedMissing, self).__init__(scheduler)
+        self.items_done = None
+        self.items_searching = None
+        self.percentage = 0
+
+    def signal_updated_metadata(self, *args, **kwargs):
+        return True
+
+    def prepare(self):
+        self.items_done = 0
+        self.items_searching = 0
+        self.percentage = 0
+        self.ready_for_display = True
+
+    def run(self):
+        super(SearchAllRecentlyAddedMissing, self).run()
+
+        self.running = True
+        self.prepare()
+
+        from support.history import get_history
+        history = get_history()
+
+        now = datetime.datetime.now()
+        min_score_series = int(Prefs["subtitles.search.minimumTVScore2"].strip())
+        min_score_movies = int(Prefs["subtitles.search.minimumMovieScore2"].strip())
+
+        is_recent_str = Prefs["scheduler.item_is_recent_age"]
+        num, ident = is_recent_str.split()
+
+        max_search_days = 0
+        if ident == "days":
+            max_search_days = int(num)
+        elif ident == "weeks":
+            max_search_days = int(num) * 7
+
+        subtitle_storage = get_subtitle_storage()
+        recent_sub_fns = subtitle_storage.get_recent_files(age_days=max_search_days)
+        viable_items = {}
+
+        # determine viable items
+        for fn in recent_sub_fns:
+            # added_date <= max_search_days?
+            stored_subs = subtitle_storage.load(filename=fn)
+            if not stored_subs:
+                continue
+
+            #Log.Debug("Checking whether %s is viable for missing subtitles", stored_subs.video_id)
+
+            if stored_subs.added_at + datetime.timedelta(days=max_search_days) <= now:
+                continue
+
+            viable_items[fn] = stored_subs
+
+        self.items_searching = len(viable_items)
+
+        download_count = 0
+
+        Log.Info("Searching for subtitles for %s items", self.items_searching)
+
+        # search for subtitles in viable items
+        for fn, stored_subs in viable_items.iteritems():
+            video_id = stored_subs.video_id
+
+            if stored_subs.item_type == "episode":
+                min_score = min_score_series
+            else:
+                min_score = min_score_movies
+
+            parts = []
+            plex_item = get_item(video_id)
+
+            if is_ignored(video_id, item=plex_item):
+                continue
+
+            for media in plex_item.media:
+                parts += media.parts
+
+            for part in parts:
+                part_id = part.id
+
+                try:
+                    metadata = get_plex_metadata(video_id, part_id, stored_subs.item_type)
+                except PartUnknownException:
+                    Log.Info("Part %s:%s unknown", video_id, part_id)
+                    continue
+
+                if not metadata:
+                    Log.Info("Part %s:%s unknown", video_id, part_id)
+                    continue
+
+                Log.Debug("Looking for missing subtitles: %s:%s", video_id, part_id)
+                scanned_parts = scan_videos([metadata], kind="series"
+                                            if stored_subs.item_type == "episode" else "movie", ignore_all=True)
+
+                downloaded_subtitles = download_best_subtitles(scanned_parts, min_score=min_score)
+                download_successful = False
+                try:
+                    save_subtitles(scanned_parts, downloaded_subtitles, mode="a", mods=config.default_mods)
+                    Log.Debug("Downloaded subtitle for item with missing subs: %s", video_id)
+                    download_successful = True
+                    refresh_item(video_id)
+                    track_usage("Subtitle", "manual", "download", 1)
+                except:
+                    Log.Error("Something went wrong when downloading specific subtitle: %s", traceback.format_exc())
+                finally:
+                    item_title = get_title_for_video_metadata(metadata, add_section_title=False)
+                    if download_successful:
+                        # store item in history
+                        for video, video_subtitles in downloaded_subtitles.items():
+                            if not video_subtitles:
+                                continue
+
+                            for subtitle in video_subtitles:
+                                history.add(item_title, video.id, section_title=metadata["section"], subtitle=subtitle,
+                                            mode="a")
+
+                download_count += len(downloaded_subtitles)
+
+            self.items_done = self.items_done + 1
+            self.percentage = int(self.items_done * 100 / self.items_searching)
+
+            time.sleep(5)
+
+        if download_count:
+            Log.Debug("Task: %s, done. Missing subtitles found for %s/%s items", self.name, download_count,
+                      self.items_searching)
+        else:
+            Log.Debug("Task: %s, done. No subtitles found for %s items", self.name, self.items_searching)
+
+    def post_run(self, task_data):
+        super(SearchAllRecentlyAddedMissing, self).post_run(task_data)
+        self.ready_for_display = False
+        self.percentage = 0
+        self.items_done = None
+        self.items_searching = None
 
 
 class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):

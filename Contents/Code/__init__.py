@@ -3,7 +3,6 @@ import sys
 import datetime
 import os
 
-from subliminal_patch import compute_score
 from subzero.sandbox import restore_builtins
 
 module = sys.modules['__main__']
@@ -18,7 +17,6 @@ import logger
 
 sys.modules["logger"] = logger
 
-import subliminal_patch as subliminal
 import support
 
 import interface
@@ -27,8 +25,7 @@ sys.modules["interface"] = interface
 from subzero.constants import OS_PLEX_USERAGENT, PERSONAL_MEDIA_IDENTIFIER
 from interface.menu import *
 from support.plex_media import media_to_videos, get_media_item_ids, scan_videos
-from support.subtitlehelpers import get_subtitles_from_metadata
-from support.storage import whack_missing_parts, save_subtitles
+from support.storage import whack_missing_parts, save_subtitles, store_subtitle_info
 from support.items import is_ignored
 from support.config import config
 from support.lib import get_intent
@@ -36,6 +33,7 @@ from support.helpers import track_usage, get_title_for_video_metadata, get_ident
 from support.history import get_history
 from support.data import dispatch_migrate
 from support.activities import activity
+from support.download import download_best_subtitles
 
 
 def Start():
@@ -90,45 +88,6 @@ def Start():
             Dict.Save()
             track_usage("General", "plugin", "first_start", config.version)
         track_usage("General", "plugin", "start", config.version)
-
-
-def download_best_subtitles(video_part_map, min_score=0):
-    hearing_impaired = Prefs['subtitles.search.hearingImpaired']
-    languages = config.lang_list
-    if not languages:
-        return
-
-    missing_languages = False
-    for video, part in video_part_map.iteritems():
-        if not Prefs['subtitles.save.filesystem']:
-            # scan for existing metadata subtitles
-            meta_subs = get_subtitles_from_metadata(part)
-            for language, subList in meta_subs.iteritems():
-                if subList:
-                    video.subtitle_languages.add(language)
-                    Log.Debug("Found metadata subtitle %s for %s", language, video)
-
-        missing_subs = (languages - video.subtitle_languages)
-
-        # all languages are found if we either really have subs for all languages or we only want to have exactly one language
-        # and we've only found one (the case for a selected language, Prefs['subtitles.only_one'] (one found sub matches any language))
-        found_one_which_is_enough = len(video.subtitle_languages) >= 1 and Prefs['subtitles.only_one']
-        if not missing_subs or found_one_which_is_enough:
-            if found_one_which_is_enough:
-                Log.Debug('Only one language was requested, and we\'ve got a subtitle for %s', video)
-            else:
-                Log.Debug('All languages %r exist for %s', languages, video)
-            continue
-        missing_languages = True
-        break
-
-    if missing_languages:
-        Log.Debug("Download best subtitles using settings: min_score: %s, hearing_impaired: %s" % (min_score, hearing_impaired))
-
-        return subliminal.download_best_subtitles(video_part_map.keys(), languages, min_score, hearing_impaired, providers=config.providers,
-                                                  provider_configs=config.provider_settings, pool_class=config.provider_pool,
-                                                  compute_score=compute_score)
-    Log.Debug("All languages for all requested videos exist. Doing nothing.")
 
 
 def update_local_media(metadata, media, media_type="movies"):
@@ -230,6 +189,10 @@ class SubZeroAgent(object):
                         history = get_history()
                         history.add(item_title, video.id, section_title=video.plexapi_metadata["section"],
                                     subtitle=subtitle)
+            else:
+                # store subtitle info even if we've downloaded none
+                store_subtitle_info(scanned_video_part_map, dict((k, []) for k in scanned_video_part_map.keys()),
+                                    None, mode="a")
 
             update_local_media(metadata, media, media_type=self.agent_type)
 

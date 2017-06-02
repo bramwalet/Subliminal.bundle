@@ -58,3 +58,6 @@ sys.modules["support.data"] = data
 
 import activities
 sys.modules["support.activities"] = activities
+
+import download
+sys.modules["support.download"] = download

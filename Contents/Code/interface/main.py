@@ -110,7 +110,7 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
         task = scheduler.task(task_name)
 
         if task.ready_for_display:
-            task_state = "Running: %s/%s (%s%%)" % (len(task.items_done), len(task.items_searching), task.percentage)
+            task_state = "Running: %s/%s (%s%%)" % (task.items_done, task.items_searching, task.percentage)
         else:
             task_state = "Last scheduler run: %s; Next scheduled run: %s; Last runtime: %s" % (
                 df(scheduler.last_run(task_name)) or "never",

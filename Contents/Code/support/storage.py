@@ -74,7 +74,6 @@ def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_ty
 
         existing_parts.append(part_id)
 
-        stored_any = False
         for subtitle in video_subtitles:
             lang = str(subtitle.language)
             subtitle.set_encoding("utf-8")
@@ -84,14 +83,12 @@ def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_ty
 
             if ret_val:
                 Log.Debug("Subtitle stored")
-                stored_any = True
 
             else:
                 Log.Debug("Subtitle already existing in storage")
 
-        if stored_any:
-            Log.Debug("Saving subtitle storage for %s" % video_id)
-            subtitle_storage.save(stored_subs)
+        Log.Debug("Saving subtitle storage for %s" % video_id)
+        subtitle_storage.save(stored_subs)
 
     #if existing_parts:
     #    whack_missing_parts(scanned_video_part_map, existing_parts=existing_parts)
