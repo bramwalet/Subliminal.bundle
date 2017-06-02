@@ -51,9 +51,12 @@ def Start():
     # clear expired menu history items
     now = datetime.datetime.now()
     if "menu_history" in Dict:
-        for key, timeout in Dict["menu_history"].items():
+        for key, timeout in Dict["menu_history"].copy().items():
             if now > timeout:
-                del Dict["menu_history"][key]
+                try:
+                    del Dict["menu_history"][key]
+                except:
+                    pass
 
     # run migrations
     if "subs" in Dict or "history" in Dict:

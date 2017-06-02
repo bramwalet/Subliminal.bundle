@@ -313,12 +313,21 @@ def track_usage(category=None, action=None, label=None, value=None):
         Dict["last_tracked"] = OrderedDict()
         Dict.Save()
 
-    key = (category, action, label, value)
+    event_key = (category, action, label, value)
     now = datetime.datetime.now()
-    if key in Dict["last_tracked"] and (Dict["last_tracked"][key] + datetime.timedelta(minutes=30)) < now:
+    if event_key in Dict["last_tracked"] and (Dict["last_tracked"][event_key] + datetime.timedelta(minutes=30)) < now:
         return
 
-    Dict["last_tracked"][key] = now
+    Dict["last_tracked"][event_key] = now
+
+    # maintenance
+    for key, value in Dict["last_tracked"].copy().iteritems():
+        # kill day old values
+        if value < now - datetime.timedelta(days=1):
+            try:
+                del Dict["last_tracked"][key]
+            except:
+                pass
 
     Thread.Create(dispatch_track_usage, category, action, label, value,
                   identifier=Dict["anon_id"], first_use=Dict["first_use"],

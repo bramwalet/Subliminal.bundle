@@ -520,6 +520,24 @@ class SubtitleStorageMaintenance(Task):
             Log.Info("Nothing to do")
 
 
+class MenuHistoryMaintenance(Task):
+    periodic = True
+    frequency = "every 7 days"
+
+    def run(self):
+        super(MenuHistoryMaintenance, self).run()
+        self.running = True
+        Log.Info("Running menu history maintenance")
+        now = datetime.datetime.now()
+        if "menu_history" in Dict:
+            for key, timeout in Dict["menu_history"].copy().items():
+                if now > timeout:
+                    try:
+                        del Dict["menu_history"][key]
+                    except:
+                        pass
+
+
 class MigrateSubtitleStorage(Task):
     periodic = False
     frequency = None
@@ -543,4 +561,4 @@ scheduler.register(MissingSubtitles)
 scheduler.register(FindBetterSubtitles)
 scheduler.register(SubtitleStorageMaintenance)
 scheduler.register(MigrateSubtitleStorage)
-
+scheduler.register(MenuHistoryMaintenance)
