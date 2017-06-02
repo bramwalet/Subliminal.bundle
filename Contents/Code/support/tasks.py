@@ -12,7 +12,7 @@ from babelfish import Language
 
 from missing_subtitles import items_get_all_missing_subs, refresh_item
 from scheduler import scheduler
-from storage import save_subtitles, whack_missing_parts, get_subtitle_storage
+from storage import save_subtitles, get_subtitle_storage
 from support.config import config
 from support.items import get_recent_items, get_item, is_ignored
 from support.helpers import track_usage, get_title_for_video_metadata, cast_bool, PartUnknownException
@@ -175,7 +175,6 @@ class DownloadSubtitleMixin(object):
 
         if subtitle.content:
             try:
-                whack_missing_parts(scanned_parts)
                 save_subtitles(scanned_parts, {video: [subtitle]}, mode=mode, mods=config.default_mods)
                 Log.Debug("Manually downloaded subtitle for: %s", rating_key)
                 download_successful = True

@@ -19,48 +19,10 @@ def get_subtitle_storage():
     return StoredSubtitlesManager(Data, get_item)
 
 
-def whack_missing_parts(scanned_video_part_map, existing_parts=None):
-    """
-    cleans out our internal storage's video parts (parts may get updated/deleted/whatever)
-    :param existing_parts: optional list of part ids known
-    :param scanned_video_part_map: videos to check for
-    :return:
-    """
-    # shortcut
-
-    if "subs" not in Dict:
-        return
-
-    if not existing_parts:
-        existing_parts = []
-        for part in scanned_video_part_map.viewvalues():
-            existing_parts.append(str(part.id))
-
-    whacked_parts = False
-    for video in scanned_video_part_map.keys():
-        video_id = str(video.id)
-        if video_id not in Dict["subs"]:
-            continue
-
-        parts = Dict["subs"][video_id].keys()
-
-        for part_id in parts:
-            part_id = str(part_id)
-            if part_id not in existing_parts:
-                Log.Info("Whacking part %s in internal storage of video %s (%s, %s)", part_id, video_id,
-                         repr(existing_parts), repr(parts))
-                del Dict["subs"][video_id][part_id]
-                whacked_parts = True
-
-    if whacked_parts:
-        Dict.Save()
-
-
 def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_type, mode="a"):
     """
     stores information about downloaded subtitles in plex's Dict()
     """
-    existing_parts = []
     for video, video_subtitles in downloaded_subtitles.items():
         part = scanned_video_part_map[video]
         part_id = str(part.id)
@@ -71,8 +33,6 @@ def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_ty
 
         subtitle_storage = get_subtitle_storage()
         stored_subs = subtitle_storage.load_or_new(plex_item)
-
-        existing_parts.append(part_id)
 
         for subtitle in video_subtitles:
             lang = str(subtitle.language)
@@ -89,9 +49,6 @@ def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_ty
 
         Log.Debug("Saving subtitle storage for %s" % video_id)
         subtitle_storage.save(stored_subs)
-
-    #if existing_parts:
-    #    whack_missing_parts(scanned_video_part_map, existing_parts=existing_parts)
 
 
 def reset_storage(key):

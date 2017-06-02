@@ -25,7 +25,7 @@ sys.modules["interface"] = interface
 from subzero.constants import OS_PLEX_USERAGENT, PERSONAL_MEDIA_IDENTIFIER
 from interface.menu import *
 from support.plex_media import media_to_videos, get_media_item_ids, scan_videos
-from support.storage import whack_missing_parts, save_subtitles, store_subtitle_info
+from support.storage import save_subtitles, store_subtitle_info
 from support.items import is_ignored
 from support.config import config
 from support.lib import get_intent
@@ -177,9 +177,11 @@ class SubZeroAgent(object):
                 downloaded_subtitles = download_best_subtitles(scanned_video_part_map, min_score=use_score)
                 item_ids = get_media_item_ids(media, kind=self.agent_type)
 
-                whack_missing_parts(scanned_video_part_map)
-
+            downloaded_any = False
             if downloaded_subtitles:
+                downloaded_any = any(downloaded_subtitles.values())
+
+            if downloaded_any:
                 save_subtitles(scanned_video_part_map, downloaded_subtitles, mods=config.default_mods)
                 track_usage("Subtitle", "refreshed", "download", 1)
 
