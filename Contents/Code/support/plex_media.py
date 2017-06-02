@@ -181,7 +181,7 @@ def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None):
     if ignore_all:
         Log.Debug("Force refresh intended.")
 
-    Log.Debug("Scanning video: %s, subtitles=%s, embedded_subtitles=%s" % (
+    Log.Debug("Scanning video: %s, external_subtitles=%s, embedded_subtitles=%s" % (
         plex_part.file, external_subtitles, embedded_subtitles))
 
     known_embedded = []

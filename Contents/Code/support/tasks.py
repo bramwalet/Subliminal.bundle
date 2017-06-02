@@ -336,6 +336,9 @@ class SearchAllRecentlyAddedMissing(DownloadSubtitleMixin, SubtitleListingMixin,
         self.items_searching = len(viable_items)
 
         download_count = 0
+        videos_with_downloads = 0
+
+        config.init_subliminal_patches()
 
         Log.Info("Searching for subtitles for %s items", self.items_searching)
 
@@ -357,6 +360,7 @@ class SearchAllRecentlyAddedMissing(DownloadSubtitleMixin, SubtitleListingMixin,
             for media in plex_item.media:
                 parts += media.parts
 
+            downloads_per_video = 0
             for part in parts:
                 part_id = part.id
 
@@ -372,31 +376,37 @@ class SearchAllRecentlyAddedMissing(DownloadSubtitleMixin, SubtitleListingMixin,
 
                 Log.Debug("Looking for missing subtitles: %s:%s", video_id, part_id)
                 scanned_parts = scan_videos([metadata], kind="series"
-                                            if stored_subs.item_type == "episode" else "movie", ignore_all=True)
+                                            if stored_subs.item_type == "episode" else "movie")
 
                 downloaded_subtitles = download_best_subtitles(scanned_parts, min_score=min_score)
                 download_successful = False
-                try:
-                    save_subtitles(scanned_parts, downloaded_subtitles, mode="a", mods=config.default_mods)
-                    Log.Debug("Downloaded subtitle for item with missing subs: %s", video_id)
-                    download_successful = True
-                    refresh_item(video_id)
-                    track_usage("Subtitle", "manual", "download", 1)
-                except:
-                    Log.Error("Something went wrong when downloading specific subtitle: %s", traceback.format_exc())
-                finally:
-                    item_title = get_title_for_video_metadata(metadata, add_section_title=False)
-                    if download_successful:
-                        # store item in history
-                        for video, video_subtitles in downloaded_subtitles.items():
-                            if not video_subtitles:
-                                continue
 
-                            for subtitle in video_subtitles:
-                                history.add(item_title, video.id, section_title=metadata["section"], subtitle=subtitle,
-                                            mode="a")
+                if downloaded_subtitles:
+                    try:
+                        save_subtitles(scanned_parts, downloaded_subtitles, mode="a", mods=config.default_mods)
+                        Log.Debug("Downloaded subtitle for item with missing subs: %s", video_id)
+                        download_successful = True
+                        refresh_item(video_id)
+                        track_usage("Subtitle", "manual", "download", 1)
+                    except:
+                        Log.Error("Something went wrong when downloading specific subtitle: %s", traceback.format_exc())
+                    finally:
+                        item_title = get_title_for_video_metadata(metadata, add_section_title=False)
+                        if download_successful:
+                            # store item in history
+                            for video, video_subtitles in downloaded_subtitles.items():
+                                if not video_subtitles:
+                                    continue
 
-                download_count += len(downloaded_subtitles)
+                                for subtitle in video_subtitles:
+                                    history.add(item_title, video.id, section_title=metadata["section"], subtitle=subtitle,
+                                                mode="a")
+
+                    downloads_per_video += len(downloaded_subtitles)
+                    download_count += downloads_per_video
+
+            if downloads_per_video:
+                videos_with_downloads += 1
 
             self.items_done = self.items_done + 1
             self.percentage = int(self.items_done * 100 / self.items_searching)
@@ -404,8 +414,8 @@ class SearchAllRecentlyAddedMissing(DownloadSubtitleMixin, SubtitleListingMixin,
             time.sleep(5)
 
         if download_count:
-            Log.Debug("Task: %s, done. Missing subtitles found for %s/%s items", self.name, download_count,
-                      self.items_searching)
+            Log.Debug("Task: %s, done. Missing subtitles found for %s/%s items (%s subs downloaded)", self.name,
+                      videos_with_downloads, self.items_searching, download_count)
         else:
             Log.Debug("Task: %s, done. No subtitles found for %s items", self.name, self.items_searching)
 
