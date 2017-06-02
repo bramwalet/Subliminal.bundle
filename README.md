@@ -70,6 +70,11 @@ For further help or manual installation, [please go to the wiki](https://github.
 
 ## Changelog
 
+
+2.0.23.1464 RC10.1
+ - core: huge bugfix; please check `Library/Application Support/Plex Media\ Server/Plug-in Support/Data/com.plexapp.agents.subzero/DataItems`
+         for any `subs_XXXXX.json.gz` file bigger than 500kb and delete them
+
 2.0.23.1456 RC10
 - core: findBetterSubtitles: increase series cutoff by 2 (resolution match)
 - core: add VTT format
