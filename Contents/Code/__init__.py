@@ -130,10 +130,6 @@ class SubZeroAgent(object):
         results.Append(MetadataSearchResult(id='null', score=100))
 
     def update(self, metadata, media, lang):
-        if not config.enable_agent:
-            Log.Debug("Skipping Sub-Zero agent(s)")
-            return
-
         Log.Debug("Sub-Zero %s, %s update called" % (config.version, self.agent_type))
         intent = get_intent()
 
@@ -172,11 +168,16 @@ class SubZeroAgent(object):
             # scanned_video_part_map = {subliminal.Video: plex_part, ...}
             scanned_video_part_map = scan_videos(videos, kind=self.agent_type)
 
-            # downloaded_subtitles = {subliminal.Video: [subtitle, subtitle, ...]}
-            downloaded_subtitles = download_best_subtitles(scanned_video_part_map, min_score=use_score)
-            item_ids = get_media_item_ids(media, kind=self.agent_type)
+            downloaded_subtitles = None
+            if not config.enable_agent:
+                Log.Debug("Skipping Sub-Zero agent(s)")
 
-            whack_missing_parts(scanned_video_part_map)
+            else:
+                # downloaded_subtitles = {subliminal.Video: [subtitle, subtitle, ...]}
+                downloaded_subtitles = download_best_subtitles(scanned_video_part_map, min_score=use_score)
+                item_ids = get_media_item_ids(media, kind=self.agent_type)
+
+                whack_missing_parts(scanned_video_part_map)
 
             if downloaded_subtitles:
                 save_subtitles(scanned_video_part_map, downloaded_subtitles, mods=config.default_mods)
