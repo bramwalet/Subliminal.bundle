@@ -61,7 +61,7 @@ class PatchedSubtitle(Subtitle):
         #if self.encoding:
         #    return fix_text(self.content.decode(self.encoding, errors='replace'), **ftfy_defaults)
 
-        return fix_text(self.content.decode(self.guess_encoding(), errors='replace'), **ftfy_defaults)
+        return self.content.decode(self.guess_encoding(), errors='replace')
 
     def make_picklable(self):
         """
@@ -286,13 +286,13 @@ class PatchedSubtitle(Subtitle):
         :return: string 
         """
         if not self.mods:
-            return self.content
+            return fix_text(self.content.decode("utf-8"), **ftfy_defaults)
 
         submods = SubtitleModifications(debug=debug)
         submods.load(content=self.text, language=self.language)
         submods.modify(*self.mods)
 
-        return self.pysubs2_to_unicode(submods.f, format=format).encode(encoding="utf-8")
+        return fix_text(self.pysubs2_to_unicode(submods.f, format=format), **ftfy_defaults).encode(encoding="utf-8")
 
 
 class ModifiedSubtitle(PatchedSubtitle):
