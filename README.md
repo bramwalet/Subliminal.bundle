@@ -36,9 +36,6 @@ Additionally you can specify a fixed location for *all* your subtitles, or pre-d
 
 If you don't want SRT files lying around in your library, you also have the option to store subtitles inside the internal metadata storage of the Plex Media Server.
 
-In addition to that Sub-Zero also fixes problems introduced by the subtitle creators themselves - badly changed encodings for example.
-Ever had broken music icons in a subtitle? Nordic characters like `Å` which turned into `Ã¥`? Not anymore.
-
 #### Automation
 Sub-Zero comes with its own background task scheduler. It periodically searches for missing subtitles and better subtitles for your media files.
 
@@ -52,7 +49,7 @@ The automatic matching Sub-Zero does has been improved massively over the last y
 
 It allows you to trigger background tasks, browse your library based on several different starting points, adds a recently-viewed menu for instant access to your recently played media and allows you to list and select available subtitles for any item in your library.
 
-#### Subtitle Modifications
+#### Modification and Fixing
 With Sub-Zero 2.0 automatic and manual subtitle modifications have been included.
 They currently consist of six individual mods:
 - **Offset**: Your subtitle is out of sync? Manually adjust the timing of your subtitles
@@ -66,6 +63,8 @@ Hearing Impaired, Common, OCR and Color can be applied automatically on every su
 
 Mods are applied on-the-fly, the original content of the subtitle stays available, so mods are completely reversible.
 
+In addition to that Sub-Zero also fixes problems introduced by the subtitle creators themselves - badly changed encodings for example.
+Ever had broken music icons in a subtitle? Nordic characters like `Å` which turned into `Ã¥`? Not anymore.
 
 ## Installation
 Simply go to the Plex Channels in your Plex Media Server, search for Sub-Zero and install it.
