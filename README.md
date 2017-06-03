@@ -72,31 +72,15 @@ For further help or manual installation, [please go to the wiki](https://github.
 
 ## Changelog
 
-2.0.23.1480 DEV
+2.0.24.1492 RC11 pre-release
 - scheduler: rewrite searchRecentlyAddedMissing
 - core: update guessit and rebulk
 - core: improve refining (matching)
 - core: improve subtitle storage info maintenance (remove inexistant parts and languages)
-
-
-2.0.23.1464 RC10.1
- - core: huge bugfix; please check `Library/Application Support/Plex Media\ Server/Plug-in Support/Data/com.plexapp.agents.subzero/DataItems`
-         for any `subs_XXXXX.json.gz` file bigger than 500kb and delete them
-
-2.0.23.1456 RC10
-- core: findBetterSubtitles: increase series cutoff by 2 (resolution match)
-- core: add VTT format
-- core: fix crashes regarding DBM/cache management
-- core: update rarfile.py
-- core: add missing encodings
-- core: full support for Serbian subtitles (Cyrillic and Latin)
-- podnapisi: fix pt-BR, srp-cyrl and srp-latn
-- core: implement own provider registry and ditch the subliminal one
-- core: use ftfy library to fix re-encoding errors inside subtitles introduced by the subtitle author
-- core: always store and save subtitles normalized to UTF-8
-- core: replace spaced dashes in movie/series names before re-refining with plex metadata info
-- submod: remove_HI: handle multiline brackets correctly
-
+- submod: HI: don't treat times (9:00 o'clock) as hearing impaired before colon
+- submod: common: be smarter about spaces in numbers (fixes 1 98 5 now)
+- submod: OCR: update english dictionary
+- submod: take code-shortcut when applying mods, decrease filesystem stress
 
 
 [older changes](CHANGELOG.md)
