@@ -270,7 +270,7 @@ class MissingSubtitles(Task):
         task_data["missing_subtitles"] = self.data
 
 
-class SearchAllRecentlyAddedMissing(DownloadSubtitleMixin, SubtitleListingMixin, Task):
+class SearchAllRecentlyAddedMissing(Task):
     periodic = True
 
     items_done = None
@@ -379,6 +379,10 @@ class SearchAllRecentlyAddedMissing(DownloadSubtitleMixin, SubtitleListingMixin,
                 download_successful = False
 
                 if downloaded_subtitles:
+                    downloaded_any = any(downloaded_subtitles.values())
+                    if not downloaded_any:
+                        continue
+
                     try:
                         save_subtitles(scanned_parts, downloaded_subtitles, mode="a", mods=config.default_mods)
                         Log.Debug("%s: Downloaded subtitle for item with missing subs: %s", self.name, video_id)
