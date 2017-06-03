@@ -81,6 +81,7 @@ For further help or manual installation, [please go to the wiki](https://github.
 - submod: common: be smarter about spaces in numbers (fixes 1 98 5 now)
 - submod: OCR: update english dictionary
 - submod: take code-shortcut when applying mods, decrease filesystem stress
+- core: correctly determine whether SZ is enabled for a library or not
 
 
 [older changes](CHANGELOG.md)

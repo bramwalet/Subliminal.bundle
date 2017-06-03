@@ -14,7 +14,7 @@ from whichdb import whichdb
 from babelfish import Language
 from subliminal.cli import MutexLock
 from subzero.lib.io import FileIO, get_viable_encoding
-from subzero.constants import PLUGIN_NAME, PLUGIN_IDENTIFIER, MOVIE, SHOW
+from subzero.constants import PLUGIN_NAME, PLUGIN_IDENTIFIER, MOVIE, SHOW, MEDIA_TYPE_TO_STRING
 from lib import Plex
 from helpers import check_write_permissions, cast_bool
 
@@ -347,7 +347,7 @@ class Config(object):
         self.enabled_sections = self.check_enabled_sections()
 
     def check_enabled_sections(self):
-        enabled_for_primary_agents = []
+        enabled_for_primary_agents = {"movie": [], "show": []}
         enabled_sections = {}
 
         # find which agents we're enabled for
@@ -360,11 +360,11 @@ class Config(object):
                     related_agents = Plex.primary_agent(agent.identifier, t.media_type)
                     for a in related_agents:
                         if a.identifier == PLUGIN_IDENTIFIER and a.enabled:
-                            enabled_for_primary_agents.append(agent.identifier)
+                            enabled_for_primary_agents[MEDIA_TYPE_TO_STRING[t.media_type]].append(agent.identifier)
 
         # find the libraries that use them
         for library in self.sections:
-            if library.agent in enabled_for_primary_agents:
+            if library.agent in enabled_for_primary_agents.get(library.type, []):
                 enabled_sections[library.key] = library
 
         Log.Debug(u"I'm enabled for: %s" % [lib.title for key, lib in enabled_sections.iteritems()])
