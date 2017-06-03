@@ -31,6 +31,17 @@ class Addic7edSubtitle(_Addic7edSubtitle):
         if not subliminal.score.episode_scores.get("addic7ed_boost"):
             return matches
 
+        if "format" not in matches:
+            use_formats = [video.format]
+            if video.format == "WEBRip":
+                use_formats.append("WEB-DL")
+
+            # format
+            for f in use_formats:
+                if f and self.version and f.lower() in self.version.lower():
+                    matches.add('format')
+                    break
+
         # if the release group matches, the format is most likely correct, as well
         if "release_group" in matches:
             matches.add("format")
