@@ -72,6 +72,12 @@ For further help or manual installation, [please go to the wiki](https://github.
 
 ## Changelog
 
+2.0.23.1480 DEV
+- scheduler: rewrite searchRecentlyAddedMissing
+- core: update guessit and rebulk
+- core: improve refining (matching)
+- core: improve subtitle storage info maintenance (remove inexistant parts and languages)
+
 
 2.0.23.1464 RC10.1
  - core: huge bugfix; please check `Library/Application Support/Plex Media\ Server/Plug-in Support/Data/com.plexapp.agents.subzero/DataItems`
