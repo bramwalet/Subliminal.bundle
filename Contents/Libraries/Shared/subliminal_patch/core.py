@@ -376,8 +376,8 @@ def scan_video(path, dont_use_actual_file=False, hints=None):
 
     # hint guessit the filename itself and its 2 parent directories if we're an episode (most likely
     # Series name/Season/filename), else only one
-    guess_from = os.path.join(*os.path.normpath(path).split(os.path.sep)[-3 if video_type == "episode" else -2:])
-    guess_from = REMOVE_CRAP_FROM_FILENAME.sub(r"\2", guess_from)
+    #guess_from = os.path.join(*os.path.normpath(path).split(os.path.sep)[-3 if video_type == "episode" else -2:])
+    guess_from = REMOVE_CRAP_FROM_FILENAME.sub(r"\2", filename)
 
     # guess
     hints["single_value"] = True
