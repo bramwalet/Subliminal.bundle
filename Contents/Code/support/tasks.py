@@ -222,7 +222,7 @@ class AvailableSubsForItem(SubtitleListingMixin, Task):
         track_usage("Subtitle", "manual", "list", 1)
         subs = self.list_subtitles(self.rating_key, self.item_type, self.part_id, self.language, skip_wrong_fps=False)
         if not subs:
-            self.data = None
+            self.data = "found_none"
             return
 
         # we can't have nasty unpicklable stuff like ZipFile, BytesIO etc in self.data

@@ -221,6 +221,18 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
             summary=u"%sFilename: %s" % (current_display, filename),
             thumb=default_thumb
         ))
+
+        if search_results == "found_none":
+            oc.add(DirectoryObject(
+                key=Callback(ListAvailableSubsForItemMenu, rating_key=rating_key, item_title=item_title,
+                             language=language, filename=filename, current_data=current_data, force=True,
+                             part_id=part_id, title=title, current_id=current_id, item_type=item_type,
+                             current_provider=current_provider, current_score=current_score,
+                             randomize=timestamp()),
+                title=u"No subtitles found",
+                summary=u"%sFilename: %s" % (current_display, filename),
+                thumb=default_thumb
+            ))
     else:
         oc.add(DirectoryObject(
             key=Callback(ListAvailableSubsForItemMenu, rating_key=rating_key, item_title=item_title,
@@ -233,7 +245,7 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
             thumb=default_thumb
         ))
 
-    if not search_results:
+    if not search_results or search_results == "found_none":
         return oc
 
     for subtitle in search_results:
