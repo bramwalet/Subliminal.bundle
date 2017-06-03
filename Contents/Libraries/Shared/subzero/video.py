@@ -14,7 +14,7 @@ def parse_video(fn, video_info, hints, external_subtitles=False, embedded_subtit
                 forced_only=False, no_refining=False, dry_run=False):
 
     logger.debug("Parsing video: %s, hints: %s", os.path.basename(fn), hints)
-    video = scan_video(fn, hints=hints, dont_use_actual_file=dry_run)
+    video = scan_video(fn, hints=hints, dont_use_actual_file=dry_run or no_refining)
 
     if no_refining:
         logger.debug("Taking parse_video shortcut")
