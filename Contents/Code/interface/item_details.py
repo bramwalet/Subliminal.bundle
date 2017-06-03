@@ -248,7 +248,11 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
     if not search_results or search_results == "found_none":
         return oc
 
+    seen = []
     for subtitle in search_results:
+        if subtitle.id in seen:
+            continue
+
         wrong_fps_addon = ""
         if subtitle.wrong_fps:
             wrong_fps_addon = " (wrong FPS, sub: %s, media: %s)" % (subtitle.fps, plex_part.fps)
@@ -261,6 +265,8 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
             summary=u"Release: %s, Matches: %s" % (subtitle.release_info, ", ".join(subtitle.matches)),
             thumb=default_thumb
         ))
+
+        seen.append(current_id)
 
     return oc
 
