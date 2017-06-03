@@ -11,10 +11,14 @@ logger = logging.getLogger(__name__)
 
 
 def parse_video(fn, video_info, hints, external_subtitles=False, embedded_subtitles=False, known_embedded=None,
-                forced_only=False, video_fps=None, dry_run=False):
+                forced_only=False, no_refining=False, dry_run=False):
 
     logger.debug("Parsing video: %s, hints: %s", os.path.basename(fn), hints)
     video = scan_video(fn, hints=hints, dont_use_actual_file=dry_run)
+
+    if no_refining:
+        logger.debug("Taking parse_video shortcut")
+        return video
 
     # refiners
 
@@ -89,9 +93,6 @@ def parse_video(fn, video_info, hints, external_subtitles=False, embedded_subtit
         video.subtitle_languages.update(
             set(search_external_subtitles(video.name, forced_tag=forced_only).values())
         )
-
-    # add video fps info
-    video.fps = video_fps
 
     # add known embedded subtitles
     if embedded_subtitles and known_embedded:

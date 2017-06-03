@@ -353,7 +353,8 @@ def set_mods_for_part(rating_key, part_id, language, item_type, mods, mode="add"
     except PartUnknownException:
         return
 
-    scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
+    scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True,
+                                no_refining=True)
     video, plex_part = scanned_parts.items()[0]
 
     subtitle = ModifiedSubtitle(language, mods=current_sub.mods)
