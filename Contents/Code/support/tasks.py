@@ -402,7 +402,8 @@ class SearchAllRecentlyAddedMissing(Task):
 
                                 for subtitle in video_subtitles:
                                     downloads_per_video += 1
-                                    history.add(item_title, video.id, section_title=metadata["section"], subtitle=subtitle,
+                                    history.add(item_title, video.id, section_title=metadata["section"],
+                                                subtitle=subtitle,
                                                 mode="a")
 
             download_count += downloads_per_video
@@ -413,7 +414,10 @@ class SearchAllRecentlyAddedMissing(Task):
             self.items_done = self.items_done + 1
             self.percentage = int(self.items_done * 100 / self.items_searching)
 
-            time.sleep(5)
+            if downloads_per_video:
+                time.sleep(5)
+            else:
+                time.sleep(1)
 
         if download_count:
             Log.Debug("Task: %s, done. Missing subtitles found for %s/%s items (%s subs downloaded)", self.name,
