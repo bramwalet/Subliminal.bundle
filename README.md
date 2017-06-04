@@ -72,7 +72,7 @@ For further help or manual installation, [please go to the wiki](https://github.
 
 ## Changelog
 
-2.0.24.1492 RC11 pre-release
+2.0.24.1498 RC11 pre-release
 - scheduler: rewrite searchRecentlyAddedMissing
 - core: update guessit and rebulk
 - core: improve refining (matching)
