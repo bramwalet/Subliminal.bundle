@@ -271,6 +271,9 @@ def get_plex_metadata(rating_key, part_id, item_type, plex_item=None):
     if not plex_item:
         plex_item = get_item(rating_key)
 
+    if not plex_item:
+        return
+
     # find current part
     current_part = None
     for media in plex_item.media:
