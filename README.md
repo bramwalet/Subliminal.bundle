@@ -72,7 +72,7 @@ For further help or manual installation, [please go to the wiki](https://github.
 
 ## Changelog
 
-2.0.24.1498 RC11 pre-release
+2.0.24.1503 RC11 pre-final
 - scheduler: rewrite searchRecentlyAddedMissing
 - core: update guessit and rebulk
 - core: improve refining (matching)
@@ -82,6 +82,7 @@ For further help or manual installation, [please go to the wiki](https://github.
 - submod: OCR: update english dictionary
 - submod: take code-shortcut when applying mods, decrease filesystem stress
 - core: correctly determine whether SZ is enabled for a library or not
+- core: findBetterSubtitles: bugfix on inexistant items
 
 
 [older changes](CHANGELOG.md)
