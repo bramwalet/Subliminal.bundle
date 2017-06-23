@@ -48,7 +48,7 @@ timestamp_re = re.compile(r'(?P<day>\d+)/(?P<month>\d+)/(?P<year>\d+) - (?P<hour
 title_re = re.compile(r'^(?P<series>.*?)(?: \((?:(?P<year>\d{4})|(?P<country>[A-Z]{2}))\))?$')
 
 #: Cache key for releases
-releases_key = __name__ + ':releases|{archive_id}'
+releases_key = __name__ + ':releases|{archive_id}|{archive_name}'
 
 
 class LegendasTVArchive(object):
@@ -201,16 +201,23 @@ class LegendasTVProvider(Provider):
         self.session.close()
 
     @region.cache_on_arguments(expiration_time=SHOW_EXPIRATION_TIME)
-    def search_titles(self, title):
+    def search_titles(self, title, season):
         """Search for titles matching the `title`.
 
+        For episodes, each season has it own title, so we must cache with season number
+
         :param str title: the title to search for.
+        :param int season: season of the title (used only for dogpile cache)
         :return: found titles.
         :rtype: dict
 
         """
         # make the query
-        logger.info('Searching title %r', title)
+        if season:
+            logger.info('Searching episode title %r for season %r', title, season)
+        else:
+            logger.info('Searching movie title %r', title)
+
         r = self.session.get(self.server_url + 'legenda/sugestao/{}'.format(title), timeout=10)
         r.raise_for_status()
         results = json.loads(r.text)
@@ -274,21 +281,23 @@ class LegendasTVProvider(Provider):
         """
         logger.info('Getting archives for title %d and language %d', title_id, language_code)
         archives = []
-        page = 1
+        page = 0
         while True:
             # get the archive page
-            url = self.server_url + 'util/carrega_legendas_busca_filme/{title}/{language}/-/{page}'.format(
-                title=title_id, language=language_code, page=page)
+            url = self.server_url + 'legenda/busca/-/{language}/-/{page}/{title}'.format(
+                language=language_code, page=page, title=title_id)
             r = self.session.get(url)
             r.raise_for_status()
 
             # parse the results
             soup = ParserBeautifulSoup(r.content, ['lxml', 'html.parser'])
-            for archive_soup in soup.select('div.list_element > article > div'):
+            for archive_soup in soup.select('div.list_element > article > div > div.f_left'):
                 # create archive
-                archive = LegendasTVArchive(archive_soup.p.a['href'].split('/')[2], archive_soup.p.a.text,
-                                            'pack' in archive_soup['class'], 'destaque' in archive_soup['class'],
-                                            self.server_url + archive_soup.p.a['href'][1:])
+                archive = LegendasTVArchive(archive_soup.a['href'].split('/')[2],
+                                            archive_soup.a.text,
+                                            'pack' in archive_soup.parent['class'],
+                                            'destaque' in archive_soup.parent['class'],
+                                            self.server_url + archive_soup.a['href'][1:])
 
                 # extract text containing downloads, rating and timestamp
                 data_text = archive_soup.find('p', class_='data').text
@@ -308,6 +317,8 @@ class LegendasTVProvider(Provider):
                     raise ProviderError('Archive timestamp is in the future')
 
                 # add archive
+                logger.info('Found archive for title %d and language %d at page %s: %s',
+                            title_id, language_code, page, archive)
                 archives.append(archive)
 
             # stop on last page
@@ -345,12 +356,12 @@ class LegendasTVProvider(Provider):
 
     def query(self, language, title, season=None, episode=None, year=None):
         # search for titles
-        titles = self.search_titles(sanitize(title))
+        titles = self.search_titles(sanitize(title), season)
 
         # search for titles with the quote or dot character
         ignore_characters = {'\'', '.'}
         if any(c in title for c in ignore_characters):
-            titles.update(self.search_titles(sanitize(title, ignore_characters=ignore_characters)))
+            titles.update(self.search_titles(sanitize(title, ignore_characters=ignore_characters), season))
 
         subtitles = []
         # iterate over titles
@@ -398,7 +409,8 @@ class LegendasTVProvider(Provider):
                 expiration_time = (datetime.utcnow().replace(tzinfo=pytz.utc) - a.timestamp).total_seconds()
 
                 # attempt to get the releases from the cache
-                releases = region.get(releases_key.format(archive_id=a.id), expiration_time=expiration_time)
+                cache_item = releases_key.format(archive_id=a.id, archive_name=a.name)
+                releases = region.get(cache_item, expiration_time=expiration_time)
 
                 # the releases are not in cache or cache is expired
                 if releases == NO_VALUE:
@@ -425,7 +437,7 @@ class LegendasTVProvider(Provider):
                         releases.append(name)
 
                     # cache the releases
-                    region.set(releases_key.format(archive_id=a.id), releases)
+                    region.set(cache_item, releases)
 
                 # iterate over releases
                 for r in releases:
