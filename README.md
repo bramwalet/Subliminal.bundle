@@ -70,7 +70,7 @@ For further help or manual installation, [please go to the wiki](https://github.
 
 ## Changelog
 
-2.0.24.1508
+2.0.24.1549
 Changes from 1.4
 - core: update subliminal to version 2
 - core: update all dependencies
