@@ -3,18 +3,23 @@
 import os
 import re
 import inspect
+import sys
 
 import datetime
 
 import subliminal
 import subliminal_patch
+
+from whichdb import whichdb
 from babelfish import Language
+from subliminal.cli import MutexLock
 from subzero.lib.io import FileIO, get_viable_encoding
-from subzero.constants import PLUGIN_NAME, PLUGIN_IDENTIFIER, MOVIE, SHOW
+from subzero.constants import PLUGIN_NAME, PLUGIN_IDENTIFIER, MOVIE, SHOW, MEDIA_TYPE_TO_STRING
 from lib import Plex
 from helpers import check_write_permissions, cast_bool
 
-SUBTITLE_EXTS = ['utf', 'utf8', 'utf-8', 'srt', 'smi', 'rt', 'ssa', 'aqt', 'jss', 'ass', 'idx', 'sub', 'txt', 'psb']
+SUBTITLE_EXTS = ['utf', 'utf8', 'utf-8', 'srt', 'smi', 'rt', 'ssa', 'aqt', 'jss', 'ass', 'idx', 'sub', 'txt', 'psb',
+                 'vtt']
 VIDEO_EXTS = ['3g2', '3gp', 'asf', 'asx', 'avc', 'avi', 'avs', 'bivx', 'bup', 'divx', 'dv', 'dvr-ms', 'evo', 'fli',
               'flv',
               'm2t', 'm2ts', 'm2v', 'm4v', 'mkv', 'mov', 'mp4', 'mpeg', 'mpg', 'mts', 'nsv', 'nuv', 'ogm', 'ogv', 'tp',
@@ -25,6 +30,9 @@ VIDEO_EXTS = ['3g2', '3gp', 'asf', 'asx', 'avc', 'avi', 'avs', 'bivx', 'bup', 'd
 IGNORE_FN = ("subzero.ignore", ".subzero.ignore", ".nosz")
 
 VERSION_RE = re.compile(ur'CFBundleVersion.+?<string>([0-9\.]+)</string>', re.DOTALL)
+DEV_RE = re.compile(ur'PlexPluginDevMode.+?<string>([01]+)</string>', re.DOTALL)
+
+impawrt = getattr(sys.modules['__main__'], "__builtins__").get("__import__")
 
 
 def int_or_default(s, default):
@@ -35,11 +43,18 @@ def int_or_default(s, default):
 
 
 class Config(object):
+    plugin_info = ""
     version = None
     full_version = None
+    plugin_log_path = None
     server_log_path = None
     app_support_path = None
+    data_path = None
+    data_items_path = None
     universal_plex_token = None
+    plex_token = None
+    is_development = False
+    dbm_supported = False
 
     enable_channel = True
     enable_agent = True
@@ -50,6 +65,7 @@ class Config(object):
     pin_valid_minutes = 10
     lang_list = None
     subtitle_destination_folder = None
+    subtitle_formats = None
     providers = None
     provider_settings = None
     max_recent_items_per_library = 200
@@ -61,24 +77,40 @@ class Config(object):
     notify_executable = None
     sections = None
     enabled_sections = None
-    enforce_encoding = False
+    remove_hi = False
+    fix_ocr = False
+    fix_common = False
+    colors = ""
     chmod = None
     forced_only = False
     exotic_ext = False
     treat_und_as_first = False
     ext_match_strictness = False
-    use_activities = False
+    default_mods = None
+    debug_mods = False
+    react_to_activities = False
     activity_mode = None
+    subtitles_save_to = None
+    no_refresh = False
+
+    store_recently_played_amount = 20
 
     initialized = False
 
     def initialize(self):
         self.fs_encoding = get_viable_encoding()
+        self.plugin_info = self.get_plugin_info()
+        self.is_development = self.get_dev_mode()
         self.version = self.get_version()
         self.full_version = u"%s %s" % (PLUGIN_NAME, self.version)
-        self.server_log_path = self.get_server_log_path()
+        self.set_log_paths()
         self.app_support_path = Core.app_support_path
+        self.data_path = getattr(Data, "_core").storage.data_path
+        self.data_items_path = os.path.join(self.data_path, "DataItems")
         self.universal_plex_token = self.get_universal_plex_token()
+        self.plex_token = os.environ.get("PLEXTOKEN", self.universal_plex_token)
+
+        os.environ["SZ_USER_AGENT"] = self.get_user_agent()
 
         self.set_plugin_mode()
         self.set_plugin_lock()
@@ -86,6 +118,8 @@ class Config(object):
 
         self.lang_list = self.get_lang_list()
         self.subtitle_destination_folder = self.get_subtitle_destination_folder()
+        self.subtitle_formats = self.get_subtitle_formats()
+        self.forced_only = cast_bool(Prefs["subtitles.only_foreign"])
         self.providers = self.get_providers()
         self.provider_settings = self.get_provider_settings()
         self.max_recent_items_per_library = int_or_default(Prefs["scheduler.max_recent_items_per_library"], 2000)
@@ -96,25 +130,72 @@ class Config(object):
         self.enabled_sections = self.check_enabled_sections()
         self.permissions_ok = self.check_permissions()
         self.notify_executable = self.check_notify_executable()
-        self.enforce_encoding = cast_bool(Prefs['subtitles.enforce_encoding'])
+        self.remove_hi = cast_bool(Prefs['subtitles.remove_hi'])
+        self.fix_ocr = cast_bool(Prefs['subtitles.fix_ocr'])
+        self.fix_common = cast_bool(Prefs['subtitles.fix_common'])
+        self.colors = Prefs['subtitles.colors'] if Prefs['subtitles.colors'] != "don't change" else None
         self.chmod = self.check_chmod()
-        self.forced_only = cast_bool(Prefs["subtitles.only_foreign"])
         self.exotic_ext = cast_bool(Prefs["subtitles.scan.exotic_ext"])
         self.treat_und_as_first = cast_bool(Prefs["subtitles.language.treat_und_as_first"])
         self.ext_match_strictness = self.determine_ext_sub_strictness()
+        self.default_mods = self.get_default_mods()
+        self.debug_mods = cast_bool(Prefs['log_debug_mods'])
+        self.subtitles_save_to = Prefs['subtitles.save.filesystem']
+        self.no_refresh = os.environ.get("SZ_NO_REFRESH", False)
         self.initialized = True
 
-    def get_server_log_path(self):
+    def init_cache(self):
+        names = ['dbhash', 'gdbm', 'dbm']
+        dbfn = None
+        self.dbm_supported = False
+
+        # try importing dbm modules
+        if impawrt:
+            for name in names:
+                try:
+                    impawrt(name)
+                except:
+                    continue
+                if not self.dbm_supported:
+                    self.dbm_supported = name
+                    break
+
+            if self.dbm_supported:
+                # anydbm checks; try guessing the format and importing the correct module
+                dbfn = os.path.join(config.data_items_path, 'subzero.dbm')
+                db_which = whichdb(dbfn)
+                if db_which is not None and db_which != "":
+                    try:
+                        impawrt(db_which)
+                    except ImportError:
+                        self.dbm_supported = False
+
+        if Core.runtime.os != "Windows" and self.dbm_supported:
+            try:
+                subliminal.region.configure('dogpile.cache.dbm', expiration_time=datetime.timedelta(days=30),
+                                            arguments={'filename': dbfn,
+                                                       'lock_factory': MutexLock})
+                Log.Info("Using file based cache!")
+                return
+            except:
+                self.dbm_supported = False
+
+        Log.Warn("Not using file based cache!")
+        subliminal.region.configure('dogpile.cache.memory')
+
+    def set_log_paths(self):
         # find log handler
         for handler in Core.log.handlers:
             if getattr(getattr(handler, "__class__"), "__name__") in (
                     'FileHandler', 'RotatingFileHandler', 'TimedRotatingFileHandler'):
                 plugin_log_file = handler.baseFilename
+                if os.path.isfile(os.path.realpath(plugin_log_file)):
+                    self.plugin_log_path = plugin_log_file
 
                 if plugin_log_file:
                     server_log_file = os.path.realpath(os.path.join(plugin_log_file, "../../Plex Media Server.log"))
                     if os.path.isfile(server_log_file):
-                        return server_log_file
+                        self.server_log_path = server_log_file
 
     def get_universal_plex_token(self):
         # thanks to: https://forums.plex.tv/discussion/247136/read-current-x-plex-token-in-an-agent-ensure-that-a-http-request-gets-executed-exactly-once#latest
@@ -126,7 +207,9 @@ class Config(object):
             except:
                 Log.Warn("Couldn't determine Plex Token")
         else:
-            Log("Did NOT find Preferences file - please check logfile and hierarchy. Aborting!")
+            Log("Did NOT find Preferences file - most likely Windows OS. Otherwise please check logfile and hierarchy.")
+
+        # fixme: windows
 
     def set_plugin_mode(self):
         if Prefs["plugin_mode"] == "only agent":
@@ -201,12 +284,27 @@ class Config(object):
         return all_permissions_ok
 
     def get_version(self):
-        curDir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-        info_file_path = os.path.abspath(os.path.join(curDir, "..", "..", "Info.plist"))
-        data = FileIO.read(info_file_path)
-        result = VERSION_RE.search(data)
+        return self.get_bare_version() + ("" if not self.is_development else " DEV")
+
+    def get_bare_version(self):
+        result = VERSION_RE.search(self.plugin_info)
+
         if result:
             return result.group(1)
+        return "2.x.x.x"
+
+    def get_user_agent(self):
+        return "Sub-Zero/%s" % (self.get_bare_version() + ("" if not self.is_development else "-dev"))
+
+    def get_dev_mode(self):
+        dev = DEV_RE.search(self.plugin_info)
+        if dev and dev.group(1) == "1":
+            return True
+
+    def get_plugin_info(self):
+        curDir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+        info_file_path = os.path.abspath(os.path.join(curDir, "..", "..", "Info.plist"))
+        return FileIO.read(info_file_path)
 
     def parse_ignore_paths(self):
         paths = Prefs["subtitles.ignore_paths"]
@@ -249,7 +347,7 @@ class Config(object):
         self.enabled_sections = self.check_enabled_sections()
 
     def check_enabled_sections(self):
-        enabled_for_primary_agents = []
+        enabled_for_primary_agents = {"movie": [], "show": []}
         enabled_sections = {}
 
         # find which agents we're enabled for
@@ -262,11 +360,11 @@ class Config(object):
                     related_agents = Plex.primary_agent(agent.identifier, t.media_type)
                     for a in related_agents:
                         if a.identifier == PLUGIN_IDENTIFIER and a.enabled:
-                            enabled_for_primary_agents.append(agent.identifier)
+                            enabled_for_primary_agents[MEDIA_TYPE_TO_STRING[t.media_type]].append(agent.identifier)
 
         # find the libraries that use them
         for library in self.sections:
-            if library.agent in enabled_for_primary_agents:
+            if library.agent in enabled_for_primary_agents.get(library.type, []):
                 enabled_sections[library.key] = library
 
         Log.Debug(u"I'm enabled for: %s" % [lib.title for key, lib in enabled_sections.iteritems()])
@@ -307,20 +405,37 @@ class Config(object):
         fld_custom = Prefs["subtitles.save.subFolder.Custom"].strip() if cast_bool(
             Prefs["subtitles.save.subFolder.Custom"]) else None
         return fld_custom or (
-        Prefs["subtitles.save.subFolder"] if Prefs["subtitles.save.subFolder"] != "current folder" else None)
+            Prefs["subtitles.save.subFolder"] if Prefs["subtitles.save.subFolder"] != "current folder" else None)
+
+    def get_subtitle_formats(self):
+        formats = Prefs["subtitles.save.formats"]
+        out = []
+        if "SRT" in formats:
+            out.append("srt")
+        if "VTT" in formats:
+            out.append("vtt")
+        return out
 
     def get_providers(self):
         providers = {'opensubtitles': cast_bool(Prefs['provider.opensubtitles.enabled']),
                      # 'thesubdb': Prefs['provider.thesubdb.enabled'],
                      'podnapisi': cast_bool(Prefs['provider.podnapisi.enabled']),
                      'addic7ed': cast_bool(Prefs['provider.addic7ed.enabled']),
-                     'tvsubtitles': cast_bool(Prefs['provider.tvsubtitles.enabled'])
+                     'tvsubtitles': cast_bool(Prefs['provider.tvsubtitles.enabled']),
+                     'legendastv': cast_bool(Prefs['provider.legendastv.enabled']),
+                     'napiprojekt': cast_bool(Prefs['provider.napiprojekt.enabled']),
+                     'shooter': cast_bool(Prefs['provider.shooter.enabled']),
+                     'subscenter': cast_bool(Prefs['provider.subscenter.enabled']),
                      }
 
         # ditch non-forced-subtitles-reporting providers
-        if cast_bool(Prefs['subtitles.only_foreign']):
+        if self.forced_only:
             providers["addic7ed"] = False
             providers["tvsubtitles"] = False
+            providers["legendastv"] = False
+            providers["napiprojekt"] = False
+            providers["shooter"] = False
+            providers["subscenter"] = False
 
         return filter(lambda prov: providers[prov], providers)
 
@@ -337,9 +452,21 @@ class Config(object):
                              'podnapisi': {
                                  'only_foreign': cast_bool(Prefs['subtitles.only_foreign'])
                              },
+                             'legendastv': {'username': Prefs['provider.legendastv.username'],
+                                            'password': Prefs['provider.legendastv.password'],
+                                            },
+                             'subscenter': {'username': Prefs['provider.subscenter.username'],
+                                            'password': Prefs['provider.subscenter.password'],
+                                            },
                              }
 
         return provider_settings
+
+    @property
+    def provider_pool(self):
+        if cast_bool(Prefs['providers.multithreading']):
+            return subliminal_patch.core.SZAsyncProviderPool
+        return subliminal_patch.core.SZProviderPool
 
     def check_chmod(self):
         val = Prefs["subtitles.save.chmod"]
@@ -366,13 +493,26 @@ class Config(object):
             return "loose"
         return "strict"
 
+    def get_default_mods(self):
+        mods = []
+        if self.remove_hi:
+            mods.append("remove_HI")
+        if self.fix_ocr:
+            mods.append("OCR_fixes")
+        if self.fix_common:
+            mods.append("common")
+        if self.colors:
+            mods.append("color(name=%s)" % self.colors)
+
+        return mods
+
     def set_activity_modes(self):
         val = Prefs["activity.on_playback"]
         if val == "never":
-            self.use_activities = False
+            self.react_to_activities = False
             return
 
-        self.use_activities = True
+        self.react_to_activities = True
         if val == "current media item":
             self.activity_mode = "refresh"
         elif val == "hybrid: current item or next episode":
@@ -384,10 +524,11 @@ class Config(object):
         # configure custom subtitle destination folders for scanning pre-existing subs
         Log.Debug("Patching subliminal ...")
         dest_folder = self.subtitle_destination_folder
-        subliminal_patch.patch_video.CUSTOM_PATHS = [dest_folder] if dest_folder else []
-        subliminal_patch.patch_video.INCLUDE_EXOTIC_SUBS = self.exotic_ext
-        subliminal_patch.patch_provider_pool.DOWNLOAD_TRIES = int(Prefs['subtitles.try_downloads'])
-        subliminal.video.Episode.scores["addic7ed_boost"] = int(Prefs['provider.addic7ed.boost_by'])
+        subliminal_patch.core.CUSTOM_PATHS = [dest_folder] if dest_folder else []
+        subliminal_patch.core.INCLUDE_EXOTIC_SUBS = self.exotic_ext
+
+        subliminal_patch.core.DOWNLOAD_TRIES = int(Prefs['subtitles.try_downloads'])
+        subliminal.score.episode_scores["addic7ed_boost"] = int(Prefs['provider.addic7ed.boost_by1'])
 
 
 config = Config()

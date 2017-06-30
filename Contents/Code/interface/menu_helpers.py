@@ -7,9 +7,11 @@ from support.helpers import get_video_display_title
 from support.ignore import ignore_list
 from support.lib import get_intent
 from support.config import config
-from subzero.constants import ICON
+from subzero.constants import ICON_SUB, ICON
+from support.scheduler import scheduler
 
-default_thumb = R(ICON)
+default_thumb = R(ICON_SUB)
+main_icon = ICON if not config.is_development else "icon-dev.jpg"
 
 
 def should_display_ignore(items, previous=None):
@@ -41,8 +43,8 @@ def add_ignore_options(oc, kind, callback_menu=None, title=None, rating_key=None
 
     oc.add(DirectoryObject(
         key=Callback(callback_menu, kind=use_kind, rating_key=rating_key, title=title),
-        title=u"%s %s \"%s\" %s the ignore list" % (
-            "Remove" if in_list else "Add", ignore_list.verbose(kind) if add_kind else "", unicode(title), "from" if in_list else "to")
+        title=u"%s %s \"%s\"" % (
+            "Un-Ignore" if in_list else "Ignore", ignore_list.verbose(kind) if add_kind else "", unicode(title))
     )
     )
 
@@ -104,6 +106,12 @@ def set_refresh_menu_state(state_or_media, media_type="movies"):
     Dict["current_refresh_state"] = u"%sRefreshing %s" % ("Force-" if force_refresh else "", unicode(title))
 
 
+def get_item_task_data(task_name, rating_key, language):
+    task_data = scheduler.get_task_data(task_name)
+    search_results = task_data.get(rating_key, {}) if task_data else {}
+    return search_results.get(language)
+
+
 def enable_channel_wrapper(func):
     """
     returns the original wrapper :func: (route or handler) if applicable, else the plain to-be-wrapped function
@@ -140,7 +148,7 @@ def debounce(func):
 
     def wrap(*args, **kwargs):
         if "randomize" in kwargs:
-            if not "menu_history" in Dict:
+            if "menu_history" not in Dict:
                 Dict["menu_history"] = {}
 
             key = get_lookup_key([func] + list(args), kwargs)
@@ -148,8 +156,13 @@ def debounce(func):
                 Log.Debug("not triggering %s twice with %s, %s" % (func, args, kwargs))
                 return ObjectContainer()
             else:
-                Dict["menu_history"][key] = datetime.datetime.now() + datetime.timedelta(days=1)
-                Dict.Save()
+                Dict["menu_history"][key] = datetime.datetime.now() + datetime.timedelta(hours=6)
+                try:
+                    Dict.Save()
+                except TypeError:
+                    Log.Error("Can't save menu history for: %r", key)
+                    del Dict["menu_history"][key]
+
         return func(*args, **kwargs)
 
     return wrap
@@ -192,3 +205,19 @@ class SubFolderObjectContainer(ObjectContainer):
                 (Dict["last_refresh_state"] or "None") if "last_refresh_state" in Dict else "None"
             )
         ))
+
+
+ObjectClass = getattr(getattr(Redirect, "_object_class"), "__bases__")[0]
+
+
+class ZipObject(ObjectClass):
+    def __init__(self, data):
+        ObjectClass.__init__(self, "")
+        self.zipdata = data
+        self.SetHeader("Content-Type", "application/zip")
+
+    def Content(self):
+        self.SetHeader("Content-Disposition",
+                       'attachment; filename="' + datetime.datetime.now().strftime("Logs_%y%m%d_%H-%M-%S.zip")
+                       + '"')
+        return self.zipdata

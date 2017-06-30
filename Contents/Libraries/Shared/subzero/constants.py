@@ -12,6 +12,7 @@ PREFIX = "/video/%s" % PLUGIN_IDENTIFIER_SHORT
 TITLE = "%s Subtitles" % PLUGIN_NAME
 ART      = 'art-default.jpg'
 ICON     = 'icon-default.jpg'
+ICON_SUB = 'icon-sub.jpg'
 
 DEFAULT_TIMEOUT = 10
 
@@ -32,6 +33,11 @@ PICTURE = 12
 PHOTO = 13
 CLIP = 14
 PLAYLIST_ITEM = 15
+
+MEDIA_TYPE_TO_STRING = {
+    MOVIE: "movie",
+    SHOW: "show"
+}
 
 
 mode_map = {

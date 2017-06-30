@@ -1,3 +1,15 @@
+#  Licensed under the Apache License, Version 2.0 (the "License"); you may
+#  not use this file except in compliance with the License. You may obtain
+#  a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#  License for the specific language governing permissions and limitations
+#  under the License.
+
 """ExtensionManager
 """
 
@@ -5,6 +17,7 @@ import pkg_resources
 
 import logging
 
+from .exception import NoMatches
 
 LOG = logging.getLogger(__name__)
 
@@ -169,13 +182,27 @@ class ExtensionManager(object):
                 if self._on_load_failure_callback is not None:
                     self._on_load_failure_callback(self, ep, err)
                 else:
-                    LOG.error('Could not load %r: %s', ep.name, err)
-                    LOG.exception(err)
+                    # Log the reason we couldn't import the module,
+                    # usually without a traceback. The most common
+                    # reason is an ImportError due to a missing
+                    # dependency, and the error message should be
+                    # enough to debug that.  If debug logging is
+                    # enabled for our logger, provide the full
+                    # traceback.
+                    LOG.error('Could not load %r: %s', ep.name, err,
+                              exc_info=LOG.isEnabledFor(logging.DEBUG))
         return extensions
 
     def _load_one_plugin(self, ep, invoke_on_load, invoke_args, invoke_kwds,
                          verify_requirements):
-        plugin = ep.load(require=verify_requirements)
+        # NOTE(dhellmann): Using require=False is deprecated in
+        # setuptools 11.3.
+        if hasattr(ep, 'resolve') and hasattr(ep, 'require'):
+            if verify_requirements:
+                ep.require()
+            plugin = ep.resolve()
+        else:
+            plugin = ep.load(require=verify_requirements)
         if invoke_on_load:
             obj = plugin(*invoke_args, **invoke_kwds)
         else:
@@ -211,7 +238,7 @@ class ExtensionManager(object):
         """
         if not self.extensions:
             # FIXME: Use a more specific exception class here.
-            raise RuntimeError('No %s extensions found' % self.namespace)
+            raise NoMatches('No %s extensions found' % self.namespace)
         response = []
         for e in self.extensions:
             self._invoke_one_plugin(response.append, func, e, args, kwds)
@@ -274,3 +301,8 @@ class ExtensionManager(object):
                 d[e.name] = e
             self._extensions_by_name = d
         return self._extensions_by_name[name]
+
+    def __contains__(self, name):
+        """Return true if name is in list of enabled extensions.
+        """
+        return any(extension.name == name for extension in self.extensions)

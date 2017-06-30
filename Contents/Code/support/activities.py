@@ -11,9 +11,9 @@ class PlexActivityManager(object):
     def start(self):
         activity_sources_enabled = None
 
-        if config.universal_plex_token:
+        if config.plex_token:
             from plex import Plex
-            Plex.configuration.defaults.authentication(config.universal_plex_token)
+            Plex.configuration.defaults.authentication(config.plex_token)
             activity_sources_enabled = ["websocket"]
             Activity.on('websocket.playing', self.on_playing)
 
@@ -27,9 +27,6 @@ class PlexActivityManager(object):
 
     @throttle(5, instance_method=True)
     def on_playing(self, info):
-        if not config.use_activities:
-            return
-
         # ignore non-playing states and anything too far in
         if info["state"] != "playing" or info["viewOffset"] > 60000:
             return
@@ -41,12 +38,21 @@ class PlexActivityManager(object):
             return
 
         rating_key = info["ratingKey"]
-        if rating_key not in Dict["last_played_items"]:
-            # new playing; store last 10 recently played items
+        if rating_key in Dict["last_played_items"] and rating_key != Dict["last_played_items"][0]:
+            # shift last played
+            Dict["last_played_items"].insert(0,
+                                             Dict["last_played_items"].pop(Dict["last_played_items"].index(rating_key)))
+            Dict.Save()
+
+        elif rating_key not in Dict["last_played_items"]:
+            # new playing; store last X recently played items
             Dict["last_played_items"].insert(0, rating_key)
-            Dict["last_played_items"] = Dict["last_played_items"][:10]
+            Dict["last_played_items"] = Dict["last_played_items"][:config.store_recently_played_amount]
 
             Dict.Save()
+
+            if not config.react_to_activities:
+                return
 
             debug_msg = "Started playing %s. Refreshing it." % rating_key
 
@@ -107,5 +113,6 @@ class PlexActivityManager(object):
                             for ep in next_season.children():
                                 if ep.index == 1:
                                     return ep
+
 
 activity = PlexActivityManager()

@@ -9,14 +9,25 @@ import time
 import re
 import platform
 import subprocess
-
-from bs4 import UnicodeDammit
+import sys
+from collections import OrderedDict
 
 import chardet
 
+from bs4 import UnicodeDammit
 from babelfish import Language
-
 from subzero.analytics import track_event
+
+mswindows = (sys.platform == "win32")
+if mswindows:
+    from subprocess import list2cmdline
+    quote_args = list2cmdline
+else:
+    # POSIX
+    from pipes import quote
+
+    def quote_args(seq):
+        return ' '.join(quote(arg) for arg in seq)
 
 # Unicode control characters can appear in ID3v2 tags but are not legal in XML.
 RE_UNICODE_CONTROL = u'([\u0000-\u0008\u000b-\u000c\u000e-\u001f\ufffe-\uffff])' + \
@@ -30,7 +41,7 @@ RE_UNICODE_CONTROL = u'([\u0000-\u0008\u000b-\u000c\u000e-\u001f\ufffe-\uffff])'
 
 
 def cast_bool(value):
-    return str(value) in ("true", "True")
+    return str(value).strip() in ("true", "True")
 
 
 # A platform independent way to split paths which might come in with different separators.
@@ -110,9 +121,9 @@ def str_pad(s, length, align='left', pad_char=' ', trim=False):
         raise ValueError("Unknown align type, expected either 'left' or 'right'")
 
 
-def pad_title(value):
+def pad_title(value, width=49):
     """Pad a title to 30 characters to force the 'details' view."""
-    return str_pad(value, 30, pad_char=' ')
+    return str_pad(value, width, pad_char=' ')
 
 
 def get_plex_item_display_title(item, kind, parent=None, parent_title=None, section_title=None,
@@ -231,9 +242,20 @@ def check_write_permissions(path):
     return False
 
 
-def get_item_hints(title, kind, series=None):
-    hints = {"expected_title": [title]}
-    hints.update({"type": "episode", "expected_series": [series]} if kind == "series" else {"type": "movie"})
+def get_item_hints(data):
+    """
+    :param data: video item dict of media_to_videos 
+    :return: 
+    """
+    hints = {"title": data["original_title"] or data["title"], "type": "movie"}
+    if data["type"] == "episode":
+        hints.update(
+            {
+                "type": "episode",
+                "episode_title": data["title"],
+                "title": data["original_title"] or data["series"],
+            }
+        )
     return hints
 
 
@@ -245,7 +267,7 @@ def notify_executable(exe_info, videos, subtitles, storage):
     exe, arguments = exe_info
     for video, video_subtitles in subtitles.items():
         for subtitle in video_subtitles:
-            lang = Locale.Language.Match(subtitle.language.alpha2)
+            lang = str(subtitle.language)
             data = video.plexapi_metadata.copy()
             data.update({
                 "subtitle_language": lang,
@@ -262,9 +284,21 @@ def notify_executable(exe_info, videos, subtitles, storage):
             prepared_arguments = [arg % prepared_data for arg in arguments]
 
             Log.Debug(u"Calling %s with arguments: %s" % (exe, prepared_arguments))
+            env = os.environ
+            if not mswindows:
+                env_path = {"PATH": os.pathsep.join(
+                                        [
+                                            "/usr/local/bin",
+                                            "/usr/bin",
+                                            os.environ.get("PATH", "")
+                                        ]
+                                    )
+                            }
+                env = dict(os.environ, **env_path)
+
             try:
-                output = subprocess.check_output(subprocess.list2cmdline([exe] + prepared_arguments),
-                                                 stderr=subprocess.STDOUT, shell=True)
+                output = subprocess.check_output(quote_args([exe] + prepared_arguments),
+                                                 stderr=subprocess.STDOUT, shell=True, env=env)
             except subprocess.CalledProcessError:
                 Log.Error(u"Calling %s failed: %s" % (exe, traceback.format_exc()))
             else:
@@ -274,6 +308,26 @@ def notify_executable(exe_info, videos, subtitles, storage):
 def track_usage(category=None, action=None, label=None, value=None):
     if not cast_bool(Prefs["track_usage"]):
         return
+
+    if "last_tracked" not in Dict:
+        Dict["last_tracked"] = OrderedDict()
+        Dict.Save()
+
+    event_key = (category, action, label, value)
+    now = datetime.datetime.now()
+    if event_key in Dict["last_tracked"] and (Dict["last_tracked"][event_key] + datetime.timedelta(minutes=30)) < now:
+        return
+
+    Dict["last_tracked"][event_key] = now
+
+    # maintenance
+    for key, value in Dict["last_tracked"].copy().iteritems():
+        # kill day old values
+        if value < now - datetime.timedelta(days=1):
+            try:
+                del Dict["last_tracked"][key]
+            except:
+                pass
 
     Thread.Create(dispatch_track_usage, category, action, label, value,
                   identifier=Dict["anon_id"], first_use=Dict["first_use"],
@@ -292,3 +346,7 @@ def dispatch_track_usage(*args, **kwargs):
 
 def get_language(lang_short):
     return Language.fromietf(lang_short)
+
+
+class PartUnknownException(Exception):
+    pass

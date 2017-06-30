@@ -2,24 +2,22 @@
 
 import datetime
 import time
-
 import operator
 import traceback
 
-import subliminal
-import subliminal_patch
-
-from subliminal_patch.patch_api import list_all_subtitles, download_subtitles
+from subliminal_patch.score import compute_score
+from subliminal_patch.core import download_subtitles
+from subliminal import list_subtitles as list_all_subtitles
 from babelfish import Language
-from subliminal_patch.patch_subtitle import compute_score
+
 from missing_subtitles import items_get_all_missing_subs, refresh_item
-from background import scheduler
-from storage import save_subtitles, whack_missing_parts, get_subtitle_storage
+from scheduler import scheduler
+from storage import save_subtitles, get_subtitle_storage
 from support.config import config
-from support.items import get_recent_items, is_ignored, get_item
-from support.lib import Plex
-from support.helpers import track_usage, get_title_for_video_metadata, cast_bool
-from support.plex_media import scan_videos, get_plex_metadata, PartUnknownException
+from support.items import get_recent_items, get_item, is_ignored
+from support.helpers import track_usage, get_title_for_video_metadata, cast_bool, PartUnknownException
+from support.plex_media import scan_videos, get_plex_metadata
+from download import download_best_subtitles
 
 
 class Task(object):
@@ -82,124 +80,53 @@ class Task(object):
         return
 
     def run(self):
+        Log.Info(u"Task: running: %s", self.name)
         self.time_start = datetime.datetime.now()
 
     def post_run(self, data_holder):
         self.running = False
         self.last_run = datetime.datetime.now()
-        if self.time_start:
+        if self.time_start and self.last_run:
             self.last_run_time = self.last_run - self.time_start
         self.time_start = None
-
-
-class SearchAllRecentlyAddedMissing(Task):
-    periodic = True
-    items_done = None
-    items_searching = None
-    items_searching_ids = None
-    items_failed = None
-    percentage = 0
-
-    stall_time = 30
-
-    def __init__(self, scheduler):
-        super(SearchAllRecentlyAddedMissing, self).__init__(scheduler)
-        self.items_done = None
-        self.items_searching = None
-        self.items_searching_ids = None
-        self.items_failed = None
-        self.percentage = 0
-
-    def signal(self, signal_name, *args, **kwargs):
-        handler = getattr(self, "signal_%s" % signal_name)
-        return handler(*args, **kwargs) if handler else None
-
-    def signal_updated_metadata(self, *args, **kwargs):
-        item_id = int(args[0])
-
-        if item_id in self.items_searching_ids:
-            self.items_done.append(item_id)
-            return True
-
-    def prepare(self, *args, **kwargs):
-        self.items_done = []
-        recent_items = get_recent_items()
-        missing = items_get_all_missing_subs(recent_items)
-        ids = set([id for added_at, id, title, item, missing_languages in missing if not is_ignored(id, item=item)])
-        self.items_searching = missing
-        self.items_searching_ids = ids
-        self.items_failed = []
-        self.percentage = 0
-        self.ready_for_display = True
-
-    def run(self):
-        super(SearchAllRecentlyAddedMissing, self).run()
-        self.running = True
-        missing_count = len(self.items_searching)
-        items_done_count = 0
-
-        for added_at, item_id, title, item, missing_languages in self.items_searching:
-            Log.Debug(u"Task: %s, triggering refresh for %s (%s)", self.name, title, item_id)
-            refresh_item(item_id)
-            search_started = datetime.datetime.now()
-            tries = 1
-            while 1:
-                if item_id in self.items_done:
-                    items_done_count += 1
-                    Log.Debug(u"Task: %s, item %s done", self.name, item_id)
-                    self.percentage = int(items_done_count * 100 / missing_count)
-                    break
-
-                # item considered stalled after self.stall_time seconds passed after last refresh
-                if (datetime.datetime.now() - search_started).total_seconds() > self.stall_time:
-                    if tries > 3:
-                        self.items_failed.append(item_id)
-                        Log.Debug(u"Task: %s, item stalled for %s times: %s, skipping", self.name, tries, item_id)
-                        break
-
-                    Log.Debug(u"Task: %s, item stalled for %s seconds: %s, retrying", self.name, self.stall_time,
-                              item_id)
-                    tries += 1
-                    refresh_item(item_id)
-                    search_started = datetime.datetime.now()
-                    time.sleep(1)
-                time.sleep(0.1)
-            # we can't hammer the PMS, otherwise requests will be stalled
-            time.sleep(1)
-
-        Log.Debug("Task: %s, done. Failed items: %s", self.name, self.items_failed)
-        self.running = False
-
-    def post_run(self, task_data):
-        super(SearchAllRecentlyAddedMissing, self).post_run(task_data)
-        self.ready_for_display = False
-        self.percentage = 0
-        self.items_done = None
-        self.items_failed = None
-        self.items_searching = None
-        self.items_searching_ids = None
+        Log.Info(u"Task: ran: %s", self.name)
 
 
 class SubtitleListingMixin(object):
-    def list_subtitles(self, rating_key, item_type, part_id, language):
-        metadata = get_plex_metadata(rating_key, part_id, item_type)
+    def list_subtitles(self, rating_key, item_type, part_id, language, skip_wrong_fps=True, metadata=None,
+                       scanned_parts=None):
 
-        if item_type == "episode":
-            min_score = 66
-        else:
-            min_score = 23
+        if not metadata:
+            metadata = get_plex_metadata(rating_key, part_id, item_type)
 
-        scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
-        if not scanned_parts:
-            Log.Error("Couldn't list available subtitles for %s", rating_key)
+        if not metadata:
             return
+
+        if not scanned_parts:
+            scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
+            if not scanned_parts:
+                Log.Error("Couldn't list available subtitles for %s", rating_key)
+                return
 
         video, plex_part = scanned_parts.items()[0]
         config.init_subliminal_patches()
 
+        provider_settings = config.provider_settings.copy()
+        if not skip_wrong_fps:
+            provider_settings = config.provider_settings.copy()
+            provider_settings["opensubtitles"]["skip_wrong_fps"] = False
+
+        if item_type == "episode":
+            min_score = 240
+            if video.is_special:
+                min_score = 180
+        else:
+            min_score = 60
+
         available_subs = list_all_subtitles(scanned_parts, {Language.fromietf(language)},
                                             providers=config.providers,
-                                            provider_configs=config.provider_settings)
+                                            provider_configs=provider_settings,
+                                            pool_class=config.provider_pool)
 
         use_hearing_impaired = Prefs['subtitles.search.hearingImpaired'] in ("prefer", "force HI")
 
@@ -208,12 +135,13 @@ class SubtitleListingMixin(object):
         for s in available_subs[video]:
             Log.Debug("Starting score computation for %s", s)
             try:
-                matches = s.get_matches(video, hearing_impaired=use_hearing_impaired)
+                matches = s.get_matches(video)
             except AttributeError:
                 Log.Error("Match computation failed for %s: %s", s, traceback.format_exc())
                 continue
 
-            unsorted_subtitles.append((s, compute_score(matches, video), matches))
+            unsorted_subtitles.append(
+                (s, compute_score(matches, s, video, hearing_impaired=use_hearing_impaired), matches))
         scored_subtitles = sorted(unsorted_subtitles, key=operator.itemgetter(1), reverse=True)
 
         subtitles = []
@@ -241,13 +169,13 @@ class DownloadSubtitleMixin(object):
         video, plex_part = scanned_parts.items()[0]
 
         # downloaded_subtitles = {subliminal.Video: [subtitle, subtitle, ...]}
-        download_subtitles([subtitle], providers=config.providers, provider_configs=config.provider_settings)
+        download_subtitles([subtitle], providers=config.providers, provider_configs=config.provider_settings,
+                           pool_class=config.provider_pool)
         download_successful = False
 
         if subtitle.content:
             try:
-                whack_missing_parts(scanned_parts)
-                save_subtitles(scanned_parts, {video: [subtitle]}, mode=mode)
+                save_subtitles(scanned_parts, {video: [subtitle]}, mode=mode, mods=config.default_mods)
                 Log.Debug("Manually downloaded subtitle for: %s", rating_key)
                 download_successful = True
                 refresh_item(rating_key)
@@ -262,8 +190,11 @@ class DownloadSubtitleMixin(object):
                     from support.history import get_history
                     item_title = get_title_for_video_metadata(metadata, add_section_title=False)
                     history = get_history()
-                    history.add(item_title, video.id, section_title=video.plexapi_metadata["section"], subtitle=subtitle,
+                    history.add(item_title, video.id, section_title=video.plexapi_metadata["section"],
+                                subtitle=subtitle,
                                 mode=mode)
+        else:
+            set_refresh_menu_state("Subtitle download failed (%s)" % rating_key)
         return download_successful
 
 
@@ -289,7 +220,13 @@ class AvailableSubsForItem(SubtitleListingMixin, Task):
         super(AvailableSubsForItem, self).run()
         self.running = True
         track_usage("Subtitle", "manual", "list", 1)
-        self.data = self.list_subtitles(self.rating_key, self.item_type, self.part_id, self.language)
+        subs = self.list_subtitles(self.rating_key, self.item_type, self.part_id, self.language, skip_wrong_fps=False)
+        if not subs:
+            self.data = "found_none"
+            return
+
+        # we can't have nasty unpicklable stuff like ZipFile, BytesIO etc in self.data
+        self.data = [s.make_picklable() for s in subs]
 
     def post_run(self, task_data):
         super(AvailableSubsForItem, self).post_run(task_data)
@@ -333,14 +270,177 @@ class MissingSubtitles(Task):
         task_data["missing_subtitles"] = self.data
 
 
+class SearchAllRecentlyAddedMissing(Task):
+    periodic = True
+
+    items_done = None
+    items_searching = None
+    percentage = 0
+
+    def __init__(self, scheduler):
+        super(SearchAllRecentlyAddedMissing, self).__init__(scheduler)
+        self.items_done = None
+        self.items_searching = None
+        self.percentage = 0
+
+    def signal_updated_metadata(self, *args, **kwargs):
+        return True
+
+    def prepare(self):
+        self.items_done = 0
+        self.items_searching = 0
+        self.percentage = 0
+        self.ready_for_display = True
+
+    def run(self):
+        super(SearchAllRecentlyAddedMissing, self).run()
+
+        self.running = True
+        self.prepare()
+
+        from support.history import get_history
+        history = get_history()
+
+        now = datetime.datetime.now()
+        min_score_series = int(Prefs["subtitles.search.minimumTVScore2"].strip())
+        min_score_movies = int(Prefs["subtitles.search.minimumMovieScore2"].strip())
+
+        is_recent_str = Prefs["scheduler.item_is_recent_age"]
+        num, ident = is_recent_str.split()
+
+        max_search_days = 0
+        if ident == "days":
+            max_search_days = int(num)
+        elif ident == "weeks":
+            max_search_days = int(num) * 7
+
+        subtitle_storage = get_subtitle_storage()
+        recent_sub_fns = subtitle_storage.get_recent_files(age_days=max_search_days)
+        viable_items = {}
+
+        # determine viable items
+        for fn in recent_sub_fns:
+            # added_date <= max_search_days?
+            stored_subs = subtitle_storage.load(filename=fn)
+            if not stored_subs:
+                continue
+
+            if stored_subs.added_at + datetime.timedelta(days=max_search_days) <= now:
+                continue
+
+            viable_items[fn] = stored_subs
+
+        self.items_searching = len(viable_items)
+
+        download_count = 0
+        videos_with_downloads = 0
+
+        config.init_subliminal_patches()
+
+        Log.Info("%s: Searching for subtitles for %s items", self.name, self.items_searching)
+
+        # search for subtitles in viable items
+        for fn, stored_subs in viable_items.iteritems():
+            video_id = stored_subs.video_id
+
+            if stored_subs.item_type == "episode":
+                min_score = min_score_series
+            else:
+                min_score = min_score_movies
+
+            parts = []
+            plex_item = get_item(video_id)
+
+            if is_ignored(video_id, item=plex_item):
+                continue
+
+            for media in plex_item.media:
+                parts += media.parts
+
+            downloads_per_video = 0
+            for part in parts:
+                part_id = part.id
+
+                try:
+                    metadata = get_plex_metadata(video_id, part_id, stored_subs.item_type)
+                except PartUnknownException:
+                    Log.Info("%s: Part %s:%s unknown", self.name, video_id, part_id)
+                    continue
+
+                if not metadata:
+                    Log.Info("%s: Part %s:%s unknown", self.name, video_id, part_id)
+                    continue
+
+                Log.Debug("%s: Looking for missing subtitles: %s:%s", self.name, video_id, part_id)
+                scanned_parts = scan_videos([metadata], kind="series"
+                                            if stored_subs.item_type == "episode" else "movie")
+
+                downloaded_subtitles = download_best_subtitles(scanned_parts, min_score=min_score)
+                download_successful = False
+
+                if downloaded_subtitles:
+                    downloaded_any = any(downloaded_subtitles.values())
+                    if not downloaded_any:
+                        continue
+
+                    try:
+                        save_subtitles(scanned_parts, downloaded_subtitles, mode="a", mods=config.default_mods)
+                        Log.Debug("%s: Downloaded subtitle for item with missing subs: %s", self.name, video_id)
+                        download_successful = True
+                        refresh_item(video_id)
+                        track_usage("Subtitle", "manual", "download", 1)
+                    except:
+                        Log.Error("%s: Something went wrong when downloading specific subtitle: %s", self.name,
+                                  traceback.format_exc())
+                    finally:
+                        item_title = get_title_for_video_metadata(metadata, add_section_title=False)
+                        if download_successful:
+                            # store item in history
+                            for video, video_subtitles in downloaded_subtitles.items():
+                                if not video_subtitles:
+                                    continue
+
+                                for subtitle in video_subtitles:
+                                    downloads_per_video += 1
+                                    history.add(item_title, video.id, section_title=metadata["section"],
+                                                subtitle=subtitle,
+                                                mode="a")
+
+            download_count += downloads_per_video
+
+            if downloads_per_video:
+                videos_with_downloads += 1
+
+            self.items_done = self.items_done + 1
+            self.percentage = int(self.items_done * 100 / self.items_searching)
+
+            if downloads_per_video:
+                time.sleep(5)
+            else:
+                time.sleep(1)
+
+        if download_count:
+            Log.Debug("Task: %s, done. Missing subtitles found for %s/%s items (%s subs downloaded)", self.name,
+                      videos_with_downloads, self.items_searching, download_count)
+        else:
+            Log.Debug("Task: %s, done. No subtitles found for %s items", self.name, self.items_searching)
+
+    def post_run(self, task_data):
+        super(SearchAllRecentlyAddedMissing, self).post_run(task_data)
+        self.ready_for_display = False
+        self.percentage = 0
+        self.items_done = None
+        self.items_searching = None
+
+
 class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
     periodic = True
 
-    # TV: episode, format, series, year, season, video_codec, release_group, hearing_impaired
-    series_cutoff = 132
+    # TV: episode, format, series, year, season, video_codec, release_group, hearing_impaired, resolution
+    series_cutoff = 357
 
     # movies: format, title, release_group, year, video_codec, resolution, hearing_impaired
-    movies_cutoff = 61
+    movies_cutoff = 117
 
     def signal_updated_metadata(self, *args, **kwargs):
         return True
@@ -360,13 +460,26 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
                 return
 
         now = datetime.datetime.now()
+        min_score_series = int(Prefs["subtitles.search.minimumTVScore2"].strip())
+        min_score_movies = int(Prefs["subtitles.search.minimumMovieScore2"].strip())
+        overwrite_manually_modified = cast_bool(
+            Prefs["scheduler.tasks.FindBetterSubtitles.overwrite_manually_modified"])
+        overwrite_manually_selected = cast_bool(
+            Prefs["scheduler.tasks.FindBetterSubtitles.overwrite_manually_selected"])
 
         subtitle_storage = get_subtitle_storage()
         recent_subs = subtitle_storage.load_recent_files(age_days=max_search_days)
+        viable_item_count = 0
 
         for fn, stored_subs in recent_subs.iteritems():
             video_id = stored_subs.video_id
-            cutoff = self.series_cutoff if stored_subs.item_type == "episode" else self.movies_cutoff
+
+            if stored_subs.item_type == "episode":
+                cutoff = self.series_cutoff
+                min_score = min_score_series
+            else:
+                cutoff = self.movies_cutoff
+                min_score = min_score_movies
 
             # don't search for better subtitles until at least 30 minutes have passed
             if stored_subs.added_at + datetime.timedelta(minutes=30) > now:
@@ -377,6 +490,7 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
             if stored_subs.added_at + datetime.timedelta(days=max_search_days) <= now:
                 continue
 
+            viable_item_count += 1
             ditch_parts = []
 
             # look through all stored subtitle data
@@ -396,14 +510,20 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
 
                     # late cutoff met? skip
                     if current_score >= cutoff:
-                        Log.Debug(u"Skipping finding better subs, cutoff met (current: %s, cutoff: %s): %s",
-                                  current_score, cutoff, stored_subs.title)
+                        Log.Debug(u"Skipping finding better subs, cutoff met (current: %s, cutoff: %s): %s (%s)",
+                                  current_score, cutoff, stored_subs.title, video_id)
                         continue
 
                     # got manual subtitle but don't want to touch those?
-                    if current_mode == "m" and \
-                            not cast_bool(Prefs["scheduler.tasks.FindBetterSubtitles.overwrite_manually_selected"]):
-                        Log.Debug(u"Skipping finding better subs, had manual: %s", stored_subs.title)
+                    if current_mode == "m" and not overwrite_manually_selected:
+                        Log.Debug(u"Skipping finding better subs, had manual: %s (%s)", stored_subs.title, video_id)
+                        continue
+
+                    # subtitle modifications different from default
+                    if not overwrite_manually_modified and current.mods \
+                            and set(current.mods).difference(set(config.default_mods)):
+                        Log.Debug(u"Skipping finding better subs, it has manual modifications: %s (%s)",
+                                  stored_subs.title, video_id)
                         continue
 
                     try:
@@ -418,7 +538,7 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
                         better_downloaded = False
                         better_tried_download = 0
                         for sub in subs:
-                            if sub.score > current_score:
+                            if sub.score > current_score and sub.score > min_score:
                                 Log.Debug("Better subtitle found for %s, downloading", video_id)
                                 better_tried_download += 1
                                 ret = self.download_subtitle(sub, video_id, mode="b")
@@ -442,9 +562,64 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
                         pass
                 subtitle_storage.save(stored_subs)
 
+            time.sleep(1)
+
         if better_found:
-            Log.Debug("Task: %s, done. Better subtitles found for %s items", self.name, better_found)
-        self.running = False
+            Log.Debug("Task: %s, done. Better subtitles found for %s/%s items", self.name, better_found,
+                      viable_item_count)
+        else:
+            Log.Debug("Task: %s, done. No better subtitles found for %s items", self.name, viable_item_count)
+
+
+class SubtitleStorageMaintenance(Task):
+    periodic = True
+    frequency = "every 7 days"
+
+    def run(self):
+        super(SubtitleStorageMaintenance, self).run()
+        self.running = True
+        Log.Info("Running subtitle storage maintenance")
+        storage = get_subtitle_storage()
+        deleted_items = storage.delete_missing(wanted_languages=set(str(l) for l in config.lang_list))
+        if deleted_items:
+            Log.Info("Subtitle information for %d non-existant videos have been cleaned up" % len(deleted_items))
+            Log.Debug("Videos: %s" % deleted_items)
+        else:
+            Log.Info("Nothing to do")
+
+
+class MenuHistoryMaintenance(Task):
+    periodic = True
+    frequency = "every 7 days"
+
+    def run(self):
+        super(MenuHistoryMaintenance, self).run()
+        self.running = True
+        Log.Info("Running menu history maintenance")
+        now = datetime.datetime.now()
+        if "menu_history" in Dict:
+            for key, timeout in Dict["menu_history"].copy().items():
+                if now > timeout:
+                    try:
+                        del Dict["menu_history"][key]
+                    except:
+                        pass
+
+
+class MigrateSubtitleStorage(Task):
+    periodic = False
+    frequency = None
+
+    def run(self):
+        super(MigrateSubtitleStorage, self).run()
+        self.running = True
+        Log.Info("Running subtitle storage migration")
+        storage = get_subtitle_storage()
+        for fn in storage.get_all_files():
+            if fn.endswith(".json.gz"):
+                continue
+            Log.Debug("Migrating %s", fn)
+            storage.load(None, fn)
 
 
 scheduler.register(SearchAllRecentlyAddedMissing)
@@ -452,3 +627,6 @@ scheduler.register(AvailableSubsForItem)
 scheduler.register(DownloadSubtitleForItem)
 scheduler.register(MissingSubtitles)
 scheduler.register(FindBetterSubtitles)
+scheduler.register(SubtitleStorageMaintenance)
+scheduler.register(MigrateSubtitleStorage)
+scheduler.register(MenuHistoryMaintenance)

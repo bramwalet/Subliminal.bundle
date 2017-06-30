@@ -2,12 +2,15 @@
 
 import logging
 import re
+import traceback
 import types
 import os
 from ignore import ignore_list
-from helpers import is_recent, get_plex_item_display_title, query_plex
+from helpers import is_recent, get_plex_item_display_title, query_plex, PartUnknownException
 from lib import Plex, get_intent
 from config import config, IGNORE_FN
+from subliminal_patch.subtitle import ModifiedSubtitle
+from subzero.modification import registry as mod_registry, SubtitleModifications
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +25,7 @@ def get_item(key):
 
     try:
         return list(item_container)[0]
-    except IndexError:
+    except:
         pass
 
 
@@ -40,11 +43,11 @@ PLEX_API_TYPE_MAP = {
 
 def get_item_kind_from_rating_key(key):
     item = get_item(key)
-    return PLEX_API_TYPE_MAP[get_item_kind(item)]
+    return PLEX_API_TYPE_MAP.get(get_item_kind(item))
 
 
 def get_item_kind_from_item(item):
-    return PLEX_API_TYPE_MAP[get_item_kind(item)]
+    return PLEX_API_TYPE_MAP.get(get_item_kind(item))
 
 
 def get_item_thumb(item):
@@ -164,14 +167,17 @@ def get_recent_items():
         "X-Plex-Container-Size": "%s" % config.max_recent_items_per_library
     }
 
-    episode_re = re.compile(ur'ratingKey="(?P<key>\d+)"'
+    episode_re = re.compile(ur'(?su)ratingKey="(?P<key>\d+)"'
                             ur'.+?grandparentRatingKey="(?P<parent_key>\d+)"'
                             ur'.+?title="(?P<title>.*?)"'
                             ur'.+?grandparentTitle="(?P<parent_title>.*?)"'
                             ur'.+?index="(?P<episode>\d+?)"'
-                            ur'.+?parentIndex="(?P<season>\d+?)".+?addedAt="(?P<added>\d+)"')
-    movie_re = re.compile(ur'ratingKey="(?P<key>\d+)".+?title="(?P<title>.*?)".+?addedAt="(?P<added>\d+)"')
-    available_keys = ("key", "title", "parent_key", "parent_title", "season", "episode", "added")
+                            ur'.+?parentIndex="(?P<season>\d+?)".+?addedAt="(?P<added>\d+)"'
+                            ur'.+?<Part.+? file="(?P<filename>[^"]+?)"')
+    movie_re = re.compile(ur'(?su)ratingKey="(?P<key>\d+)".+?title="(?P<title>.*?)'
+                          ur'".+?addedAt="(?P<added>\d+)"'
+                          ur'.+?<Part.+? file="(?P<filename>[^"]+?)"')
+    available_keys = ("key", "title", "parent_key", "parent_title", "season", "episode", "added", "filename")
     recent = []
 
     for section in Plex["library"].sections():
@@ -182,8 +188,10 @@ def get_recent_items():
             continue
 
         use_args = args.copy()
+        plex_item_type = "Movie"
         if section.type == "show":
             use_args["type"] = "4"
+            plex_item_type = "Episode"
 
         url = "http://127.0.0.1:32400/library/sections/%s/all" % int(section.key)
         response = query_plex(url, use_args)
@@ -198,6 +206,10 @@ def get_recent_items():
             if data["key"] in ignore_list.videos:
                 Log.Debug(u"Skipping item: %s" % data["title"])
                 continue
+            if is_physically_ignored(data["filename"], plex_item_type):
+                Log.Debug(u"Skipping item: %s" % data["title"])
+                continue
+
             if is_recent(int(data["added"])):
                 recent.append((int(data["added"]), section.type, section.title, data["key"]))
 
@@ -243,24 +255,31 @@ def is_ignored(rating_key, item=None):
 
     # physical/path ignore
     if config.ignore_sz_files or config.ignore_paths:
+        for media in item.media:
+            for part in media.parts:
+                if is_physically_ignored(part.file, kind):
+                    return True
+
+    return False
+
+
+def is_physically_ignored(fn, kind):
+    if config.ignore_sz_files or config.ignore_paths:
         # normally check current item folder and the library
         check_ignore_paths = [".", "../"]
         if kind == "Episode":
             # series/episode, we've got a season folder here, also
             check_ignore_paths.append("../../")
 
-        for part in item.media.parts:
-            if config.ignore_paths and config.is_path_ignored(part.file):
-                Log.Debug("Item %s's path is manually ignored" % rating_key)
-                return True
+        if config.ignore_paths and config.is_path_ignored(fn):
+            Log.Debug("Item %s's path is manually ignored" % fn)
+            return True
 
-            if config.ignore_sz_files:
-                for sub_path in check_ignore_paths:
-                    if config.is_physically_ignored(os.path.abspath(os.path.join(os.path.dirname(part.file), sub_path))):
-                        Log.Debug("An ignore file exists in either the items or its parent folders")
-                        return True
-
-    return False
+        if config.ignore_sz_files:
+            for sub_path in check_ignore_paths:
+                if config.is_physically_ignored(os.path.normpath(os.path.join(os.path.dirname(fn), sub_path))):
+                    Log.Debug("An ignore file exists in either the items or its parent folders")
+                    return True
 
 
 def refresh_item(rating_key, force=False, timeout=8000, refresh_kind=None, parent_rating_key=None):
@@ -283,3 +302,81 @@ def refresh_item(rating_key, force=False, timeout=8000, refresh_kind=None, paren
     for key in refresh:
         Log.Info("%s item %s", "Refreshing" if not force else "Forced-refreshing", key)
         Plex["library/metadata"].refresh(key)
+
+
+def get_current_sub(rating_key, part_id, language):
+    from support.storage import get_subtitle_storage
+
+    item = get_item(rating_key)
+    subtitle_storage = get_subtitle_storage()
+    stored_subs = subtitle_storage.load_or_new(item)
+    current_sub = stored_subs.get_any(part_id, language)
+    return current_sub, stored_subs, subtitle_storage
+
+
+def set_mods_for_part(rating_key, part_id, language, item_type, mods, mode="add"):
+    from support.plex_media import get_plex_metadata, scan_videos
+    from support.storage import save_subtitles
+
+    current_sub, stored_subs, storage = get_current_sub(rating_key, part_id, language)
+    if mode == "add":
+        for mod in mods:
+            identifier, args = SubtitleModifications.parse_identifier(mod)
+            mod_class = SubtitleModifications.get_mod_class(identifier)
+
+            if identifier not in mod_registry.mods_available:
+                raise NotImplementedError("Mod unknown or not registered")
+
+            # clean exclusive mods
+            if mod_class.exclusive and current_sub.mods:
+                for current_mod in current_sub.mods[:]:
+                    if current_mod.startswith(identifier):
+                        current_sub.mods.remove(current_mod)
+                        Log.Info("Removing superseded mod %s" % current_mod)
+
+            current_sub.add_mod(mod)
+    elif mode == "clear":
+        current_sub.add_mod(None)
+    elif mode == "remove":
+        for mod in mods:
+            current_sub.mods.remove(mod)
+
+    elif mode == "remove_last":
+        if current_sub.mods:
+            current_sub.mods.pop()
+    else:
+        raise NotImplementedError("Wrong mode given")
+    storage.save(stored_subs)
+
+    try:
+        metadata = get_plex_metadata(rating_key, part_id, item_type)
+    except PartUnknownException:
+        return
+
+    scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True,
+                                no_refining=True)
+    video, plex_part = scanned_parts.items()[0]
+
+    subtitle = ModifiedSubtitle(language, mods=current_sub.mods)
+    subtitle.content = current_sub.content
+    if current_sub.encoding:
+        # thanks plex
+        setattr(subtitle, "_guessed_encoding", current_sub.encoding)
+
+        if current_sub.encoding != "utf-8":
+            subtitle.set_encoding("utf-8")
+            current_sub.content = subtitle.content
+            current_sub.encoding = "utf-8"
+            storage.save(stored_subs)
+
+    subtitle.plex_media_fps = plex_part.fps
+    subtitle.page_link = "modify subtitles with: %s" % (", ".join(current_sub.mods) if current_sub.mods else "none")
+    subtitle.language = language
+    subtitle.id = current_sub.id
+
+    try:
+        save_subtitles(scanned_parts, {video: [subtitle]}, mode="m", bare_save=True)
+        Log.Debug("Modified %s subtitle for: %s:%s with: %s", language.name, rating_key, part_id,
+                  ", ".join(current_sub.mods) if current_sub.mods else "none")
+    except:
+        Log.Error("Something went wrong when modifying subtitle: %s", traceback.format_exc())

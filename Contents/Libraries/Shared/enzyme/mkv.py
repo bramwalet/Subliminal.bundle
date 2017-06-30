@@ -369,7 +369,8 @@ class Chapter(object):
         if chapterdisplays:
             string = chapterdisplays[0].get('ChapString')
             language = chapterdisplays[0].get('ChapLanguage')
-        return cls(start, hidden, enabled, end, string, language)
+            return cls(start, hidden, enabled, end, string, language)
+        return cls(start, hidden, enabled, end)
 
     def __repr__(self):
         return '<%s [%s, enabled=%s]>' % (self.__class__.__name__, self.start, self.enabled)

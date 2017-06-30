@@ -14,6 +14,7 @@ class Section(Directory):
     language = Property
 
     composite = Property
+    type = Property
 
     created_at = Property('createdAt', int)
 

@@ -86,7 +86,7 @@ class VobSubSubtitleHelper(SubtitleHelper):
 
 
 IETF_MATCH = ".+\.([^-.]+)(?:-[A-Za-z]+)?$"
-ENDSWITH_LANGUAGECODE_RE = re.compile("\.([^-.]{2,3})(?:-[A-Za-z]{2})?$")
+ENDSWITH_LANGUAGECODE_RE = re.compile("\.([^-.]{2,3})(?:-[A-Za-z]{2,})?$")
 
 
 def match_ietf_language(s):
@@ -120,7 +120,7 @@ class DefaultSubtitleHelper(SubtitleHelper):
         forced = ''
         default = ''
         split_tag = file.rsplit('.', 1)
-        if len(split_tag) > 1 and split_tag[1].lower() in ['forced', 'normal', 'default']:
+        if len(split_tag) > 1 and split_tag[1].lower() in ['forced', 'normal', 'default', 'embedded', 'custom']:
             file = split_tag[0]
             # don't do anything with 'normal', we don't need it
             if 'forced' == split_tag[1].lower():
@@ -129,13 +129,12 @@ class DefaultSubtitleHelper(SubtitleHelper):
                 default = '1'
 
         # Attempt to extract the language from the filename (e.g. Avatar (2009).eng)
-        language = ""
-
-        # IETF support thanks to https://github.com/hpsbranco/LocalMedia.bundle/commit/4fad9aefedece78a1fa96401304351347f644369
+        # IETF support thanks to
+        # https://github.com/hpsbranco/LocalMedia.bundle/commit/4fad9aefedece78a1fa96401304351347f644369
         language = Locale.Language.Match(match_ietf_language(file))
 
         # skip non-SRT if wanted
-        if not helpers.cast_bool(Prefs["subtitles.scan.exotic_ext"]) and ext not in ["srt", "ass", "ssa"]:
+        if not helpers.cast_bool(Prefs["subtitles.scan.exotic_ext"]) and ext not in ["srt", "ass", "ssa", "vtt"]:
             return lang_sub_map
 
         codec = None
@@ -158,7 +157,7 @@ class DefaultSubtitleHelper(SubtitleHelper):
                 Log("An error occurred while attempting to parse the subtitle file, skipping... : " + self.filename)
                 return lang_sub_map
 
-        if codec is None and ext in ['ass', 'ssa', 'smi', 'srt', 'psb']:
+        if codec is None and ext in ['ass', 'ssa', 'smi', 'srt', 'psb', 'vtt']:
             codec = ext.replace('ass', 'ssa')
 
         if format is None:
@@ -194,7 +193,10 @@ def get_subtitles_from_metadata(part):
 def force_utf8(content):
     a = UnicodeDammit(content)
 
-    Log.Debug("detected encoding: %s (None: most likely already successfully decoded)" % a.original_encoding)
+    if a.original_encoding:
+        Log.Debug("detected encoding: %s (None: most likely already successfully decoded)" % a.original_encoding)
+    else:
+        Log.Debug("detected encoding: unicode (already decoded)")
 
     # easy way out - already utf-8
     if a.original_encoding and a.original_encoding == "utf-8":

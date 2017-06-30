@@ -36,6 +36,8 @@
   "ro":"Romanian",
   "ru":"Russian",
   "sr":"Serbian",
+  "sr-cyrl":"Serbian (Cyrillic)",
+  "sr-latn":"Serbian (Latin)",
   "sk":"Slovak",
   "sl":"Slovenian",
   "es":"Spanish",

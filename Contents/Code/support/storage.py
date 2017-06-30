@@ -5,61 +5,24 @@ import os
 import pprint
 import copy
 
-import subliminal
-from items import get_item
+from subliminal_patch.core import save_subtitles as subliminal_save_subtitles
 from subzero.subtitle_storage import StoredSubtitlesManager
 
 from subtitlehelpers import force_utf8
 from config import config
 from helpers import notify_executable, get_title_for_video_metadata, cast_bool, force_unicode
 from plex_media import PMSMediaProxy
+from support.items import get_item
 
 
-get_subtitle_storage = lambda: StoredSubtitlesManager(Data, get_item)
-
-
-def whack_missing_parts(scanned_video_part_map, existing_parts=None):
-    """
-    cleans out our internal storage's video parts (parts may get updated/deleted/whatever)
-    :param existing_parts: optional list of part ids known
-    :param scanned_video_part_map: videos to check for
-    :return:
-    """
-    # shortcut
-
-    if "subs" not in Dict:
-        return
-
-    if not existing_parts:
-        existing_parts = []
-        for part in scanned_video_part_map.viewvalues():
-            existing_parts.append(str(part.id))
-
-    whacked_parts = False
-    for video in scanned_video_part_map.keys():
-        video_id = str(video.id)
-        if video_id not in Dict["subs"]:
-            continue
-
-        parts = Dict["subs"][video_id].keys()
-
-        for part_id in parts:
-            part_id = str(part_id)
-            if part_id not in existing_parts:
-                Log.Info("Whacking part %s in internal storage of video %s (%s, %s)", part_id, video_id,
-                         repr(existing_parts), repr(parts))
-                del Dict["subs"][video_id][part_id]
-                whacked_parts = True
-
-    if whacked_parts:
-        Dict.Save()
+def get_subtitle_storage():
+    return StoredSubtitlesManager(Data, get_item)
 
 
 def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_type, mode="a"):
     """
     stores information about downloaded subtitles in plex's Dict()
     """
-    existing_parts = []
     for video, video_subtitles in downloaded_subtitles.items():
         part = scanned_video_part_map[video]
         part_id = str(part.id)
@@ -71,27 +34,21 @@ def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_ty
         subtitle_storage = get_subtitle_storage()
         stored_subs = subtitle_storage.load_or_new(plex_item)
 
-        existing_parts.append(part_id)
-
-        stored_any = False
         for subtitle in video_subtitles:
-            lang = Locale.Language.Match(subtitle.language.alpha2)
-            Log.Debug(u"Adding subtitle to storage: %s, %s, %s" % (video_id, part_id, title))
+            lang = str(subtitle.language)
+            subtitle.set_encoding("utf-8")
+            Log.Debug(u"Adding subtitle to storage: %s, %s, %s, %s" % (video_id, part_id, title,
+                                                                       subtitle.guess_encoding()))
             ret_val = stored_subs.add(part_id, lang, subtitle, storage_type, mode=mode)
 
             if ret_val:
                 Log.Debug("Subtitle stored")
-                stored_any = True
 
             else:
                 Log.Debug("Subtitle already existing in storage")
 
-        if stored_any:
-            Log.Debug("Saving subtitle storage for %s" % video_id)
-            subtitle_storage.save(stored_subs)
-
-    #if existing_parts:
-    #    whack_missing_parts(scanned_video_part_map, existing_parts=existing_parts)
+        Log.Debug("Saving subtitle storage for %s" % video_id)
+        subtitle_storage.save(stored_subs)
 
 
 def reset_storage(key):
@@ -107,6 +64,8 @@ def reset_storage(key):
 
 
 def log_storage(key):
+    if not key:
+        Log.Debug(pprint.pformat(getattr(Dict, "_dict")))
     if key in Dict:
         Log.Debug(pprint.pformat(Dict[key]))
 
@@ -134,9 +93,9 @@ def save_subtitles_to_file(subtitles):
             fld = force_unicode(fld)
             if not os.path.exists(fld):
                 os.makedirs(fld)
-        subliminal.api.save_subtitles(video, video_subtitles, directory=fld, single=cast_bool(Prefs['subtitles.only_one']),
-                                      encode_with=force_utf8 if config.enforce_encoding else None,
-                                      chmod=config.chmod, forced_tag=config.forced_only, path_decoder=force_unicode)
+        subliminal_save_subtitles(video, video_subtitles, directory=fld, single=cast_bool(Prefs['subtitles.only_one']),
+                                  chmod=config.chmod, forced_tag=config.forced_only, path_decoder=force_unicode,
+                                  debug_mods=config.debug_mods, formats=config.subtitle_formats)
     return True
 
 
@@ -144,7 +103,7 @@ def save_subtitles_to_metadata(videos, subtitles):
     for video, video_subtitles in subtitles.items():
         mediaPart = videos[video]
         for subtitle in video_subtitles:
-            content = force_utf8(subtitle.text) if config.enforce_encoding else subtitle.content
+            content = subtitle.get_modified_content(debug=config.debug_mods)
 
             if not isinstance(mediaPart, Framework.api.agentkit.MediaPart):
                 # we're being handed a Plex.py model instance here, not an internal PMS MediaPart object.
@@ -156,9 +115,29 @@ def save_subtitles_to_metadata(videos, subtitles):
     return True
 
 
-def save_subtitles(scanned_video_part_map, downloaded_subtitles, mode="a"):
+def save_subtitles(scanned_video_part_map, downloaded_subtitles, mode="a", bare_save=False, mods=None):
+    """
+     
+    :param scanned_video_part_map: 
+    :param downloaded_subtitles: 
+    :param mode: 
+    :param bare_save: don't trigger anything; don't store information
+    :param mods: enabled mods
+    :return: 
+    """
     meta_fallback = False
     save_successful = False
+
+    if mods:
+        for video, video_subtitles in downloaded_subtitles.items():
+            if not video_subtitles:
+                continue
+
+            for subtitle in video_subtitles:
+                Log.Info("Applying mods: %s to %s", mods, subtitle)
+                subtitle.mods = mods
+                subtitle.plex_media_fps = video.fps
+
     storage = "metadata"
     if Prefs['subtitles.save.filesystem']:
         storage = "filesystem"
@@ -180,7 +159,11 @@ def save_subtitles(scanned_video_part_map, downloaded_subtitles, mode="a"):
             Log.Debug("Using metadata as subtitle storage")
         save_successful = save_subtitles_to_metadata(scanned_video_part_map, downloaded_subtitles)
 
-    if save_successful and config.notify_executable:
+    if not bare_save and save_successful and config.notify_executable:
         notify_executable(config.notify_executable, scanned_video_part_map, downloaded_subtitles, storage)
 
-    store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage, mode=mode)
+    if not bare_save and save_successful:
+        store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage, mode=mode)
+
+    return save_successful
+

@@ -23,6 +23,17 @@ class Media(Descriptor):
     bitrate = Property(type=int)
     duration = Property(type=int)
 
+    #@classmethod
+    #def from_node(cls, client, node):
+    #    return cls.construct(client, cls.helpers.find(node, 'Media'), child=True)
+
     @classmethod
     def from_node(cls, client, node):
-        return cls.construct(client, cls.helpers.find(node, 'Media'), child=True)
+        items = []
+
+        for genre in cls.helpers.findall(node, 'Media'):
+            _, obj = Media.construct(client, genre, child=True)
+
+            items.append(obj)
+
+        return [], items

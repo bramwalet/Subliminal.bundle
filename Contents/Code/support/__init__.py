@@ -18,7 +18,7 @@ sys.modules["support.plex_media"] = plex_media
 
 import localmedia
 
-sys.modules["subzero.localmedia"] = localmedia
+sys.modules["support.localmedia"] = localmedia
 
 import subtitlehelpers
 
@@ -32,9 +32,9 @@ import missing_subtitles
 
 sys.modules["support.missing_subtitles"] = missing_subtitles
 
-import background
+import scheduler
 
-sys.modules["support.background"] = background
+sys.modules["support.scheduler"] = scheduler
 
 import tasks
 
@@ -58,3 +58,6 @@ sys.modules["support.data"] = data
 
 import activities
 sys.modules["support.activities"] = activities
+
+import download
+sys.modules["support.download"] = download

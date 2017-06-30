@@ -40,6 +40,8 @@
       "ro",
       "ru",
       "sr",
+      "sr-cyrl",
+      "sr-latn",
       "sk",
       "sl",
       "es",
@@ -94,6 +96,8 @@
       "ro",
       "ru",
       "sr",
+      "sr-cyrl",
+      "sr-latn",
       "sk",
       "sl",
       "es",
@@ -148,6 +152,8 @@
       "ro",
       "ru",
       "sr",
+      "sr-cyrl",
+      "sr-latn",
       "sk",
       "sl",
       "es",
@@ -237,7 +243,7 @@
     "secure": "true"
   },
   {
-    "id": "provider.addic7ed.boost_by",
+    "id": "provider.addic7ed.boost_by1",
     "label": "Addic7ed: boost score (if requirements met)",
     "type": "enum",
     "values": [
@@ -258,13 +264,14 @@
       "35",
       "30",
       "25",
+      "21",
       "20",
       "15",
       "10",
       "5",
       "0"
     ],
-    "default": "10"
+    "default": "21"
   },
   {
     "id": "provider.addic7ed.use_random_agents",
@@ -273,8 +280,66 @@
     "default": "false"
   },
   {
+    "id": "provider.legendastv.enabled",
+    "label": "Provider: Enable Legendas TV (mostly pt-BR)",
+    "type": "bool",
+    "default": "false"
+  },
+  {
+    "id": "provider.legendastv.username",
+    "label": "Legendas TV Username",
+    "type": "text",
+    "default": ""
+  },
+  {
+    "id": "provider.legendastv.password",
+    "label": "Legendas TV Password",
+    "type": "text",
+    "option": "hidden",
+    "default": "",
+    "secure": "true"
+  },
+  {
     "id": "provider.tvsubtitles.enabled",
     "label": "Provider: Enable TVsubtitles.net",
+    "type": "bool",
+    "default": "true"
+  },
+  {
+    "id": "provider.napiprojekt.enabled",
+    "label": "Provider: Enable NapiProjekt.pl (Polish)",
+    "type": "bool",
+    "default": "false"
+  },
+  {
+    "id": "provider.shooter.enabled",
+    "label": "Provider: Enable Shooter.cn (Chinese)",
+    "type": "bool",
+    "default": "false"
+  },
+  {
+    "id": "provider.subscenter.enabled",
+    "label": "Provider: Enable SubsCenter (Hebrew)",
+    "type": "bool",
+    "default": "false"
+  },
+  {
+    "id": "provider.subscenter.username",
+    "label": "SubsCenter Username",
+    "type": "text",
+    "default": ""
+  },
+  {
+    "id": "provider.subscenter.password",
+    "label": "SubsCenter Password",
+    "type": "text",
+    "option": "hidden",
+    "default": "",
+    "secure": "true"
+  },
+  {
+    "id": "providers.multithreading",
+    "label": "Search enabled providers simultaneously (multithreading)",
     "type": "bool",
     "default": "true"
   },
@@ -298,7 +363,7 @@
   },
   {
     "id": "subtitles.scan.exotic_ext",
-    "label": "Scan: include \"exotic\" external subtitle formats (anything else than .srt/.ssa/.ass)",
+    "label": "Scan: include \"exotic\" subtitle formats (anything else than .srt/.ssa/.ass/.vtt; embedded or external)",
     "type": "bool",
     "default": "false"
   },
@@ -314,16 +379,16 @@
     "default": "loose: filename contains media filename"
   },
   {
-    "id": "subtitles.search.minimumTVScore1",
-    "label": "Minimum score for TV (min: 77, sane: 110; min-ideal: 116; see http://v.ht/szscores)",
+    "id": "subtitles.search.minimumTVScore2",
+    "label": "Minimum score for TV (min: 240, def/sane: 337, min-ideal: 352; see http://v.ht/szscores)",
     "type": "text",
-    "default": "116"
+    "default": "337"
   },
   {
-    "id": "subtitles.search.minimumMovieScore1",
-    "label": "Minimum score for movies (min: 23, def/sane/min-ideal: 33; see http://v.ht/szscores)",
+    "id": "subtitles.search.minimumMovieScore2",
+    "label": "Minimum score for movies (min: 60, def/sane: 69, min-ideal: 82; see http://v.ht/szscores)",
     "type": "text",
-    "default": "33"
+    "default": "60"
   },
   {
     "id": "subtitles.search.hearingImpaired",
@@ -338,16 +403,64 @@
     "default": "don't prefer"
   },
   {
-    "id": "subtitles.enforce_encoding",
-    "label": "Normalize subtitle encoding to UTF-8",
+    "id": "subtitles.remove_hi",
+    "label": "Remove Hearing Impaired tags from downloaded subtitles",
+    "type": "bool",
+    "default": "false"
+  },
+  {
+    "id": "subtitles.fix_common",
+    "label": "Fix common whitespace/punctuation issues in subtitles",
     "type": "bool",
     "default": "true"
+  },
+  {
+    "id": "subtitles.fix_ocr",
+    "label": "Fix common OCR errors in downloaded subtitles",
+    "type": "bool",
+    "default": "true"
+  },
+  {
+    "id": "subtitles.colors",
+    "label": "Change colors of subtitles to",
+    "type": "enum",
+    "values": [
+      "don't change",
+      "white",
+      "light-grey",
+      "red",
+      "green",
+      "yellow",
+      "blue",
+      "magenta",
+      "cyan",
+      "black",
+      "dark-red",
+      "dark-green",
+      "dark-yellow",
+      "dark-blue",
+      "dark-magenta",
+      "dark-cyan",
+      "dark-grey"
+    ],
+    "default": "don't change"
   },
   {
     "id": "subtitles.save.filesystem",
     "label": "Store subtitles next to media files (instead of metadata)",
     "type": "bool",
     "default": "true"
+  },
+  {
+    "id": "subtitles.save.formats",
+    "label": "Subtitle formats to save (non-SRT only works if the previous option is enabled)",
+    "type": "enum",
+    "values": [
+      "SRT",
+      "VTT",
+      "SRT+VTT"
+    ],
+    "default": "SRT"
   },
   {
     "id": "subtitles.save.subFolder",
@@ -434,7 +547,7 @@
     "id": "scheduler.max_recent_items_per_library",
     "label": "Scheduler: Recent items to consider per library",
     "type": "text",
-    "default": "500"
+    "default": "1000"
   },
   {
     "id": "scheduler.tasks.FindBetterSubtitles.frequency",
@@ -458,7 +571,13 @@
     "id": "scheduler.tasks.FindBetterSubtitles.overwrite_manually_selected",
     "label": "Scheduler: Overwrite manually selected subtitles when better found",
     "type": "bool",
-    "default": "true"
+    "default": "false"
+  },
+  {
+    "id": "scheduler.tasks.FindBetterSubtitles.overwrite_manually_modified",
+    "label": "Scheduler: Overwrite subtitles with non-default subtitle modifications when better found",
+    "type": "bool",
+    "default": "false"
   },
   {
     "id": "history_size",
@@ -535,7 +654,7 @@
   },
   {
     "id": "notify_executable",
-    "label": "Call this executable upon successful subtitle download",
+    "label": "Call this executable upon successful subtitle download (see Wiki for details)",
     "type": "text",
     "default": ""
   },
@@ -557,6 +676,12 @@
       "DEBUG"
     ],
     "default": "WARNING"
+  },
+  {
+    "id": "log_debug_mods",
+    "label": "Log subtitle modification (debug)",
+    "type": "bool",
+    "default": "false"
   },
   {
     "id": "log_console",

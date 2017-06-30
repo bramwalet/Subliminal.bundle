@@ -1,7 +1,7 @@
 # coding=utf-8
-import datetime
 import sys
-import traceback
+import datetime
+import os
 
 from subzero.sandbox import restore_builtins
 
@@ -17,7 +17,6 @@ import logger
 
 sys.modules["logger"] = logger
 
-import subliminal
 import support
 
 import interface
@@ -26,8 +25,7 @@ sys.modules["interface"] = interface
 from subzero.constants import OS_PLEX_USERAGENT, PERSONAL_MEDIA_IDENTIFIER
 from interface.menu import *
 from support.plex_media import media_to_videos, get_media_item_ids, scan_videos
-from support.subtitlehelpers import get_subtitles_from_metadata
-from support.storage import whack_missing_parts, save_subtitles
+from support.storage import save_subtitles, store_subtitle_info
 from support.items import is_ignored
 from support.config import config
 from support.lib import get_intent
@@ -35,14 +33,14 @@ from support.helpers import track_usage, get_title_for_video_metadata, get_ident
 from support.history import get_history
 from support.data import dispatch_migrate
 from support.activities import activity
+from support.download import download_best_subtitles
 
 
 def Start():
     HTTP.CacheTime = 0
     HTTP.Headers['User-agent'] = OS_PLEX_USERAGENT
 
-    # configured cache to be in memory as per https://github.com/Diaoul/subliminal/issues/303
-    subliminal.region.configure('dogpile.cache.memory')
+    config.init_cache()
 
     # clear expired intents
     intent = get_intent()
@@ -51,9 +49,12 @@ def Start():
     # clear expired menu history items
     now = datetime.datetime.now()
     if "menu_history" in Dict:
-        for key, timeout in Dict["menu_history"].items():
+        for key, timeout in Dict["menu_history"].copy().items():
             if now > timeout:
-                del Dict["menu_history"][key]
+                try:
+                    del Dict["menu_history"][key]
+                except:
+                    pass
 
     # run migrations
     if "subs" in Dict or "history" in Dict:
@@ -87,44 +88,6 @@ def Start():
             Dict.Save()
             track_usage("General", "plugin", "first_start", config.version)
         track_usage("General", "plugin", "start", config.version)
-
-
-def download_best_subtitles(video_part_map, min_score=0):
-    hearing_impaired = Prefs['subtitles.search.hearingImpaired']
-    languages = config.lang_list
-    if not languages:
-        return
-
-    missing_languages = False
-    for video, part in video_part_map.iteritems():
-        if not Prefs['subtitles.save.filesystem']:
-            # scan for existing metadata subtitles
-            meta_subs = get_subtitles_from_metadata(part)
-            for language, subList in meta_subs.iteritems():
-                if subList:
-                    video.subtitle_languages.add(language)
-                    Log.Debug("Found metadata subtitle %s for %s", language, video)
-
-        missing_subs = (languages - video.subtitle_languages)
-
-        # all languages are found if we either really have subs for all languages or we only want to have exactly one language
-        # and we've only found one (the case for a selected language, Prefs['subtitles.only_one'] (one found sub matches any language))
-        found_one_which_is_enough = len(video.subtitle_languages) >= 1 and Prefs['subtitles.only_one']
-        if not missing_subs or found_one_which_is_enough:
-            if found_one_which_is_enough:
-                Log.Debug('Only one language was requested, and we\'ve got a subtitle for %s', video)
-            else:
-                Log.Debug('All languages %r exist for %s', languages, video)
-            continue
-        missing_languages = True
-        break
-
-    if missing_languages:
-        Log.Debug("Download best subtitles using settings: min_score: %s, hearing_impaired: %s" % (min_score, hearing_impaired))
-
-        return subliminal.api.download_best_subtitles(video_part_map.keys(), languages, min_score, hearing_impaired, providers=config.providers,
-                                                      provider_configs=config.provider_settings)
-    Log.Debug("All languages for all requested videos exist. Doing nothing.")
 
 
 def update_local_media(metadata, media, media_type="movies"):
@@ -167,10 +130,6 @@ class SubZeroAgent(object):
         results.Append(MetadataSearchResult(id='null', score=100))
 
     def update(self, metadata, media, lang):
-        if not config.enable_agent:
-            Log.Debug("Skipping Sub-Zero agent(s)")
-            return
-
         Log.Debug("Sub-Zero %s, %s update called" % (config.version, self.agent_type))
         intent = get_intent()
 
@@ -182,6 +141,9 @@ class SubZeroAgent(object):
         try:
             config.init_subliminal_patches()
             videos = media_to_videos(media, kind=self.agent_type)
+
+            # find local media
+            update_local_media(metadata, media, media_type=self.agent_type)
 
             # media ignored?
             use_any_parts = False
@@ -203,20 +165,24 @@ class SubZeroAgent(object):
 
             set_refresh_menu_state(media, media_type=self.agent_type)
 
-            # find local media
-            update_local_media(metadata, media, media_type=self.agent_type)
-
             # scanned_video_part_map = {subliminal.Video: plex_part, ...}
             scanned_video_part_map = scan_videos(videos, kind=self.agent_type)
 
-            # downloaded_subtitles = {subliminal.Video: [subtitle, subtitle, ...]}
-            downloaded_subtitles = download_best_subtitles(scanned_video_part_map, min_score=use_score)
-            item_ids = get_media_item_ids(media, kind=self.agent_type)
+            downloaded_subtitles = None
+            if not config.enable_agent:
+                Log.Debug("Skipping Sub-Zero agent(s)")
 
-            whack_missing_parts(scanned_video_part_map)
+            else:
+                # downloaded_subtitles = {subliminal.Video: [subtitle, subtitle, ...]}
+                downloaded_subtitles = download_best_subtitles(scanned_video_part_map, min_score=use_score)
+                item_ids = get_media_item_ids(media, kind=self.agent_type)
 
+            downloaded_any = False
             if downloaded_subtitles:
-                save_subtitles(scanned_video_part_map, downloaded_subtitles)
+                downloaded_any = any(downloaded_subtitles.values())
+
+            if downloaded_any:
+                save_subtitles(scanned_video_part_map, downloaded_subtitles, mods=config.default_mods)
                 track_usage("Subtitle", "refreshed", "download", 1)
 
                 for video, video_subtitles in downloaded_subtitles.items():
@@ -226,6 +192,10 @@ class SubZeroAgent(object):
                         history = get_history()
                         history.add(item_title, video.id, section_title=video.plexapi_metadata["section"],
                                     subtitle=subtitle)
+            else:
+                # store subtitle info even if we've downloaded none
+                store_subtitle_info(scanned_video_part_map, dict((k, []) for k in scanned_video_part_map.keys()),
+                                    None, mode="a")
 
             update_local_media(metadata, media, media_type=self.agent_type)
 
@@ -235,7 +205,7 @@ class SubZeroAgent(object):
 
             # notify any running tasks about our finished update
             for item_id in item_ids:
-                scheduler.signal("updated_metadata", item_id)
+                #scheduler.signal("updated_metadata", item_id)
 
                 # resolve existing intent for that id
                 intent.resolve("force", item_id)
@@ -245,12 +215,12 @@ class SubZeroAgent(object):
 
 class SubZeroSubtitlesAgentMovies(SubZeroAgent, Agent.Movies):
     contributes_to = ['com.plexapp.agents.imdb', 'com.plexapp.agents.xbmcnfo', 'com.plexapp.agents.themoviedb', 'com.plexapp.agents.hama']
-    score_prefs_key = "subtitles.search.minimumMovieScore1"
+    score_prefs_key = "subtitles.search.minimumMovieScore2"
     agent_type_verbose = "Movies"
 
 
 class SubZeroSubtitlesAgentTvShows(SubZeroAgent, Agent.TV_Shows):
     contributes_to = ['com.plexapp.agents.thetvdb', 'com.plexapp.agents.themoviedb',
                       'com.plexapp.agents.thetvdbdvdorder', 'com.plexapp.agents.xbmcnfotv', 'com.plexapp.agents.hama']
-    score_prefs_key = "subtitles.search.minimumTVScore1"
+    score_prefs_key = "subtitles.search.minimumTVScore2"
     agent_type_verbose = "TV"

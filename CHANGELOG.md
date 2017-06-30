@@ -1,3 +1,141 @@
+2.0.23.1464 RC10.1
+ - core: huge bugfix; please check `Library/Application Support/Plex Media\ Server/Plug-in Support/Data/com.plexapp.agents.subzero/DataItems`
+         for any `subs_XXXXX.json.gz` file bigger than 500kb and delete them
+
+
+2.0.23.1456 RC10
+- core: findBetterSubtitles: increase series cutoff by 2 (resolution match)
+- core: add VTT format
+- core: fix crashes regarding DBM/cache management
+- core: update rarfile.py
+- core: add missing encodings
+- core: full support for Serbian subtitles (Cyrillic and Latin)
+- podnapisi: fix pt-BR, srp-cyrl and srp-latn
+- core: implement own provider registry and ditch the subliminal one
+- core: use ftfy library to fix re-encoding errors inside subtitles introduced by the subtitle author
+- core: always store and save subtitles normalized to UTF-8
+- core: replace spaced dashes in movie/series names before re-refining with plex metadata info
+- submod: remove_HI: handle multiline brackets correctly
+
+
+2.0.20.1364 RC9
+- core: performance improvements
+- core: if info couldn't be guessed from the filename, fill missing info from PMS #270
+- submod: OCR: add more to the eng dictionary
+- submod: HI: fixed some issues with font style tags
+- core: don't ignore subtitles from providers that don't have hearing impaired info, when hearing impaired mode is set to "force non-HI"
+- legendastv/menu: fix manual subtitle selection issues in menu
+- core: improve specials matching on OpenSubtitles
+- core: update guessit
+
+
+2.0.19.1337 RC8
+- napiprojekt: fixed: couldn't convert microdvd to SRT in certain occasions
+- core: when normalize to UTF-8 is enabled, also store the subtitle in UTF-8 encoding in the internal storage
+- core: add more encodings for western/eastern/northern europe
+- submod: OCR: update dictionaries from SubtitleEdit
+- submod: common: be smarter about uppercase i's in words that should have lowercase L's
+- submod: fix unopened/unclosed font style tags after modification
+- core: re-enable OMDB support
+- core: update guessit for better matching
+- core: fix SearchAllRecentlyMissing (was broken since RC3)
+
+
+2.0.19.1299 RC7
+- submod: offset mods now get merged internally when applied multiple times (to avoid errors and increase performance)
+- submod: improve performance
+- submod: core mods (OCR, common, remove_HI) now are always applied in a fixed order internally, regardless of the order they were added in
+- submod: CM_spaces_in_numbers: don't break up ellipses (30... 29... 28...)
+- submod: CM_spaces_in_numbers: don't fix countdown numbers (30, 29, 28)
+- submod: remove_HI: make bracket removal more aggressive
+- submod: remove_HI: be less aggressive when removing text-before-colon
+- submod: remove_HI: remove all-uppercase-before-sentence (THIS IS ALL UPPERCASE And here starts a sentence -> And here starts a sentence)
+- submod: fix all character ranges to include non-ASCII characters
+- add new README for 2.0
+
+
+2.0.19.1267 RC6
+- core: add new SZ subtitle storage format
+  - smaller data files and less cumbersome
+  - it will auto migrate when old data is accessed - to speed this up, use "Trigger subtitle storage migration (expensive)" in advanced menu)
+- core: performance optimizations
+- addic7ed: when release group matches, assume the format matches, too (leftover change from RC5)
+- submod: fix patterns for beginlines/endlines
+- submod: add our own dictionaries to OCR fixes (english)
+- submod: hearing impaired: also remove full-caps with punctuation inside
+- submod: correctly handle partiallines
+- submod: in numbers with spaces (incorrect), also allow for some punctuation (,.:')
+
+
+2.0.18.1245 RC5
+- core: add more debug info
+- core: fix subtitle modifications (was broken in RC4, created non-usable subtitles)
+- submod: add ANSI colors
+- menu/submod: add color mod menu
+- submod: exclusive mods now are mutually exclusive and get cleaned on duplicate
+- menu/core: naming
+
+For everyone who runs RC4: your subtitles are broken. Go to the advanced menu and trigger `Re-Apply mods of all stored subtitles` to fix them.
+
+
+2.0.17.1234 RC4
+- core: backport provider-download-retry implementation
+- core: implement custom user agent (for OpenSubtitles)
+- core/menu: correct handling of media with multiple files
+- core: fix SearchAllRecentlyMissing; also wait 5 seconds between searches
+- core: SearchAllRecentlyMissing: honor physical ignores
+- submod: pattern fixes
+- submod: better unicode handling
+- submod: add color mod (only automatic by now)
+
+
+2.0.15.1216 RC3
+- core: fixes
+- scheduler: revert some of the aggressive changes in RC2
+- submod: be smarter about WholeLine matches
+
+
+2.0.15.1209 RC2
+- core: fixes
+- core: submod-common: fix multiple dots at start of line
+- core/menu: add subtitle modification debug setting
+- core/menu: when manually listing available subtitles in menu, display those with wrong FPS also (opensubtitles), because you can fix them later
+- core/menu: advanced-menu: add apply-all-default-mods menu item; add re-apply all mods menu item
+- core: always look for currently (not-) existing subtitles when called; hopefully fixes #276
+- scheduler/menu: be faster; also launch scheduled tasks in threads, not just manually launched ones
+- core: don't delete subtitles with .custom or .embedded in their filenames when running auto cleanup, if the correct media file exists
+- menu: add back-to-previous menu items
+
+
+2.0.12.1180 RC1
+- core: update subliminal to version 2
+- core: update all dependencies
+- core: add new providers: legendastv (pt-BR), napiprojekt (pl), shooter (cn), subscenter (heb)
+- core: rewritten all subliminal patches for version 2
+- menu: add icons for menu items; update main channel icon
+- core: use SSL again for opensubtitles
+- core: improved matching due to subliminal 2 (and SZ custom) tvdb/omdb refiners
+- menu: add "Get my logs" function to the advanced menu, which zips up all necessary logs suitable for posting in the forums
+- core: on non-windows systems, utilize a file-based cache database for provider media lists and subliminal refiner results
+- core: add manual and automatic subtitle modification framework (fix common OCR issues, remove hearing impaired etc.)
+- menu: add subtitle modifications (subtitle content fixes, offset-based shifting, framerate conversion)
+- menu: add recently played menu
+- improve almost everything Sub-Zero did in 1.4 :)
+
+
+1.4.27.973
+- core: ignore "obfuscated" and "scrambled" tags in filenames when searching for subtitles
+- core: exotic embedded subtitles are now also considered when searching (and when the option is enabled); fixes #264
+
+
+1.4.27.967
+- core: remember the last 10 played items; only consider on_playback for "playing" state within the first 60 seconds of an item
+
+
+1.4.27.965
+- core: on_playback activity bugfixes
+
+
 1.4.27.957
 - core: correctly fall back to the next best subtitle if the current one couldn't be downloaded; hopefully fixes #231
 - core: add "Scan: which external subtitles should be picked up?"-setting

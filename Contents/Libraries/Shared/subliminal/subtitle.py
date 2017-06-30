@@ -1,16 +1,20 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+import codecs
 import logging
 import os
 
 import chardet
-from guessit.matchtree import MatchTree
-from guessit.plugins.transformers import get_transformer
 import pysrt
 
+from .score import get_equivalent_release_groups
 from .video import Episode, Movie
+from .utils import sanitize, sanitize_release_group
+
 
 logger = logging.getLogger(__name__)
+
+#: Subtitle extensions
+SUBTITLE_EXTENSIONS = ('.srt', '.sub', '.smi', '.txt', '.ssa', '.ass', '.mpl')
 
 
 class Subtitle(object):
@@ -21,12 +25,14 @@ class Subtitle(object):
     :param bool hearing_impaired: whether or not the subtitle is hearing impaired.
     :param page_link: URL of the web page from which the subtitle can be downloaded.
     :type page_link: str
+    :param encoding: Text encoding of the subtitle.
+    :type encoding: str
 
     """
     #: Name of the provider that returns that class of subtitle
     provider_name = ''
 
-    def __init__(self, language, hearing_impaired=False, page_link=None):
+    def __init__(self, language, hearing_impaired=False, page_link=None, encoding=None):
         #: Language of the subtitle
         self.language = language
 
@@ -42,14 +48,21 @@ class Subtitle(object):
         #: Encoding to decode with when accessing :attr:`text`
         self.encoding = None
 
+        # validate the encoding
+        if encoding:
+            try:
+                self.encoding = codecs.lookup(encoding).name
+            except (TypeError, LookupError):
+                logger.debug('Unsupported encoding %s', encoding)
+
     @property
     def id(self):
-        """Unique identifier of the subtitle."""
+        """Unique identifier of the subtitle"""
         raise NotImplementedError
 
     @property
     def text(self):
-        """Content as string.
+        """Content as string
 
         If :attr:`encoding` is None, the encoding is guessed with :meth:`guess_encoding`
 
@@ -57,7 +70,10 @@ class Subtitle(object):
         if not self.content:
             return
 
-        return self.content.decode(self.encoding or self.guess_encoding(), errors='replace')
+        if self.encoding:
+            return self.content.decode(self.encoding, errors='replace')
+
+        return self.content.decode(self.guess_encoding(), errors='replace')
 
     def is_valid(self):
         """Check if a :attr:`text` is a valid SubRip format.
@@ -129,76 +145,22 @@ class Subtitle(object):
 
         return encoding
 
-    def get_matches(self, video, hearing_impaired=False):
+    def get_matches(self, video):
         """Get the matches against the `video`.
 
         :param video: the video to get the matches with.
         :type video: :class:`~subliminal.video.Video`
-        :param bool hearing_impaired: hearing impaired preference.
         :return: matches of the subtitle.
         :rtype: set
 
         """
-        matches = set()
-
-        # hearing_impaired
-        if self.hearing_impaired == hearing_impaired:
-            matches.add('hearing_impaired')
-
-        return matches
+        raise NotImplementedError
 
     def __hash__(self):
         return hash(self.provider_name + '-' + self.id)
 
     def __repr__(self):
         return '<%s %r [%s]>' % (self.__class__.__name__, self.id, self.language)
-
-
-def compute_score(matches, video, scores=None):
-    """Compute the score of the `matches` against the `video`.
-
-    Some matches count as much as a combination of others in order to level the final score:
-
-      * `hash` removes everything else
-      * For :class:`~subliminal.video.Episode`
-
-        * `imdb_id` removes `series`, `tvdb_id`, `season`, `episode`, `title` and `year`
-        * `tvdb_id` removes `series` and `year`
-        * `title` removes `season` and `episode`
-
-
-    :param video: the video to get the score with.
-    :type video: :class:`~subliminal.video.Video`
-    :param dict scores: scores to use, if `None`, the :attr:`~subliminal.video.Video.scores` from the video are used.
-    :return: score of the subtitle.
-    :rtype: int
-
-    """
-    final_matches = matches.copy()
-    scores = scores or video.scores
-
-    logger.info('Computing score for matches %r and %r', matches, video)
-
-    # remove equivalent match combinations
-    if 'hash' in final_matches:
-        final_matches &= {'hash', 'hearing_impaired'}
-    elif isinstance(video, Episode):
-        if 'imdb_id' in final_matches:
-            final_matches -= {'series', 'tvdb_id', 'season', 'episode', 'title', 'year'}
-        if 'tvdb_id' in final_matches:
-            final_matches -= {'series', 'year'}
-        if 'title' in final_matches:
-            final_matches -= {'season', 'episode'}
-
-    # compute score
-    logger.debug('Final matches: %r', final_matches)
-    score = sum((scores[match] for match in final_matches))
-    logger.info('Computed score %d', score)
-
-    # ensure score is capped by the best possible score (hash + preferences)
-    assert score <= scores['hash'] + scores['hearing_impaired']
-
-    return score
 
 
 def get_subtitle_path(video_path, language=None, extension='.srt'):
@@ -237,58 +199,49 @@ def guess_matches(video, guess, partial=False):
     matches = set()
     if isinstance(video, Episode):
         # series
-        if video.series and 'series' in guess and guess['series'].lower() == video.series.lower():
+        if video.series and 'title' in guess and sanitize(guess['title']) == sanitize(video.series):
             matches.add('series')
+        # title
+        if video.title and 'episode_title' in guess and sanitize(guess['episode_title']) == sanitize(video.title):
+            matches.add('title')
         # season
         if video.season and 'season' in guess and guess['season'] == video.season:
             matches.add('season')
         # episode
-        if video.episode and 'episodeNumber' in guess and guess['episodeNumber'] == video.episode:
+        if video.episode and 'episode' in guess and guess['episode'] == video.episode:
             matches.add('episode')
         # year
         if video.year and 'year' in guess and guess['year'] == video.year:
             matches.add('year')
         # count "no year" as an information
-        if not partial and video.year is None and 'year' not in guess:
+        if not partial and video.original_series and 'year' not in guess:
             matches.add('year')
     elif isinstance(video, Movie):
         # year
         if video.year and 'year' in guess and guess['year'] == video.year:
             matches.add('year')
-    # title
-    if video.title and 'title' in guess and guess['title'].lower() == video.title.lower():
-        matches.add('title')
+        # title
+        if video.title and 'title' in guess and sanitize(guess['title']) == sanitize(video.title):
+            matches.add('title')
     # release_group
-    if video.release_group and 'releaseGroup' in guess and guess['releaseGroup'].lower() == video.release_group.lower():
+    if (video.release_group and 'release_group' in guess and
+            sanitize_release_group(guess['release_group']) in
+            get_equivalent_release_groups(sanitize_release_group(video.release_group))):
         matches.add('release_group')
     # resolution
-    if video.resolution and 'screenSize' in guess and guess['screenSize'] == video.resolution:
+    if video.resolution and 'screen_size' in guess and guess['screen_size'] == video.resolution:
         matches.add('resolution')
     # format
     if video.format and 'format' in guess and guess['format'].lower() == video.format.lower():
         matches.add('format')
     # video_codec
-    if video.video_codec and 'videoCodec' in guess and guess['videoCodec'] == video.video_codec:
+    if video.video_codec and 'video_codec' in guess and guess['video_codec'] == video.video_codec:
         matches.add('video_codec')
     # audio_codec
-    if video.audio_codec and 'audioCodec' in guess and guess['audioCodec'] == video.audio_codec:
+    if video.audio_codec and 'audio_codec' in guess and guess['audio_codec'] == video.audio_codec:
         matches.add('audio_codec')
 
     return matches
-
-
-def guess_properties(string):
-    """Extract properties from `string` using guessit's `guess_properties` transformer.
-
-    :param str string: the string potentially containing properties.
-    :return: the guessed properties.
-    :rtype: dict
-
-    """
-    mtree = MatchTree(string)
-    get_transformer('guess_properties').process(mtree)
-
-    return mtree.matched()
 
 
 def fix_line_ending(content):

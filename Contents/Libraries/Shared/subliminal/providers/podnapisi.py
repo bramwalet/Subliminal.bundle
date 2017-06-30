@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 import io
 import logging
 import re
 
 from babelfish import Language, language_converters
-from guessit import guess_episode_info, guess_movie_info
+from guessit import guessit
 try:
     from lxml import etree
 except ImportError:
@@ -16,15 +15,18 @@ except ImportError:
 from requests import Session
 from zipfile import ZipFile
 
-from . import Provider, get_version
-from .. import __version__
+from . import Provider
+from .. import __short_version__
 from ..exceptions import ProviderError
 from ..subtitle import Subtitle, fix_line_ending, guess_matches
+from ..utils import sanitize
 from ..video import Episode, Movie
 
 logger = logging.getLogger(__name__)
 
+
 class PodnapisiSubtitle(Subtitle):
+    """Podnapisi Subtitle."""
     provider_name = 'podnapisi'
 
     def __init__(self, language, hearing_impaired, page_link, pid, releases, title, season=None, episode=None,
@@ -41,14 +43,17 @@ class PodnapisiSubtitle(Subtitle):
     def id(self):
         return self.pid
 
-    def get_matches(self, video, hearing_impaired=False):
-        matches = super(PodnapisiSubtitle, self).get_matches(video, hearing_impaired=hearing_impaired)
+    def get_matches(self, video):
+        matches = set()
 
         # episode
         if isinstance(video, Episode):
             # series
-            if video.series and self.title.lower() == video.series.lower():
+            if video.series and sanitize(self.title) == sanitize(video.series):
                 matches.add('series')
+            # year
+            if video.original_series and self.year is None or video.year and video.year == self.year:
+                matches.add('year')
             # season
             if video.season and self.season == video.season:
                 matches.add('season')
@@ -57,31 +62,32 @@ class PodnapisiSubtitle(Subtitle):
                 matches.add('episode')
             # guess
             for release in self.releases:
-                matches |= guess_matches(video, guess_episode_info(release + '.mkv'))
+                matches |= guess_matches(video, guessit(release, {'type': 'episode'}))
         # movie
         elif isinstance(video, Movie):
             # title
-            if video.title and self.title.lower() == video.title.lower():
+            if video.title and sanitize(self.title) == sanitize(video.title):
                 matches.add('title')
+            # year
+            if video.year and self.year == video.year:
+                matches.add('year')
             # guess
             for release in self.releases:
-                matches |= guess_matches(video, guess_movie_info(release + '.mkv'))
-        # year
-        if video.year and self.year == video.year:
-            matches.add('year')
+                matches |= guess_matches(video, guessit(release, {'type': 'movie'}))
 
         return matches
 
 
 class PodnapisiProvider(Provider):
+    """Podnapisi Provider."""
     languages = ({Language('por', 'BR'), Language('srp', script='Latn')} |
                  {Language.fromalpha2(l) for l in language_converters['alpha2'].codes})
-    video_types = (Episode, Movie)
     server_url = 'http://podnapisi.net/subtitles/'
+    subtitle_class = PodnapisiSubtitle
 
     def initialize(self):
         self.session = Session()
-        self.session.headers = {'User-Agent': 'Subliminal/%s' % get_version(__version__)}
+        self.session.headers['User-Agent'] = 'Subliminal/%s' % __short_version__
 
     def terminate(self):
         self.session.close()
@@ -120,18 +126,20 @@ class PodnapisiProvider(Provider):
                 releases = []
                 if subtitle_xml.find('release').text:
                     for release in subtitle_xml.find('release').text.split():
-                        releases.append(re.sub(r'\.+$', '', release))  # remove trailing dots
+                        release = re.sub(r'\.+$', '', release)  # remove trailing dots
+                        release = ''.join(filter(lambda x: ord(x) < 128, release))  # remove non-ascii characters
+                        releases.append(release)
                 title = subtitle_xml.find('title').text
                 season = int(subtitle_xml.find('tvSeason').text)
                 episode = int(subtitle_xml.find('tvEpisode').text)
                 year = int(subtitle_xml.find('year').text)
 
                 if is_episode:
-                    subtitle = PodnapisiSubtitle(language, hearing_impaired, page_link, pid, releases, title,
-                                                 season=season, episode=episode, year=year)
+                    subtitle = self.subtitle_class(language, hearing_impaired, page_link, pid, releases, title,
+                                                   season=season, episode=episode, year=year)
                 else:
-                    subtitle = PodnapisiSubtitle(language, hearing_impaired, page_link, pid, releases, title,
-                                                 year=year)
+                    subtitle = self.subtitle_class(language, hearing_impaired, page_link, pid, releases, title,
+                                                   year=year)
 
                 # ignore duplicates, see http://www.podnapisi.net/forum/viewtopic.php?f=62&t=26164&start=10#p213321
                 if pid in pids:
@@ -160,7 +168,7 @@ class PodnapisiProvider(Provider):
 
     def download_subtitle(self, subtitle):
         # download as a zip
-        logger.info('Downloading subtitle %r')
+        logger.info('Downloading subtitle %r', subtitle)
         r = self.session.get(self.server_url + subtitle.pid + '/download', params={'container': 'zip'}, timeout=10)
         r.raise_for_status()
 
