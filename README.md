@@ -72,18 +72,24 @@ For further help or manual installation, [please go to the wiki](https://github.
 
 ## Changelog
 
-2.0.24.1503 RC11 pre-final
-- scheduler: rewrite searchRecentlyAddedMissing
-- core: update guessit and rebulk
-- core: improve refining (matching)
-- core: improve subtitle storage info maintenance (remove inexistant parts and languages)
-- submod: HI: don't treat times (9:00 o'clock) as hearing impaired before colon
-- submod: common: be smarter about spaces in numbers (fixes 1 98 5 now)
-- submod: OCR: update english dictionary
-- submod: take code-shortcut when applying mods, decrease filesystem stress
-- core: correctly determine whether SZ is enabled for a library or not
-- core: findBetterSubtitles: bugfix on inexistant items
+2.0.24.1508
+Changes from 1.4
+- core: update subliminal to version 2
+- core: update all dependencies
+- core: add new providers: legendastv (pt-BR), napiprojekt (pl), shooter (cn), subscenter (heb)
+- core: rewritten all subliminal patches for version 2
+- menu: add icons for menu items; update main channel icon
+- core: use SSL again for opensubtitles
+- core: improved matching due to subliminal 2 (and SZ custom) tvdb/omdb refiners
+- core: improved matching by relying on existing metadata provided by the PMS
+- menu: add "Get my logs" function to the advanced menu, which zips up all necessary logs suitable for posting in the forums
+- core: on non-windows systems, utilize a file-based cache database for provider media lists and subliminal refiner results
+- core: add manual and automatic subtitle modification framework (fix common OCR issues, remove hearing impaired etc.)
+- menu: add subtitle modifications (subtitle content fixes, offset-based shifting, framerate conversion)
+- menu: add recently played menu
+- improve almost everything Sub-Zero did in 1.4 :)
 
+Big thanks to the beta testing team! You know who you are!
 
 [older changes](CHANGELOG.md)
 
