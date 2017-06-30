@@ -72,6 +72,7 @@ For further help or manual installation, [please go to the wiki](https://github.
 
 2.0.24.1549
 Changes from 1.4
+- wiki: new wiki!
 - core: update subliminal to version 2
 - core: update all dependencies
 - core: add new providers: legendastv (pt-BR), napiprojekt (pl), shooter (cn), subscenter (heb)
@@ -80,11 +81,21 @@ Changes from 1.4
 - core: use SSL again for opensubtitles
 - core: improved matching due to subliminal 2 (and SZ custom) tvdb/omdb refiners
 - core: improved matching by relying on existing metadata provided by the PMS
-- menu: add "Get my logs" function to the advanced menu, which zips up all necessary logs suitable for posting in the forums
+- core: improved performance due to multithreaded provider-querying)
+- core: improved performance due to less physical media file access
+- core: VTT subtitle format output supported (for Chromecast)
+- core: rewrote and streamlined internal subtitle data storage format
+- core: support Cyrillian and Latin variants of Serbian language
+- core: simplified (custom) provider registration; add own provider registry
+- core: rewrote recently added missing task
+- core: automatically fix badly (re-) encoded unicode entities in subtitles
+- core: always store subtitles in proper UTF-8 encoding
+- core: add periodic internal subtitle data storage cleanup task
 - core: on non-windows systems, utilize a file-based cache database for provider media lists and subliminal refiner results
 - core: add manual and automatic subtitle modification framework (fix common OCR issues, remove hearing impaired etc.)
 - menu: add subtitle modifications (subtitle content fixes, offset-based shifting, framerate conversion)
 - menu: add recently played menu
+- menu: add "Get my logs" function to the advanced menu, which zips up all necessary logs suitable for posting in the forums
 - improve almost everything Sub-Zero did in 1.4 :)
 
 Big thanks to the beta testing team! You know who you are!
