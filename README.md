@@ -70,6 +70,9 @@ For further help or manual installation, [please go to the wiki](https://github.
 
 ## Changelog
 
+2.0.24.1558
+- core: fix handling of broken RAR files from legendas
+
 2.0.24.1555
 - core: fix rare microdvd issue from OpenSubtitles by generally providing FPS info when encountering a microdvd subtitle
 
