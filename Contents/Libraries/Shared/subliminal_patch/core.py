@@ -11,6 +11,7 @@ import operator
 
 import itertools
 
+import rarfile
 from concurrent.futures import ThreadPoolExecutor
 
 import requests
@@ -195,6 +196,11 @@ class SZProviderPool(ProviderPool):
                     requests.Timeout,
                     socket.timeout):
                 logger.error('Provider %r connection error', subtitle.provider_name)
+
+            except rarfile.BadRarFile:
+                logger.exception('Malformed RAR file from provider %r, Traceback: %s', subtitle.provider_name,
+                                 traceback.format_exc())
+                return False
 
             except:
                 logger.exception('Unexpected error in provider %r, Traceback: %s', subtitle.provider_name,
