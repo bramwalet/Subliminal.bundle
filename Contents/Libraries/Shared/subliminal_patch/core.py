@@ -198,8 +198,8 @@ class SZProviderPool(ProviderPool):
                 logger.error('Provider %r connection error', subtitle.provider_name)
 
             except rarfile.BadRarFile:
-                logger.exception('Malformed RAR file from provider %r, Traceback: %s', subtitle.provider_name,
-                                 traceback.format_exc())
+                logger.error('Malformed RAR file from provider %r, skipping subtitle. Traceback: %s',
+                             subtitle.provider_name, traceback.format_exc())
                 return False
 
             except:
