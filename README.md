@@ -70,6 +70,9 @@ For further help or manual installation, [please go to the wiki](https://github.
 
 ## Changelog
 
+2.0.24.1555
+- core: fix rare microdvd issue from OpenSubtitles by generally providing FPS info when encountering a microdvd subtitle
+
 2.0.24.1549
 Changes from 1.4
 - wiki: new wiki! (thanks @dane22!)
