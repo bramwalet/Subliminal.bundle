@@ -9,10 +9,9 @@ logger = logging.getLogger(__name__)
 
 
 class NapiProjektSubtitle(_NapiProjektSubtitle):
-    def __init__(self, language, hash, fps):
+    def __init__(self, language, hash):
         super(NapiProjektSubtitle, self).__init__(language, hash)
         self.release_info = hash
-        self.plex_media_fps = float(fps)
 
     def __repr__(self):
         return '<%s %r [%s]>' % (
@@ -22,7 +21,7 @@ class NapiProjektSubtitle(_NapiProjektSubtitle):
 class NapiProjektProvider(_NapiProjektProvider):
     subtitle_class = NapiProjektSubtitle
 
-    def query(self, language, hash, fps):
+    def query(self, language, hash):
         params = {
             'v': 'dreambox',
             'kolejka': 'false',
@@ -41,12 +40,12 @@ class NapiProjektProvider(_NapiProjektProvider):
             logger.debug('No subtitles found')
             return None
 
-        subtitle = self.subtitle_class(language, hash, fps)
+        subtitle = self.subtitle_class(language, hash)
         subtitle.content = response.content
         logger.debug('Found subtitle %r', subtitle)
 
         return subtitle
 
     def list_subtitles(self, video, languages):
-        return [s for s in [self.query(l, video.hashes['napiprojekt'], video.fps) for l in languages] if s is not None]
+        return [s for s in [self.query(l, video.hashes['napiprojekt']) for l in languages] if s is not None]
 

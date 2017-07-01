@@ -116,7 +116,11 @@ class SZProviderPool(ProviderPool):
         # list subtitles
         logger.info('Listing subtitles with provider %r and languages %r', provider, provider_languages)
         try:
-            return self[provider].list_subtitles(video, provider_languages)
+            ret = self[provider].list_subtitles(video, provider_languages)
+            for s in ret:
+                s.plex_media_fps = float(video.fps)
+            return ret
+
         except (requests.Timeout, socket.timeout):
             logger.error('Provider %r timed out', provider)
         except:
