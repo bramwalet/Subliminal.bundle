@@ -11,6 +11,7 @@ import operator
 
 import itertools
 
+import rarfile
 from concurrent.futures import ThreadPoolExecutor
 
 import requests
@@ -116,7 +117,11 @@ class SZProviderPool(ProviderPool):
         # list subtitles
         logger.info('Listing subtitles with provider %r and languages %r', provider, provider_languages)
         try:
-            return self[provider].list_subtitles(video, provider_languages)
+            ret = self[provider].list_subtitles(video, provider_languages)
+            for s in ret:
+                s.plex_media_fps = float(video.fps)
+            return ret
+
         except (requests.Timeout, socket.timeout):
             logger.error('Provider %r timed out', provider)
         except:
@@ -191,6 +196,10 @@ class SZProviderPool(ProviderPool):
                     requests.Timeout,
                     socket.timeout):
                 logger.error('Provider %r connection error', subtitle.provider_name)
+
+            except rarfile.BadRarFile:
+                logger.error('Malformed RAR file from provider %r, skipping subtitle.', subtitle.provider_name)
+                return False
 
             except:
                 logger.exception('Unexpected error in provider %r, Traceback: %s', subtitle.provider_name,
