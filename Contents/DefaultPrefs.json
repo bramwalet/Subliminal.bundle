@@ -507,7 +507,8 @@
       "never",
       "current media item",
       "next episode (series)",
-      "hybrid: current item or next episode"
+      "hybrid: current item or next episode",
+      "hybrid-plus: current item and next episode"
     ],
     "default": "never"
   },
