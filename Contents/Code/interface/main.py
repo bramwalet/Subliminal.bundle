@@ -184,6 +184,9 @@ def RecentlyPlayedMenu():
     oc = SubFolderObjectContainer(title2=base_title, replace_parent=True)
 
     for item in [get_item(rating_key) for rating_key in Dict["last_played_items"]]:
+        if not item:
+            continue
+
         kind = get_item_kind_from_item(item)
         if kind not in ("episode", "movie"):
             continue

@@ -38,6 +38,13 @@ class PlexActivityManager(object):
             return
 
         rating_key = info["ratingKey"]
+
+        # only use integer based rating keys
+        try:
+            int(rating_key)
+        except ValueError:
+            return
+
         if rating_key in Dict["last_played_items"] and rating_key != Dict["last_played_items"][0]:
             # shift last played
             Dict["last_played_items"].insert(0,

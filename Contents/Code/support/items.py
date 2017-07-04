@@ -20,7 +20,11 @@ container_size_re = re.compile(ur'totalSize="(\d+)"')
 
 
 def get_item(key):
-    item_id = int(key)
+    try:
+        item_id = int(key)
+    except ValueError:
+        return
+
     item_container = Plex["library"].metadata(item_id)
 
     try:
