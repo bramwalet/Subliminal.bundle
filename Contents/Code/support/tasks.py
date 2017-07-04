@@ -351,6 +351,10 @@ class SearchAllRecentlyAddedMissing(Task):
             parts = []
             plex_item = get_item(video_id)
 
+            if not plex_item:
+                Log.Info("%s: Item %s unknown", self.name, video_id)
+                continue
+
             if is_ignored(video_id, item=plex_item):
                 continue
 
