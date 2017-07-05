@@ -517,6 +517,8 @@ class Config(object):
             self.activity_mode = "refresh"
         elif val == "hybrid: current item or next episode":
             self.activity_mode = "hybrid"
+        elif val == "hybrid-plus: current item and next episode":
+            self.activity_mode = "hybrid-plus"
         else:
             self.activity_mode = "next_episode"
 

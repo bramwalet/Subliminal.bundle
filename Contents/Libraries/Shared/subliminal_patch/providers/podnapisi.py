@@ -1,12 +1,13 @@
 # coding=utf-8
 
 import logging
-import io
 import re
 
 from lxml.etree import XMLSyntaxError
 
-from subliminal_patch.extensions import provider_registry
+from guessit import guessit
+from subliminal.subtitle import guess_matches
+from subliminal.utils import sanitize
 
 try:
     from lxml import etree
@@ -33,6 +34,45 @@ class PodnapisiSubtitle(_PodnapisiSubtitle):
         super(PodnapisiSubtitle, self).__init__(language, hearing_impaired, page_link, pid, releases, title,
                                                 season=season, episode=episode, year=year)
         self.release_info = u", ".join(releases)
+
+    def get_matches(self, video):
+        """
+        patch: set guessit to single_value
+        :param video:
+        :return:
+        """
+        matches = set()
+
+        # episode
+        if isinstance(video, Episode):
+            # series
+            if video.series and sanitize(self.title) == sanitize(video.series):
+                matches.add('series')
+            # year
+            if video.original_series and self.year is None or video.year and video.year == self.year:
+                matches.add('year')
+            # season
+            if video.season and self.season == video.season:
+                matches.add('season')
+            # episode
+            if video.episode and self.episode == video.episode:
+                matches.add('episode')
+            # guess
+            for release in self.releases:
+                matches |= guess_matches(video, guessit(release, {'type': 'episode', "single_value": True}))
+        # movie
+        elif isinstance(video, Movie):
+            # title
+            if video.title and sanitize(self.title) == sanitize(video.title):
+                matches.add('title')
+            # year
+            if video.year and self.year == video.year:
+                matches.add('year')
+            # guess
+            for release in self.releases:
+                matches |= guess_matches(video, guessit(release, {'type': 'movie', "single_value": True}))
+
+        return matches
 
 
 class PodnapisiProvider(_PodnapisiProvider):

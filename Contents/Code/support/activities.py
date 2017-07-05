@@ -38,6 +38,13 @@ class PlexActivityManager(object):
             return
 
         rating_key = info["ratingKey"]
+
+        # only use integer based rating keys
+        try:
+            int(rating_key)
+        except ValueError:
+            return
+
         if rating_key in Dict["last_played_items"] and rating_key != Dict["last_played_items"][0]:
             # shift last played
             Dict["last_played_items"].insert(0,
@@ -56,10 +63,12 @@ class PlexActivityManager(object):
 
             debug_msg = "Started playing %s. Refreshing it." % rating_key
 
-            key_to_refresh = None
-            if config.activity_mode in ["refresh", "next_episode", "hybrid"]:
+            # todo: cleanup debug messages for hybrid-plus
+
+            keys_to_refresh = []
+            if config.activity_mode in ["refresh", "next_episode", "hybrid", "hybrid-plus"]:
                 # next episode or next episode and current movie
-                if config.activity_mode in ["next_episode", "hybrid"]:
+                if config.activity_mode in ["next_episode", "hybrid", "hybrid-plus"]:
                     plex_item = get_item(rating_key)
                     if not plex_item:
                         Log.Warn("Can't determine media type of %s, skipping" % rating_key)
@@ -67,20 +76,24 @@ class PlexActivityManager(object):
 
                     if get_item_kind_from_item(plex_item) == "episode":
                         next_ep = self.get_next_episode(rating_key)
+                        if config.activity_mode == "hybrid-plus":
+                            keys_to_refresh.append(rating_key)
                         if next_ep:
-                            key_to_refresh = next_ep.rating_key
+                            keys_to_refresh.append(next_ep.rating_key)
                             debug_msg = "Started playing %s. Refreshing next episode (%s, S%02iE%02i)." % \
                                         (rating_key, next_ep.rating_key, int(next_ep.season.index), int(next_ep.index))
 
                     else:
                         if config.activity_mode == "hybrid":
-                            key_to_refresh = rating_key
+                            keys_to_refresh.append(rating_key)
                 elif config.activity_mode == "refresh":
-                    key_to_refresh = rating_key
+                    keys_to_refresh.append(rating_key)
 
-                if key_to_refresh:
+                if keys_to_refresh:
                     Log.Debug(debug_msg)
-                    refresh_item(key_to_refresh)
+                    Log.Debug("Refreshing %s", keys_to_refresh)
+                    for key in keys_to_refresh:
+                        refresh_item(key)
 
     def get_next_episode(self, rating_key):
         plex_item = get_item(rating_key)
