@@ -70,6 +70,12 @@ For further help or manual installation, [please go to the wiki](https://github.
 
 ## Changelog
 
+2.0.24.1565
+- core: fix searchallrecentlymissing task erroring if item not found
+- core: fix non-plex-items appearing in and crashing the recently played list
+- core: add hybrid-plus activity setting (current media file and next episode)
+- podnapisi: fix by using correct guessit parameters
+
 2.0.24.1558
 - core: fix handling of broken RAR files from legendas
 
