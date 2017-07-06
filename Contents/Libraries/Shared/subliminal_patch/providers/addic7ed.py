@@ -4,10 +4,11 @@ import re
 import subliminal
 from random import randint
 
-from subliminal.exceptions import TooManyRequests
+from subliminal.exceptions import TooManyRequests, DownloadLimitExceeded
 from subliminal.providers.addic7ed import Addic7edProvider as _Addic7edProvider, Addic7edSubtitle as _Addic7edSubtitle, \
     ParserBeautifulSoup, Language
 from subliminal.cache import SHOW_EXPIRATION_TIME, region
+from subliminal.subtitle import fix_line_ending
 from subliminal.utils import sanitize
 from subliminal_patch.extensions import provider_registry
 
@@ -153,8 +154,13 @@ class Addic7edProvider(_Addic7edProvider):
         logger.info('Getting the page of show id %d, season %d', show_id, season)
         r = self.session.get(self.server_url + 'show/%d' % show_id, params={'season': season}, timeout=10)
         r.raise_for_status()
-        if r.status_code == 304:
-            raise TooManyRequests()
+
+        if not r.content:
+            # Provider wrongful return a status of 304 Not Modified with an empty content
+            # raise_for_status won't raise exception for that status code
+            logger.error('Unable to download subtitle. No data returned from provider')
+            return
+
         soup = ParserBeautifulSoup(r.content, ['lxml', 'html.parser'])
 
         # loop over subtitle rows
@@ -185,3 +191,22 @@ class Addic7edProvider(_Addic7edProvider):
             subtitles.append(subtitle)
 
         return subtitles
+
+    def download_subtitle(self, subtitle):
+        # download the subtitle
+        logger.info('Downloading subtitle %r', subtitle)
+        r = self.session.get(self.server_url + subtitle.download_link, headers={'Referer': subtitle.page_link},
+                             timeout=10)
+        r.raise_for_status()
+
+        if not r.content:
+            # Provider wrongful return a status of 304 Not Modified with an empty content
+            # raise_for_status won't raise exception for that status code
+            logger.error('Unable to download subtitle. No data returned from provider')
+            return
+
+        # detect download limit exceeded
+        if r.headers['Content-Type'] == 'text/html':
+            raise DownloadLimitExceeded
+
+        subtitle.content = fix_line_ending(r.content)
