@@ -67,6 +67,9 @@ class CommonFixes(SubtitleTextModification):
         # uppercase after dot
         NReProcessor(re.compile(ur'(?u)((?:[^.\s])+\.\s+)([a-zà-ž])'),
                      lambda match: ur'%s%s' % (match.group(1), match.group(2).upper()), name="CM_uppercase_after_dot"),
+
+        # remove spaces before punctuation
+        NReProcessor(re.compile(r'(?u)(?:(?<=^)|(?<=\w)) +([!?.,](?![!?.,]))'), r"\1", name="CM_punctuation_space"),
     ]
 
     post_processors = empty_line_post_processors
