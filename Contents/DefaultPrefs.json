@@ -281,7 +281,7 @@
   },
   {
     "id": "provider.legendastv.enabled",
-    "label": "Provider: Enable Legendas TV (mostly pt-BR)",
+    "label": "Provider: Enable Legendas TV (mostly pt-BR; UNRAR NEEDED)",
     "type": "bool",
     "default": "false"
   },
