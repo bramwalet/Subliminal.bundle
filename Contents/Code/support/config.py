@@ -4,6 +4,7 @@ import os
 import re
 import inspect
 import sys
+import rarfile
 
 import datetime
 
@@ -14,6 +15,7 @@ from whichdb import whichdb
 from babelfish import Language
 from subliminal.cli import MutexLock
 from subzero.lib.io import FileIO, get_viable_encoding
+from subzero.util import get_root_path
 from subzero.constants import PLUGIN_NAME, PLUGIN_IDENTIFIER, MOVIE, SHOW, MEDIA_TYPE_TO_STRING
 from lib import Plex
 from helpers import check_write_permissions, cast_bool
@@ -43,6 +45,7 @@ def int_or_default(s, default):
 
 
 class Config(object):
+    libraries_root = None
     plugin_info = ""
     version = None
     full_version = None
@@ -98,6 +101,9 @@ class Config(object):
     initialized = False
 
     def initialize(self):
+        self.libraries_root = os.path.abspath(os.path.join(get_root_path(), ".."))
+        self.init_libraries()
+
         self.fs_encoding = get_viable_encoding()
         self.plugin_info = self.get_plugin_info()
         self.is_development = self.get_dev_mode()
@@ -143,6 +149,13 @@ class Config(object):
         self.subtitles_save_to = Prefs['subtitles.save.filesystem']
         self.no_refresh = os.environ.get("SZ_NO_REFRESH", False)
         self.initialized = True
+
+    def init_libraries(self):
+        if Core.runtime.os == "Windows":
+            unrar_exe = os.path.abspath(os.path.join(self.libraries_root, "Windows", "generic", "UnRAR", "UnRAR.exe"))
+            if os.path.isfile(unrar_exe):
+                rarfile.UNRAR_TOOL = unrar_exe
+                Log.Info("Using UnRAR from: %s", unrar_exe)
 
     def init_cache(self):
         names = ['dbhash', 'gdbm', 'dbm']
