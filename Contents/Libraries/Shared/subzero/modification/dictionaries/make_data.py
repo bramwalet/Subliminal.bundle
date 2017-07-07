@@ -51,6 +51,21 @@ SZ_FIX_DATA = {
             u"LAst": u"Last",
             u"forthis": u"for this",
         }
+    },
+    "nld": {
+        "PartialWordsAlways": {
+            u"ט": u"è",
+            u"י": u"é",
+            u"כ": u"ë",
+            u"צ": u"ë",
+            u"ן": u"ï",
+            u"ף": u"ó",
+            u"א": u"à",
+            u"Iֻ": u"I",
+            u"č": u"è",
+            u"פ": u"o",
+            u"ם": u"i",
+        },
     }
 }
 
