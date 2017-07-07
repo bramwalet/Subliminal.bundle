@@ -194,7 +194,6 @@ class Addic7edProvider(_Addic7edProvider):
 
     def download_subtitle(self, subtitle):
         # download the subtitle
-        logger.info('Downloading subtitle %r', subtitle)
         r = self.session.get(self.server_url + subtitle.download_link, headers={'Referer': subtitle.page_link},
                              timeout=10)
         r.raise_for_status()
