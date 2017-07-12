@@ -158,8 +158,8 @@ class Addic7edProvider(_Addic7edProvider):
         if not r.content:
             # Provider wrongful return a status of 304 Not Modified with an empty content
             # raise_for_status won't raise exception for that status code
-            logger.error('Unable to download subtitle. No data returned from provider')
-            return
+            logger.error('No data returned from provider')
+            return []
 
         soup = ParserBeautifulSoup(r.content, ['lxml', 'html.parser'])
 
