@@ -75,6 +75,7 @@ For further help or manual installation, [please go to the wiki](https://github.
 - addic7ed: fix TooManyRequests error
 - submod: OCR fixes NL: add custom dictionary data for malformed characters
 - submod: OCR fixes: update hrv/NL dictionaries
+- submod: common: remove spaces before punctuation
 - podnapisi: now returns more subtitles again
 ATTENTION: Sub-Zero is still broken on PMS for SHIELD. Help needed!
 
