@@ -328,6 +328,10 @@ class StoredSubtitlesManager(object):
         self.storage = storage
         self.get_item = plexapi_item_getter
 
+    def destroy(self):
+        self.storage = None
+        self.get_item = None
+
     def get_storage_filename(self, video_id):
         return "subs_%s" % video_id
 
@@ -454,6 +458,7 @@ class StoredSubtitlesManager(object):
         # migrate to our new json format
         new_subs_for_video = JSONStoredVideoSubtitles()
         new_subs_for_video.deserialize(subs_for_video.__dict__)
+        subs_for_video = None
         self.save(new_subs_for_video)
 
         self.legacy_delete(from_fn)
@@ -477,6 +482,7 @@ class StoredSubtitlesManager(object):
                 return
 
             subs_for_video.deserialize(data)
+            data = None
 
         elif not bare_fn.endswith(".json.gz") and os.path.exists(os.path.join(self.dataitems_path, bare_fn)):
             subs_for_video = self.migrate_legacy_data(bare_fn, json_path)

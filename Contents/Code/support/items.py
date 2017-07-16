@@ -373,6 +373,8 @@ def set_mods_for_part(rating_key, part_id, language, item_type, mods, mode="add"
             current_sub.encoding = "utf-8"
             storage.save(stored_subs)
 
+    storage.destroy()
+
     subtitle.plex_media_fps = plex_part.fps
     subtitle.page_link = "modify subtitles with: %s" % (", ".join(current_sub.mods) if current_sub.mods else "none")
     subtitle.language = language

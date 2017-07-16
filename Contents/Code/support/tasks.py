@@ -329,6 +329,8 @@ class SearchAllRecentlyAddedMissing(Task):
 
             viable_items[fn] = stored_subs
 
+        subtitle_storage.destroy()
+
         self.items_searching = len(viable_items)
 
         download_count = 0
@@ -567,6 +569,8 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
 
             time.sleep(1)
 
+        subtitle_storage.destroy()
+
         if better_found:
             Log.Debug("Task: %s, done. Better subtitles found for %s/%s items", self.name, better_found,
                       viable_item_count)
@@ -589,6 +593,8 @@ class SubtitleStorageMaintenance(Task):
             Log.Debug("Videos: %s" % deleted_items)
         else:
             Log.Info("Nothing to do")
+
+        storage.destroy()
 
 
 class MenuHistoryMaintenance(Task):
@@ -623,6 +629,8 @@ class MigrateSubtitleStorage(Task):
                 continue
             Log.Debug("Migrating %s", fn)
             storage.load(None, fn)
+
+        storage.destroy()
 
 
 scheduler.register(SearchAllRecentlyAddedMissing)

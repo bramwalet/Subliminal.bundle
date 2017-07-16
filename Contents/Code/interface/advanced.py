@@ -218,6 +218,7 @@ def apply_default_mods(reapply_current=False):
                         continue
 
                     subs_applied += 1
+    storage.destroy()
     Log.Debug("Applied mods to %i items" % subs_applied)
 
 
