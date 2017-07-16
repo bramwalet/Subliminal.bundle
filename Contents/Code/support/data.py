@@ -80,5 +80,6 @@ def migrate():
             if stored_any:
                 subtitle_storage.save(stored_subs)
 
+        subtitle_storage.destroy()
         del Dict["subs"]
         Dict.Save()

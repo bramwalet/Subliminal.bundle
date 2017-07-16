@@ -82,6 +82,8 @@ def SubtitleModificationsMenu(**kwargs):
         summary=u"Currently applied mods: %s" % (", ".join(current_mods) if current_mods else "none")
     ))
 
+    storage.destroy()
+
     return oc
 
 
@@ -247,5 +249,7 @@ def SubtitleListMods(**kwargs):
             key=Callback(SubtitleSetMods, mods=identifier, mode="remove", randomize=timestamp(), **kwargs),
             title="Remove: %s" % identifier
         ))
+
+    storage.destroy()
 
     return oc

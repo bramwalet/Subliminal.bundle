@@ -49,6 +49,7 @@ def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_ty
 
         Log.Debug("Saving subtitle storage for %s" % video_id)
         subtitle_storage.save(stored_subs)
+        subtitle_storage.destroy()
 
 
 def reset_storage(key):
