@@ -2,6 +2,9 @@
 
 import re
 import logging
+
+import gc
+
 from babelfish import Language
 from subliminal.providers import ParserBeautifulSoup
 from subliminal.cache import SHOW_EXPIRATION_TIME, region
@@ -54,6 +57,10 @@ class TVsubtitlesProvider(_TVsubtitlesProvider):
                 logger.debug('Found show id %d', show_id)
                 break
 
+        soup.decompose()
+        soup = None
+        gc.collect()
+
         return show_id
 
     def query(self, series, season, episode, year=None):
@@ -88,5 +95,9 @@ class TVsubtitlesProvider(_TVsubtitlesProvider):
                                            release)
             logger.info('Found subtitle %s', subtitle)
             subtitles.append(subtitle)
+
+        soup.decompose()
+        soup = None
+        gc.collect()
 
         return subtitles
