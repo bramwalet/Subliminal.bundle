@@ -3,7 +3,7 @@ from .microdvd import MicroDVDFormat
 from .subrip import SubripFormat
 from .jsonformat import JSONFormat
 from .substation import SubstationFormat
-from .txt_generic import TXTGenericFormat
+from .txt_generic import TXTGenericFormat, MPL2Format
 from .exceptions import *
 
 #: Dict mapping file extensions to format identifiers.
@@ -24,6 +24,7 @@ FORMAT_IDENTIFIER_TO_FORMAT_CLASS = {
     "microdvd": MicroDVDFormat,
     "json": JSONFormat,
     "txt_generic": TXTGenericFormat,
+    "mpl2": MPL2Format,
 }
 
 def get_format_class(format_):
