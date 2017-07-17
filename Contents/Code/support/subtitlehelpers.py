@@ -174,19 +174,20 @@ class DefaultSubtitleHelper(SubtitleHelper):
 
 def get_subtitles_from_metadata(part):
     subs = {}
-    for language in part.subtitles:
-        subs[language] = []
-        for key, proxy in getattr(part.subtitles[language], "_proxies").iteritems():
-            if not proxy or not len(proxy) >= 5:
-                Log.Debug("Can't parse metadata: %s" % repr(proxy))
-                continue
+    if hasattr(part, "subtitles") and part.subtitles:
+        for language in part.subtitles:
+            subs[language] = []
+            for key, proxy in getattr(part.subtitles[language], "_proxies").iteritems():
+                if not proxy or not len(proxy) >= 5:
+                    Log.Debug("Can't parse metadata: %s" % repr(proxy))
+                    continue
 
-            p_type = proxy[0]
+                p_type = proxy[0]
 
-            if p_type == "Media":
-                # metadata subtitle
-                Log.Debug(u"Found metadata subtitle: %s, %s" % (language, repr(proxy)))
-                subs[language].append(key)
+                if p_type == "Media":
+                    # metadata subtitle
+                    Log.Debug(u"Found metadata subtitle: %s, %s" % (language, repr(proxy)))
+                    subs[language].append(key)
     return subs
 
 
