@@ -321,7 +321,7 @@ class StoredSubtitlesManager(object):
     manages the storage and retrieval of StoredVideoSubtitles instances for a given video_id
     """
     storage = None
-    version = 2
+    version = 3
     extension = ".json.gz"
 
     def __init__(self, storage, plexapi_item_getter):
