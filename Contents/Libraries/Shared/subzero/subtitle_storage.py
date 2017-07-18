@@ -5,10 +5,12 @@ import os
 import logging
 import traceback
 import gzip
+import types
 
 from babelfish import Language
 
-from json_tricks.nonp import loads, dumps
+from json_tricks.nonp import loads#, dumps
+from subzero.lib.json import dumps
 
 
 from constants import mode_map
@@ -94,22 +96,24 @@ class JSONStoredSubtitle(object):
         return mode_map.get(self.mode, "Unknown")
 
     def serialize(self):
-        if self.content:
-            # content is always stored in unicode (gets converted to string with escaped unicode chars by json)
-            try:
-                self.content = self.content.decode(self.encoding)
-            except UnicodeDecodeError:
-                try:
-                    self.content = self.content.decode("utf-8")
-                except UnicodeDecodeError:
-                    logger.error("Couldn't decode %s:%s (%s), ditching it", self.provider_name, self.id, self.encoding)
-                    return
+        # if self.content:
+        #     # content is always stored in unicode (gets converted to string with escaped unicode chars by json)
+        #     try:
+        #         self.content = self.content.decode(self.encoding)
+        #     except UnicodeDecodeError:
+        #         try:
+        #             self.content = self.content.decode("utf-8")
+        #         except UnicodeDecodeError:
+        #             logger.error("Couldn't decode %s:%s (%s), ditching it", self.provider_name, self.id, self.encoding)
+        #             return
         return self.__dict__
 
     def deserialize(self, data):
         if data["content"]:
-            # content is always present in encoded form
-            data["content"] = data["content"].encode(data["encoding"])
+            # legacy: storage was unicode; content is always present in encoded form
+            if isinstance(data["content"], types.UnicodeType):
+                data["content"] = data["content"].encode(data["encoding"])
+
         self.initialize(**data)
 
 
@@ -221,18 +225,19 @@ class JSONStoredVideoSubtitles(object):
 
                             # legacy subtitle storage instance
                             if isinstance(subtitle_data, StoredSubtitle):
-                                subtitle_data = subtitle_data.__dict__
-
-                                try:
-                                    lang = Language.fromietf(language)
-                                    subtitle = ModifiedSubtitle(lang)
-                                    subtitle.content = subtitle_data["content"]
-                                    subtitle.set_encoding("utf-8")
-                                    subtitle_data["content"] = subtitle.content
-                                    subtitle_data["encoding"] = "utf-8"
-                                except:
-                                    logger.error("Legacy subtitle data could not be converted to new storage format")
-                                    continue
+                                # subtitle_data = subtitle_data.__dict__
+                                #
+                                # try:
+                                #     lang = Language.fromietf(language)
+                                #     subtitle = ModifiedSubtitle(lang)
+                                #     subtitle.content = subtitle_data["content"]
+                                #     subtitle.set_encoding("utf-8")
+                                #     subtitle_data["content"] = subtitle.content
+                                #     subtitle_data["encoding"] = "utf-8"
+                                # except:
+                                #     logger.error("Legacy subtitle data could not be converted to new storage format")
+                                #     continue
+                                continue
 
                             sub.initialize(**subtitle_data)
                             if not isinstance(sub_key, tuple):
@@ -510,7 +515,7 @@ class StoredSubtitlesManager(object):
     def save(self, subs_for_video):
         data = subs_for_video.serialize()
         fn = self.get_json_data_path(self.get_storage_filename(subs_for_video.video_id))
-        json_data = dumps(data)
+        json_data = str(dumps(data, ensure_ascii=False))
         with gzip.open(fn, "wb", compresslevel=6) as f:
             f.write(json_data)
 
