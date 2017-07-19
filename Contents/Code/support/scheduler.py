@@ -134,8 +134,12 @@ class DefaultScheduler(object):
         Dict["tasks"]["queue"].append((args, kwargs))
 
     def signal(self, name, *args, **kwargs):
-        for task_name, info in self.tasks.iteritems():
-            task = info["task"]
+        for task_name in self.tasks.keys():
+            task = self.task(task_name)
+            if not task:
+                Log.Error("Scheduler: Task %s not found (?!)" % task_name)
+                continue
+
             if not task.periodic:
                 continue
 
@@ -171,8 +175,12 @@ class DefaultScheduler(object):
                     Thread.Sleep(5.0)
 
             # scheduled tasks
-            for name, info in self.tasks.iteritems():
+            for name in self.tasks.keys():
                 now = datetime.datetime.now()
+                info = self.tasks.get(name)
+                if not info:
+                    Log.Error("Scheduler: Task %s not found (?!)" % name)
+                    continue
                 task = info["task"]
 
                 if name not in Dict["tasks"] or not task.periodic:

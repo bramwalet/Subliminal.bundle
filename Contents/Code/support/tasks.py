@@ -34,11 +34,10 @@ class Task(object):
     # task ready for being status-displayed?
     ready_for_display = False
 
-    def __init__(self, scheduler):
+    def __init__(self):
         self.name = self.get_class_name()
         self.ready_for_display = False
         self.time_start = None
-        self.scheduler = scheduler
         self.setup_defaults()
 
         self.running = False
@@ -277,8 +276,8 @@ class SearchAllRecentlyAddedMissing(Task):
     items_searching = None
     percentage = 0
 
-    def __init__(self, scheduler):
-        super(SearchAllRecentlyAddedMissing, self).__init__(scheduler)
+    def __init__(self):
+        super(SearchAllRecentlyAddedMissing, self).__init__()
         self.items_done = None
         self.items_searching = None
         self.percentage = 0
