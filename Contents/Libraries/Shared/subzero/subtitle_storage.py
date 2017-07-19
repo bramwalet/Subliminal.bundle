@@ -435,6 +435,10 @@ class StoredSubtitlesManager(object):
         subs_for_video.version = 2
         return True
 
+    def migrate_v3(self, subs_for_video):
+        subs_for_video.version = 3
+        return True
+
     def migrate_legacy_data(self, from_fn, to_fn):
         try:
             subs_for_video = self.storage.LoadObject(from_fn)
