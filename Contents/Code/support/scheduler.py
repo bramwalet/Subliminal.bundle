@@ -68,7 +68,7 @@ class DefaultScheduler(object):
         # discover tasks;
         self.tasks = {}
         for cls in self.registry:
-            task = cls(self)
+            task = cls()
             try:
                 task_frequency = Prefs["scheduler.tasks.%s.frequency" % task.name]
             except KeyError:
