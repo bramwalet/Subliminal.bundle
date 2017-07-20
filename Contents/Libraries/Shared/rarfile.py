@@ -2947,5 +2947,8 @@ def _check_unrar_tool():
             # no usable tool, only uncompressed archives work
             pass
 
-_check_unrar_tool()
+try:
+    _check_unrar_tool()
+except OSError:
+    pass
 
