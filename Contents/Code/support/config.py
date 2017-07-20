@@ -157,6 +157,11 @@ class Config(object):
                 rarfile.UNRAR_TOOL = unrar_exe
                 Log.Info("Using UnRAR from: %s", unrar_exe)
 
+        custom_unrar = os.environ.get("SZ_UNRAR_TOOL")
+        if custom_unrar and os.path.isfile(custom_unrar):
+            rarfile.UNRAR_TOOL = custom_unrar
+            Log.Info("Using UnRAR from: %s", custom_unrar)
+
     def init_cache(self):
         names = ['dbhash', 'gdbm', 'dbm']
         dbfn = None
