@@ -1,9 +1,7 @@
 # coding=utf-8
 
-import re
 import logging
 
-import gc
 
 from babelfish import Language
 from subliminal.providers import ParserBeautifulSoup
@@ -11,7 +9,6 @@ from subliminal.cache import SHOW_EXPIRATION_TIME, region, EPISODE_EXPIRATION_TI
 from subliminal.providers.tvsubtitles import TVsubtitlesProvider as _TVsubtitlesProvider, \
     TVsubtitlesSubtitle as _TVsubtitlesSubtitle, link_re, episode_id_re
 from subliminal.utils import sanitize
-from subliminal_patch.extensions import provider_registry
 
 logger = logging.getLogger(__name__)
 

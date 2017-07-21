@@ -2,8 +2,6 @@
 import logging
 import re
 
-import gc
-
 import subliminal
 from random import randint
 

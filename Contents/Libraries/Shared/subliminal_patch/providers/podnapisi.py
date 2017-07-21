@@ -3,7 +3,6 @@
 import logging
 import re
 
-import gc
 from lxml.etree import XMLSyntaxError
 
 from guessit import guessit

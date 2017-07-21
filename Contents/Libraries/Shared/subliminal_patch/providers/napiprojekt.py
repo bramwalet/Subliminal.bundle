@@ -3,7 +3,6 @@ import logging
 
 from subliminal.providers.napiprojekt import NapiProjektProvider as _NapiProjektProvider, \
     NapiProjektSubtitle as _NapiProjektSubtitle, get_subhash
-from subliminal_patch.extensions import provider_registry
 
 logger = logging.getLogger(__name__)
 

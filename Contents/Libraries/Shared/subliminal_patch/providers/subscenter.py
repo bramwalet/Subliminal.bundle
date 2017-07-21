@@ -2,7 +2,6 @@
 
 from subliminal.providers.subscenter import SubsCenterProvider as _SubsCenterProvider, \
     SubsCenterSubtitle as _SubsCenterSubtitle
-from subliminal_patch.extensions import provider_registry
 
 
 class SubsCenterSubtitle(_SubsCenterSubtitle):
