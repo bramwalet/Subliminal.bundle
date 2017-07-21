@@ -569,6 +569,7 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
                                 else:
                                     Log.Debug("Couldn't download/save subtitle. Continuing to the next one")
                                     Log.Debug("Waiting %s seconds before continuing" % DL_PROVIDER_SLACK)
+                                    time.sleep(DL_PROVIDER_SLACK)
                             better_visited += 1
 
                         if better_tried_download and not better_downloaded:
