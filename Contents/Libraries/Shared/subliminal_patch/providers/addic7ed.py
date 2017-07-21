@@ -1,6 +1,9 @@
 # coding=utf-8
 import logging
 import re
+
+import gc
+
 import subliminal
 from random import randint
 
@@ -99,6 +102,10 @@ class Addic7edProvider(_Addic7edProvider):
                 # year found, also add it without year
                 show_ids[match.group(1)] = show_id
 
+        soup.decompose()
+        soup = None
+        gc.collect()
+
         logger.debug('Found %d show ids', len(show_ids))
 
         return show_ids
@@ -129,18 +136,27 @@ class Addic7edProvider(_Addic7edProvider):
             raise TooManyRequests()
         soup = ParserBeautifulSoup(r.content, ['lxml', 'html.parser'])
 
-        # get the suggestion
-        suggestion = soup.select('span.titulo > a[href^="/show/"]')
-        if not suggestion:
-            logger.warning('Show id not found: no suggestion')
-            return None
-        if not sanitize(suggestion[0].i.text.replace('\'', ' ')) == sanitize(series_year):
-            logger.warning('Show id not found: suggestion does not match')
-            return None
-        show_id = int(suggestion[0]['href'][6:])
-        logger.debug('Found show id %d', show_id)
+        suggestion = None
 
-        return show_id
+        # get the suggestion
+        try:
+            suggestion = soup.select('span.titulo > a[href^="/show/"]')
+            if not suggestion:
+                logger.warning('Show id not found: no suggestion')
+                return None
+            if not sanitize(suggestion[0].i.text.replace('\'', ' ')) == sanitize(series_year):
+                logger.warning('Show id not found: suggestion does not match')
+                return None
+            show_id = int(suggestion[0]['href'][6:])
+            logger.debug('Found show id %d', show_id)
+
+            return show_id
+        finally:
+            if suggestion:
+                suggestion.decompose()
+            soup.decompose()
+            soup = None
+            gc.collect()
 
     def query(self, series, season, year=None, country=None):
         # patch: fix logging
@@ -189,6 +205,10 @@ class Addic7edProvider(_Addic7edProvider):
                                            version, download_link)
             logger.debug('Found subtitle %r', subtitle)
             subtitles.append(subtitle)
+
+        soup.decompose()
+        soup = None
+        gc.collect()
 
         return subtitles
 

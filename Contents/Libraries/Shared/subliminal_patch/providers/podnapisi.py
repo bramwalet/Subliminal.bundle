@@ -3,6 +3,7 @@
 import logging
 import re
 
+import gc
 from lxml.etree import XMLSyntaxError
 
 from guessit import guessit
@@ -188,5 +189,8 @@ class PodnapisiProvider(_PodnapisiProvider):
             # increment current page
             params['page'] = int(xml.find('pagination/current').text) + 1
             logger.debug('Getting page %d', params['page'])
+            xml.decompose()
+            xml = None
+            gc.collect()
 
         return subtitles
