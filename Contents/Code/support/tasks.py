@@ -313,6 +313,10 @@ class SearchAllRecentlyAddedMissing(Task):
         elif ident == "weeks":
             max_search_days = int(num) * 7
 
+        # wait X seconds between hits
+        provider_slack = 15
+        dl_provider_slack = 30
+
         subtitle_storage = get_subtitle_storage()
         recent_sub_fns = subtitle_storage.get_recent_files(age_days=max_search_days)
         viable_items = {}
@@ -363,6 +367,7 @@ class SearchAllRecentlyAddedMissing(Task):
                 parts += media.parts
 
             downloads_per_video = 0
+            hit_providers = False
             for part in parts:
                 part_id = part.id
 
@@ -381,6 +386,7 @@ class SearchAllRecentlyAddedMissing(Task):
                                             if stored_subs.item_type == "episode" else "movie")
 
                 downloaded_subtitles = download_best_subtitles(scanned_parts, min_score=min_score)
+                hit_providers = downloaded_subtitles is not None
                 download_successful = False
 
                 if downloaded_subtitles:
@@ -411,7 +417,8 @@ class SearchAllRecentlyAddedMissing(Task):
                                                 subtitle=subtitle,
                                                 mode="a")
 
-                    time.sleep(15)
+                    Log.Debug("Waiting %s seconds before continuing" % provider_slack)
+                    time.sleep(provider_slack)
 
             download_count += downloads_per_video
 
@@ -422,9 +429,12 @@ class SearchAllRecentlyAddedMissing(Task):
             self.percentage = int(self.items_done * 100 / self.items_searching)
 
             if downloads_per_video:
-                time.sleep(15)
+                Log.Debug("Subtitles have been downloaded, waiting %s seconds before continuing" % dl_provider_slack)
+                time.sleep(provider_slack)
             else:
-                time.sleep(5)
+                if hit_providers:
+                    Log.Debug("Waiting %s seconds before continuing" % provider_slack)
+                    time.sleep(provider_slack)
 
         if download_count:
             Log.Debug("Task: %s, done. Missing subtitles found for %s/%s items (%s subs downloaded)", self.name,
