@@ -411,7 +411,7 @@ class SearchAllRecentlyAddedMissing(Task):
                                                 subtitle=subtitle,
                                                 mode="a")
 
-                time.sleep(15)
+                    time.sleep(15)
 
             download_count += downloads_per_video
 
@@ -424,7 +424,7 @@ class SearchAllRecentlyAddedMissing(Task):
             if downloads_per_video:
                 time.sleep(15)
             else:
-                time.sleep(10)
+                time.sleep(5)
 
         if download_count:
             Log.Debug("Task: %s, done. Missing subtitles found for %s/%s items (%s subs downloaded)", self.name,
