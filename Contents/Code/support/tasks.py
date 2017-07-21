@@ -556,6 +556,7 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
                         # subs are already sorted by score
                         better_downloaded = False
                         better_tried_download = 0
+                        better_visited = 0
                         for sub in subs:
                             if sub.score > current_score and sub.score > min_score:
                                 Log.Debug("Better subtitle found for %s, downloading", video_id)
@@ -567,7 +568,8 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
                                     break
                                 else:
                                     Log.Debug("Couldn't download/save subtitle. Continuing to the next one")
-                                    Log.Debug("Waiting %s seconds before continuing" % PROVIDER_SLACK)
+                                    Log.Debug("Waiting %s seconds before continuing" % DL_PROVIDER_SLACK)
+                            better_visited += 1
 
                         if better_tried_download and not better_downloaded:
                             Log.Debug("Tried downloading better subtitle for %s, but every try failed.", video_id)
@@ -578,6 +580,10 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
                         if better_tried_download or better_downloaded:
                             Log.Debug("Waiting %s seconds before continuing" % DL_PROVIDER_SLACK)
                             time.sleep(DL_PROVIDER_SLACK)
+
+                        elif better_visited:
+                            Log.Debug("Waiting %s seconds before continuing" % PROVIDER_SLACK)
+                            time.sleep(PROVIDER_SLACK)
 
                     elif hit_providers:
                         # hit the providers but didn't try downloading? wait.
