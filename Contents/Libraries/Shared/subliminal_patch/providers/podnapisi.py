@@ -191,6 +191,5 @@ class PodnapisiProvider(_PodnapisiProvider):
             logger.debug('Getting page %d', params['page'])
             xml.decompose()
             xml = None
-            gc.collect()
 
         return subtitles

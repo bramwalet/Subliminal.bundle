@@ -104,7 +104,6 @@ class Addic7edProvider(_Addic7edProvider):
 
         soup.decompose()
         soup = None
-        gc.collect()
 
         logger.debug('Found %d show ids', len(show_ids))
 
@@ -156,7 +155,6 @@ class Addic7edProvider(_Addic7edProvider):
                 suggestion.decompose()
             soup.decompose()
             soup = None
-            gc.collect()
 
     def query(self, series, season, year=None, country=None):
         # patch: fix logging
@@ -208,7 +206,6 @@ class Addic7edProvider(_Addic7edProvider):
 
         soup.decompose()
         soup = None
-        gc.collect()
 
         return subtitles
 
