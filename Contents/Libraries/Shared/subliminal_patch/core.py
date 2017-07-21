@@ -614,8 +614,12 @@ def save_subtitles(video, subtitles, single=False, directory=None, chmod=None, f
                 subtitle_path = os.path.splitext(subtitle_path)[0] + (u".%s" % format)
 
             logger.debug(u"Saving %r to %r", subtitle, subtitle_path)
-            with open(subtitle_path, 'w') as f:
-                f.write(subtitle.get_modified_content(format=format))
+            content = subtitle.get_modified_content(format=format)
+            if content:
+                with open(subtitle_path, 'w') as f:
+                    f.write(content)
+            else:
+                logger.error(u"Something went wrong when getting modified subtitle for %s", subtitle)
 
         # change chmod if requested
         if chmod:

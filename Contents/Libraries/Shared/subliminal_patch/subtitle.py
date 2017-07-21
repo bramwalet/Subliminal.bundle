@@ -288,10 +288,11 @@ class PatchedSubtitle(Subtitle):
             return fix_text(self.content.decode("utf-8"), **ftfy_defaults)
 
         submods = SubtitleModifications(debug=debug)
-        submods.load(content=self.text, language=self.language)
-        submods.modify(*self.mods)
+        if submods.load(content=self.text, language=self.language):
+            submods.modify(*self.mods)
 
-        return fix_text(self.pysubs2_to_unicode(submods.f, format=format), **ftfy_defaults).encode(encoding="utf-8")
+            return fix_text(self.pysubs2_to_unicode(submods.f, format=format), **ftfy_defaults).encode(encoding="utf-8")
+        return None
 
 
 class ModifiedSubtitle(PatchedSubtitle):
