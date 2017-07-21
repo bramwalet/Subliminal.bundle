@@ -76,7 +76,7 @@ def Start():
     scheduler.run()
 
     # bind activities
-    if config.enable_channel or config.enable_agent:
+    if config.enable_channel:
         Thread.Create(activity.start)
 
     if "anon_id" not in Dict:
