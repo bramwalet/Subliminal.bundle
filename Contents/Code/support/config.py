@@ -118,6 +118,8 @@ class Config(object):
 
         os.environ["SZ_USER_AGENT"] = self.get_user_agent()
 
+        self.providers = self.get_providers()
+
         self.set_plugin_mode()
         self.set_plugin_lock()
         self.set_activity_modes()
@@ -126,7 +128,6 @@ class Config(object):
         self.subtitle_destination_folder = self.get_subtitle_destination_folder()
         self.subtitle_formats = self.get_subtitle_formats()
         self.forced_only = cast_bool(Prefs["subtitles.only_foreign"])
-        self.providers = self.get_providers()
         self.provider_settings = self.get_provider_settings()
         self.max_recent_items_per_library = int_or_default(Prefs["scheduler.max_recent_items_per_library"], 2000)
         self.sections = list(Plex["library"].sections())
@@ -225,11 +226,21 @@ class Config(object):
             except:
                 Log.Warn("Couldn't determine Plex Token")
         else:
-            Log("Did NOT find Preferences file - most likely Windows OS. Otherwise please check logfile and hierarchy.")
+            Log.Warn("Did NOT find Preferences file - most likely Windows OS. Otherwise please check logfile and hierarchy.")
 
         # fixme: windows
 
     def set_plugin_mode(self):
+        self.enable_agent = True
+        self.enable_channel = True
+
+        # any provider enabled?
+        if not self.providers:
+            self.enable_agent = False
+            self.enable_channel = False
+            Log.Warn("No providers enabled, disabling agent and channel!")
+            return
+
         if Prefs["plugin_mode"] == "only agent":
             self.enable_channel = False
         elif Prefs["plugin_mode"] == "only channel":

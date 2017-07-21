@@ -2,6 +2,7 @@
 import types
 import datetime
 
+from func import enable_channel_wrapper
 from support.items import get_kind, get_item_thumb
 from support.helpers import get_video_display_title
 from support.ignore import ignore_list
@@ -12,6 +13,11 @@ from support.scheduler import scheduler
 
 default_thumb = R(ICON_SUB)
 main_icon = ICON if not config.is_development else "icon-dev.jpg"
+
+# noinspection PyUnboundLocalVariable
+route = enable_channel_wrapper(route)
+# noinspection PyUnboundLocalVariable
+handler = enable_channel_wrapper(handler)
 
 
 def should_display_ignore(items, previous=None):
@@ -110,30 +116,6 @@ def get_item_task_data(task_name, rating_key, language):
     task_data = scheduler.get_task_data(task_name)
     search_results = task_data.get(rating_key, {}) if task_data else {}
     return search_results.get(language)
-
-
-def enable_channel_wrapper(func):
-    """
-    returns the original wrapper :func: (route or handler) if applicable, else the plain to-be-wrapped function
-    :param func: original wrapper
-    :return: original wrapper or wrapped function
-    """
-    def noop(*args, **kwargs):
-        def inner(*a, **k):
-            """
-            :param a: args
-            :param k: kwargs
-            :return: originally to-be-wrapped function
-            """
-            return a[0]
-
-        return inner
-
-    def wrap(*args, **kwargs):
-        enforce_route = kwargs.pop("enforce_route", None)
-        return (func if config.enable_channel or enforce_route else noop)(*args, **kwargs)
-
-    return wrap
 
 
 def debounce(func):

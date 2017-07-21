@@ -8,7 +8,7 @@ import logger
 from item_details import ItemDetailsMenu
 from refresh_item import RefreshItem
 from menu_helpers import add_ignore_options, dig_tree, set_refresh_menu_state, \
-    should_display_ignore, enable_channel_wrapper, default_thumb, debounce, ObjectContainer, SubFolderObjectContainer
+    should_display_ignore, default_thumb, debounce, ObjectContainer, SubFolderObjectContainer, route
 from main import fatality, IgnoreMenu
 from advanced import DispatchRestart
 from subzero.constants import ART, PREFIX, DEPENDENCY_MODULE_NAMES
@@ -25,11 +25,6 @@ ObjectContainer.no_cache = True
 
 # default thumb for DirectoryObjects
 DirectoryObject.thumb = default_thumb
-
-# noinspection PyUnboundLocalVariable
-route = enable_channel_wrapper(route)
-# noinspection PyUnboundLocalVariable
-handler = enable_channel_wrapper(handler)
 
 
 @route(PREFIX + '/section/firstLetter/key', deeper=bool)
@@ -161,6 +156,13 @@ def RefreshMissing(randomize=None):
 def ValidatePrefs():
     Core.log.setLevel(logging.DEBUG)
 
+    if Prefs["log_console"]:
+        Core.log.addHandler(logger.console_handler)
+        Log.Debug("Logging to console from now on")
+    else:
+        Core.log.removeHandler(logger.console_handler)
+        Log.Debug("Stop logging to console")
+
     # cache the channel state
     update_dict = False
     restart = False
@@ -177,24 +179,26 @@ def ValidatePrefs():
         update_dict = True
         restart = True
 
+    if "plugin_pin_mode" not in Dict:
+        update_dict = True
+
+    elif Dict["plugin_pin_mode"] != Prefs["plugin_pin_mode"]:
+        update_dict = True
+        restart = True
+
     if update_dict:
         Dict["channel_enabled"] = config.enable_channel
+        Dict["plugin_pin_mode"] = Prefs["plugin_pin_mode"]
         Dict.Save()
 
     if restart:
+        scheduler.stop()
         DispatchRestart()
         return
 
     scheduler.stop()
     scheduler.setup_tasks()
     set_refresh_menu_state(None)
-
-    if Prefs["log_console"]:
-        Core.log.addHandler(logger.console_handler)
-        Log.Debug("Logging to console from now on")
-    else:
-        Core.log.removeHandler(logger.console_handler)
-        Log.Debug("Stop logging to console")
 
     Log.Debug("Validate Prefs called.")
 
@@ -203,7 +207,7 @@ def ValidatePrefs():
     for attr in [
             "app_support_path", "data_path", "data_items_path", "enable_agent",
             "enable_channel", "permissions_ok", "missing_permissions", "fs_encoding",
-            "subtitle_destination_folder", "dbm_supported", "lang_list"]:
+            "subtitle_destination_folder", "dbm_supported", "lang_list", "providers"]:
         Log.Debug("config.%s: %s", attr, getattr(config, attr))
 
     for attr in ["plugin_log_path", "server_log_path"]:

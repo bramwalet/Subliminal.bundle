@@ -5,7 +5,7 @@ import types
 
 from babelfish import Language
 
-from menu_helpers import debounce, SubFolderObjectContainer, default_thumb
+from menu_helpers import debounce, SubFolderObjectContainer, default_thumb, route
 from subzero.modification import registry as mod_registry, SubtitleModifications
 from subzero.constants import PREFIX
 from support.plex_media import get_plex_metadata, scan_videos
