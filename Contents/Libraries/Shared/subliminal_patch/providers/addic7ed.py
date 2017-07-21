@@ -8,12 +8,11 @@ import subliminal
 from random import randint
 
 from subliminal.exceptions import TooManyRequests, DownloadLimitExceeded
-from subliminal.providers.addic7ed import Addic7edProvider as _Addic7edProvider, Addic7edSubtitle as _Addic7edSubtitle, \
-    ParserBeautifulSoup, Language
+from subliminal.providers.addic7ed import Addic7edProvider as _Addic7edProvider, \
+    Addic7edSubtitle as _Addic7edSubtitle, ParserBeautifulSoup, Language
 from subliminal.cache import SHOW_EXPIRATION_TIME, region
 from subliminal.subtitle import fix_line_ending
-from subliminal.utils import sanitize
-from subliminal_patch.extensions import provider_registry
+from subliminal_patch.utils import sanitize
 
 logger = logging.getLogger(__name__)
 
@@ -60,6 +59,8 @@ class Addic7edProvider(_Addic7edProvider):
     hearing_impaired_verifiable = True
     subtitle_class = Addic7edSubtitle
 
+    sanitize_characters = {'-', ':', '(', ')', '.', '/'}
+
     def __init__(self, username=None, password=None, use_random_agents=False):
         super(Addic7edProvider, self).__init__(username=username, password=password)
         self.USE_ADDICTED_RANDOM_AGENTS = use_random_agents
@@ -90,7 +91,7 @@ class Addic7edProvider(_Addic7edProvider):
         # populate the show ids
         show_ids = {}
         for show in soup.select('td.version > h3 > a[href^="/show/"]'):
-            show_clean = sanitize(show.text)
+            show_clean = sanitize(show.text, default_characters=self.sanitize_characters)
             try:
                 show_id = int(show['href'][6:])
             except ValueError:
@@ -143,7 +144,9 @@ class Addic7edProvider(_Addic7edProvider):
             if not suggestion:
                 logger.warning('Show id not found: no suggestion')
                 return None
-            if not sanitize(suggestion[0].i.text.replace('\'', ' ')) == sanitize(series_year):
+            if not sanitize(suggestion[0].i.text.replace('\'', ' '),
+                            default_characters=self.sanitize_characters) == \
+                    sanitize(series_year, default_characters=self.sanitize_characters):
                 logger.warning('Show id not found: suggestion does not match')
                 return None
             show_id = int(suggestion[0]['href'][6:])
