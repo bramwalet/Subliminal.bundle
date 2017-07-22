@@ -108,7 +108,7 @@ class SubtitleListingMixin(object):
         if not scanned_parts:
             scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
             if not scanned_parts:
-                Log.Error("Couldn't list available subtitles for %s", rating_key)
+                Log.Error(u"%s: Couldn't list available subtitles for %s", self.name, rating_key)
                 return
 
         video, plex_part = scanned_parts.items()[0]
@@ -136,11 +136,11 @@ class SubtitleListingMixin(object):
         # sort subtitles by score
         unsorted_subtitles = []
         for s in available_subs[video]:
-            Log.Debug("Starting score computation for %s", s)
+            Log.Debug(u"%s: Starting score computation for %s", self.name, s)
             try:
                 matches = s.get_matches(video)
             except AttributeError:
-                Log.Error("Match computation failed for %s: %s", s, traceback.format_exc())
+                Log.Error(u"%s: Match computation failed for %s: %s", self.name, s, traceback.format_exc())
                 continue
 
             unsorted_subtitles.append(
@@ -151,7 +151,7 @@ class SubtitleListingMixin(object):
         for subtitle, score, matches in scored_subtitles:
             # check score
             if score < min_score:
-                Log.Info('Score %d is below min_score (%d)', score, min_score)
+                Log.Info(u'%s: Score %d is below min_score (%d)', self.name, score, min_score)
                 continue
             subtitle.score = score
             subtitle.matches = matches
@@ -179,12 +179,13 @@ class DownloadSubtitleMixin(object):
         if subtitle.content:
             try:
                 save_subtitles(scanned_parts, {video: [subtitle]}, mode=mode, mods=config.default_mods)
-                Log.Debug("Manually downloaded subtitle for: %s", rating_key)
+                Log.Debug(u"%s: Manually downloaded subtitle for: %s", self.name, rating_key)
                 download_successful = True
                 refresh_item(rating_key)
                 track_usage("Subtitle", "manual", "download", 1)
             except:
-                Log.Error("Something went wrong when downloading specific subtitle: %s", traceback.format_exc())
+                Log.Error(u"%s: Something went wrong when downloading specific subtitle: %s",
+                          self.name, traceback.format_exc())
             finally:
                 set_refresh_menu_state(None)
 
@@ -197,7 +198,7 @@ class DownloadSubtitleMixin(object):
                                 subtitle=subtitle,
                                 mode=mode)
         else:
-            set_refresh_menu_state("Subtitle download failed (%s)" % rating_key)
+            set_refresh_menu_state(u"%s: Subtitle download failed (%s)", self.name, rating_key)
         return download_successful
 
 
@@ -342,7 +343,7 @@ class SearchAllRecentlyAddedMissing(Task):
 
         config.init_subliminal_patches()
 
-        Log.Info("%s: Searching for subtitles for %s items", self.name, self.items_searching)
+        Log.Info(u"%s: Searching for subtitles for %s items", self.name, self.items_searching)
 
         # search for subtitles in viable items
         for fn, stored_subs in viable_items.iteritems():
@@ -357,7 +358,7 @@ class SearchAllRecentlyAddedMissing(Task):
             plex_item = get_item(video_id)
 
             if not plex_item:
-                Log.Info("%s: Item %s unknown", self.name, video_id)
+                Log.Info(u"%s: Item %s unknown, skipping", self.name, video_id)
                 continue
 
             if is_ignored(video_id, item=plex_item):
@@ -374,14 +375,14 @@ class SearchAllRecentlyAddedMissing(Task):
                 try:
                     metadata = get_plex_metadata(video_id, part_id, stored_subs.item_type)
                 except PartUnknownException:
-                    Log.Info("%s: Part %s:%s unknown", self.name, video_id, part_id)
+                    Log.Info(u"%s: Part %s:%s unknown, skipping", self.name, video_id, part_id)
                     continue
 
                 if not metadata:
-                    Log.Info("%s: Part %s:%s unknown", self.name, video_id, part_id)
+                    Log.Info(u"%s: Part %s:%s unknown, skipping", self.name, video_id, part_id)
                     continue
 
-                Log.Debug("%s: Looking for missing subtitles: %s:%s", self.name, video_id, part_id)
+                Log.Debug(u"%s: Looking for missing subtitles: %s:%s", self.name, video_id, part_id)
                 scanned_parts = scan_videos([metadata], kind="series"
                                             if stored_subs.item_type == "episode" else "movie")
 
@@ -396,12 +397,12 @@ class SearchAllRecentlyAddedMissing(Task):
 
                     try:
                         save_subtitles(scanned_parts, downloaded_subtitles, mode="a", mods=config.default_mods)
-                        Log.Debug("%s: Downloaded subtitle for item with missing subs: %s", self.name, video_id)
+                        Log.Debug(u"%s: Downloaded subtitle for item with missing subs: %s", self.name, video_id)
                         download_successful = True
                         refresh_item(video_id)
                         track_usage("Subtitle", "manual", "download", 1)
                     except:
-                        Log.Error("%s: Something went wrong when downloading specific subtitle: %s", self.name,
+                        Log.Error(u"%s: Something went wrong when downloading specific subtitle: %s", self.name,
                                   traceback.format_exc())
                     finally:
                         item_title = get_title_for_video_metadata(metadata, add_section_title=False)
@@ -417,7 +418,7 @@ class SearchAllRecentlyAddedMissing(Task):
                                                 subtitle=subtitle,
                                                 mode="a")
 
-                    Log.Debug("Waiting %s seconds before continuing" % PROVIDER_SLACK)
+                    Log.Debug(u"%s: Waiting %s seconds before continuing", self.name, PROVIDER_SLACK)
                     time.sleep(PROVIDER_SLACK)
 
             download_count += downloads_per_video
@@ -429,18 +430,19 @@ class SearchAllRecentlyAddedMissing(Task):
             self.percentage = int(self.items_done * 100 / self.items_searching)
 
             if downloads_per_video:
-                Log.Debug("Subtitles have been downloaded, waiting %s seconds before continuing" % DL_PROVIDER_SLACK)
+                Log.Debug(u"%s: Subtitles have been downloaded, "
+                          u"waiting %s seconds before continuing", self.name, DL_PROVIDER_SLACK)
                 time.sleep(DL_PROVIDER_SLACK)
             else:
                 if hit_providers:
-                    Log.Debug("Waiting %s seconds before continuing" % PROVIDER_SLACK)
+                    Log.Debug(u"%s: Waiting %s seconds before continuing", self.name, PROVIDER_SLACK)
                     time.sleep(PROVIDER_SLACK)
 
         if download_count:
-            Log.Debug("Task: %s, done. Missing subtitles found for %s/%s items (%s subs downloaded)", self.name,
+            Log.Debug(u"%s: done. Missing subtitles found for %s/%s items (%s subs downloaded)", self.name,
                       videos_with_downloads, self.items_searching, download_count)
         else:
-            Log.Debug("Task: %s, done. No subtitles found for %s items", self.name, self.items_searching)
+            Log.Debug(u"%s: done. No subtitles found for %s items", self.name, self.items_searching)
 
     def post_run(self, task_data):
         super(SearchAllRecentlyAddedMissing, self).post_run(task_data)
@@ -469,11 +471,11 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
         try:
             max_search_days = int(Prefs["scheduler.tasks.FindBetterSubtitles.max_days_after_added"].strip())
         except ValueError:
-            Log.Error("Please only put numbers into the FindBetterSubtitles.max_days_after_added setting. Exiting")
+            Log.Error(u"Please only put numbers into the FindBetterSubtitles.max_days_after_added setting. Exiting")
             return
         else:
             if max_search_days > 30:
-                Log.Error("FindBetterSubtitles.max_days_after_added is too big. Max is 30 days.")
+                Log.Error(u"%s: FindBetterSubtitles.max_days_after_added is too big. Max is 30 days.", self.name)
                 return
 
         now = datetime.datetime.now()
@@ -500,7 +502,7 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
 
             # don't search for better subtitles until at least 30 minutes have passed
             if stored_subs.added_at + datetime.timedelta(minutes=30) > now:
-                Log.Debug("Item %s too new, skipping", video_id)
+                Log.Debug(u"%s: Item %s too new, skipping", self.name, video_id)
                 continue
 
             # added_date <= max_search_days?
@@ -527,26 +529,28 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
 
                     # late cutoff met? skip
                     if current_score >= cutoff:
-                        Log.Debug(u"Skipping finding better subs, cutoff met (current: %s, cutoff: %s): %s (%s)",
-                                  current_score, cutoff, stored_subs.title, video_id)
+                        Log.Debug(u"%s: Skipping finding better subs, "
+                                  u"cutoff met (current: %s, cutoff: %s): %s (%s)",
+                                  self.name, current_score, cutoff, stored_subs.title, video_id)
                         continue
 
                     # got manual subtitle but don't want to touch those?
                     if current_mode == "m" and not overwrite_manually_selected:
-                        Log.Debug(u"Skipping finding better subs, had manual: %s (%s)", stored_subs.title, video_id)
+                        Log.Debug(u"%s: Skipping finding better subs, "
+                                  u"had manual: %s (%s)", self.name, stored_subs.title, video_id)
                         continue
 
                     # subtitle modifications different from default
                     if not overwrite_manually_modified and current.mods \
                             and set(current.mods).difference(set(config.default_mods)):
-                        Log.Debug(u"Skipping finding better subs, it has manual modifications: %s (%s)",
-                                  stored_subs.title, video_id)
+                        Log.Debug(u"%s: Skipping finding better subs, it has manual modifications: %s (%s)",
+                                  self.name, stored_subs.title, video_id)
                         continue
 
                     try:
                         subs = self.list_subtitles(video_id, stored_subs.item_type, part_id, language)
                     except PartUnknownException:
-                        Log.Info("Part %s unknown/gone; ditching subtitle info", part_id)
+                        Log.Info(u"%s: Part %s unknown/gone; ditching subtitle info", self.name, part_id)
                         ditch_parts.append(part_id)
                         continue
 
@@ -559,7 +563,7 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
                         better_visited = 0
                         for sub in subs:
                             if sub.score > current_score and sub.score > min_score:
-                                Log.Debug("Better subtitle found for %s, downloading", video_id)
+                                Log.Debug(u"%s: Better subtitle found for %s, downloading", self.name, video_id)
                                 better_tried_download += 1
                                 ret = self.download_subtitle(sub, video_id, mode="b")
                                 if ret:
@@ -567,28 +571,31 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
                                     better_downloaded = True
                                     break
                                 else:
-                                    Log.Debug("Couldn't download/save subtitle. Continuing to the next one")
-                                    Log.Debug("Waiting %s seconds before continuing" % DL_PROVIDER_SLACK)
+                                    Log.Debug(u"%s: Couldn't download/save subtitle. "
+                                              u"Continuing to the next one", self.name)
+                                    Log.Debug(u"%s: Waiting %s seconds before continuing",
+                                              self.name, DL_PROVIDER_SLACK)
                                     time.sleep(DL_PROVIDER_SLACK)
                             better_visited += 1
 
                         if better_tried_download and not better_downloaded:
-                            Log.Debug("Tried downloading better subtitle for %s, but every try failed.", video_id)
+                            Log.Debug(u"%s: Tried downloading better subtitle for %s, "
+                                      u"but every try failed.", self.name, video_id)
 
                         elif better_downloaded:
-                            Log.Debug("Better subtitle downloaded for %s", video_id)
+                            Log.Debug(u"%s: Better subtitle downloaded for %s", self.name, video_id)
 
                         if better_tried_download or better_downloaded:
-                            Log.Debug("Waiting %s seconds before continuing" % DL_PROVIDER_SLACK)
+                            Log.Debug(u"%s: Waiting %s seconds before continuing", self.name, DL_PROVIDER_SLACK)
                             time.sleep(DL_PROVIDER_SLACK)
 
                         elif better_visited:
-                            Log.Debug("Waiting %s seconds before continuing" % PROVIDER_SLACK)
+                            Log.Debug(u"%s: Waiting %s seconds before continuing", self.name, PROVIDER_SLACK)
                             time.sleep(PROVIDER_SLACK)
 
                     elif hit_providers:
                         # hit the providers but didn't try downloading? wait.
-                        Log.Debug("Waiting %s seconds before continuing" % PROVIDER_SLACK)
+                        Log.Debug(u"%s: Waiting %s seconds before continuing", self.name, PROVIDER_SLACK)
                         time.sleep(PROVIDER_SLACK)
 
             if ditch_parts:
@@ -604,10 +611,10 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
         subtitle_storage.destroy()
 
         if better_found:
-            Log.Debug("Task: %s, done. Better subtitles found for %s/%s items", self.name, better_found,
+            Log.Debug(u"%s: done. Better subtitles found for %s/%s items", self.name, better_found,
                       viable_item_count)
         else:
-            Log.Debug("Task: %s, done. No better subtitles found for %s items", self.name, viable_item_count)
+            Log.Debug(u"%s: done. No better subtitles found for %s items", self.name, viable_item_count)
 
 
 class SubtitleStorageMaintenance(Task):
@@ -617,14 +624,15 @@ class SubtitleStorageMaintenance(Task):
     def run(self):
         super(SubtitleStorageMaintenance, self).run()
         self.running = True
-        Log.Info("Running subtitle storage maintenance")
+        Log.Info(u"%s: Running subtitle storage maintenance", self.name)
         storage = get_subtitle_storage()
         deleted_items = storage.delete_missing(wanted_languages=set(str(l) for l in config.lang_list))
         if deleted_items:
-            Log.Info("Subtitle information for %d non-existant videos have been cleaned up" % len(deleted_items))
-            Log.Debug("Videos: %s" % deleted_items)
+            Log.Info(u"%s: Subtitle information for %d non-existant videos have been cleaned up",
+                     self.name, len(deleted_items))
+            Log.Debug(u"%s: Videos: %s", self.name, deleted_items)
         else:
-            Log.Info("Nothing to do")
+            Log.Info(u"%s: Nothing to do", self.name)
 
         storage.destroy()
 
@@ -636,7 +644,7 @@ class MenuHistoryMaintenance(Task):
     def run(self):
         super(MenuHistoryMaintenance, self).run()
         self.running = True
-        Log.Info("Running menu history maintenance")
+        Log.Info(u"%s: Running menu history maintenance", self.name)
         now = datetime.datetime.now()
         if "menu_history" in Dict:
             for key, timeout in Dict["menu_history"].copy().items():
@@ -654,12 +662,12 @@ class MigrateSubtitleStorage(Task):
     def run(self):
         super(MigrateSubtitleStorage, self).run()
         self.running = True
-        Log.Info("Running subtitle storage migration")
+        Log.Info(u"%s: Running subtitle storage migration", self.name)
         storage = get_subtitle_storage()
         for fn in storage.get_all_files():
             if fn.endswith(".json.gz"):
                 continue
-            Log.Debug("Migrating %s", fn)
+            Log.Debug(u"%s: Migrating %s", self.name, fn)
             storage.load(None, fn)
 
         storage.destroy()
