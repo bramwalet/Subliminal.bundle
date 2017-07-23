@@ -25,27 +25,26 @@ for name in os.listdir(os.path.dirname(__file__)):
     for item in dir(mod):
         if item.endswith("Provider") and not item.startswith("_"):
             provider_class = getattr(mod, item)
+            is_sz_provider = issubclass(provider_class, Provider)
 
-            if not issubclass(provider_class, _Provider):
-                continue
+            if not is_sz_provider:
+                # patch provider bases
+                new_bases = []
+                for base in provider_class.__bases__:
+                    if issubclass(base, _Provider):
+                        base.__bases__ = (Provider,)
+                    new_bases.append(base)
 
-            # patch provider bases
-            new_bases = []
-            for base in provider_class.__bases__:
-                if issubclass(base, _Provider):
-                    base.__bases__ = (Provider,)
-                new_bases.append(base)
+                provider_class.__bases__ = tuple(new_bases)
 
-            provider_class.__bases__ = tuple(new_bases)
+                # patch subtitle bases
+                new_bases = []
+                for base in provider_class.subtitle_class.__bases__:
+                    if issubclass(base, _Subtitle):
+                        base.__bases__ = (PatchedSubtitle,)
+                    new_bases.append(base)
 
-            # patch subtitle bases
-            new_bases = []
-            for base in provider_class.subtitle_class.__bases__:
-                if issubclass(base, _Subtitle):
-                    base.__bases__ = (PatchedSubtitle,)
-                new_bases.append(base)
-
-            provider_class.subtitle_class.__bases__ = tuple(new_bases)
+                provider_class.subtitle_class.__bases__ = tuple(new_bases)
 
             # inject our requests.Session wrapper for automatic retry
             mod.Session = RetryingSession
