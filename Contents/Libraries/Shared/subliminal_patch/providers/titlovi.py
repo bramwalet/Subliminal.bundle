@@ -1,0 +1,277 @@
+# coding=utf-8
+
+import io
+import logging
+import math
+import re
+import rarfile
+
+from bs4 import BeautifulSoup
+from zipfile import ZipFile, is_zipfile
+from rarfile import RarFile, is_rarfile
+from babelfish import Language, language_converters
+from requests import Session
+from guessit import guessit
+from subliminal_patch.providers import Provider
+from subliminal_patch.subtitle import Subtitle
+from subliminal_patch.utils import sanitize, fix_inconsistent_naming as _fix_inconsistent_naming
+from subliminal.exceptions import ProviderError
+from subliminal.score import get_equivalent_release_groups
+from subliminal.utils import sanitize_release_group
+from subliminal.subtitle import fix_line_ending, guess_matches
+from subliminal.video import Episode, Movie
+
+# parsing regex definitions
+title_re = re.compile(r'(?P<title>(?:.+(?= [Aa][Kk][Aa] ))|.+)(?:(?:.+)(?P<altitle>(?<= [Aa][Kk][Aa] ).+))?')
+lang_re = re.compile(r'(?<=flags/)(?P<lang>.{2})(?:.)(?P<script>c?)(?:.+)')
+season_re = re.compile(r'Sezona (?P<season>\d+)')
+episode_re = re.compile(r'Epizoda (?P<episode>\d+)')
+year_re = re.compile(r'(?P<year>\d+)')
+fps_re = re.compile(r'fps: (?P<fps>.+)')
+
+
+def fix_inconsistent_naming(title):
+    """Fix titles with inconsistent naming using dictionary and sanitize them.
+
+    :param str title: original title.
+    :return: new title.
+    :rtype: str
+
+    """
+    return _fix_inconsistent_naming(title, {"DC's Legends of Tomorrow": "Legends of Tomorrow",
+                                            "Marvel's Jessica Jones": "Jessica Jones"})
+
+logger = logging.getLogger(__name__)
+
+# Configure :mod:`rarfile` to use the same path separator as :mod:`zipfile`
+rarfile.PATH_SEP = '/'
+
+language_converters.register('titlovi = subliminal_patch.converters.titlovi:TitloviConverter')
+
+
+class TitloviSubtitle(Subtitle):
+    provider_name = 'titlovi'
+
+    def __init__(self, language, page_link, download_link, sid, releases, title, altitle=None, season=None,
+                 episode=None, year=None, fps=None):
+        super(TitloviSubtitle, self).__init__(language, page_link=page_link)
+        self.sid = sid
+        self.releases = releases
+        self.title = title
+        self.altitle = altitle
+        self.season = season
+        self.episode = episode
+        self.year = year
+        self.download_link = download_link
+        self.fps = fps
+
+    @property
+    def id(self):
+        return self.sid
+
+    def get_matches(self, video):
+        matches = set()
+
+        # handle movies and series separately
+        if isinstance(video, Episode):
+            # series
+            if video.series and sanitize(self.title) == fix_inconsistent_naming(video.series) or sanitize(
+                    self.altitle) == fix_inconsistent_naming(video.series):
+                matches.add('series')
+            # year
+            if video.original_series and self.year is None or video.year and video.year == self.year:
+                matches.add('year')
+            # season
+            if video.season and self.season == video.season:
+                matches.add('season')
+            # episode
+            if video.episode and self.episode == video.episode:
+                matches.add('episode')
+        # movie
+        elif isinstance(video, Movie):
+            # title
+            if video.title and sanitize(self.title) == fix_inconsistent_naming(video.title) or sanitize(
+                    self.altitle) == fix_inconsistent_naming(video.title):
+                matches.add('title')
+            # year
+            if video.year and self.year == video.year:
+                matches.add('year')
+
+        # rest is same for both groups
+
+        # release_group
+        if (video.release_group and self.releases and
+                any(r in sanitize_release_group(self.releases)
+                    for r in get_equivalent_release_groups(sanitize_release_group(video.release_group)))):
+            matches.add('release_group')
+        # resolution
+        if video.resolution and self.releases and video.resolution in self.releases.lower():
+            matches.add('resolution')
+        # format
+        if video.format and self.releases and video.format.lower() in self.releases.lower():
+            matches.add('format')
+        # other properties
+        matches |= guess_matches(video, guessit(self.releases))
+
+        return matches
+
+
+class TitloviProvider(Provider):
+    subtitle_class = TitloviSubtitle
+    languages = {Language.fromtitlovi(l) for l in language_converters['titlovi'].codes} | {Language.fromietf('sr')}
+    server_url = 'http://titlovi.com'
+    search_url = server_url + '/titlovi/?'
+    download_url = server_url + '/download/?type=1&mediaid='
+
+    def initialize(self):
+        self.session = Session()
+
+    def terminate(self):
+        self.session.close()
+
+    def query(self, languages, title, season=None, episode=None, year=None):
+        itemsperpage = 10
+        currentpage = 1
+
+        # convert list of languages into search string
+        langs = '|'.join(
+            map(str, [l.titlovi if l != Language.fromietf('sr') else 'cirilica' for l in languages]))
+        # set query params
+        params = {'prijevod': title, 'jezik': langs}
+        is_episode = False
+        if season and episode:
+            is_episode = True
+            params['s'] = season
+            params['e'] = episode
+        if year:
+            params['g'] = year
+
+        # loop through paginated results
+        logger.info('Searching subtitles %r', params)
+        subtitles = []
+
+        while True:
+            # query the server
+            r = self.session.get(self.search_url, params=params, timeout=10)
+            r.raise_for_status()
+
+            soup = BeautifulSoup(r.content, 'lxml')
+
+            # number of results
+            resultcount = int(soup.select_one('.results_count b').string)
+
+            # exit if no results
+            if not resultcount:
+                logger.debug('No subtitles found')
+                break
+
+            # number of pages with results
+            pages = int(math.ceil(resultcount / float(itemsperpage)))
+
+            # get current page
+            if 'pg' in params:
+                currentpage = params['pg']
+
+            sublist = soup.select('section.titlovi > ul.titlovi > li')
+            for sub in sublist:
+                # subtitle id
+                sid = sub.find(attrs={'data-id': True}).attrs['data-id']
+                # get download link
+                download_link = self.download_url + sid
+                # title and alternate title
+                match = title_re.search(sub.a.string)
+                if match:
+                    title = match.group('title')
+                    altitle = match.group('altitle')
+                # page link
+                page_link = self.server_url + sub.a.attrs['href']
+                # subtitle language
+                match = lang_re.search(sub.select_one('.lang').attrs['src'])
+                if match:
+                    lang = Language.fromtitlovi(match.group('lang') + match.group('script'))
+                # relase year or series start year
+                match = year_re.search(sub.find(attrs={'data-id': True}).parent.i.string)
+                if match:
+                    year = int(match.group('year'))
+                # fps
+                match = fps_re.search(sub.select_one('.fps').string)
+                if match:
+                    fps = match.group('fps')
+                # releases
+                releases = sub.select_one('.fps').parent.contents[0].string
+
+                # handle movies and series separately
+                if is_episode:
+                    # season and episode info
+                    sxe = sub.select_one('.s0xe0y').string
+                    if sxe:
+                        match = season_re.search(sxe)
+                        if match:
+                            season = int(match.group('season'))
+                        match = episode_re.search(sxe)
+                        if match:
+                            episode = int(match.group('episode'))
+                    subtitle = self.subtitle_class(lang, page_link, download_link, sid, releases, title,
+                                                   altitle=altitle, season=season, episode=episode, year=year,
+                                                   fps=fps)
+                else:
+                    subtitle = self.subtitle_class(lang, page_link, download_link, sid, releases, title,
+                                                   altitle=altitle, year=year, fps=fps)
+                logger.debug('Found subtitle %r', subtitle)
+
+                # add found subtitles
+                subtitles.append(subtitle)
+
+            soup.decompose()
+
+            # stop on last page
+            if currentpage >= pages:
+                break
+
+            # increment current page
+            params['pg'] = currentpage + 1
+            logger.debug('Getting page %d', params['pg'])
+
+        return subtitles
+
+    def list_subtitles(self, video, languages):
+        season = episode = None
+        if isinstance(video, Episode):
+            title = video.series
+            season = video.season
+            episode = video.episode
+        else:
+            title = video.title
+
+        return [s for s in
+                self.query(languages, fix_inconsistent_naming(title), season=season, episode=episode, year=video.year)]
+
+    def download_subtitle(self, subtitle):
+        r = self.session.get(subtitle.download_link, timeout=10)
+        r.raise_for_status()
+
+        # open the archive
+        archive_stream = io.BytesIO(r.content)
+        if is_rarfile(archive_stream):
+            logger.debug('Archive identified as rar')
+            archive = RarFile(archive_stream)
+        elif is_zipfile(archive_stream):
+            logger.debug('Archive identified as zip')
+            archive = ZipFile(archive_stream)
+        else:
+            raise ProviderError('Unidentified archive type')
+
+        # extract subtitle's content
+        use_name = None
+        for name in archive.namelist():
+            for ext in (".srt", ".sub", ".ssa", ".ass"):
+                if name.endswith(ext):
+                    use_name = name
+                    break
+
+            if use_name:
+                break
+
+        if not use_name:
+            raise ProviderError("None of expected subtitle formats found in archive")
+        subtitle.content = fix_line_ending(archive.read(use_name))
