@@ -14,7 +14,7 @@ from pysubs2 import SSAStyle
 from pysubs2.subrip import parse_tags, MAX_REPRESENTABLE_TIME
 from pysubs2.time import ms_to_times
 from subzero.modification import SubtitleModifications
-from subliminal import Subtitle
+from subliminal import Subtitle as Subtitle_
 from ftfy import fix_text
 
 logger = logging.getLogger(__name__)
@@ -26,7 +26,7 @@ ftfy_defaults = {
 }
 
 
-class PatchedSubtitle(Subtitle):
+class Subtitle(Subtitle_):
     storage_path = None
     release_info = None
     matches = None
@@ -40,8 +40,8 @@ class PatchedSubtitle(Subtitle):
     _guessed_encoding = None
 
     def __init__(self, language, hearing_impaired=False, page_link=None, encoding=None, mods=None):
-        super(PatchedSubtitle, self).__init__(language, hearing_impaired=hearing_impaired, page_link=page_link,
-                                              encoding=encoding)
+        super(Subtitle, self).__init__(language, hearing_impaired=hearing_impaired, page_link=page_link,
+                                       encoding=encoding)
         self.mods = mods
 
     def __repr__(self):
@@ -295,5 +295,5 @@ class PatchedSubtitle(Subtitle):
         return None
 
 
-class ModifiedSubtitle(PatchedSubtitle):
+class ModifiedSubtitle(Subtitle):
     id = None

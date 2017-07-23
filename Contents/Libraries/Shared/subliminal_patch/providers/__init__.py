@@ -6,7 +6,7 @@ from subliminal.providers import Provider as _Provider
 from subliminal.subtitle import Subtitle as _Subtitle
 from subliminal_patch.extensions import provider_registry
 from subliminal_patch.http import RetryingSession
-from subliminal_patch.subtitle import PatchedSubtitle
+from subliminal_patch.subtitle import Subtitle
 
 
 class Provider(_Provider):
@@ -41,7 +41,7 @@ for name in os.listdir(os.path.dirname(__file__)):
                 new_bases = []
                 for base in provider_class.subtitle_class.__bases__:
                     if issubclass(base, _Subtitle):
-                        base.__bases__ = (PatchedSubtitle,)
+                        base.__bases__ = (Subtitle,)
                     new_bases.append(base)
 
                 provider_class.subtitle_class.__bases__ = tuple(new_bases)
