@@ -17,11 +17,6 @@ class PlexActivityManager(object):
             activity_sources_enabled = ["websocket"]
             Activity.on('websocket.playing', self.on_playing)
 
-        elif config.server_log_path:
-            Activity_Logging.add_hint(config.server_log_path, None)
-            activity_sources_enabled = ["logging"]
-            Activity.on('logging.playing', self.on_playing)
-
         if activity_sources_enabled:
             Activity.start(activity_sources_enabled)
 
