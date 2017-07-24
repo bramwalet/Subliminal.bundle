@@ -20,7 +20,7 @@ from support.plex_media import scan_videos, get_plex_metadata
 from download import download_best_subtitles
 
 
-PROVIDER_SLACK = 15
+PROVIDER_SLACK = 30
 DL_PROVIDER_SLACK = 30
 
 
