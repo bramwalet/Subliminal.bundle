@@ -153,7 +153,7 @@ class Config(object):
 
     def init_libraries(self):
         if Core.runtime.os == "Windows":
-            unrar_exe = os.path.abspath(os.path.join(self.libraries_root, "Windows", "generic", "UnRAR", "UnRAR.exe"))
+            unrar_exe = os.path.abspath(os.path.join(self.libraries_root, "Windows", "i386", "UnRAR", "UnRAR.exe"))
             if os.path.isfile(unrar_exe):
                 rarfile.UNRAR_TOOL = unrar_exe
                 Log.Info("Using UnRAR from: %s", unrar_exe)
