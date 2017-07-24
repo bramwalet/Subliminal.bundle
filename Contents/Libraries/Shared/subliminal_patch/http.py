@@ -8,7 +8,9 @@ import socket
 from requests import Session, exceptions
 from retry.api import retry_call
 
-pem_file = os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", certifi.where()))
+from subzero.lib.io import get_viable_encoding
+
+pem_file = os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(unicode(__file__, get_viable_encoding()))), "..", certifi.where()))
 try:
     default_ssl_context = ssl.create_default_context(cafile=pem_file)
 except AttributeError:

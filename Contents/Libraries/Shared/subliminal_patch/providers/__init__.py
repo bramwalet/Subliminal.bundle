@@ -8,6 +8,7 @@ from subliminal_patch.extensions import provider_registry
 from subliminal_patch.http import RetryingSession
 from subliminal_patch.subtitle import Subtitle
 
+from subzero.lib.io import get_viable_encoding
 
 class Provider(_Provider):
     hash_verifiable = False
@@ -16,7 +17,7 @@ class Provider(_Provider):
 
 
 # register providers
-for name in os.listdir(os.path.dirname(__file__)):
+for name in os.listdir(os.path.dirname(unicode(__file__, get_viable_encoding()))):
     if name in ("__init__.py", "mixins.py", "utils.py") or not name.endswith(".py"):
         continue
 
