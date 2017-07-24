@@ -293,4 +293,6 @@ def TriggerDownloadSubtitle(rating_key=None, subtitle_id=None, item_title=None, 
     else:
         scheduler.dispatch_task("DownloadSubtitleForItem", rating_key=rating_key, subtitle=download_subtitle)
 
+    scheduler.clear_task_data("AvailableSubsForItem")
+
     return fatality(randomize=timestamp(), header=" ", replace_parent=True)
