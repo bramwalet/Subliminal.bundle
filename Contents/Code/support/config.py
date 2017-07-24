@@ -34,8 +34,6 @@ IGNORE_FN = ("subzero.ignore", ".subzero.ignore", ".nosz")
 VERSION_RE = re.compile(ur'CFBundleVersion.+?<string>([0-9\.]+)</string>', re.DOTALL)
 DEV_RE = re.compile(ur'PlexPluginDevMode.+?<string>([01]+)</string>', re.DOTALL)
 
-impawrt = getattr(sys.modules['__main__'], "__builtins__").get("__import__")
-
 
 def int_or_default(s, default):
     try:
@@ -169,27 +167,34 @@ class Config(object):
         self.dbm_supported = False
 
         # try importing dbm modules
-        if impawrt:
-            for name in names:
-                try:
-                    impawrt(name)
-                except:
-                    continue
-                if not self.dbm_supported:
-                    self.dbm_supported = name
-                    break
+        if Core.runtime.os != "Windows":
+            impawrt = None
+            try:
+                impawrt = getattr(sys.modules['__main__'], "__builtins__").get("__import__")
+            except:
+                pass
 
-            if self.dbm_supported:
-                # anydbm checks; try guessing the format and importing the correct module
-                dbfn = os.path.join(config.data_items_path, 'subzero.dbm')
-                db_which = whichdb(dbfn)
-                if db_which is not None and db_which != "":
+            if impawrt:
+                for name in names:
                     try:
-                        impawrt(db_which)
-                    except ImportError:
-                        self.dbm_supported = False
+                        impawrt(name)
+                    except:
+                        continue
+                    if not self.dbm_supported:
+                        self.dbm_supported = name
+                        break
 
-        if Core.runtime.os != "Windows" and self.dbm_supported:
+                if self.dbm_supported:
+                    # anydbm checks; try guessing the format and importing the correct module
+                    dbfn = os.path.join(config.data_items_path, 'subzero.dbm')
+                    db_which = whichdb(dbfn)
+                    if db_which is not None and db_which != "":
+                        try:
+                            impawrt(db_which)
+                        except ImportError:
+                            self.dbm_supported = False
+
+        if self.dbm_supported:
             try:
                 subliminal.region.configure('dogpile.cache.dbm', expiration_time=datetime.timedelta(days=30),
                                             arguments={'filename': dbfn,
