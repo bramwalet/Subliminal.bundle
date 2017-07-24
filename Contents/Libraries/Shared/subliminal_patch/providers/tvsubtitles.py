@@ -101,7 +101,7 @@ class TVsubtitlesProvider(_TVsubtitlesProvider):
         # search the show id
         show_id = self.search_show_id(series, year)
         if show_id is None:
-            logger.error('No show id found for %r (%r)', series, {'year': year})
+            logger.info('No show id found for %r (%r)', series, {'year': year})
             return []
 
         # get the episode ids
