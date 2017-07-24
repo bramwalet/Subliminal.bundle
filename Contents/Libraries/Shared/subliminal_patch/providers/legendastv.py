@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 class LegendasTVSubtitle(_LegendasTVSubtitle):
     def __init__(self, language, type, title, year, imdb_id, season, archive, name):
         super(LegendasTVSubtitle, self).__init__(language, type, title, year, imdb_id, season, archive, name)
+        self.archive.content = None
         self.release_info = archive.name
         self.page_link = archive.link
 
@@ -20,3 +21,7 @@ class LegendasTVSubtitle(_LegendasTVSubtitle):
 
 class LegendasTVProvider(_LegendasTVProvider):
     subtitle_class = LegendasTVSubtitle
+
+    def download_subtitle(self, subtitle):
+        super(LegendasTVProvider, self).download_subtitle(subtitle)
+        subtitle.archive.content = None
