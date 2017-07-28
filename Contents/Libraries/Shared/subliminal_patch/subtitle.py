@@ -120,16 +120,19 @@ class Subtitle(Subtitle_):
                               'mac_greek'])
 
         # Polish, Czech, Slovak, Hungarian, Slovene, Bosnian, Croatian, Serbian (Latin script),
-        # Romanian (before 1993 spelling reform) and Albanian
+        # Romanian and Albanian
         elif self.language.alpha3 in ('pol', 'cze', 'ces', 'slk', 'slo', 'slv', 'hun', 'bos', 'hbs', 'hrv', 'rsb',
                                       'ron', 'rum', 'sqi', 'alb'):
+
+            encodings.extend(['iso-8859-2', 'windows-1250'])
+
             # Eastern European Group 1
             if self.language.alpha3 == "slv":
                 encodings.append('iso-8859-4')
 
-            elif self.language.alpha3 in ("ron", "rum", "sqi", "alb"):
-                encodings.extend(['windows-1252', 'iso-8859-1', 'iso-8859-9', 'iso-8859-15'])
-            encodings.extend(['windows-1250', 'iso-8859-2'])
+            # Albanian
+            elif self.language.alpha3 in ("sqi", "alb"):
+                encodings.extend(['windows-1252', 'iso-8859-15', 'iso-8859-1', 'iso-8859-9'])
 
         # Bulgarian, Serbian and Macedonian, Ukranian and Russian
         elif self.language.alpha3 in ('bul', 'srp', 'mkd', 'mac', 'rus', 'ukr'):
