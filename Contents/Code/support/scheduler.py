@@ -58,6 +58,7 @@ class DefaultScheduler(object):
             raise NotImplementedError("Task missing! %s" % name)
 
         Dict["tasks"][name]["data"] = {}
+        Dict["tasks"][name]["running"] = False
         Dict.Save()
         Log.Debug("Task data cleared: %s", name)
 
