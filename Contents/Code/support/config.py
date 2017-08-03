@@ -413,10 +413,16 @@ class Config(object):
             return l
 
         if Prefs["langPref2a"] != "None":
-            l.update({Language.fromietf(Prefs["langPref2a"])})
+            try:
+                l.update({Language.fromietf(Prefs["langPref2a"])})
+            except:
+                pass
 
         if Prefs["langPref3a"] != "None":
-            l.update({Language.fromietf(Prefs["langPref3a"])})
+            try:
+                l.update({Language.fromietf(Prefs["langPref3a"])})
+            except:
+                pass
 
         if len(lang_custom) and lang_custom != "None":
             for lang in lang_custom.split(u","):
