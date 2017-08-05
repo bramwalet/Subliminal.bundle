@@ -105,7 +105,7 @@ class Config(object):
 
         if is_windows_special_path:
             Log.Warn("The Plex metadata folder is residing inside a folder with special characters. "
-                     "Multithreading will be disabled.")
+                     "Multithreading and playback activities will be disabled.")
 
         self.fs_encoding = get_viable_encoding()
         self.plugin_info = self.get_plugin_info()
