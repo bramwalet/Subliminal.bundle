@@ -3,7 +3,6 @@ from wraptor.decorators import throttle
 from config import config
 from items import get_item, get_item_kind_from_item, refresh_item
 
-
 Activity = None
 try:
     from plex_activity import Activity

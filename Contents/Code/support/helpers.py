@@ -329,9 +329,12 @@ def track_usage(category=None, action=None, label=None, value=None):
             except:
                 pass
 
-    Thread.Create(dispatch_track_usage, category, action, label, value,
-                  identifier=Dict["anon_id"], first_use=Dict["first_use"],
-                  add=Network.PublicAddress)
+    try:
+        Thread.Create(dispatch_track_usage, category, action, label, value,
+                      identifier=Dict["anon_id"], first_use=Dict["first_use"],
+                      add=Network.PublicAddress)
+    except:
+        Log.Debug("Something went wrong when reporting anonymous user statistics: %s", traceback.format_exc())
 
 
 def dispatch_track_usage(*args, **kwargs):
