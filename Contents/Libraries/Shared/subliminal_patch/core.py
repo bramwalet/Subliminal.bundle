@@ -335,9 +335,6 @@ class SZAsyncProviderPool(SZProviderPool):
         return provider, provider_subtitles
 
     def list_subtitles(self, video, languages):
-        if is_windows_special_path:
-            return super(SZAsyncProviderPool, self).list_subtitles(video, languages)
-
         subtitles = []
 
         with ThreadPoolExecutor(self.max_workers) as executor:
@@ -354,6 +351,10 @@ class SZAsyncProviderPool(SZProviderPool):
                 subtitles.extend(provider_subtitles)
 
         return subtitles
+
+
+if is_windows_special_path:
+    SZAsyncProviderPool = SZProviderPool
 
 
 def scan_video(path, dont_use_actual_file=False, hints=None):
