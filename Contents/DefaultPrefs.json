@@ -318,12 +318,6 @@
     "default": "false"
   },
   {
-    "id": "provider.subscenter.enabled",
-    "label": "Provider: Enable SubsCenter (Hebrew)",
-    "type": "bool",
-    "default": "false"
-  },
-  {
     "id": "provider.subscenter.username",
     "label": "SubsCenter Username",
     "type": "text",
