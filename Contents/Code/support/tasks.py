@@ -223,7 +223,12 @@ class AvailableSubsForItem(SubtitleListingMixin, Task):
     def run(self):
         super(AvailableSubsForItem, self).run()
         self.running = True
-        track_usage("Subtitle", "manual", "list", 1)
+        try:
+            track_usage("Subtitle", "manual", "list", 1)
+        except:
+            Log.Error("Something went wrong with track_usage: %s", traceback.format_exc())
+
+        Log.Debug("Listing available subtitles for: %s", self.rating_key)
         subs = self.list_subtitles(self.rating_key, self.item_type, self.part_id, self.language, skip_wrong_fps=False)
         if not subs:
             self.data = "found_none"
