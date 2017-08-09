@@ -49,6 +49,7 @@ class DefaultScheduler(object):
             if Dict["tasks"]:
                 for task_name in Dict["tasks"].keys():
                     if task_name == "queue":
+                        Dict["tasks"][task_name] = []
                         continue
 
                     Dict["tasks"][task_name]["data"] = {}
