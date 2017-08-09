@@ -360,6 +360,7 @@ def guess_matches(video, guess, partial=False):
                 if (sanitize_release_group(release_group) in
                         get_equivalent_release_groups(sanitize_release_group(video.release_group))):
                     matches.add('release_group')
+                    break
 
     # resolution
     if video.resolution and 'screen_size' in guess and guess['screen_size'] == video.resolution:
@@ -375,6 +376,7 @@ def guess_matches(video, guess, partial=False):
             for frmt in formats:
                 if frmt.lower() == video.format.lower():
                     matches.add('format')
+                    break
     # video_codec
     if video.video_codec and 'video_codec' in guess and guess['video_codec'] == video.video_codec:
         matches.add('video_codec')
