@@ -177,7 +177,7 @@ class DefaultScheduler(object):
                 Dict["tasks"]["queue"] = []
                 Dict.Save()
                 for args, kwargs in queue:
-                    Log.Debug("Dispatching single task: %s, %s", args, kwargs)
+                    Log.Debug("Queue: Dispatching single task: %s, %s", args, kwargs)
                     Thread.Create(self.run_task, True, *args, **kwargs)
                     Thread.Sleep(5.0)
 
