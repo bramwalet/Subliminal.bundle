@@ -6,9 +6,10 @@ from subliminal.providers import Provider as _Provider
 from subliminal.subtitle import Subtitle as _Subtitle
 from subliminal_patch.extensions import provider_registry
 from subliminal_patch.http import RetryingSession
-from subliminal_patch.subtitle import Subtitle
+from subliminal_patch.subtitle import Subtitle, guess_matches
 
 from subzero.lib.io import get_viable_encoding
+
 
 class Provider(_Provider):
     hash_verifiable = False
@@ -49,6 +50,7 @@ for name in os.listdir(os.path.dirname(unicode(__file__, get_viable_encoding()))
 
             # inject our requests.Session wrapper for automatic retry
             mod.Session = RetryingSession
+            mod.guess_matches = guess_matches
 
             provider_registry.register(module_name, provider_class)
 
@@ -59,4 +61,5 @@ for name in os.listdir(os.path.dirname(unicode(__file__, get_viable_encoding()))
         pass
     else:
         subliminal_mod.Session = RetryingSession
+        subliminal_mod.guess_matches = guess_matches
 
