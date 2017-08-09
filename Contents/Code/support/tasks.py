@@ -198,7 +198,7 @@ class DownloadSubtitleMixin(object):
                                 subtitle=subtitle,
                                 mode=mode)
         else:
-            set_refresh_menu_state(u"%s: Subtitle download failed (%s)", self.name, rating_key)
+            set_refresh_menu_state(u"%s: Subtitle download failed (%s)" % (self.name, rating_key))
         return download_successful
 
 
@@ -406,18 +406,21 @@ class SearchAllRecentlyAddedMissing(Task):
                         Log.Error(u"%s: Something went wrong when downloading specific subtitle: %s", self.name,
                                   traceback.format_exc())
                     finally:
-                        item_title = get_title_for_video_metadata(metadata, add_section_title=False)
-                        if download_successful:
-                            # store item in history
-                            for video, video_subtitles in downloaded_subtitles.items():
-                                if not video_subtitles:
-                                    continue
+                        try:
+                            item_title = get_title_for_video_metadata(metadata, add_section_title=False)
+                            if download_successful:
+                                # store item in history
+                                for video, video_subtitles in downloaded_subtitles.items():
+                                    if not video_subtitles:
+                                        continue
 
-                                for subtitle in video_subtitles:
-                                    downloads_per_video += 1
-                                    history.add(item_title, video.id, section_title=metadata["section"],
-                                                subtitle=subtitle,
-                                                mode="a")
+                                    for subtitle in video_subtitles:
+                                        downloads_per_video += 1
+                                        history.add(item_title, video.id, section_title=metadata["section"],
+                                                    subtitle=subtitle,
+                                                    mode="a")
+                        except:
+                            Log.Error(u"%s: DEBUG HIT: %s", self.name, traceback.format_exc())
 
                     Log.Debug(u"%s: Waiting %s seconds before continuing", self.name, PROVIDER_SLACK)
                     time.sleep(PROVIDER_SLACK)
