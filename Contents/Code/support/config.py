@@ -11,6 +11,7 @@ import datetime
 import subliminal
 import subliminal_patch
 
+from subliminal_patch.core import is_windows_special_path
 from whichdb import whichdb
 from babelfish import Language
 from subliminal.cli import MutexLock
@@ -101,6 +102,10 @@ class Config(object):
     def initialize(self):
         self.libraries_root = os.path.abspath(os.path.join(get_root_path(), ".."))
         self.init_libraries()
+
+        if is_windows_special_path:
+            Log.Warn("The Plex metadata folder is residing inside a folder with special characters. "
+                     "Multithreading and playback activities will be disabled.")
 
         self.fs_encoding = get_viable_encoding()
         self.plugin_info = self.get_plugin_info()

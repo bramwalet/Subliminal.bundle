@@ -3,13 +3,19 @@ from wraptor.decorators import throttle
 from config import config
 from items import get_item, get_item_kind_from_item, refresh_item
 
-from plex_activity import Activity
-from plex_activity.sources.s_logging.main import Logging as Activity_Logging
+Activity = None
+try:
+    from plex_activity import Activity
+except ImportError:
+    pass
 
 
 class PlexActivityManager(object):
     def start(self):
         activity_sources_enabled = None
+
+        if not Activity:
+            return
 
         if config.plex_token:
             from plex import Plex
