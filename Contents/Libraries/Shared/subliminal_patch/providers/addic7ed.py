@@ -152,8 +152,6 @@ class Addic7edProvider(_Addic7edProvider):
 
             return show_id
         finally:
-            if suggestion:
-                suggestion.decompose()
             soup.decompose()
             soup = None
 
