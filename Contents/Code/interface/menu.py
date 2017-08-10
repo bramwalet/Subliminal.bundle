@@ -196,7 +196,6 @@ def ValidatePrefs():
         DispatchRestart()
         return
 
-    scheduler.stop()
     scheduler.setup_tasks()
     set_refresh_menu_state(None)
 
