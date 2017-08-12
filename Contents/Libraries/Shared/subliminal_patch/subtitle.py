@@ -126,7 +126,7 @@ class Subtitle(Subtitle_):
         elif self.language.alpha3 in ('pol', 'cze', 'ces', 'slk', 'slo', 'slv', 'hun', 'bos', 'hbs', 'hrv', 'rsb',
                                       'ron', 'rum', 'sqi', 'alb'):
 
-            encodings.extend(['iso-8859-2', 'windows-1250'])
+            encodings.extend(['windows-1250', 'iso-8859-2'])
 
             # Eastern European Group 1
             if self.language.alpha3 == "slv":
