@@ -12,8 +12,6 @@ import operator
 import itertools
 
 import rarfile
-from concurrent.futures import ThreadPoolExecutor
-
 import requests
 
 from collections import defaultdict
@@ -26,7 +24,7 @@ from extensions import provider_registry
 from subliminal.score import compute_score as default_compute_score
 from subliminal.utils import hash_napiprojekt, hash_opensubtitles, hash_shooter, hash_thesubdb
 from subliminal.video import VIDEO_EXTENSIONS, Video, Episode, Movie
-from subliminal.core import guessit, Language, ProviderPool, io, download_best_subtitles
+from subliminal.core import guessit, Language, ProviderPool, io, download_best_subtitles, is_windows_special_path, ThreadPoolExecutor
 
 logger = logging.getLogger(__name__)
 
@@ -353,6 +351,10 @@ class SZAsyncProviderPool(SZProviderPool):
                 subtitles.extend(provider_subtitles)
 
         return subtitles
+
+
+if is_windows_special_path:
+    SZAsyncProviderPool = SZProviderPool
 
 
 def scan_video(path, dont_use_actual_file=False, hints=None):

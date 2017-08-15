@@ -20,7 +20,7 @@ from support.plex_media import scan_videos, get_plex_metadata
 from download import download_best_subtitles
 
 
-PROVIDER_SLACK = 15
+PROVIDER_SLACK = 30
 DL_PROVIDER_SLACK = 30
 
 
@@ -198,7 +198,7 @@ class DownloadSubtitleMixin(object):
                                 subtitle=subtitle,
                                 mode=mode)
         else:
-            set_refresh_menu_state(u"%s: Subtitle download failed (%s)", self.name, rating_key)
+            set_refresh_menu_state(u"%s: Subtitle download failed (%s)" % (self.name, rating_key))
         return download_successful
 
 
@@ -223,7 +223,12 @@ class AvailableSubsForItem(SubtitleListingMixin, Task):
     def run(self):
         super(AvailableSubsForItem, self).run()
         self.running = True
-        track_usage("Subtitle", "manual", "list", 1)
+        try:
+            track_usage("Subtitle", "manual", "list", 1)
+        except:
+            Log.Error("Something went wrong with track_usage: %s", traceback.format_exc())
+
+        Log.Debug("Listing available subtitles for: %s", self.rating_key)
         subs = self.list_subtitles(self.rating_key, self.item_type, self.part_id, self.language, skip_wrong_fps=False)
         if not subs:
             self.data = "found_none"
@@ -234,10 +239,11 @@ class AvailableSubsForItem(SubtitleListingMixin, Task):
 
     def post_run(self, task_data):
         super(AvailableSubsForItem, self).post_run(task_data)
-        if self.rating_key not in task_data:
-            task_data[self.rating_key] = {}
-
-        task_data[self.rating_key][self.language] = self.data
+        # clean old data
+        for key in task_data.keys():
+            if key != self.rating_key:
+                del task_data[key]
+        task_data.update({self.rating_key: {self.language: self.data}})
 
 
 class DownloadSubtitleForItem(DownloadSubtitleMixin, Task):
@@ -405,18 +411,21 @@ class SearchAllRecentlyAddedMissing(Task):
                         Log.Error(u"%s: Something went wrong when downloading specific subtitle: %s", self.name,
                                   traceback.format_exc())
                     finally:
-                        item_title = get_title_for_video_metadata(metadata, add_section_title=False)
-                        if download_successful:
-                            # store item in history
-                            for video, video_subtitles in downloaded_subtitles.items():
-                                if not video_subtitles:
-                                    continue
+                        try:
+                            item_title = get_title_for_video_metadata(metadata, add_section_title=False)
+                            if download_successful:
+                                # store item in history
+                                for video, video_subtitles in downloaded_subtitles.items():
+                                    if not video_subtitles:
+                                        continue
 
-                                for subtitle in video_subtitles:
-                                    downloads_per_video += 1
-                                    history.add(item_title, video.id, section_title=metadata["section"],
-                                                subtitle=subtitle,
-                                                mode="a")
+                                    for subtitle in video_subtitles:
+                                        downloads_per_video += 1
+                                        history.add(item_title, video.id, section_title=metadata["section"],
+                                                    subtitle=subtitle,
+                                                    mode="a")
+                        except:
+                            Log.Error(u"%s: DEBUG HIT: %s", self.name, traceback.format_exc())
 
                     Log.Debug(u"%s: Waiting %s seconds before continuing", self.name, PROVIDER_SLACK)
                     time.sleep(PROVIDER_SLACK)

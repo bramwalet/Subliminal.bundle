@@ -6,19 +6,21 @@ import traceback
 
 
 def parse_frequency(s):
-    if s == "never" or s == None:
+    if s == "never" or s is None:
         return None, None
     kind, num, unit = s.split()
     return int(num), unit
 
 
 class DefaultScheduler(object):
-    thread = None
+    queue_thread = None
+    scheduler_thread = None
     running = False
     registry = None
 
     def __init__(self):
-        self.thread = None
+        self.queue_thread = None
+        self.scheduler_thread = None
         self.running = False
         self.registry = []
 
@@ -47,6 +49,7 @@ class DefaultScheduler(object):
             if Dict["tasks"]:
                 for task_name in Dict["tasks"].keys():
                     if task_name == "queue":
+                        Dict["tasks"][task_name] = []
                         continue
 
                     Dict["tasks"][task_name]["data"] = {}
@@ -58,6 +61,7 @@ class DefaultScheduler(object):
             raise NotImplementedError("Task missing! %s" % name)
 
         Dict["tasks"][name]["data"] = {}
+        Dict["tasks"][name]["running"] = False
         Dict.Save()
         Log.Debug("Task data cleared: %s", name)
 
@@ -78,7 +82,8 @@ class DefaultScheduler(object):
 
     def run(self):
         self.running = True
-        self.thread = Thread.Create(self.worker)
+        self.scheduler_thread = Thread.Create(self.scheduler_worker)
+        self.queue_thread = Thread.Create(self.queue_worker)
 
     def stop(self):
         self.running = False
@@ -124,7 +129,10 @@ class DefaultScheduler(object):
         except Exception, e:
             Log.Error("Scheduler: Something went wrong when running %s: %s", name, traceback.format_exc())
         finally:
-            task.post_run(Dict["tasks"][name]["data"])
+            try:
+                task.post_run(Dict["tasks"][name]["data"])
+            except:
+                Log.Error("Scheduler: task.post_run failed for %s: %s", name, traceback.format_exc())
             Dict.Save()
 
     def dispatch_task(self, *args, **kwargs):
@@ -157,7 +165,7 @@ class DefaultScheduler(object):
                 continue
             Log.Debug("Scheduler: Not sending signal %s to task %s, because: not running", name, task_name)
 
-    def worker(self):
+    def queue_worker(self):
         Thread.Sleep(10.0)
         while 1:
             if not self.running:
@@ -170,9 +178,15 @@ class DefaultScheduler(object):
                 Dict["tasks"]["queue"] = []
                 Dict.Save()
                 for args, kwargs in queue:
-                    Log.Debug("Dispatching single task: %s, %s", args, kwargs)
+                    Log.Debug("Queue: Dispatching single task: %s, %s", args, kwargs)
                     Thread.Create(self.run_task, True, *args, **kwargs)
                     Thread.Sleep(5.0)
+
+    def scheduler_worker(self):
+        Thread.Sleep(10.0)
+        while 1:
+            if not self.running:
+                break
 
             # scheduled tasks
             for name in self.tasks.keys():

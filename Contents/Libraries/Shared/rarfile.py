@@ -2949,6 +2949,6 @@ def _check_unrar_tool():
 
 try:
     _check_unrar_tool()
-except OSError:
+except:
     pass
 

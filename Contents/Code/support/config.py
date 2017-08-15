@@ -11,6 +11,7 @@ import datetime
 import subliminal
 import subliminal_patch
 
+from subliminal_patch.core import is_windows_special_path
 from whichdb import whichdb
 from babelfish import Language
 from subliminal.cli import MutexLock
@@ -33,8 +34,6 @@ IGNORE_FN = ("subzero.ignore", ".subzero.ignore", ".nosz")
 
 VERSION_RE = re.compile(ur'CFBundleVersion.+?<string>([0-9\.]+)</string>', re.DOTALL)
 DEV_RE = re.compile(ur'PlexPluginDevMode.+?<string>([01]+)</string>', re.DOTALL)
-
-impawrt = getattr(sys.modules['__main__'], "__builtins__").get("__import__")
 
 
 def int_or_default(s, default):
@@ -104,6 +103,10 @@ class Config(object):
         self.libraries_root = os.path.abspath(os.path.join(get_root_path(), ".."))
         self.init_libraries()
 
+        if is_windows_special_path:
+            Log.Warn("The Plex metadata folder is residing inside a folder with special characters. "
+                     "Multithreading and playback activities will be disabled.")
+
         self.fs_encoding = get_viable_encoding()
         self.plugin_info = self.get_plugin_info()
         self.is_development = self.get_dev_mode()
@@ -153,7 +156,7 @@ class Config(object):
 
     def init_libraries(self):
         if Core.runtime.os == "Windows":
-            unrar_exe = os.path.abspath(os.path.join(self.libraries_root, "Windows", "generic", "UnRAR", "UnRAR.exe"))
+            unrar_exe = os.path.abspath(os.path.join(self.libraries_root, "Windows", "i386", "UnRAR", "UnRAR.exe"))
             if os.path.isfile(unrar_exe):
                 rarfile.UNRAR_TOOL = unrar_exe
                 Log.Info("Using UnRAR from: %s", unrar_exe)
@@ -169,27 +172,34 @@ class Config(object):
         self.dbm_supported = False
 
         # try importing dbm modules
-        if impawrt:
-            for name in names:
-                try:
-                    impawrt(name)
-                except:
-                    continue
-                if not self.dbm_supported:
-                    self.dbm_supported = name
-                    break
+        if Core.runtime.os != "Windows":
+            impawrt = None
+            try:
+                impawrt = getattr(sys.modules['__main__'], "__builtins__").get("__import__")
+            except:
+                pass
 
-            if self.dbm_supported:
-                # anydbm checks; try guessing the format and importing the correct module
-                dbfn = os.path.join(config.data_items_path, 'subzero.dbm')
-                db_which = whichdb(dbfn)
-                if db_which is not None and db_which != "":
+            if impawrt:
+                for name in names:
                     try:
-                        impawrt(db_which)
-                    except ImportError:
-                        self.dbm_supported = False
+                        impawrt(name)
+                    except:
+                        continue
+                    if not self.dbm_supported:
+                        self.dbm_supported = name
+                        break
 
-        if Core.runtime.os != "Windows" and self.dbm_supported:
+                if self.dbm_supported:
+                    # anydbm checks; try guessing the format and importing the correct module
+                    dbfn = os.path.join(config.data_items_path, 'subzero.dbm')
+                    db_which = whichdb(dbfn)
+                    if db_which is not None and db_which != "":
+                        try:
+                            impawrt(db_which)
+                        except ImportError:
+                            self.dbm_supported = False
+
+        if self.dbm_supported:
             try:
                 subliminal.region.configure('dogpile.cache.dbm', expiration_time=datetime.timedelta(days=30),
                                             arguments={'filename': dbfn,
@@ -401,17 +411,23 @@ class Config(object):
 
     # Prepare a list of languages we want subs for
     def get_lang_list(self):
-        l = {Language.fromietf(Prefs["langPref1"])}
+        l = {Language.fromietf(Prefs["langPref1a"])}
         lang_custom = Prefs["langPrefCustom"].strip()
 
         if Prefs['subtitles.only_one']:
             return l
 
-        if Prefs["langPref2"] != "None":
-            l.update({Language.fromietf(Prefs["langPref2"])})
+        if Prefs["langPref2a"] != "None":
+            try:
+                l.update({Language.fromietf(Prefs["langPref2a"])})
+            except:
+                pass
 
-        if Prefs["langPref3"] != "None":
-            l.update({Language.fromietf(Prefs["langPref3"])})
+        if Prefs["langPref3a"] != "None":
+            try:
+                l.update({Language.fromietf(Prefs["langPref3a"])})
+            except:
+                pass
 
         if len(lang_custom) and lang_custom != "None":
             for lang in lang_custom.split(u","):
@@ -455,7 +471,7 @@ class Config(object):
                      'legendastv': cast_bool(Prefs['provider.legendastv.enabled']),
                      'napiprojekt': cast_bool(Prefs['provider.napiprojekt.enabled']),
                      'shooter': cast_bool(Prefs['provider.shooter.enabled']),
-                     'subscenter': cast_bool(Prefs['provider.subscenter.enabled']),
+                     'subscenter': False,
                      }
 
         # ditch non-forced-subtitles-reporting providers

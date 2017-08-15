@@ -1,6 +1,6 @@
 [
   {
-    "id": "langPref1",
+    "id": "langPref1a",
     "label": "Subtitle Language (1)",
     "type": "enum",
     "values": [
@@ -55,7 +55,7 @@
     "default": "en"
   },
   {
-    "id": "langPref2",
+    "id": "langPref2a",
     "label": "Subtitle Language (2)",
     "type": "enum",
     "values": [
@@ -111,7 +111,7 @@
     "default": "None"
   },
   {
-    "id": "langPref3",
+    "id": "langPref3a",
     "label": "Subtitle Language (3)",
     "type": "enum",
     "values": [
@@ -320,12 +320,6 @@
   {
     "id": "provider.shooter.enabled",
     "label": "Provider: Enable Shooter.cn (Chinese)",
-    "type": "bool",
-    "default": "false"
-  },
-  {
-    "id": "provider.subscenter.enabled",
-    "label": "Provider: Enable SubsCenter (Hebrew)",
     "type": "bool",
     "default": "false"
   },

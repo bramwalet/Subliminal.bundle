@@ -1,3 +1,52 @@
+
+2.0.24.1565
+- core: fix searchallrecentlymissing task erroring if item not found
+- core: fix non-plex-items appearing in and crashing the recently played list
+- core: add hybrid-plus activity setting (current media file and next episode)
+- podnapisi: fix by using correct guessit parameters
+
+
+2.0.24.1558
+- core: fix handling of broken RAR files from legendas
+
+
+2.0.24.1555
+- core: fix rare microdvd issue from OpenSubtitles by generally providing FPS info when encountering a microdvd subtitle
+
+
+2.0.24.1549
+Changes from 1.4
+- wiki: new wiki! (thanks @dane22!)
+- core: update subliminal to version 2
+- core: update all dependencies
+- core: add new providers: legendastv (pt-BR), napiprojekt (pl), shooter (cn), subscenter (heb)
+- core: rewritten all subliminal patches for version 2
+- core: use SSL again for opensubtitles
+- core: improved matching due to subliminal 2 (and SZ custom) tvdb/omdb refiners
+- core: improved matching by relying on existing metadata provided by the PMS
+- core: improved performance due to multithreaded provider-querying
+- core: improved performance due to less physical media file access (no more MKV metadata scanning)
+- core: VTT subtitle format output supported (for Chromecast)
+- core: rewrote and streamlined internal subtitle data storage format
+- core: support Cyrillic and Latin variants of Serbian language
+- core: simplified (custom) provider registration; add own provider registry
+- core: rewrote recently added missing task
+- core: automatically fix badly (re-) encoded unicode entities in subtitles
+- core: always store subtitles in proper UTF-8 encoding
+- core: add periodic internal subtitle data storage cleanup task
+- core: on non-windows systems, utilize a file-based cache database for provider media lists and subliminal refiner results
+- core: add manual and automatic subtitle modification framework (fix common OCR issues, remove hearing impaired etc.)
+- core: relieve some stress on providers by providing better fine-grained retry handling
+- menu: add icons for menu items; update main channel icon
+- menu: add subtitle modifications (subtitle content fixes, offset-based shifting, framerate conversion)
+- menu: add recently played menu
+- menu: add "Get my logs" function to the advanced menu, which zips up all necessary logs suitable for posting in the forums
+- menu: add generic "back to season" and "back to series" entries to item detail views to make navigation easier
+- config: all scores changed (defaults updated)
+- config: remove "Force UTF-8 when storing subtitles" (it's now always implied)
+- improve almost everything Sub-Zero did in 1.4 :)
+
+
 2.0.23.1464 RC10.1
  - core: huge bugfix; please check `Library/Application Support/Plex Media\ Server/Plug-in Support/Data/com.plexapp.agents.subzero/DataItems`
          for any `subs_XXXXX.json.gz` file bigger than 500kb and delete them
