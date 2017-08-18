@@ -92,10 +92,9 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
         ))
         oc.add(DirectoryObject(
             key=Callback(RecentMissingSubtitlesMenu, randomize=timestamp()),
-            title="Items with missing subtitles",
-            summary="Shows the items honoring the configured 'Item age to be considered recent'-setting (%s)"
-                    " and allowing you to individually (force-) refresh their metadata/subtitles. " %
-                    Prefs["scheduler.item_is_recent_age"],
+            title="Show recently added items with missing subtitles",
+            summary="Lists items with missing subtitles. Click on \"Find recent items with missing subs\" "
+                    "to update list",
             thumb=R("icon-missing.jpg")
         ))
         oc.add(DirectoryObject(
@@ -233,7 +232,7 @@ def RecentMissingSubtitlesMenu(force=False, randomize=None):
     if not running:
         oc.add(DirectoryObject(
             key=Callback(RecentMissingSubtitlesMenu, force=True, randomize=timestamp()),
-            title=u"Get items with missing subtitles",
+            title=u"Find recent items with missing subtitles",
             thumb=default_thumb
         ))
     else:
