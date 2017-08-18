@@ -184,15 +184,15 @@ CONTROL_CHARS = _build_control_char_mapping()
 # Ligatures may also be separated by NFKC normalization, but that is sometimes
 # more normalization than you want.
 LIGATURES = {
-    ord(u'Ĳ'): 'IJ',
-    ord(u'ĳ'): 'ij',
-    ord(u'ﬀ'): 'ff',
-    ord(u'ﬁ'): 'fi',
-    ord(u'ﬂ'): 'fl',
-    ord(u'ﬃ'): 'ffi',
-    ord(u'ﬄ'): 'ffl',
-    ord(u'ﬅ'): 'ſt',
-    ord(u'ﬆ'): 'st'
+    ord(u'Ĳ'): u'IJ',
+    ord(u'ĳ'): u'ij',
+    ord(u'ﬀ'): u'ff',
+    ord(u'ﬁ'): u'fi',
+    ord(u'ﬂ'): u'fl',
+    ord(u'ﬃ'): u'ffi',
+    ord(u'ﬄ'): u'ffl',
+    ord(u'ﬅ'): u'ſt',
+    ord(u'ﬆ'): u'st'
 }
 
 
