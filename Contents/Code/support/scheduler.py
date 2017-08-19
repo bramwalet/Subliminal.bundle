@@ -183,6 +183,8 @@ class DefaultScheduler(object):
                     Thread.Create(self.run_task, True, *args, **kwargs)
                     Thread.Sleep(5.0)
 
+            Thread.Sleep(1)
+
     def scheduler_worker(self):
         Thread.Sleep(10.0)
         while 1:
