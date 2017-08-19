@@ -70,6 +70,20 @@ For further help or manual installation, [please go to the wiki](https://github.
 
 ## Changelog
 
+2.0.26.1687
+- core: fix bug that caused SZ not to work for Windows users with special characters in their username
+- core: fix issues when logging failed manual download actions
+- core: update guessit to 2.1.4
+- core: fix issue causing the background task scheduler to stop after changing preferences
+- core: fix eastern encoding (try windows-1250 first, then iso 8859-2)
+- core: remove subscenter provider as it now uses captchas
+- core: add titlovi as default provider (thanks viking!)
+- core: increase default PMS API request timeout to 15 (old: 10, max: 45); add preference for that
+- core: re-add separate legacy FindMissingSubtitles task and run it on the first run to prime SZ's internal subtitle storage
+- menu: change naming of find missing subtitles menu item
+- legendastv: fix multi value guessit issues
+
+
 2.0.25.1635
 - core: update memory handling, possibly reduce memory problems of 2.0
 - core: support for MPL2 subtitle format
@@ -85,17 +99,6 @@ For further help or manual installation, [please go to the wiki](https://github.
 - windows: skip DBM checks
 - addic7ed: fix Nip/Tuck
 - subscenter: use new domain
-
-
-2.0.24.1581
-- legendastv: ship unrar.exe for Windows users (fixes unrar issues)
-- addic7ed: fix TooManyRequests error
-- submod: OCR fixes NL: add custom dictionary data for malformed characters
-- submod: OCR fixes: update hrv/NL dictionaries
-- submod: common: remove spaces before punctuation
-- podnapisi: now returns more subtitles again
-ATTENTION: Sub-Zero is still broken on PMS for SHIELD. Help needed!
-
 
 
 Big thanks to the beta testing team! You know who you are!

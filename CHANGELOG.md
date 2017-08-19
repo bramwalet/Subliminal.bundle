@@ -1,4 +1,14 @@
 
+2.0.24.1581
+- legendastv: ship unrar.exe for Windows users (fixes unrar issues)
+- addic7ed: fix TooManyRequests error
+- submod: OCR fixes NL: add custom dictionary data for malformed characters
+- submod: OCR fixes: update hrv/NL dictionaries
+- submod: common: remove spaces before punctuation
+- podnapisi: now returns more subtitles again
+ATTENTION: Sub-Zero is still broken on PMS for SHIELD. Help needed!
+
+
 2.0.24.1565
 - core: fix searchallrecentlymissing task erroring if item not found
 - core: fix non-plex-items appearing in and crashing the recently played list
