@@ -10,6 +10,8 @@ import datetime
 
 import subliminal
 import subliminal_patch
+import subzero.constants
+import lib
 
 from subliminal_patch.core import is_windows_special_path
 from whichdb import whichdb
@@ -19,7 +21,7 @@ from subzero.lib.io import FileIO, get_viable_encoding
 from subzero.util import get_root_path
 from subzero.constants import PLUGIN_NAME, PLUGIN_IDENTIFIER, MOVIE, SHOW, MEDIA_TYPE_TO_STRING
 from lib import Plex
-from helpers import check_write_permissions, cast_bool
+from helpers import check_write_permissions, cast_bool, cast_int
 
 SUBTITLE_EXTS = ['utf', 'utf8', 'utf-8', 'srt', 'smi', 'rt', 'ssa', 'aqt', 'jss', 'ass', 'idx', 'sub', 'txt', 'psb',
                  'vtt']
@@ -57,6 +59,7 @@ class Config(object):
     plex_token = None
     is_development = False
     dbm_supported = False
+    pms_request_timeout = 15
 
     enable_channel = True
     enable_agent = True
@@ -118,6 +121,8 @@ class Config(object):
         self.data_items_path = os.path.join(self.data_path, "DataItems")
         self.universal_plex_token = self.get_universal_plex_token()
         self.plex_token = os.environ.get("PLEXTOKEN", self.universal_plex_token)
+        subzero.constants.DEFAULT_TIMEOUT = lib.DEFAULT_TIMEOUT = self.pms_request_timeout = \
+            cast_int(Prefs['pms_request_timeout'])
 
         os.environ["SZ_USER_AGENT"] = self.get_user_agent()
 

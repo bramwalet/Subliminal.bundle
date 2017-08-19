@@ -652,6 +652,12 @@
     "default": "true"
   },
   {
+    "id": "pms_request_timeout",
+    "label": "Timeout for API requests sent to the PMS",
+    "type": "text",
+    "default": "15"
+  },
+  {
     "id": "log_level",
     "label": "How verbose should the logging be?",
     "type": "enum",

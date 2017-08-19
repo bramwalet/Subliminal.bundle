@@ -44,6 +44,13 @@ def cast_bool(value):
     return str(value).strip() in ("true", "True")
 
 
+def cast_int(value, default=None):
+    try:
+        return int(value)
+    except ValueError:
+        return default
+
+
 # A platform independent way to split paths which might come in with different separators.
 def split_path(str):
     if str.find('\\') != -1:
