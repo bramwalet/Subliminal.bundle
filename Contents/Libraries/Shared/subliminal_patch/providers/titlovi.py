@@ -4,12 +4,13 @@ import io
 import logging
 import math
 import re
+
 import rarfile
 
 from bs4 import BeautifulSoup
 from zipfile import ZipFile, is_zipfile
 from rarfile import RarFile, is_rarfile
-from babelfish import Language, language_converters
+from babelfish import Language, language_converters, Script
 from requests import Session
 from guessit import guessit
 from subliminal_patch.providers import Provider
@@ -52,13 +53,13 @@ language_converters.register('titlovi = subliminal_patch.converters.titlovi:Titl
 class TitloviSubtitle(Subtitle):
     provider_name = 'titlovi'
 
-    def __init__(self, language, page_link, download_link, sid, releases, title, altitle=None, season=None,
+    def __init__(self, language, page_link, download_link, sid, releases, title, alt_title=None, season=None,
                  episode=None, year=None, fps=None):
         super(TitloviSubtitle, self).__init__(language, page_link=page_link)
         self.sid = sid
         self.releases = releases
         self.title = title
-        self.altitle = altitle
+        self.alt_title = alt_title
         self.season = season
         self.episode = episode
         self.year = year
@@ -76,7 +77,7 @@ class TitloviSubtitle(Subtitle):
         if isinstance(video, Episode):
             # series
             if video.series and sanitize(self.title) == fix_inconsistent_naming(video.series) or sanitize(
-                    self.altitle) == fix_inconsistent_naming(video.series):
+                    self.alt_title) == fix_inconsistent_naming(video.series):
                 matches.add('series')
             # year
             if video.original_series and self.year is None or video.year and video.year == self.year:
@@ -91,7 +92,7 @@ class TitloviSubtitle(Subtitle):
         elif isinstance(video, Movie):
             # title
             if video.title and sanitize(self.title) == fix_inconsistent_naming(video.title) or sanitize(
-                    self.altitle) == fix_inconsistent_naming(video.title):
+                    self.alt_title) == fix_inconsistent_naming(video.title):
                 matches.add('title')
             # year
             if video.year and self.year == video.year:
@@ -176,7 +177,7 @@ class TitloviProvider(Provider):
 
             # get current page
             if 'pg' in params:
-                current_page = params['pg']
+                current_page = int(params['pg'])
 
             try:
                 sublist = soup.select('section.titlovi > ul.titlovi > li')
@@ -188,14 +189,24 @@ class TitloviProvider(Provider):
                     # title and alternate title
                     match = title_re.search(sub.a.string)
                     if match:
-                        title = match.group('title')
-                        altitle = match.group('altitle')
+                        _title = match.group('title')
+                        alt_title = match.group('altitle')
+                    else:
+                        continue
+
                     # page link
                     page_link = self.server_url + sub.a.attrs['href']
                     # subtitle language
                     match = lang_re.search(sub.select_one('.lang').attrs['src'])
                     if match:
-                        lang = Language.fromtitlovi(match.group('lang') + match.group('script'))
+                        try:
+                            lang = Language.fromtitlovi(match.group('lang'))
+                            script = match.group('script')
+                            if script:
+                                lang.script = Script(script)
+                        except ValueError:
+                            continue
+
                     # relase year or series start year
                     match = year_re.search(sub.find(attrs={'data-id': True}).parent.i.string)
                     if match:
@@ -205,7 +216,7 @@ class TitloviProvider(Provider):
                     if match:
                         fps = match.group('fps')
                     # releases
-                    releases = sub.select_one('.fps').parent.contents[0].string
+                    releases = str(sub.select_one('.fps').parent.contents[0].string)
 
                     # handle movies and series separately
                     if is_episode:
@@ -218,16 +229,18 @@ class TitloviProvider(Provider):
                             match = episode_re.search(sxe)
                             if match:
                                 episode = int(match.group('episode'))
-                        subtitle = self.subtitle_class(lang, page_link, download_link, sid, releases, title,
-                                                       altitle=altitle, season=season, episode=episode, year=year,
+
+                        subtitle = self.subtitle_class(lang, page_link, download_link, sid, releases, _title,
+                                                       alt_title=alt_title, season=season, episode=episode, year=year,
                                                        fps=fps)
                     else:
-                        subtitle = self.subtitle_class(lang, page_link, download_link, sid, releases, title,
-                                                       altitle=altitle, year=year, fps=fps)
+                        subtitle = self.subtitle_class(lang, page_link, download_link, sid, releases, _title,
+                                                       alt_title=alt_title, year=year, fps=fps)
                     logger.debug('Found subtitle %r', subtitle)
 
                     # add found subtitles
                     subtitles.append(subtitle)
+
             finally:
                 soup.decompose()
 
