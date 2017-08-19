@@ -54,7 +54,7 @@ class TitloviSubtitle(Subtitle):
     provider_name = 'titlovi'
 
     def __init__(self, language, page_link, download_link, sid, releases, title, alt_title=None, season=None,
-                 episode=None, year=None, fps=None):
+                 episode=None, year=None, fps=None, asked_for_release_group=None):
         super(TitloviSubtitle, self).__init__(language, page_link=page_link)
         self.sid = sid
         self.releases = self.release_info = releases
@@ -65,6 +65,8 @@ class TitloviSubtitle(Subtitle):
         self.year = year
         self.download_link = download_link
         self.fps = fps
+        self.matches = None
+        self.asked_for_release_group = asked_for_release_group
 
     @property
     def id(self):
@@ -114,6 +116,8 @@ class TitloviSubtitle(Subtitle):
         # other properties
         matches |= guess_matches(video, guessit(self.releases))
 
+        self.matches = matches
+
         return matches
 
 
@@ -130,7 +134,7 @@ class TitloviProvider(Provider):
     def terminate(self):
         self.session.close()
 
-    def query(self, languages, title, season=None, episode=None, year=None):
+    def query(self, languages, title, season=None, episode=None, year=None, video=None):
         items_per_page = 10
         current_page = 1
 
@@ -232,11 +236,15 @@ class TitloviProvider(Provider):
 
                         subtitle = self.subtitle_class(lang, page_link, download_link, sid, releases, _title,
                                                        alt_title=alt_title, season=season, episode=episode, year=year,
-                                                       fps=fps)
+                                                       fps=fps, asked_for_release_group=video.release_group)
                     else:
                         subtitle = self.subtitle_class(lang, page_link, download_link, sid, releases, _title,
-                                                       alt_title=alt_title, year=year, fps=fps)
+                                                       alt_title=alt_title, year=year, fps=fps,
+                                                       asked_for_release_group=video.release_group)
                     logger.debug('Found subtitle %r', subtitle)
+
+                    # prime our matches so we can use the values later
+                    subtitle.get_matches(video)
 
                     # add found subtitles
                     subtitles.append(subtitle)
@@ -264,7 +272,8 @@ class TitloviProvider(Provider):
             title = video.title
 
         return [s for s in
-                self.query(languages, fix_inconsistent_naming(title), season=season, episode=episode, year=video.year)]
+                self.query(languages, fix_inconsistent_naming(title), season=season, episode=episode, year=video.year,
+                           video=video)]
 
     def download_subtitle(self, subtitle):
         r = self.session.get(subtitle.download_link, timeout=10)
@@ -282,16 +291,40 @@ class TitloviProvider(Provider):
             raise ProviderError('Unidentified archive type')
 
         # extract subtitle's content
-        use_name = None
+        subs_in_archive = []
         for name in archive.namelist():
             for ext in (".srt", ".sub", ".ssa", ".ass"):
                 if name.endswith(ext):
-                    use_name = name
-                    break
+                    subs_in_archive.append(name)
 
-            if use_name:
-                break
+        # select the correct subtitle file
+        matching_sub = None
+        if len(subs_in_archive) == 1:
+            matching_sub = subs_in_archive[0]
+        else:
+            for sub_name in subs_in_archive:
+                guess = guessit(sub_name)
 
-        if not use_name:
-            raise ProviderError("None of expected subtitle formats found in archive")
-        subtitle.content = fix_line_ending(archive.read(use_name))
+                # consider subtitle valid if:
+                # - episode and season match
+                # - format matches (if it was matched before)
+                # - release group matches (and we asked for one and it was matched, or it was not matched)
+                if guess["episode"] == subtitle.episode and guess["season"] == subtitle.season:
+                    format_matches = "format" not in subtitle.matches or \
+                                     ("format" in subtitle.matches and guess["format"].lower() in
+                                      subtitle.releases.lower())
+
+                    release_group_matches = True
+                    if subtitle.asked_for_release_group:
+                        release_group_matches = "release_group" not in subtitle.matches or \
+                                                ("release_group" in subtitle.matches and
+                                                 guess["release_group"].lower() ==
+                                                 subtitle.asked_for_release_group.lower())
+
+                    if release_group_matches and format_matches:
+                        matching_sub = sub_name
+                        break
+
+        if not matching_sub:
+            raise ProviderError("None of expected subtitle found in archive")
+        subtitle.content = fix_line_ending(archive.read(matching_sub))
