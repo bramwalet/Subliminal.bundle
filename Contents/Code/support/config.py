@@ -481,6 +481,7 @@ class Config(object):
             providers["legendastv"] = False
             providers["napiprojekt"] = False
             providers["shooter"] = False
+            providers["titlovi"] = False
             providers["subscenter"] = False
 
         return filter(lambda prov: providers[prov], providers)
