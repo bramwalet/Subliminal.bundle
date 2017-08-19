@@ -75,7 +75,7 @@ For further help or manual installation, [please go to the wiki](https://github.
 - core: fix issues when logging failed manual download actions
 - core: update guessit to 2.1.4
 - core: fix issue causing the background task scheduler to stop after changing preferences
-- core: fix eastern encoding (try windows-1250 first, then iso 8859-2)
+- core: fix polish encoding (try windows-1250 first, then iso 8859-2)
 - core: remove subscenter provider as it now uses captchas
 - core: add titlovi as default provider (thanks viking!)
 - core: increase default PMS API request timeout to 15 (old: 10, max: 45); add preference for that
