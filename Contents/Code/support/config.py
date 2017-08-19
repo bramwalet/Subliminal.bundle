@@ -501,9 +501,6 @@ class Config(object):
                              'legendastv': {'username': Prefs['provider.legendastv.username'],
                                             'password': Prefs['provider.legendastv.password'],
                                             },
-                             'subscenter': {'username': Prefs['provider.subscenter.username'],
-                                            'password': Prefs['provider.subscenter.password'],
-                                            },
                              }
 
         return provider_settings
