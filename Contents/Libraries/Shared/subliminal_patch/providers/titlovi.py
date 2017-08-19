@@ -130,8 +130,8 @@ class TitloviProvider(Provider):
         self.session.close()
 
     def query(self, languages, title, season=None, episode=None, year=None):
-        itemsperpage = 10
-        currentpage = 1
+        items_per_page = 10
+        current_page = 1
 
         # convert list of languages into search string
         langs = '|'.join(
@@ -152,84 +152,91 @@ class TitloviProvider(Provider):
 
         while True:
             # query the server
-            r = self.session.get(self.search_url, params=params, timeout=10)
-            r.raise_for_status()
+            try:
+                r = self.session.get(self.search_url, params=params, timeout=10)
+                r.raise_for_status()
 
-            soup = BeautifulSoup(r.content, 'lxml')
+                soup = BeautifulSoup(r.content, 'lxml')
 
-            # number of results
-            resultcount = int(soup.select_one('.results_count b').string)
+                # number of results
+                result_count = int(soup.select_one('.results_count b').string)
+            except:
+                result_count = None
 
             # exit if no results
-            if not resultcount:
-                logger.debug('No subtitles found')
+            if not result_count:
+                if not subtitles:
+                    logger.debug('No subtitles found')
+                else:
+                    logger.debug("No more subtitles found")
                 break
 
             # number of pages with results
-            pages = int(math.ceil(resultcount / float(itemsperpage)))
+            pages = int(math.ceil(result_count / float(items_per_page)))
 
             # get current page
             if 'pg' in params:
-                currentpage = params['pg']
+                current_page = params['pg']
 
-            sublist = soup.select('section.titlovi > ul.titlovi > li')
-            for sub in sublist:
-                # subtitle id
-                sid = sub.find(attrs={'data-id': True}).attrs['data-id']
-                # get download link
-                download_link = self.download_url + sid
-                # title and alternate title
-                match = title_re.search(sub.a.string)
-                if match:
-                    title = match.group('title')
-                    altitle = match.group('altitle')
-                # page link
-                page_link = self.server_url + sub.a.attrs['href']
-                # subtitle language
-                match = lang_re.search(sub.select_one('.lang').attrs['src'])
-                if match:
-                    lang = Language.fromtitlovi(match.group('lang') + match.group('script'))
-                # relase year or series start year
-                match = year_re.search(sub.find(attrs={'data-id': True}).parent.i.string)
-                if match:
-                    year = int(match.group('year'))
-                # fps
-                match = fps_re.search(sub.select_one('.fps').string)
-                if match:
-                    fps = match.group('fps')
-                # releases
-                releases = sub.select_one('.fps').parent.contents[0].string
+            try:
+                sublist = soup.select('section.titlovi > ul.titlovi > li')
+                for sub in sublist:
+                    # subtitle id
+                    sid = sub.find(attrs={'data-id': True}).attrs['data-id']
+                    # get download link
+                    download_link = self.download_url + sid
+                    # title and alternate title
+                    match = title_re.search(sub.a.string)
+                    if match:
+                        title = match.group('title')
+                        altitle = match.group('altitle')
+                    # page link
+                    page_link = self.server_url + sub.a.attrs['href']
+                    # subtitle language
+                    match = lang_re.search(sub.select_one('.lang').attrs['src'])
+                    if match:
+                        lang = Language.fromtitlovi(match.group('lang') + match.group('script'))
+                    # relase year or series start year
+                    match = year_re.search(sub.find(attrs={'data-id': True}).parent.i.string)
+                    if match:
+                        year = int(match.group('year'))
+                    # fps
+                    match = fps_re.search(sub.select_one('.fps').string)
+                    if match:
+                        fps = match.group('fps')
+                    # releases
+                    releases = sub.select_one('.fps').parent.contents[0].string
 
-                # handle movies and series separately
-                if is_episode:
-                    # season and episode info
-                    sxe = sub.select_one('.s0xe0y').string
-                    if sxe:
-                        match = season_re.search(sxe)
-                        if match:
-                            season = int(match.group('season'))
-                        match = episode_re.search(sxe)
-                        if match:
-                            episode = int(match.group('episode'))
-                    subtitle = self.subtitle_class(lang, page_link, download_link, sid, releases, title,
-                                                   altitle=altitle, season=season, episode=episode, year=year,
-                                                   fps=fps)
-                else:
-                    subtitle = self.subtitle_class(lang, page_link, download_link, sid, releases, title,
-                                                   altitle=altitle, year=year, fps=fps)
-                logger.debug('Found subtitle %r', subtitle)
+                    # handle movies and series separately
+                    if is_episode:
+                        # season and episode info
+                        sxe = sub.select_one('.s0xe0y').string
+                        if sxe:
+                            match = season_re.search(sxe)
+                            if match:
+                                season = int(match.group('season'))
+                            match = episode_re.search(sxe)
+                            if match:
+                                episode = int(match.group('episode'))
+                        subtitle = self.subtitle_class(lang, page_link, download_link, sid, releases, title,
+                                                       altitle=altitle, season=season, episode=episode, year=year,
+                                                       fps=fps)
+                    else:
+                        subtitle = self.subtitle_class(lang, page_link, download_link, sid, releases, title,
+                                                       altitle=altitle, year=year, fps=fps)
+                    logger.debug('Found subtitle %r', subtitle)
 
-                # add found subtitles
-                subtitles.append(subtitle)
-
-            soup.decompose()
+                    # add found subtitles
+                    subtitles.append(subtitle)
+            finally:
+                soup.decompose()
 
             # stop on last page
-            if currentpage >= pages:
+            if current_page >= pages:
                 break
 
             # increment current page
-            params['pg'] = currentpage + 1
+            params['pg'] = current_page + 1
             logger.debug('Getting page %d', params['pg'])
 
         return subtitles
