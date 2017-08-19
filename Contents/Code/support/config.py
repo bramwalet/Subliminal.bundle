@@ -465,6 +465,7 @@ class Config(object):
         providers = {'opensubtitles': cast_bool(Prefs['provider.opensubtitles.enabled']),
                      # 'thesubdb': Prefs['provider.thesubdb.enabled'],
                      'podnapisi': cast_bool(Prefs['provider.podnapisi.enabled']),
+                     'titlovi': cast_bool(Prefs['provider.titlovi.enabled']),
                      'addic7ed': cast_bool(Prefs['provider.addic7ed.enabled']),
                      'tvsubtitles': cast_bool(Prefs['provider.tvsubtitles.enabled']),
                      'legendastv': cast_bool(Prefs['provider.legendastv.enabled']),

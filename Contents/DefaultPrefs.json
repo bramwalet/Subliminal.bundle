@@ -223,6 +223,12 @@
     "default": "true"
   },
   {
+    "id": "provider.titlovi.enabled",
+    "label": "Provider: Enable Titlovi.com",
+    "type": "bool",
+    "default": "true"
+  },
+  {
     "id": "provider.addic7ed.enabled",
     "label": "Provider: Enable Addic7ed",
     "type": "bool",

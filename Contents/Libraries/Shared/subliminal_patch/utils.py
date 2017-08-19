@@ -33,3 +33,26 @@ def sanitize(string, ignore_characters=None, default_characters={'-', ':', '(', 
 
     # strip and lower case
     return string.strip().lower()
+
+
+def fix_inconsistent_naming(title, inconsistent_titles_dict=None):
+    """Fix titles with inconsistent naming using dictionary and sanitize them.
+
+    :param str title: original title.
+    :param dict inconsistent_titles_dict: dictionary of titles with inconsistent naming.
+    :return: new title.
+    :rtype: str
+
+    """
+    # only deal with strings
+    if title is None:
+        return
+
+    # fix titles with inconsistent naming using dictionary
+    inconsistent_titles_dict = inconsistent_titles_dict or {}
+    if inconsistent_titles_dict:
+        pattern = re.compile('|'.join(re.escape(key) for key in inconsistent_titles_dict.keys()))
+        title = pattern.sub(lambda x: inconsistent_titles_dict[x.group()], title)
+
+    # return fixed and sanitized title
+    return sanitize(title)
