@@ -57,7 +57,7 @@ class TitloviSubtitle(Subtitle):
                  episode=None, year=None, fps=None):
         super(TitloviSubtitle, self).__init__(language, page_link=page_link)
         self.sid = sid
-        self.releases = releases
+        self.releases = self.release_info = releases
         self.title = title
         self.alt_title = alt_title
         self.season = season
