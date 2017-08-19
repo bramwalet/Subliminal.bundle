@@ -70,7 +70,7 @@ For further help or manual installation, [please go to the wiki](https://github.
 
 ## Changelog
 
-2.0.26.1687
+2.0.26.1689
 - core: fix bug that caused SZ not to work for Windows users with special characters in their username
 - core: fix issues when logging failed manual download actions
 - core: update guessit to 2.1.4
@@ -82,6 +82,7 @@ For further help or manual installation, [please go to the wiki](https://github.
 - core: re-add separate legacy FindMissingSubtitles task and run it on the first run to prime SZ's internal subtitle storage
 - menu: change naming of find missing subtitles menu item
 - legendastv: fix multi value guessit issues
+- submod: OCR: update eng and hrv OCR replace dictionaries; fix ". L am huge"
 
 
 2.0.25.1635
