@@ -318,20 +318,6 @@
     "default": "false"
   },
   {
-    "id": "provider.subscenter.username",
-    "label": "SubsCenter Username",
-    "type": "text",
-    "default": ""
-  },
-  {
-    "id": "provider.subscenter.password",
-    "label": "SubsCenter Password",
-    "type": "text",
-    "option": "hidden",
-    "default": "",
-    "secure": "true"
-  },
-  {
     "id": "providers.multithreading",
     "label": "Search enabled providers simultaneously (multithreading)",
     "type": "bool",
