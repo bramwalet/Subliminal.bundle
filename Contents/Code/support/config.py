@@ -122,7 +122,7 @@ class Config(object):
         self.universal_plex_token = self.get_universal_plex_token()
         self.plex_token = os.environ.get("PLEXTOKEN", self.universal_plex_token)
         subzero.constants.DEFAULT_TIMEOUT = lib.DEFAULT_TIMEOUT = self.pms_request_timeout = \
-            cast_int(Prefs['pms_request_timeout'])
+            min(cast_int(Prefs['pms_request_timeout'], 45))
 
         os.environ["SZ_USER_AGENT"] = self.get_user_agent()
 
