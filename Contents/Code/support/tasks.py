@@ -4,6 +4,7 @@ import datetime
 import time
 import operator
 import traceback
+from urllib2 import URLError
 
 from subliminal_patch.score import compute_score
 from subliminal_patch.core import download_subtitles
@@ -461,6 +462,103 @@ class SearchAllRecentlyAddedMissing(Task):
         self.items_searching = None
 
 
+class LegacySearchAllRecentlyAddedMissing(Task):
+    periodic = True
+    frequency = "never"
+    items_done = None
+    items_searching = None
+    items_searching_ids = None
+    items_failed = None
+    percentage = 0
+
+    stall_time = 30
+
+    def __init__(self):
+        super(LegacySearchAllRecentlyAddedMissing, self).__init__()
+        self.items_done = None
+        self.items_searching = None
+        self.items_searching_ids = None
+        self.items_failed = None
+        self.percentage = 0
+
+    def signal(self, signal_name, *args, **kwargs):
+        handler = getattr(self, "signal_%s" % signal_name)
+        return handler(*args, **kwargs) if handler else None
+
+    def signal_updated_metadata(self, *args, **kwargs):
+        item_id = int(args[0])
+
+        if self.items_searching_ids is not None and item_id in self.items_searching_ids:
+            self.items_done.append(item_id)
+            return True
+
+    def prepare(self, *args, **kwargs):
+        self.items_done = []
+        recent_items = get_recent_items()
+        missing = items_get_all_missing_subs(recent_items, sleep_after_request=0.2)
+        ids = set([id for added_at, id, title, item, missing_languages in missing if not is_ignored(id, item=item)])
+        self.items_searching = missing
+        self.items_searching_ids = ids
+        self.items_failed = []
+        self.percentage = 0
+        self.ready_for_display = True
+
+    def run(self):
+        super(LegacySearchAllRecentlyAddedMissing, self).run()
+        self.running = True
+        missing_count = len(self.items_searching)
+        items_done_count = 0
+
+        for added_at, item_id, title, item, missing_languages in self.items_searching:
+            Log.Debug(u"Task: %s, triggering refresh for %s (%s)", self.name, title, item_id)
+            try:
+                refresh_item(item_id)
+            except URLError:
+                # timeout
+                pass
+            search_started = datetime.datetime.now()
+            tries = 1
+            while 1:
+                if item_id in self.items_done:
+                    items_done_count += 1
+                    self.percentage = int(items_done_count * 100 / missing_count)
+                    Log.Debug(u"Task: %s, item %s done (%s%%, %s/%s)", self.name, item_id, self.percentage,
+                              items_done_count, missing_count)
+                    break
+
+                # item considered stalled after self.stall_time seconds passed after last refresh
+                if (datetime.datetime.now() - search_started).total_seconds() > self.stall_time:
+                    if tries > 3:
+                        self.items_failed.append(item_id)
+                        Log.Debug(u"Task: %s, item stalled for %s times: %s, skipping", self.name, tries, item_id)
+                        break
+
+                    Log.Debug(u"Task: %s, item stalled for %s seconds: %s, retrying", self.name, self.stall_time,
+                              item_id)
+                    tries += 1
+                    try:
+                        refresh_item(item_id)
+                    except URLError:
+                        pass
+                    search_started = datetime.datetime.now()
+                    time.sleep(1)
+                time.sleep(0.1)
+            # we can't hammer the PMS, otherwise requests will be stalled
+            time.sleep(5)
+
+        Log.Debug("Task: %s, done (%s%%, %s/%s). Failed items: %s", self.name, self.percentage,
+                  items_done_count, missing_count, self.items_failed)
+
+    def post_run(self, task_data):
+        super(LegacySearchAllRecentlyAddedMissing, self).post_run(task_data)
+        self.ready_for_display = False
+        self.percentage = 0
+        self.items_done = None
+        self.items_failed = None
+        self.items_searching = None
+        self.items_searching_ids = None
+
+
 class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
     periodic = True
 
@@ -682,6 +780,7 @@ class MigrateSubtitleStorage(Task):
         storage.destroy()
 
 
+scheduler.register(LegacySearchAllRecentlyAddedMissing)
 scheduler.register(SearchAllRecentlyAddedMissing)
 scheduler.register(AvailableSubsForItem)
 scheduler.register(DownloadSubtitleForItem)

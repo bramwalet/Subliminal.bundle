@@ -118,6 +118,7 @@ class DefaultScheduler(object):
 
     def run_task(self, name, *args, **kwargs):
         task = self.tasks[name]["task"]
+
         if task.running:
             Log.Debug("Scheduler: Not running %s, as it's currently running.", name)
             return False
@@ -206,6 +207,14 @@ class DefaultScheduler(object):
                 frequency_num, frequency_key = info["frequency"]
                 if not frequency_num:
                     continue
+
+                # run legacy SARAM once
+                if name == "SearchAllRecentlyAddedMissing" and ("hasRunLSARAM" not in Dict or not Dict["hasRunLSARAM"]):
+                    task = self.tasks["LegacySearchAllRecentlyAddedMissing"]["task"]
+                    task.last_run = None
+                    name = "LegacySearchAllRecentlyAddedMissing"
+                    Dict["hasRunLSARAM"] = True
+                    Dict.Save()
 
                 if not task.last_run or (task.last_run + datetime.timedelta(**{frequency_key: frequency_num}) <= now):
                     # fixme: scheduled tasks run synchronously. is this the best idea?
