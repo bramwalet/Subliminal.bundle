@@ -200,18 +200,21 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
     ))
 
     metadata = get_plex_metadata(rating_key, part_id, item_type)
-    scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
+    if not config.low_impact_mode:
+        scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
 
-    if not scanned_parts:
-        Log.Error("Couldn't list available subtitles for %s", rating_key)
-        return oc
+        if not scanned_parts:
+            Log.Error("Couldn't list available subtitles for %s", rating_key)
+            return oc
 
-    video, plex_part = scanned_parts.items()[0]
+        video, plex_part = scanned_parts.items()[0]
 
-    video_display_data = [video.format] if video.format else []
-    if video.release_group:
-        video_display_data.append(u"by %s" % video.release_group)
-    video_display_data = " ".join(video_display_data)
+        video_display_data = [video.format] if video.format else []
+        if video.release_group:
+            video_display_data.append(u"by %s" % video.release_group)
+        video_display_data = " ".join(video_display_data)
+    else:
+        video_display_data = metadata["filename"]
 
     current_display = (u"Current: %s (%s) " % (current_provider, current_score) if current_provider else "")
     if not running:
