@@ -652,6 +652,12 @@
     "default": "true"
   },
   {
+    "id": "low_impact_mode",
+    "label": "Low impact mode (for remote filesystems)",
+    "type": "bool",
+    "default": "false"
+  },
+  {
     "id": "pms_request_timeout",
     "label": "Timeout for API requests sent to the PMS",
     "type": "text",

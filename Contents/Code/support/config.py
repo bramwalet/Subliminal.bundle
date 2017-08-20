@@ -60,6 +60,7 @@ class Config(object):
     is_development = False
     dbm_supported = False
     pms_request_timeout = 15
+    low_impact_mode = False
 
     enable_channel = True
     enable_agent = True
@@ -123,6 +124,7 @@ class Config(object):
         self.plex_token = os.environ.get("PLEXTOKEN", self.universal_plex_token)
         subzero.constants.DEFAULT_TIMEOUT = lib.DEFAULT_TIMEOUT = self.pms_request_timeout = \
             min(cast_int(Prefs['pms_request_timeout'], 15), 45)
+        self.low_impact_mode = cast_bool(Prefs['low_impact_mode'])
 
         os.environ["SZ_USER_AGENT"] = self.get_user_agent()
 
