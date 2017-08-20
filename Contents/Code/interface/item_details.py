@@ -265,7 +265,7 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
             if plex_part:
                 wrong_fps_addon = " (wrong FPS, sub: %s, media: %s)" % (subtitle.fps, plex_part.fps)
             else:
-                wrong_fps_addon = " (wrong FPS, sub: %s, media: unknown)" % subtitle.fps
+                wrong_fps_addon = " (wrong FPS, sub: %s, media: unknown, low impact mode)" % subtitle.fps
 
         oc.add(DirectoryObject(
             key=Callback(TriggerDownloadSubtitle, rating_key=rating_key, randomize=timestamp(), item_title=item_title,
