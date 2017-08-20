@@ -70,7 +70,7 @@ For further help or manual installation, [please go to the wiki](https://github.
 
 ## Changelog
 
-2.0.26.1689
+2.0.26.1695
 - core: fix bug that caused SZ not to work for Windows users with special characters in their username
 - core: fix issues when logging failed manual download actions
 - core: update guessit to 2.1.4
@@ -80,6 +80,7 @@ For further help or manual installation, [please go to the wiki](https://github.
 - core: add titlovi as default provider (thanks viking!)
 - core: increase default PMS API request timeout to 15 (old: 10, max: 45); add preference for that
 - core: re-add separate legacy FindMissingSubtitles task and run it on the first run to prime SZ's internal subtitle storage
+- core: add "low impact mode" for people with remote filesystems (currently enabled for List LANGUAGE subtitles in detail menu); alleviates certain plexweb timeout issues
 - menu: change naming of find missing subtitles menu item
 - legendastv: fix multi value guessit issues
 - submod: OCR: update eng and hrv OCR replace dictionaries; fix ". L am huge"
