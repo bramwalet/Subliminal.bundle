@@ -200,6 +200,7 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
     ))
 
     metadata = get_plex_metadata(rating_key, part_id, item_type)
+    plex_part = None
     if not config.low_impact_mode:
         scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
 
@@ -261,7 +262,10 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
 
         wrong_fps_addon = ""
         if subtitle.wrong_fps:
-            wrong_fps_addon = " (wrong FPS, sub: %s, media: %s)" % (subtitle.fps, plex_part.fps)
+            if plex_part:
+                wrong_fps_addon = " (wrong FPS, sub: %s, media: %s)" % (subtitle.fps, plex_part.fps)
+            else:
+                wrong_fps_addon = " (wrong FPS, sub: %s, media: unknown)" % subtitle.fps
 
         oc.add(DirectoryObject(
             key=Callback(TriggerDownloadSubtitle, rating_key=rating_key, randomize=timestamp(), item_title=item_title,
