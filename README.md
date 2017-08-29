@@ -71,6 +71,7 @@ For further help or manual installation, [please go to the wiki](https://github.
 ## Changelog
 
 2.0.26.1695
+## ATTENTION: THIS RELEASE RESETS YOUR CONFIGURED LANGUAGES TO DEFAULT!
 - core: fix bug that caused SZ not to work for Windows users with special characters in their username
 - core: fix issues when logging failed manual download actions
 - core: update guessit to 2.1.4
