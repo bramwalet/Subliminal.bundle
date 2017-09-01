@@ -67,6 +67,11 @@ SZ_FIX_DATA = {
             u"פ": u"o",
             u"ם": u"i",
         },
+    },
+    "swe": {
+        "PartialWordsAlways": {
+            u"ĺ": u"å",
+        }
     }
 }
 
