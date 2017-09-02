@@ -71,6 +71,7 @@ For further help or manual installation, [please go to the wiki](https://github.
 ## Changelog
 
 2.0.26.1695
+## ATTENTION: THIS RELEASE RESETS YOUR CONFIGURED LANGUAGES TO DEFAULT!
 - core: fix bug that caused SZ not to work for Windows users with special characters in their username
 - core: fix issues when logging failed manual download actions
 - core: update guessit to 2.1.4
@@ -108,4 +109,4 @@ Big thanks to the beta testing team! You know who you are!
 [older changes](CHANGELOG.md)
 
 
-Subtitles provided by [OpenSubtitles.org](http://www.opensubtitles.org/), [Podnapisi.NET](https://www.podnapisi.net/), [TVSubtitles.net](http://www.tvsubtitles.net/), [Addic7ed.com](http://www.addic7ed.com/), [Legendas TV](http://legendas.tv/), [Napi Projekt](http://www.napiprojekt.pl/), [Shooter](http://shooter.cn/), [SubsCenter](http://www.subscenter.org)
+Subtitles provided by [OpenSubtitles.org](http://www.opensubtitles.org/), [Podnapisi.NET](https://www.podnapisi.net/), [TVSubtitles.net](http://www.tvsubtitles.net/), [Addic7ed.com](http://www.addic7ed.com/), [Legendas TV](http://legendas.tv/), [Napi Projekt](http://www.napiprojekt.pl/), [Shooter](http://shooter.cn/), [Titlovi](http://titlovi.com)
