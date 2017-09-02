@@ -249,7 +249,7 @@
     "secure": "true"
   },
   {
-    "id": "provider.addic7ed.boost_by1",
+    "id": "provider.addic7ed.boost_by2",
     "label": "Addic7ed: boost score (if requirements met)",
     "type": "enum",
     "values": [
@@ -272,12 +272,13 @@
       "25",
       "21",
       "20",
+      "19",
       "15",
       "10",
       "5",
       "0"
     ],
-    "default": "21"
+    "default": "19"
   },
   {
     "id": "provider.addic7ed.use_random_agents",
