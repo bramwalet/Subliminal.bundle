@@ -4,6 +4,7 @@ import io
 import logging
 import math
 import re
+import types
 
 import rarfile
 
@@ -310,16 +311,32 @@ class TitloviProvider(Provider):
                 # - format matches (if it was matched before)
                 # - release group matches (and we asked for one and it was matched, or it was not matched)
                 if guess["episode"] == subtitle.episode and guess["season"] == subtitle.season:
-                    format_matches = "format" not in subtitle.matches or \
-                                     ("format" in subtitle.matches and guess["format"].lower() in
-                                      subtitle.releases.lower())
+                    format_matches = True
+
+                    if "format" in subtitle.matches:
+                        format_matches = False
+                        releases = subtitle.releases.lower()
+                        formats = guess["format"]
+                        if not isinstance(formats, types.ListType):
+                            formats = [formats]
+
+                        for f in formats:
+                            format_matches = f.lower() in releases
+                            if format_matches:
+                                break
 
                     release_group_matches = True
-                    if subtitle.asked_for_release_group:
-                        release_group_matches = "release_group" not in subtitle.matches or \
-                                                ("release_group" in subtitle.matches and
-                                                 guess["release_group"].lower() ==
-                                                 subtitle.asked_for_release_group.lower())
+                    if subtitle.asked_for_release_group and "release_group" in subtitle.matches:
+                        asked_for_rlsgrp = subtitle.asked_for_release_group.lower()
+                        release_group_matches = False
+                        release_groups = guess["release_group"]
+                        if not isinstance(release_groups, types.ListType):
+                            release_groups = [release_groups]
+
+                        for release_group in release_groups:
+                            release_group_matches = release_group.lower() == asked_for_rlsgrp
+                            if release_group_matches:
+                                break
 
                     if release_group_matches and format_matches:
                         matching_sub = sub_name
