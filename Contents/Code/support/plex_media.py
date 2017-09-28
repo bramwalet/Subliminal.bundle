@@ -45,10 +45,11 @@ def get_plexapi_stream_info(plex_item, part_id=None):
         return d
 
     data["video_codec"] = current_media.video_codec
-    data["audio_codec"] = current_media.audio_codec.upper()
+    if current_media.audio_codec:
+        data["audio_codec"] = current_media.audio_codec.upper()
 
-    if data["audio_codec"] == "DCA":
-        data["audio_codec"] = "DTS"
+        if data["audio_codec"] == "DCA":
+            data["audio_codec"] = "DTS"
 
     if current_media.audio_channels == 8:
         data["audio_channels"] = "7.1"
