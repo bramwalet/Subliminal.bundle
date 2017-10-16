@@ -33,12 +33,22 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
     from interface.main import IgnoreMenu
 
     title = unicode(base_title) + " > " + unicode(title) if base_title else unicode(title)
-    item = get_item(rating_key)
+    item = plex_item = get_item(rating_key)
     current_kind = get_item_kind_from_rating_key(rating_key)
 
     timeout = 30
 
     oc = SubFolderObjectContainer(title2=title, replace_parent=True)
+
+    if not item:
+        oc.add(DirectoryObject(
+            key=Callback(ItemDetailsMenu, rating_key=rating_key, title=title, base_title=base_title,
+                         item_title=item_title, randomize=timestamp()),
+            title=u"Item not found: %s!" % item_title,
+            summary="Plex didn't return any information about the item, please refresh it and come back later",
+            thumb=default_thumb
+        ))
+        return oc
 
     # add back to season for episode
     if current_kind == "episode":
@@ -73,9 +83,6 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
     # get stored subtitle info for item id
     subtitle_storage = get_subtitle_storage()
     stored_subs = subtitle_storage.load_or_new(item)
-
-    # get the plex item
-    plex_item = get_item(rating_key)
 
     # look for subtitles for all available media parts and all of their languages
     has_multiple_parts = len(plex_item.media) > 1
