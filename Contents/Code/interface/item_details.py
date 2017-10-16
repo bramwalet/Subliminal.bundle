@@ -283,7 +283,7 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
             thumb=default_thumb
         ))
 
-        seen.append(current_id)
+        seen.append(subtitle.id)
 
     return oc
 
