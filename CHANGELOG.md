@@ -1,4 +1,21 @@
 
+2.0.25.1635
+- core: update memory handling, possibly reduce memory problems of 2.0
+- core: support for MPL2 subtitle format
+- core: update task handling
+- core: re-enable NVIDIA SHIELD support by fixing rarfile behaviour
+- core: add SZ_UNRAR_TOOL environment variable for custom unrar location
+- core: disable SZ when no providers are enabled
+- core: only start activity monitor if channel or agent are enabled
+- core: improve custom provider integration
+- core: update eastern european encoding detection (especially Romanian)
+- tasks: reduce provider stress by introducing wait times between searches/downloads
+- windows: correctly ship UnRAR.exe
+- windows: skip DBM checks
+- addic7ed: fix Nip/Tuck
+- subscenter: use new domain
+
+
 2.0.24.1581
 - legendastv: ship unrar.exe for Windows users (fixes unrar issues)
 - addic7ed: fix TooManyRequests error
