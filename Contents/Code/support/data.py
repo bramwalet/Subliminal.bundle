@@ -1,4 +1,5 @@
 # coding=utf-8
+import traceback
 
 
 def dispatch_migrate():
@@ -6,6 +7,8 @@ def dispatch_migrate():
         migrate()
     except:
         Log.Error("Migration failed: %s" % traceback.format_exc())
+        del Dict["subs"]
+        Dict.Save()
 
 
 def migrate():
