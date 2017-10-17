@@ -478,7 +478,7 @@ class StoredSubtitlesManager(object):
 
                 data = loads(s)
             except:
-                logger.error("Couldn't load JSON data for %s", bare_fn)
+                logger.error("Couldn't load JSON data for %s: %s", bare_fn, traceback.format_exc())
                 return
 
             subs_for_video.deserialize(data)
