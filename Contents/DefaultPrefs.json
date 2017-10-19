@@ -344,13 +344,13 @@
   },
   {
     "id": "subtitles.scan.external",
-    "label": "Don't search for subtitles if they already _exist_ on the filesystem (metadata/filesystem)?",
+    "label": "Don't search for subtitles if they already exist on the filesystem (metadata/filesystem)? // highly suggested!",
     "type": "bool",
     "default": "true"
   },
   {
     "id": "subtitles.scan.filename_strictness",
-    "label": "How strict should these subtitles _existing_ on the filesystem be detected?",
+    "label": "How strict should these subtitles existing on the filesystem be detected?",
     "type": "enum",
     "values": [
       "exact: media filename match",
