@@ -71,6 +71,7 @@ SZ_FIX_DATA = {
     "swe": {
         "PartialWordsAlways": {
             u"ĺ": u"å",
+            u"Ĺ": u"Å",
         }
     }
 }
