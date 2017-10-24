@@ -296,7 +296,7 @@ class Config(object):
         self.permissions_ok = self.check_permissions()
 
     def check_permissions(self):
-        if not Prefs["subtitles.save.filesystem"] or not Prefs["check_permissions"]:
+        if not cast_bool(Prefs["subtitles.save.filesystem"]) or not cast_bool(Prefs["check_permissions"]):
             return True
 
         self.missing_permissions = []
