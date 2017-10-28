@@ -9,6 +9,12 @@ from subliminal_patch import scan_video, refine, search_external_subtitles
 logger = logging.getLogger(__name__)
 
 
+def has_external_subtitle(part_id, stored_subs, language):
+    stored_sub = stored_subs.get_any(part_id, language)
+    if stored_sub and stored_sub.storage_type == "filesystem":
+        return True
+
+
 def parse_video(fn, video_info, hints, external_subtitles=False, embedded_subtitles=False, known_embedded=None,
                 forced_only=False, no_refining=False, dry_run=False, ignore_all=False, stored_subs=None):
 
@@ -98,8 +104,7 @@ def parse_video(fn, video_info, hints, external_subtitles=False, embedded_subtit
         # did we already download subtitles for this?
         if not ignore_all and stored_subs and external_langs_found:
             for lang in external_langs_found:
-                stored_sub = stored_subs.get_any(video_info["plex_part"].id, lang)
-                if stored_sub and stored_sub.storage_type == "filesystem":
+                if has_external_subtitle(video_info["plex_part"].id, stored_subs, lang):
                     logger.info("Not re-downloading subtitle for language %s, it already exists on the filesystem",
                                 lang)
                     video.subtitle_languages.add(lang)

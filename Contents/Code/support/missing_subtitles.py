@@ -6,6 +6,8 @@ from support.config import config
 from support.helpers import get_plex_item_display_title, cast_bool
 from support.items import get_item
 from support.lib import Plex
+from support.storage import get_subtitle_storage
+from subzero.video import has_external_subtitle
 
 
 def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_title=None, internal=False, external=True, languages=()):
@@ -17,11 +19,22 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
     else:
         item_title = get_plex_item_display_title(item, kind, section_title=section_title)
 
+    subtitle_storage = get_subtitle_storage()
+    stored_subs = subtitle_storage.load(rating_key)
+    subtitle_storage.destroy()
+
     missing = set()
     languages_set = set(languages)
     for media in item.media:
-        existing_subs = {"internal": [], "external": [], "count": 0}
+        existing_subs = {"internal": [], "external": [], "own_external": [], "count": 0}
         for part in media.parts:
+            # did we already download an external subtitle before?
+            if stored_subs:
+                for language in languages_set:
+                    if has_external_subtitle(part.id, stored_subs, language):
+                        existing_subs["own_external"].append(language)
+                        existing_subs["count"] = existing_subs["count"] + 1
+
             for stream in part.streams:
                 if stream.stream_type == 3:
                     if stream.index:
@@ -34,7 +47,9 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
 
         missing_from_part = set(languages_set)
         if existing_subs["count"]:
-            existing_flat = set((existing_subs["internal"] if internal else []) + (existing_subs["external"] if external else []))
+            existing_flat = set((existing_subs["internal"] if internal else [])
+                                + (existing_subs["external"] if external else [])
+                                + existing_subs["own_external"])
             if languages_set.issubset(existing_flat) or (len(existing_flat) >= 1 and Prefs['subtitles.only_one']):
                 # all subs found
                 #Log.Info(u"All subtitles exist for '%s'", item_title)

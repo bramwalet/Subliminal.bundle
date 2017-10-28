@@ -28,10 +28,6 @@ import items
 
 sys.modules["support.items"] = items
 
-import missing_subtitles
-
-sys.modules["support.missing_subtitles"] = missing_subtitles
-
 import scheduler
 
 sys.modules["support.scheduler"] = scheduler
@@ -42,6 +38,10 @@ sys.modules["support.storage"] = storage
 
 import scanning
 sys.modules["support.scanning"] = scanning
+
+import missing_subtitles
+
+sys.modules["support.missing_subtitles"] = missing_subtitles
 
 import tasks
 

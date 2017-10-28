@@ -62,6 +62,7 @@ def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, no
 
     subtitle_storage = get_subtitle_storage()
     stored_subs = subtitle_storage.load(rating_key)
+    subtitle_storage.destroy()
 
     try:
         # get basic video info scan (filename)
