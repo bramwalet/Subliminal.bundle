@@ -39,16 +39,21 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
                     if has_external_subtitle(part.id, stored_subs, language):
                         # check the existence of the actual subtitle file
 
-                        # compute file base path
+                        # get media filename without extension
                         part_basename = os.path.splitext(os.path.basename(part.file))[0]
 
                         # compute target directory for subtitle
+                        # fixme: move to central location
                         if tdir_is_absolute:
-                            possible_subtitle_path_base = os.path.join(subtitle_target_dir)
+                            possible_subtitle_path_base = subtitle_target_dir
                         else:
                             possible_subtitle_path_base = os.path.join(os.path.dirname(part.file), subtitle_target_dir)
 
                         possible_subtitle_path_base = os.path.realpath(possible_subtitle_path_base)
+
+                        # folder actually exists?
+                        if not os.path.isdir(possible_subtitle_path_base):
+                            continue
 
                         found_any = False
                         for ext in config.subtitle_formats:
