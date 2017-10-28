@@ -2,6 +2,8 @@
 import traceback
 import time
 
+import os
+
 from support.config import config
 from support.helpers import get_plex_item_display_title, cast_bool
 from support.items import get_item
@@ -23,17 +25,49 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
     stored_subs = subtitle_storage.load(rating_key)
     subtitle_storage.destroy()
 
+    subtitle_target_dir, tdir_is_absolute = config.subtitle_sub_dir
+
     missing = set()
     languages_set = set(languages)
     for media in item.media:
         existing_subs = {"internal": [], "external": [], "own_external": [], "count": 0}
         for part in media.parts:
+
             # did we already download an external subtitle before?
-            if stored_subs:
+            if subtitle_target_dir and stored_subs:
                 for language in languages_set:
                     if has_external_subtitle(part.id, stored_subs, language):
-                        existing_subs["own_external"].append(language)
-                        existing_subs["count"] = existing_subs["count"] + 1
+                        # check the existence of the actual subtitle file
+
+                        # compute file base path
+                        part_basename = os.path.splitext(os.path.basename(part.file))[0]
+
+                        # compute target directory for subtitle
+                        if tdir_is_absolute:
+                            possible_subtitle_path_base = os.path.join(subtitle_target_dir)
+                        else:
+                            possible_subtitle_path_base = os.path.join(os.path.dirname(part.file), subtitle_target_dir)
+
+                        possible_subtitle_path_base = os.path.realpath(possible_subtitle_path_base)
+
+                        found_any = False
+                        for ext in config.subtitle_formats:
+                            if cast_bool(Prefs['subtitles.only_one']):
+                                possible_subtitle_path = os.path.join(possible_subtitle_path_base,
+                                                                      u"%s.%s" % (part_basename, ext))
+                            else:
+                                possible_subtitle_path = os.path.join(possible_subtitle_path_base,
+                                                                      u"%s.%s.%s" % (part_basename, language, ext))
+
+                            # check for subtitle existence
+                            if os.path.isfile(possible_subtitle_path):
+                                found_any = True
+                                Log.Debug(u"Found: %s", possible_subtitle_path)
+                                break
+
+                        if found_any:
+                            existing_subs["own_external"].append(language)
+                            existing_subs["count"] = existing_subs["count"] + 1
 
             for stream in part.streams:
                 if stream.stream_type == 3:
