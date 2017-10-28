@@ -48,6 +48,7 @@ def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, no
                         (not config.forced_only and not getattr(stream, "forced")):
 
                     # embedded subtitle
+                    # fixme: tap into external subtitles here instead of scanning for ourselves later?
                     if not stream.stream_key:
                         if config.exotic_ext or stream.codec in ("srt", "ass", "ssa"):
                             lang_code = stream.language_code
