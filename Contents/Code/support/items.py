@@ -319,7 +319,8 @@ def get_current_sub(rating_key, part_id, language):
 
 
 def set_mods_for_part(rating_key, part_id, language, item_type, mods, mode="add"):
-    from support.plex_media import get_plex_metadata, scan_videos
+    from support.plex_media import get_plex_metadata
+    from support.scanning import scan_videos
     from support.storage import save_subtitles
 
     current_sub, stored_subs, storage = get_current_sub(rating_key, part_id, language)

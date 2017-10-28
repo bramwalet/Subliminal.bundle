@@ -8,10 +8,10 @@ from menu_helpers import debounce, SubFolderObjectContainer, default_thumb, add_
 from refresh_item import RefreshItem
 from subzero.constants import PREFIX
 from support.config import config
-from support.helpers import timestamp, cast_bool, df, get_language
+from support.helpers import timestamp, df, get_language
 from support.items import get_item_kind_from_rating_key, get_item, get_current_sub
-from support.lib import Plex
-from support.plex_media import get_plex_metadata, scan_videos, PMSMediaProxy
+from support.plex_media import get_plex_metadata
+from support.scanning import scan_videos
 from support.scheduler import scheduler
 from support.storage import get_subtitle_storage
 

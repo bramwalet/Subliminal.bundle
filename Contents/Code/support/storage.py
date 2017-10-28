@@ -148,6 +148,7 @@ def save_subtitles(scanned_video_part_map, downloaded_subtitles, mode="a", bare_
         except OSError:
             if Prefs["subtitles.save.metadata_fallback"]:
                 meta_fallback = True
+                storage = "metadata"
             else:
                 raise
         else:

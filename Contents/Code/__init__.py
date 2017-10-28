@@ -24,7 +24,8 @@ sys.modules["interface"] = interface
 
 from subzero.constants import OS_PLEX_USERAGENT, PERSONAL_MEDIA_IDENTIFIER
 from interface.menu import *
-from support.plex_media import media_to_videos, get_media_item_ids, scan_videos
+from support.plex_media import media_to_videos, get_media_item_ids
+from support.scanning import scan_videos
 from support.storage import save_subtitles, store_subtitle_info
 from support.items import is_ignored
 from support.config import config

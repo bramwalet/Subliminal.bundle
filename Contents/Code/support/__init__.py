@@ -36,13 +36,16 @@ import scheduler
 
 sys.modules["support.scheduler"] = scheduler
 
-import tasks
-
-sys.modules["support.tasks"] = tasks
-
 import storage
 
 sys.modules["support.storage"] = storage
+
+import scanning
+sys.modules["support.scanning"] = scanning
+
+import tasks
+
+sys.modules["support.tasks"] = tasks
 
 import ignore
 

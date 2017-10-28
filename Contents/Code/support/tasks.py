@@ -17,7 +17,8 @@ from storage import save_subtitles, get_subtitle_storage
 from support.config import config
 from support.items import get_recent_items, get_item, is_ignored
 from support.helpers import track_usage, get_title_for_video_metadata, cast_bool, PartUnknownException
-from support.plex_media import scan_videos, get_plex_metadata
+from support.plex_media import get_plex_metadata
+from support.scanning import scan_videos
 from download import download_best_subtitles
 
 

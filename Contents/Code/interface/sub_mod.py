@@ -8,7 +8,8 @@ from babelfish import Language
 from menu_helpers import debounce, SubFolderObjectContainer, default_thumb, route
 from subzero.modification import registry as mod_registry, SubtitleModifications
 from subzero.constants import PREFIX
-from support.plex_media import get_plex_metadata, scan_videos
+from support.plex_media import get_plex_metadata
+from support.scanning import scan_videos
 from support.helpers import timestamp, pad_title
 from support.items import get_current_sub, set_mods_for_part
 
