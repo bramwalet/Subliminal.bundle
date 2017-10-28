@@ -344,7 +344,7 @@
   },
   {
     "id": "subtitles.scan.external",
-    "label": "Don't search for subtitles if they already exist on the filesystem (metadata/filesystem)? // highly suggested!",
+    "label": "Don't search for subtitles if they already exist on the filesystem (metadata/filesystem)?",
     "type": "bool",
     "default": "true"
   },
