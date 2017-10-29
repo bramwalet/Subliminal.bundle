@@ -506,6 +506,7 @@
     "values": [
       "never",
       "every 1 hours",
+      "every 2 hours",
       "every 3 hours",
       "every 6 hours",
       "every 12 hours",
@@ -527,7 +528,8 @@
       "3 weeks",
       "4 weeks",
       "5 weeks",
-      "6 weeks"
+      "6 weeks",
+      "12 weeks",
     ],
     "default": "2 weeks"
   },
