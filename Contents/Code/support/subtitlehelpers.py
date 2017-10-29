@@ -157,7 +157,8 @@ class DefaultSubtitleHelper(SubtitleHelper):
                 Log("An error occurred while attempting to parse the subtitle file, skipping... : " + self.filename)
                 return lang_sub_map
 
-        if codec is None and ext in ['ass', 'ssa', 'smi', 'srt', 'psb', 'vtt']:
+        # fixme: re-add vtt once Plex Inc. fixes this line in LocalMedia.bundle
+        if codec is None and ext in ['ass', 'ssa', 'smi', 'srt', 'psb']:
             codec = ext.replace('ass', 'ssa')
 
         if format is None:
