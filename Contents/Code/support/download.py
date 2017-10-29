@@ -3,6 +3,7 @@
 import subliminal_patch as subliminal
 
 from support.config import config
+from support.helpers import cast_bool
 from subtitlehelpers import get_subtitles_from_metadata
 from subliminal_patch import compute_score
 
@@ -12,6 +13,11 @@ def download_best_subtitles(video_part_map, min_score=0):
     languages = config.lang_list
     if not languages:
         return
+
+    # should we treat IETF as alpha3? (ditch the country part)
+    if cast_bool(Prefs["subtitles.language.ietf"]):
+        for language in languages:
+            language.country = None
 
     missing_languages = False
     for video, part in video_part_map.iteritems():
