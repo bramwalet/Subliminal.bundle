@@ -10,7 +10,7 @@ from subliminal_patch import compute_score
 
 def download_best_subtitles(video_part_map, min_score=0):
     hearing_impaired = Prefs['subtitles.search.hearingImpaired']
-    languages = config.lang_list
+    languages = config.lang_list.copy()
     if not languages:
         return
 
