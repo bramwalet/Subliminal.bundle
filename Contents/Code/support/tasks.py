@@ -199,6 +199,10 @@ class DownloadSubtitleMixin(object):
                     history.add(item_title, video.id, section_title=video.plexapi_metadata["section"],
                                 subtitle=subtitle,
                                 mode=mode)
+
+                    # clear missing subtitles menu data
+                    if not scheduler.is_task_running("MissingSubtitles"):
+                        scheduler.clear_task_data("MissingSubtitles")
         else:
             set_refresh_menu_state(u"%s: Subtitle download failed (%s)" % (self.name, rating_key))
         return download_successful
