@@ -264,7 +264,7 @@ def GetLogsLink():
 
     elif "Referer" in req_headers:
         parsed = urlparse.urlparse(req_headers["Referer"])
-        link_base = "%s://%s:%s" % (parsed.scheme, parsed.hostname, parsed.port)
+        link_base = "%s://%s%s" % (parsed.scheme, parsed.hostname, (":%s" % parsed.port) if parsed.port else "")
         Log.Debug("Using referer-based link_base")
         get_external_ip = False
 
