@@ -248,7 +248,7 @@ def RecentMissingSubtitlesMenu(force=False, randomize=None):
                 key=Callback(ItemDetailsMenu, title=title + " > " + item_title, item_title=item_title,
                              rating_key=item_id),
                 title=item_title,
-                summary="Missing: %s" % ", ".join((l.name if not l.country else "%s (%s)") % (l.name, l.country.alpha2)
+                summary="Missing: %s" % ", ".join((l.name if not l.country else "%s (%s)" % (l.name, l.country.alpha2))
                                                   for l in missing_languages),
                 thumb=get_item_thumb(item) or default_thumb
             ))
