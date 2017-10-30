@@ -17,6 +17,7 @@ def download_best_subtitles(video_part_map, min_score=0):
     # should we treat IETF as alpha3? (ditch the country part)
     if cast_bool(Prefs["subtitles.language.ietf"]):
         for language in languages:
+            language.country_orig = language.country
             language.country = None
 
     missing_languages = False
@@ -44,7 +45,14 @@ def download_best_subtitles(video_part_map, min_score=0):
         break
 
     if missing_languages:
-        Log.Debug("Download best subtitles using settings: min_score: %s, hearing_impaired: %s" % (min_score, hearing_impaired))
+        # re-add country codes to the missing languages, in case we've removed them above
+        if cast_bool(Prefs["subtitles.language.ietf"]):
+            for language in languages:
+                if language.country_orig:
+                    language.country = language.country_orig
+
+        Log.Debug("Download best subtitles using settings: min_score: %s, hearing_impaired: %s, languages: %s" %
+                  (min_score, hearing_impaired, languages))
 
         return subliminal.download_best_subtitles(video_part_map.keys(), languages, min_score, hearing_impaired, providers=config.providers,
                                                   provider_configs=config.provider_settings, pool_class=config.provider_pool,
