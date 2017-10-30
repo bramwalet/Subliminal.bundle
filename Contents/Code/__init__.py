@@ -170,6 +170,10 @@ class SubZeroAgent(object):
             # scanned_video_part_map = {subliminal.Video: plex_part, ...}
             scanned_video_part_map = scan_videos(videos, kind=self.agent_type)
 
+            # clear missing subtitles menu data
+            if not scheduler.is_task_running("MissingSubtitles"):
+                scheduler.clear_task_data("MissingSubtitles")
+
             downloaded_subtitles = None
             if not config.enable_agent:
                 Log.Debug("Skipping Sub-Zero agent(s)")
