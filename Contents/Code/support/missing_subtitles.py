@@ -27,6 +27,8 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
 
     subtitle_target_dir, tdir_is_absolute = config.subtitle_sub_dir
 
+    # fixme: ietf handling
+
     missing = set()
     languages_set = set(languages)
     for media in item.media:
