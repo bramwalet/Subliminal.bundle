@@ -179,10 +179,16 @@
     "default": "false"
   },
   {
-    "id": "subtitles.language.ietf",
-    "label": "Treat IETF language tags as ISO 639-1 (e.g. pt-BR = pt)",
+    "id": "subtitles.language.ietf_display",
+    "label": "Display languages with country attribute as ISO 639-1 (e.g. pt-BR = pt)",
     "type": "bool",
     "default": "true"
+  },
+  {
+    "id": "subtitles.language.ietf_normalize",
+    "label": "Treat languages with country attribute as ISO 639-1 (e.g. don't download pt-BR if pt subtitle exists)",
+    "type": "bool",
+    "default": "false"
   },
   {
     "id": "subtitles.only_one",
