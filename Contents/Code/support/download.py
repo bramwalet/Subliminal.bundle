@@ -10,16 +10,19 @@ from subliminal_patch import compute_score
 
 def download_best_subtitles(video_part_map, min_score=0):
     hearing_impaired = Prefs['subtitles.search.hearingImpaired']
-    ietf_as_alpha3 = cast_bool(Prefs["subtitles.language.ietf"])
+    ietf_as_alpha3 = cast_bool(Prefs["subtitles.language.ietf_normalize"])
     languages = config.lang_list.copy()
     if not languages:
         return
 
     # should we treat IETF as alpha3? (ditch the country part)
     if ietf_as_alpha3:
+        languages = list(languages)
         for language in languages:
             language.country_orig = language.country
             language.country = None
+
+        languages = set(languages)
 
     missing_languages = False
     for video, part in video_part_map.iteritems():
@@ -33,9 +36,11 @@ def download_best_subtitles(video_part_map, min_score=0):
 
         have_languages = video.subtitle_languages.copy()
         if ietf_as_alpha3:
+            have_languages = list(have_languages)
             for language in have_languages:
                 language.country_orig = language.country
                 language.country = None
+            have_languages = set(have_languages)
 
         missing_subs = (languages - have_languages)
 

@@ -27,7 +27,7 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
 
     subtitle_target_dir, tdir_is_absolute = config.subtitle_sub_dir
 
-    # fixme: ietf handling
+    ietf_as_alpha3 = cast_bool(Prefs["subtitles.language.ietf_normalize"])
 
     missing = set()
     languages_set = set(languages)
@@ -91,12 +91,36 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
             existing_flat = set((existing_subs["internal"] if internal else [])
                                 + (existing_subs["external"] if external else [])
                                 + existing_subs["own_external"])
-            if languages_set.issubset(existing_flat) or (len(existing_flat) >= 1 and Prefs['subtitles.only_one']):
+
+            check_languages = set(languages)
+            if ietf_as_alpha3:
+                existing_flat = list(existing_flat)
+                for language in existing_flat:
+                    language.country_orig = language.country
+                    language.country = None
+
+                existing_flat = set(existing_flat)
+
+                check_languages = list(check_languages)
+                for language in check_languages:
+                    language.country_orig = language.country
+                    language.country = None
+
+                check_languages = set(check_languages)
+
+            if check_languages.issubset(existing_flat) or (len(existing_flat) >= 1 and Prefs['subtitles.only_one']):
                 # all subs found
                 #Log.Info(u"All subtitles exist for '%s'", item_title)
                 continue
 
-            missing_from_part = languages_set - existing_flat
+            missing_from_part = check_languages - existing_flat
+            if ietf_as_alpha3:
+                missing_from_part = list(missing_from_part)
+                for language in missing_from_part:
+                    if language.country_orig:
+                        language.country = language.country_orig
+
+                missing_from_part = set(missing_from_part)
 
         if missing_from_part:
             Log.Info(u"Subs still missing for '%s' (%s: %s): %s", item_title, rating_key, media.id,
