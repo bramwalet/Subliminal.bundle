@@ -91,12 +91,12 @@ class Config(object):
     forced_only = False
     exotic_ext = False
     treat_und_as_first = False
+    subtitle_sub_dir = None, None
     ext_match_strictness = False
     default_mods = None
     debug_mods = False
     react_to_activities = False
     activity_mode = None
-    subtitles_save_to = None
     no_refresh = False
 
     store_recently_played_amount = 20
@@ -154,10 +154,10 @@ class Config(object):
         self.chmod = self.check_chmod()
         self.exotic_ext = cast_bool(Prefs["subtitles.scan.exotic_ext"])
         self.treat_und_as_first = cast_bool(Prefs["subtitles.language.treat_und_as_first"])
+        self.subtitle_sub_dir = self.get_subtitle_sub_dir()
         self.ext_match_strictness = self.determine_ext_sub_strictness()
         self.default_mods = self.get_default_mods()
         self.debug_mods = cast_bool(Prefs['log_debug_mods'])
-        self.subtitles_save_to = Prefs['subtitles.save.filesystem']
         self.no_refresh = os.environ.get("SZ_NO_REFRESH", False)
         self.initialized = True
 
@@ -296,7 +296,7 @@ class Config(object):
         self.permissions_ok = self.check_permissions()
 
     def check_permissions(self):
-        if not Prefs["subtitles.save.filesystem"] or not Prefs["check_permissions"]:
+        if not cast_bool(Prefs["subtitles.save.filesystem"]) or not cast_bool(Prefs["check_permissions"]):
             return True
 
         self.missing_permissions = []
@@ -535,6 +535,22 @@ class Config(object):
 
         if wrong_chmod:
             Log.Warn("Chmod setting ignored, please use only 4-digit integers with leading 0 (e.g.: 775)")
+
+    def get_subtitle_sub_dir(self):
+        """
+
+        :return: folder, is_absolute
+        """
+        if not cast_bool(Prefs['subtitles.save.filesystem']):
+            return None, None
+
+        if Prefs["subtitles.save.subFolder.Custom"]:
+            return Prefs["subtitles.save.subFolder.Custom"], os.path.isabs(Prefs["subtitles.save.subFolder.Custom"])
+
+        if Prefs["subtitles.save.subFolder"] == "current folder":
+            return ".", False
+
+        return Prefs["subtitles.save.subFolder"], False
 
     def determine_ext_sub_strictness(self):
         val = Prefs["subtitles.scan.filename_strictness"]

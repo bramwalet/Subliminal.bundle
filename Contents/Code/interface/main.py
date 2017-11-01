@@ -2,7 +2,7 @@
 
 from subzero.constants import PREFIX, TITLE, ART
 from support.config import config
-from support.helpers import pad_title, timestamp, df, get_plex_item_display_title
+from support.helpers import pad_title, timestamp, df, get_plex_item_display_title, display_language
 from support.scheduler import scheduler
 from support.ignore import ignore_list
 from support.items import get_item_thumb, get_on_deck_items, get_all_items, get_items_info, get_item, \
@@ -248,7 +248,7 @@ def RecentMissingSubtitlesMenu(force=False, randomize=None):
                 key=Callback(ItemDetailsMenu, title=title + " > " + item_title, item_title=item_title,
                              rating_key=item_id),
                 title=item_title,
-                summary="Missing: %s" % ", ".join(l.name for l in missing_languages),
+                summary="Missing: %s" % ", ".join(display_language(l) for l in missing_languages),
                 thumb=get_item_thumb(item) or default_thumb
             ))
 

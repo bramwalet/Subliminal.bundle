@@ -179,10 +179,16 @@
     "default": "false"
   },
   {
-    "id": "subtitles.language.ietf",
-    "label": "Treat IETF language tags as ISO 639-1 (e.g. pt-BR = pt)",
+    "id": "subtitles.language.ietf_display",
+    "label": "Display languages with country attribute as ISO 639-1 (e.g. pt-BR = pt)",
     "type": "bool",
     "default": "true"
+  },
+  {
+    "id": "subtitles.language.ietf_normalize",
+    "label": "Treat languages with country attribute as ISO 639-1 (e.g. don't download pt-BR if pt subtitle exists)",
+    "type": "bool",
+    "default": "false"
   },
   {
     "id": "subtitles.only_one",
@@ -338,25 +344,19 @@
   },
   {
     "id": "subtitles.scan.embedded",
-    "label": "Scan: include embedded subtitles (in the media file (MKV/MP4), don't download if existing)",
+    "label": "Don't search for subtitles if there are embedded subtitles inside the media file (MKV/MP4)?",
     "type": "bool",
     "default": "false"
   },
   {
     "id": "subtitles.scan.external",
-    "label": "Scan: include external subtitles (metadata/filesystem, don't download if existing)",
+    "label": "Don't search for subtitles if they already exist on the filesystem (metadata/filesystem)?",
     "type": "bool",
     "default": "true"
   },
   {
-    "id": "subtitles.scan.exotic_ext",
-    "label": "Scan: include \"exotic\" subtitle formats (anything else than .srt/.ssa/.ass/.vtt; embedded or external)",
-    "type": "bool",
-    "default": "false"
-  },
-  {
     "id": "subtitles.scan.filename_strictness",
-    "label": "Scan: which external subtitles should be picked up?",
+    "label": "How strict should these subtitles existing on the filesystem be detected?",
     "type": "enum",
     "values": [
       "exact: media filename match",
@@ -364,6 +364,12 @@
       "any"
     ],
     "default": "loose: filename contains media filename"
+  },
+  {
+    "id": "subtitles.scan.exotic_ext",
+    "label": "Include \"exotic\" subtitle formats (anything else than .srt/.ssa/.ass/.vtt; embedded or external) in the above?",
+    "type": "bool",
+    "default": "false"
   },
   {
     "id": "subtitles.search.minimumTVScore2",
@@ -506,6 +512,7 @@
     "values": [
       "never",
       "every 1 hours",
+      "every 2 hours",
       "every 3 hours",
       "every 6 hours",
       "every 12 hours",
@@ -527,7 +534,8 @@
       "3 weeks",
       "4 weeks",
       "5 weeks",
-      "6 weeks"
+      "6 weeks",
+      "12 weeks",
     ],
     "default": "2 weeks"
   },

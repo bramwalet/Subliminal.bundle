@@ -140,20 +140,22 @@ def save_subtitles(scanned_video_part_map, downloaded_subtitles, mode="a", bare_
                 subtitle.plex_media_fps = video.fps
 
     storage = "metadata"
-    if Prefs['subtitles.save.filesystem']:
+    save_to_fs = cast_bool(Prefs['subtitles.save.filesystem'])
+    if save_to_fs:
         storage = "filesystem"
         try:
             Log.Debug("Using filesystem as subtitle storage")
             save_subtitles_to_file(downloaded_subtitles)
         except OSError:
-            if Prefs["subtitles.save.metadata_fallback"]:
+            if cast_bool(Prefs["subtitles.save.metadata_fallback"]):
                 meta_fallback = True
+                storage = "metadata"
             else:
                 raise
         else:
             save_successful = True
 
-    if not Prefs['subtitles.save.filesystem'] or meta_fallback:
+    if not save_to_fs or meta_fallback:
         if meta_fallback:
             Log.Debug("Using metadata as subtitle storage, because filesystem storage failed")
         else:

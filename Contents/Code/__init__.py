@@ -24,7 +24,8 @@ sys.modules["interface"] = interface
 
 from subzero.constants import OS_PLEX_USERAGENT, PERSONAL_MEDIA_IDENTIFIER
 from interface.menu import *
-from support.plex_media import media_to_videos, get_media_item_ids, scan_videos
+from support.plex_media import media_to_videos, get_media_item_ids
+from support.scanning import scan_videos
 from support.storage import save_subtitles, store_subtitle_info
 from support.items import is_ignored
 from support.config import config
@@ -168,6 +169,10 @@ class SubZeroAgent(object):
 
             # scanned_video_part_map = {subliminal.Video: plex_part, ...}
             scanned_video_part_map = scan_videos(videos, kind=self.agent_type)
+
+            # clear missing subtitles menu data
+            if not scheduler.is_task_running("MissingSubtitles"):
+                scheduler.clear_task_data("MissingSubtitles")
 
             downloaded_subtitles = None
             if not config.enable_agent:

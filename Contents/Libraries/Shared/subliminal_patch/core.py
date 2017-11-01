@@ -379,7 +379,7 @@ def scan_video(path, dont_use_actual_file=False, hints=None):
         raise ValueError('Path does not exist')
 
     # check video extension
-    if not path.endswith(VIDEO_EXTENSIONS):
+    if not path.lower().endswith(VIDEO_EXTENSIONS):
         raise ValueError('%r is not a valid video extension' % os.path.splitext(path)[1])
 
     dirpath, filename = os.path.split(path)
@@ -438,11 +438,11 @@ def _search_external_subtitles(path, forced_tag=False):
         adv_tag = None
         if len(split_tag) > 1:
             adv_tag = split_tag[1].lower()
-            if adv_tag in ['forced', 'normal', 'default']:
+            if adv_tag in ['forced', 'normal', 'default', 'embedded', 'custom']:
                 p_root = split_tag[0]
 
         # forced wanted but NIL
-        if forced_tag and adv_tag != "forced":
+        if (forced_tag and adv_tag != "forced") or (not forced_tag and adv_tag == "forced"):
             continue
 
         # extract the potential language code

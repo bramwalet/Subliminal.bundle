@@ -12,10 +12,7 @@ from subzero.constants import ICON_SUB, ICON
 from support.scheduler import scheduler
 
 default_thumb = R(ICON_SUB)
-main_icon = ICON if config.permissions_ok else "icon-default_error.jpg"
-if config.is_development:
-    main_icon = "icon-dev.jpg" if config.permissions_ok else "icon-dev_error.jpg"
-
+main_icon = ICON if not config.is_development else "icon-dev.jpg"
 
 # noinspection PyUnboundLocalVariable
 route = enable_channel_wrapper(route)

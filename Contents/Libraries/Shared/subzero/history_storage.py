@@ -5,6 +5,8 @@ import logging
 import traceback
 import types
 
+from babelfish import Language
+
 from constants import mode_map
 
 logger = logging.getLogger(__name__)
@@ -16,6 +18,7 @@ class SubtitleHistoryItem(object):
     rating_key = None
     provider_name = None
     lang_name = None
+    lang_data = None
     score = None
     time = None
     mode = "a"
@@ -26,6 +29,7 @@ class SubtitleHistoryItem(object):
         self.rating_key = str(rating_key)
         self.provider_name = subtitle.provider_name
         self.lang_name = subtitle.language.name
+        self.lang_data = subtitle.language.alpha3, subtitle.language.country, subtitle.language.script
         self.score = subtitle.score
         self.time = time or datetime.datetime.now()
         self.mode = mode
@@ -33,6 +37,11 @@ class SubtitleHistoryItem(object):
     @property
     def title(self):
         return u"%s: %s" % (self.section_title, self.item_title)
+
+    @property
+    def language(self):
+        if self.lang_data:
+            return Language(self.lang_data[0], country=self.lang_data[1], script=self.lang_data[2])
 
     @property
     def mode_verbose(self):

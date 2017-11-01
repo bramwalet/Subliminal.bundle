@@ -8,10 +8,10 @@ from menu_helpers import debounce, SubFolderObjectContainer, default_thumb, add_
 from refresh_item import RefreshItem
 from subzero.constants import PREFIX
 from support.config import config
-from support.helpers import timestamp, cast_bool, df, get_language
+from support.helpers import timestamp, df, get_language, display_language
 from support.items import get_item_kind_from_rating_key, get_item, get_current_sub
-from support.lib import Plex
-from support.plex_media import get_plex_metadata, scan_videos, PMSMediaProxy
+from support.plex_media import get_plex_metadata
+from support.scanning import scan_videos
 from support.scheduler import scheduler
 from support.storage import get_subtitle_storage
 
@@ -118,27 +118,28 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
 
                     summary = u"%sCurrent subtitle: %s (added: %s, %s), Language: %s, Score: %i, Storage: %s" % \
                               (part_summary_addon, current_sub.provider_name, df(current_sub.date_added),
-                               current_sub.mode_verbose, lang, current_sub.score, current_sub.storage_type)
+                               current_sub.mode_verbose, display_language(lang), current_sub.score,
+                               current_sub.storage_type)
 
                     oc.add(DirectoryObject(
                         key=Callback(SubtitleOptionsMenu, rating_key=rating_key, part_id=part_id, title=title,
-                                     item_title=item_title, language=lang, language_name=lang.name,
+                                     item_title=item_title, language=lang, language_name=display_language(lang),
                                      current_id=current_sub_id,
                                      item_type=plex_item.type, filename=filename, current_data=summary,
                                      randomize=timestamp(), current_provider=current_sub_provider_name,
                                      current_score=current_score),
-                        title=u"%sActions for %s subtitle" % (part_index_addon, lang.name),
+                        title=u"%sActions for %s subtitle" % (part_index_addon, display_language(lang)),
                         summary=summary
                     ))
                 else:
                     oc.add(DirectoryObject(
                         key=Callback(ListAvailableSubsForItemMenu, rating_key=rating_key, part_id=part_id, title=title,
-                                     item_title=item_title, language=lang, language_name=lang.name,
+                                     item_title=item_title, language=lang, language_name=display_language(lang),
                                      current_id=current_sub_id,
                                      item_type=plex_item.type, filename=filename, current_data=summary,
                                      randomize=timestamp(), current_provider=current_sub_provider_name,
                                      current_score=current_score),
-                        title=u"%sList %s subtitles" % (part_index_addon, lang.name),
+                        title=u"%sList %s subtitles" % (part_index_addon, display_language(lang)),
                         summary=summary
                     ))
 
@@ -254,7 +255,8 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
                          part_id=part_id, title=title, current_id=current_id, item_type=item_type,
                          current_provider=current_provider, current_score=current_score,
                          randomize=timestamp()),
-            title=u"Searching for %s subs (%s), refresh here ..." % (get_language(language).name, video_display_data),
+            title=u"Searching for %s subs (%s), refresh here ..." % (display_language(get_language(language)),
+                                                                     video_display_data),
             summary=u"%sFilename: %s" % (current_display, filename),
             thumb=default_thumb
         ))
