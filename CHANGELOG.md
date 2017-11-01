@@ -1,3 +1,19 @@
+2.0.26.1695
+## ATTENTION: THIS RELEASE RESETS YOUR CONFIGURED LANGUAGES TO DEFAULT!
+- core: fix bug that caused SZ not to work for Windows users with special characters in their username
+- core: fix issues when logging failed manual download actions
+- core: update guessit to 2.1.4
+- core: fix issue causing the background task scheduler to stop after changing preferences
+- core: fix polish encoding (try windows-1250 first, then iso 8859-2)
+- core: remove subscenter provider as it now uses captchas
+- core: add titlovi as default provider (thanks viking!)
+- core: increase default PMS API request timeout to 15 (old: 10, max: 45); add preference for that
+- core: re-add separate legacy FindMissingSubtitles task and run it on the first run to prime SZ's internal subtitle storage
+- core: add "low impact mode" for people with remote filesystems (currently enabled for List LANGUAGE subtitles in detail menu); alleviates certain plexweb timeout issues
+- menu: change naming of find missing subtitles menu item
+- legendastv: fix multi value guessit issues
+- submod: OCR: update eng and hrv OCR replace dictionaries; fix ". L am huge"
+
 
 2.0.25.1635
 - core: update memory handling, possibly reduce memory problems of 2.0

@@ -70,6 +70,24 @@ For further help or manual installation, [please go to the wiki](https://github.
 
 ## Changelog
 
+2.0.29.1756
+- core: don't fail on uppercase file extensions
+- core: don't re-download a subtitle if we already downloaded one, it still physically exists and external subtitles are configured to be ignored
+- core: fix VTT subtitle duplication
+- core: if forced subtitles not explicitly wanted, ignore existing forced subtitles when searching
+- core: add full IETF language support for `Treat languages with country attribute as ISO 639-1 (e.g. don't download pt-BR if pt subtitle exists)`-setting for embedded subtitles
+- menu: remove buggy dynamic permission-based channel icon introduced in 1715
+- menu: improve `Items with missing subtitles` menu usage and item display
+- menu: `Advanced -> Get my logs` handle custom domains without port
+- menu: correctly show country/script part of languages with such attributes (e.g. pt-BR)
+- config: rename `Scan:` settings; make them better understandable and translatable
+- config: rephrase IETF options as "languages with country attribute" (e.g. pt-BR)
+- config: separate IETF options into how to display languages with country attribute and how they should be handled when searching/scanning (e.g. pt-BR)
+- config: `Scheduler: Item age to be considered recent` now can go up to 12 weeks
+- config: `Scheduler: Periodically search for recent items with missing subtitles` added `every 2 hours`
+- submod: swe: add Ĺ to Å
+
+
 2.0.26.1715
 - core: submod: OCR fixes: swe: replace ĺ with å inside words
 - core: fix handling of non-existant PMS audio_codec info
@@ -81,23 +99,6 @@ For further help or manual installation, [please go to the wiki](https://github.
 - menu: manual subtitle list sometimes listed duplicates (thanks @andreashoyer)
 - menu: don't request PMS metadata in item details menu twice
 - menu: don't fail badly on non existant PMS metadata in item details menu
-
-
-2.0.26.1695
-## ATTENTION: THIS RELEASE RESETS YOUR CONFIGURED LANGUAGES TO DEFAULT!
-- core: fix bug that caused SZ not to work for Windows users with special characters in their username
-- core: fix issues when logging failed manual download actions
-- core: update guessit to 2.1.4
-- core: fix issue causing the background task scheduler to stop after changing preferences
-- core: fix polish encoding (try windows-1250 first, then iso 8859-2)
-- core: remove subscenter provider as it now uses captchas
-- core: add titlovi as default provider (thanks viking!)
-- core: increase default PMS API request timeout to 15 (old: 10, max: 45); add preference for that
-- core: re-add separate legacy FindMissingSubtitles task and run it on the first run to prime SZ's internal subtitle storage
-- core: add "low impact mode" for people with remote filesystems (currently enabled for List LANGUAGE subtitles in detail menu); alleviates certain plexweb timeout issues
-- menu: change naming of find missing subtitles menu item
-- legendastv: fix multi value guessit issues
-- submod: OCR: update eng and hrv OCR replace dictionaries; fix ". L am huge"
 
 
 
