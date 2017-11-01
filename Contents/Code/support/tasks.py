@@ -634,6 +634,7 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
                     current = current_subs.get(current_key)
 
                     # currently got subtitle?
+                    # fixme: check for existence
                     if not current:
                         continue
                     current_score = current.score
