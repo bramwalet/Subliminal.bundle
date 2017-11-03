@@ -473,7 +473,7 @@ class StoredSubtitlesManager(object):
             # new style data
             subs_for_video = JSONStoredVideoSubtitles()
             try:
-                with gzip.open(json_path, 'rb') as f:
+                with gzip.open(json_path, 'rb', compresslevel=6) as f:
                     s = f.read()
 
                 data = loads(s)
@@ -524,10 +524,12 @@ class StoredSubtitlesManager(object):
 
     def save(self, subs_for_video):
         data = subs_for_video.serialize()
+        temp_fn = self.get_json_data_path(self.get_storage_filename(subs_for_video.video_id) + "_tmp")
         fn = self.get_json_data_path(self.get_storage_filename(subs_for_video.video_id))
         json_data = str(dumps(data, ensure_ascii=False))
-        with gzip.open(fn, "wb", compresslevel=6) as f:
+        with gzip.open(temp_fn, "wb", compresslevel=6) as f:
             f.write(json_data)
+        os.rename(temp_fn, fn)
 
     def delete(self, filename):
         os.remove(filename)
