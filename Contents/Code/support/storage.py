@@ -32,7 +32,7 @@ def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_ty
         title = get_title_for_video_metadata(metadata)
 
         subtitle_storage = get_subtitle_storage()
-        stored_subs = subtitle_storage.load_or_new(plex_item)
+        stored_subs = subtitle_storage.load_or_new(plex_item, save=False)
 
         for subtitle in video_subtitles:
             lang = str(subtitle.language)

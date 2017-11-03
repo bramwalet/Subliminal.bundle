@@ -514,12 +514,13 @@ class StoredSubtitlesManager(object):
 
         return subs_for_video
 
-    def load_or_new(self, plex_item):
+    def load_or_new(self, plex_item, save=True):
         subs_for_video = self.load(plex_item.rating_key)
         if not subs_for_video:
             subs_for_video = JSONStoredVideoSubtitles()
             subs_for_video.initialize(plex_item, version=self.version)
-            self.save(subs_for_video)
+            if save:
+                self.save(subs_for_video)
         return subs_for_video
 
     def save(self, subs_for_video):
