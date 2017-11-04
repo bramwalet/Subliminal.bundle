@@ -120,12 +120,14 @@ class DefaultSubtitleHelper(SubtitleHelper):
         forced = ''
         default = ''
         split_tag = file.rsplit('.', 1)
-        if len(split_tag) > 1 and split_tag[1].lower() in ['forced', 'normal', 'default', 'embedded', 'custom']:
+        if len(split_tag) > 1 and split_tag[1].lower() in ['forced', 'normal', 'default', 'embedded', 'embedded-forced',
+                                                           'custom']:
             file = split_tag[0]
+            sub_tag = split_tag[1].lower()
             # don't do anything with 'normal', we don't need it
-            if 'forced' == split_tag[1].lower():
+            if 'forced' in sub_tag:
                 forced = '1'
-            if 'default' == split_tag[1].lower():
+            elif 'default' == sub_tag:
                 default = '1'
 
         # Attempt to extract the language from the filename (e.g. Avatar (2009).eng)
