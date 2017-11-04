@@ -71,32 +71,38 @@ def log_storage(key):
         Log.Debug(pprint.pformat(Dict[key]))
 
 
-def save_subtitles_to_file(subtitles):
+def get_target_folder(video):
+    fld = None
     fld_custom = Prefs["subtitles.save.subFolder.Custom"].strip() \
         if Prefs["subtitles.save.subFolder.Custom"] else None
 
+    if fld_custom or Prefs["subtitles.save.subFolder"] != "current folder":
+        # specific subFolder requested, create it if it doesn't exist
+        fld_base = os.path.split(video.name)[0]
+        if fld_custom:
+            if fld_custom.startswith("/"):
+                # absolute folder
+                fld = fld_custom
+            else:
+                fld = os.path.join(fld_base, fld_custom)
+        else:
+            fld = os.path.join(fld_base, Prefs["subtitles.save.subFolder"])
+        fld = force_unicode(fld)
+        if not os.path.exists(fld):
+            os.makedirs(fld)
+    return fld
+
+
+def save_subtitles_to_file(subtitles, tags=None, forced_tag=None):
+    forced_tag = forced_tag or config.forced_only
     for video, video_subtitles in subtitles.items():
         if not video_subtitles:
             continue
 
-        fld = None
-        if fld_custom or Prefs["subtitles.save.subFolder"] != "current folder":
-            # specific subFolder requested, create it if it doesn't exist
-            fld_base = os.path.split(video.name)[0]
-            if fld_custom:
-                if fld_custom.startswith("/"):
-                    # absolute folder
-                    fld = fld_custom
-                else:
-                    fld = os.path.join(fld_base, fld_custom)
-            else:
-                fld = os.path.join(fld_base, Prefs["subtitles.save.subFolder"])
-            fld = force_unicode(fld)
-            if not os.path.exists(fld):
-                os.makedirs(fld)
+        fld = get_target_folder(video)
         subliminal_save_subtitles(video, video_subtitles, directory=fld, single=cast_bool(Prefs['subtitles.only_one']),
-                                  chmod=config.chmod, forced_tag=config.forced_only, path_decoder=force_unicode,
-                                  debug_mods=config.debug_mods, formats=config.subtitle_formats)
+                                  chmod=config.chmod, forced_tag=forced_tag, path_decoder=force_unicode,
+                                  debug_mods=config.debug_mods, formats=config.subtitle_formats, tags=tags)
     return True
 
 

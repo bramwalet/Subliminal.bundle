@@ -540,7 +540,7 @@ def download_subtitles(subtitles, pool_class=ProviderPool, **kwargs):
             pool.download_subtitle(subtitle)
 
 
-def get_subtitle_path(video_path, language=None, extension='.srt', forced_tag=False):
+def get_subtitle_path(video_path, language=None, extension='.srt', forced_tag=False, tags=None):
     """Get the subtitle path using the `video_path` and `language`.
 
     :param str video_path: path to the video.
@@ -552,18 +552,21 @@ def get_subtitle_path(video_path, language=None, extension='.srt', forced_tag=Fa
 
     """
     subtitle_root = os.path.splitext(video_path)[0]
+    tags = tags or []
+    if forced_tag:
+        tags.append("forced")
 
     if language:
         subtitle_root += '.' + str(language)
 
-    if forced_tag:
-        subtitle_root += ".forced"
+    if tags:
+        subtitle_root += ".%s" % "-".join(tags)
 
     return subtitle_root + extension
 
 
 def save_subtitles(video, subtitles, single=False, directory=None, chmod=None, formats=("srt",), forced_tag=False,
-                   path_decoder=None, debug_mods=False):
+                   tags=None, path_decoder=None, debug_mods=False):
     """Save subtitles on filesystem.
 
     Subtitles are saved in the order of the list. If a subtitle with a language has already been saved, other subtitles
@@ -600,7 +603,8 @@ def save_subtitles(video, subtitles, single=False, directory=None, chmod=None, f
             continue
 
         # create subtitle path
-        subtitle_path = get_subtitle_path(video.name, None if single else subtitle.language, forced_tag=forced_tag)
+        subtitle_path = get_subtitle_path(video.name, None if single else subtitle.language, forced_tag=forced_tag,
+                                          tags=tags)
         if directory is not None:
             subtitle_path = os.path.join(directory, os.path.split(subtitle_path)[1])
 
