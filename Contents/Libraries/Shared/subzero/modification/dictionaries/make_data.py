@@ -76,6 +76,13 @@ SZ_FIX_DATA = {
     }
 }
 
+SZ_FIX_DATA_GLOBAL = {
+    "PartialWordsAlways": {
+        u"¶¶": u"♫",
+        u"¶": u"♪"
+    }
+}
+
 if __name__ == "__main__":
     cur_dir = os.path.dirname(os.path.realpath(__file__))
     xml_dir = os.path.join(cur_dir, "xml")
@@ -113,6 +120,9 @@ if __name__ == "__main__":
                 # add our own dictionaries
                 if lang in SZ_FIX_DATA and grp in SZ_FIX_DATA[lang]:
                     data[lang][grp]["data"].update(SZ_FIX_DATA[lang][grp])
+
+                if grp in SZ_FIX_DATA_GLOBAL:
+                    data[lang][grp]["data"].update(SZ_FIX_DATA_GLOBAL[grp])
 
                 if pattern:
                     data[lang][grp]["pattern"] = pattern(data[lang][grp]["data"])
