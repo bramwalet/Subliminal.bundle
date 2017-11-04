@@ -403,7 +403,7 @@ def ExtractEmbeddedSubForItemMenu(**kwargs):
                 ]
                 output = None
                 try:
-                    output = subprocess.check_output(quote_args(args), shell=True)
+                    output = subprocess.check_output(quote_args(args), stderr=subprocess.PIPE, shell=True)
                 except:
                     Log.Error("Extraction failed: %s", traceback.format_exc())
 
