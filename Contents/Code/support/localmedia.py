@@ -109,7 +109,7 @@ def find_subtitles(part):
                         # get fn without forced/default/normal tag
                         split_tag = root.rsplit(".", 1)
                         if len(split_tag) > 1 and split_tag[1].lower() in ['forced', 'normal', 'default', 'embedded',
-                                                                           'custom']:
+                                                                           'embedded-forced', 'custom']:
                             root = split_tag[0]
 
                         # get associated media file name without language
@@ -135,7 +135,8 @@ def find_subtitles(part):
         # get fn without forced/default/normal tag
         split_tag = local_basename.rsplit(".", 1)
         has_additional_tag = False
-        if len(split_tag) > 1 and split_tag[1].lower() in ['forced', 'normal', 'default', 'embedded', 'custom']:
+        if len(split_tag) > 1 and split_tag[1].lower() in ['forced', 'normal', 'default', 'embedded', 'embedded-forced',
+                                                           'custom']:
             local_basename = split_tag[0]
             has_additional_tag = True
 
