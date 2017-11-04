@@ -438,11 +438,12 @@ def _search_external_subtitles(path, forced_tag=False):
         adv_tag = None
         if len(split_tag) > 1:
             adv_tag = split_tag[1].lower()
-            if adv_tag in ['forced', 'normal', 'default', 'embedded', 'custom']:
+            if adv_tag in ['forced', 'normal', 'default', 'embedded', 'embedded-forced', 'custom']:
                 p_root = split_tag[0]
 
         # forced wanted but NIL
-        if (forced_tag and adv_tag != "forced") or (not forced_tag and adv_tag == "forced"):
+        forced = "forced" in adv_tag
+        if (forced_tag and not forced) or (not forced_tag and forced):
             continue
 
         # extract the potential language code
