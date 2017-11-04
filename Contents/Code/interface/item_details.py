@@ -110,10 +110,11 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
             if config.plex_transcoder:
                 # embedded subtitles
                 embedded_count = 0
+                embedded_langs = []
                 for stream in part.streams:
                     # subtitle stream
                     if stream.stream_type == 3 and not stream.stream_key and stream.codec == "srt": #("srt", "ass", "ssa"):
-                        #lang_code = stream.language_code
+                        embedded_langs.append(Language.fromietf(stream.language_code))
                         embedded_count += 1
 
                 if embedded_count:
@@ -121,7 +122,8 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                         key=Callback(ListEmbeddedSubsForItemMenu, rating_key=rating_key, part_id=part_id, title=title,
                                      item_type=plex_item.type, item_title=item_title, base_title=base_title,
                                      randomize=timestamp()),
-                        title=u"%sEmbedded subtitles (%s)" % (part_index_addon, embedded_count),
+                        title=u"%sEmbedded subtitles (%s)" % (part_index_addon, ", ".join(display_language(l) for l in
+                                                                                          embedded_langs)),
                         summary=u"Manage (extract) embedded subtitle streams"
                     ))
 
