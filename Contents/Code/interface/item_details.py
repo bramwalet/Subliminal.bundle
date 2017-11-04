@@ -374,6 +374,12 @@ def ListEmbeddedSubsForItemMenu(**kwargs):
                 forced = stream.forced
                 oc.add(DirectoryObject(
                     key=Callback(ExtractEmbeddedSubForItemMenu, randomize=timestamp(), stream_index=str(stream.index),
+                                 with_mods=True, **kwargs),
+                    title=u"Extract stream %s with default mods: %s%s" % (stream.index, display_language(language),
+                                                                          " (forced)" if forced else ""),
+                ))
+                oc.add(DirectoryObject(
+                    key=Callback(ExtractEmbeddedSubForItemMenu, randomize=timestamp(), stream_index=str(stream.index),
                                  **kwargs),
                     title=u"Extract stream %s: %s%s" % (stream.index, display_language(language),
                                                         " (forced)" if forced else ""),
@@ -388,6 +394,7 @@ def ExtractEmbeddedSubForItemMenu(**kwargs):
     part_id = kwargs.pop("part_id")
     stream_index = kwargs.pop("stream_index")
     item_type = kwargs.pop("item_type")
+    with_mods = kwargs.pop("with_mods", False)
 
     plex_item = get_item(rating_key)
     part = get_part(plex_item, part_id)
@@ -410,7 +417,7 @@ def ExtractEmbeddedSubForItemMenu(**kwargs):
                     Log.Error("Extraction failed: %s", traceback.format_exc())
 
                 if output:
-                    subtitle = ModifiedSubtitle(language, mods=config.default_mods)
+                    subtitle = ModifiedSubtitle(language, mods=config.default_mods if with_mods else None)
                     subtitle.content = output
                     subtitle.set_encoding("utf-8")
 
