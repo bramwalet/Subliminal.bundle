@@ -380,7 +380,7 @@ def ListEmbeddedSubsForItemMenu(**kwargs):
 
 
 @route(PREFIX + '/item/extract_embedded/{rating_key}/{part_id}/{stream_index}')
-#@debounce
+@debounce
 def ExtractEmbeddedSubForItemMenu(**kwargs):
     rating_key = kwargs["rating_key"]
     part_id = kwargs.pop("part_id")
