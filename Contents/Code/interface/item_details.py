@@ -375,13 +375,13 @@ def ListEmbeddedSubsForItemMenu(**kwargs):
                 oc.add(DirectoryObject(
                     key=Callback(ExtractEmbeddedSubForItemMenu, randomize=timestamp(), stream_index=str(stream.index),
                                  with_mods=True, **kwargs),
-                    title=u"Extract stream %s with default mods: %s%s" % (stream.index, display_language(language),
+                    title=u"Extract stream %s, %s%s with default mods" % (stream.index, display_language(language),
                                                                           " (forced)" if forced else ""),
                 ))
                 oc.add(DirectoryObject(
                     key=Callback(ExtractEmbeddedSubForItemMenu, randomize=timestamp(), stream_index=str(stream.index),
                                  **kwargs),
-                    title=u"Extract stream %s: %s%s" % (stream.index, display_language(language),
+                    title=u"Extract stream %s, %s%s" % (stream.index, display_language(language),
                                                         " (forced)" if forced else ""),
                 ))
     return oc
