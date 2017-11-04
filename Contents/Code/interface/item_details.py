@@ -407,6 +407,9 @@ def ExtractEmbeddedSubForItemMenu(**kwargs):
                 language = Language.fromietf(lang_code)
                 forced = stream.forced
 
+                Log.Info(u"Extracting stream %s (%s) of %s", stream_index, display_language(language),
+                         os.path.basename(part.file))
+
                 args = [
                     config.plex_transcoder, "-i", part.file, "-map", "0:%s" % stream_index, "-f", "srt", "-"
                 ]
@@ -421,13 +424,8 @@ def ExtractEmbeddedSubForItemMenu(**kwargs):
                     subtitle.content = output
                     subtitle.set_encoding("utf-8")
 
-                    metadata = get_plex_metadata(rating_key, part_id, item_type, plex_item=plex_item)
-                    scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie",
-                                                ignore_all=True, no_refining=True)
-                    video = scanned_parts.items()[0][0]
-
                     # fixme: speedup video; only video.name is needed
-                    save_subtitles_to_file({video: [subtitle]}, tags=["embedded"], forced_tag=forced)
+                    save_subtitles_to_file({part.file: [subtitle]}, tags=["embedded"], forced_tag=forced)
                     refresh_item(rating_key)
 
     kwargs.pop("randomize")

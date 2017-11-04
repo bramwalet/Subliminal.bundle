@@ -566,7 +566,7 @@ def get_subtitle_path(video_path, language=None, extension='.srt', forced_tag=Fa
     return subtitle_root + extension
 
 
-def save_subtitles(video, subtitles, single=False, directory=None, chmod=None, formats=("srt",), forced_tag=False,
+def save_subtitles(file_path, subtitles, single=False, directory=None, chmod=None, formats=("srt",), forced_tag=False,
                    tags=None, path_decoder=None, debug_mods=False):
     """Save subtitles on filesystem.
 
@@ -576,9 +576,8 @@ def save_subtitles(video, subtitles, single=False, directory=None, chmod=None, f
     The extension used is `.lang.srt` by default or `.srt` is `single` is `True`, with `lang` being the IETF code for
     the :attr:`~subliminal.subtitle.Subtitle.language` of the subtitle.
 
+    :param file_path: video file path
     :param formats: list of "srt" and "vtt"
-    :param video: video of the subtitles.
-    :type video: :class:`~subliminal.video.Video`
     :param subtitles: subtitles to save.
     :type subtitles: list of :class:`~subliminal.subtitle.Subtitle`
     :param bool single: save a single subtitle, default is to save one subtitle per language.
@@ -604,7 +603,7 @@ def save_subtitles(video, subtitles, single=False, directory=None, chmod=None, f
             continue
 
         # create subtitle path
-        subtitle_path = get_subtitle_path(video.name, None if single else subtitle.language, forced_tag=forced_tag,
+        subtitle_path = get_subtitle_path(file_path, None if single else subtitle.language, forced_tag=forced_tag,
                                           tags=tags)
         if directory is not None:
             subtitle_path = os.path.join(directory, os.path.split(subtitle_path)[1])
