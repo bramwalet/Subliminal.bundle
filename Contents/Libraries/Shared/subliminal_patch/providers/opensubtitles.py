@@ -100,6 +100,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         )
         self.token = response['token']
         logger.debug('Logged in with token %r', self.token)
+        logger.debug('Server response: %s', response)
 
     def list_subtitles(self, video, languages):
         """

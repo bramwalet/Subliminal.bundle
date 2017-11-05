@@ -1,5 +1,5 @@
 # coding=utf-8
-from xmlrpclib import SafeTransport
+from xmlrpclib import SafeTransport, ProtocolError, Fault
 
 import certifi
 import ssl
@@ -54,3 +54,42 @@ class TimeoutSafeTransport(SafeTransport):
         c.timeout = self.timeout
 
         return c
+
+    def single_request(self, host, handler, request_body, verbose=0):
+        # issue XML-RPC request
+
+        h = self.make_connection(host)
+        if verbose:
+            h.set_debuglevel(1)
+
+        try:
+            self.send_request(h, handler, request_body)
+            self.send_host(h, host)
+            self.send_user_agent(h)
+            self.send_content(h, request_body)
+
+            response = h.getresponse(buffering=True)
+            headers = response.getheaders()
+
+            if response.status == 200:
+                self.verbose = verbose
+                response = self.parse_response(response)
+                response[0]["headers"] = dict(headers)
+                return response
+
+        except Fault:
+            raise
+        except Exception:
+            # All unexpected errors leave connection in
+            # a strange state, so we clear it.
+            self.close()
+            raise
+
+        #discard any response data and raise exception
+        if (response.getheader("content-length", 0)):
+            response.read()
+        raise ProtocolError(
+            host + handler,
+            response.status, response.reason,
+            response.msg,
+            )
