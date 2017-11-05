@@ -5,6 +5,9 @@ import re
 import traceback
 import types
 import os
+
+import time
+
 from ignore import ignore_list
 from helpers import is_recent, get_plex_item_display_title, query_plex, PartUnknownException
 from lib import Plex, get_intent
@@ -303,9 +306,12 @@ def refresh_item(rating_key, force=False, timeout=8000, refresh_kind=None, paren
         # season refresh, needs explicit per-episode refresh
         refresh = [item.rating_key for item in list(Plex["library/metadata"].children(int(rating_key)))]
 
+    multiple = len(refresh) > 1
     for key in refresh:
         Log.Info("%s item %s", "Refreshing" if not force else "Forced-refreshing", key)
         Plex["library/metadata"].refresh(key)
+        if multiple:
+            time.sleep(10)
 
 
 def get_current_sub(rating_key, part_id, language):
