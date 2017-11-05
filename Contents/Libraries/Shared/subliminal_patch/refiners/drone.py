@@ -2,14 +2,11 @@
 
 import logging
 import types
-
 import os
-
 import requests
+
 from guessit import guessit
-
 from requests.compat import urljoin, quote, urlsplit
-
 from subliminal import Episode
 from subliminal_patch.core import REMOVE_CRAP_FROM_FILENAME
 
