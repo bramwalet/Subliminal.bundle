@@ -141,5 +141,5 @@ def refine(video, **kwargs):
             if episode["seasonNumber"] == video.season and episode["episodeNumber"] == video.episode:
                 scene_name = episode.get("episodeFile", {}).get("sceneName")
                 if scene_name:
-                    logger.debug(u"Got data from Sonarr: %s", scene_name)
+                    logger.debug(u"Got original filename from Sonarr: %s", scene_name)
                     client.update_video(video, scene_name)
