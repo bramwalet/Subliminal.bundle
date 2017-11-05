@@ -147,6 +147,7 @@ class SubZeroAgent(object):
             if last_call + datetime.timedelta(seconds=5) > now:
                 wait = 5 - (now - last_call).seconds
                 if wait >= 1:
+                    Log.Debug("Waiting %s seconds until continuing", wait)
                     time.sleep(wait)
         Dict["last_call"] = now
 
