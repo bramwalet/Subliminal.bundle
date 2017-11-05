@@ -70,47 +70,41 @@ For further help or manual installation, [please go to the wiki](https://github.
 
 ## Changelog
 
-2.0.24.1558
-- core: fix handling of broken RAR files from legendas
+2.0.29.1756
+- core: don't fail on uppercase file extensions
+- core: don't re-download a subtitle if we already downloaded one, it still physically exists and external subtitles are configured to be ignored
+- core: fix VTT subtitle duplication
+- core: if forced subtitles not explicitly wanted, ignore existing forced subtitles when searching
+- core: add full IETF language support for `Treat languages with country attribute as ISO 639-1 (e.g. don't download pt-BR if pt subtitle exists)`-setting for embedded subtitles
+- menu: remove buggy dynamic permission-based channel icon introduced in 1715
+- menu: improve `Items with missing subtitles` menu usage and item display
+- menu: `Advanced -> Get my logs` handle custom domains without port
+- menu: correctly show country/script part of languages with such attributes (e.g. pt-BR)
+- config: rename `Scan:` settings; make them better understandable and translatable
+- config: rephrase IETF options as "languages with country attribute" (e.g. pt-BR)
+- config: separate IETF options into how to display languages with country attribute and how they should be handled when searching/scanning (e.g. pt-BR)
+- config: `Scheduler: Item age to be considered recent` now can go up to 12 weeks
+- config: `Scheduler: Periodically search for recent items with missing subtitles` added `every 2 hours`
+- submod: swe: add Ĺ to Å
 
-2.0.24.1555
-- core: fix rare microdvd issue from OpenSubtitles by generally providing FPS info when encountering a microdvd subtitle
 
-2.0.24.1549
-Changes from 1.4
-- wiki: new wiki! (thanks @dane22!)
-- core: update subliminal to version 2
-- core: update all dependencies
-- core: add new providers: legendastv (pt-BR), napiprojekt (pl), shooter (cn), subscenter (heb)
-- core: rewritten all subliminal patches for version 2
-- core: use SSL again for opensubtitles
-- core: improved matching due to subliminal 2 (and SZ custom) tvdb/omdb refiners
-- core: improved matching by relying on existing metadata provided by the PMS
-- core: improved performance due to multithreaded provider-querying
-- core: improved performance due to less physical media file access (no more MKV metadata scanning)
-- core: VTT subtitle format output supported (for Chromecast)
-- core: rewrote and streamlined internal subtitle data storage format
-- core: support Cyrillic and Latin variants of Serbian language
-- core: simplified (custom) provider registration; add own provider registry
-- core: rewrote recently added missing task
-- core: automatically fix badly (re-) encoded unicode entities in subtitles
-- core: always store subtitles in proper UTF-8 encoding
-- core: add periodic internal subtitle data storage cleanup task
-- core: on non-windows systems, utilize a file-based cache database for provider media lists and subliminal refiner results
-- core: add manual and automatic subtitle modification framework (fix common OCR issues, remove hearing impaired etc.)
-- core: relieve some stress on providers by providing better fine-grained retry handling
-- menu: add icons for menu items; update main channel icon
-- menu: add subtitle modifications (subtitle content fixes, offset-based shifting, framerate conversion)
-- menu: add recently played menu
-- menu: add "Get my logs" function to the advanced menu, which zips up all necessary logs suitable for posting in the forums
-- menu: add generic "back to season" and "back to series" entries to item detail views to make navigation easier
-- config: all scores changed (defaults updated)
-- config: remove "Force UTF-8 when storing subtitles" (it's now always implied)
-- improve almost everything Sub-Zero did in 1.4 :)
+2.0.26.1715
+- core: submod: OCR fixes: swe: replace ĺ with å inside words
+- core: fix handling of non-existant PMS audio_codec info
+- core: filename matching ignored the strictness setting in certain global directory configurations (thanks @raduc)
+- core: don't fail on migration errors
+- provider titlovi: handle multiple subtitles per archive
+- provider addic7ed: reset default boost to 19 (was 21)
+- menu: add warning icon on missing permissions
+- menu: manual subtitle list sometimes listed duplicates (thanks @andreashoyer)
+- menu: don't request PMS metadata in item details menu twice
+- menu: don't fail badly on non existant PMS metadata in item details menu
+
+
 
 Big thanks to the beta testing team! You know who you are!
 
 [older changes](CHANGELOG.md)
 
 
-Subtitles provided by [OpenSubtitles.org](http://www.opensubtitles.org/), [Podnapisi.NET](https://www.podnapisi.net/), [TVSubtitles.net](http://www.tvsubtitles.net/), [Addic7ed.com](http://www.addic7ed.com/), [Legendas TV](http://legendas.tv/), [Napi Projekt](http://www.napiprojekt.pl/), [Shooter](http://shooter.cn/), [SubsCenter](http://www.subscenter.org)
+Subtitles provided by [OpenSubtitles.org](http://www.opensubtitles.org/), [Podnapisi.NET](https://www.podnapisi.net/), [TVSubtitles.net](http://www.tvsubtitles.net/), [Addic7ed.com](http://www.addic7ed.com/), [Legendas TV](http://legendas.tv/), [Napi Projekt](http://www.napiprojekt.pl/), [Shooter](http://shooter.cn/), [Titlovi](http://titlovi.com)

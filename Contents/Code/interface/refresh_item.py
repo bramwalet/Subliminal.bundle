@@ -1,7 +1,7 @@
 # coding=utf-8
 
 from subzero.constants import PREFIX
-from menu_helpers import debounce, set_refresh_menu_state
+from menu_helpers import debounce, set_refresh_menu_state, route
 from support.items import refresh_item
 from support.helpers import timestamp
 

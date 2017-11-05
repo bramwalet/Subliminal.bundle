@@ -12,8 +12,6 @@ import operator
 import itertools
 
 import rarfile
-from concurrent.futures import ThreadPoolExecutor
-
 import requests
 
 from collections import defaultdict
@@ -26,7 +24,7 @@ from extensions import provider_registry
 from subliminal.score import compute_score as default_compute_score
 from subliminal.utils import hash_napiprojekt, hash_opensubtitles, hash_shooter, hash_thesubdb
 from subliminal.video import VIDEO_EXTENSIONS, Video, Episode, Movie
-from subliminal.core import guessit, Language, ProviderPool, io, download_best_subtitles
+from subliminal.core import guessit, Language, ProviderPool, io, download_best_subtitles, is_windows_special_path, ThreadPoolExecutor
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +35,8 @@ INCLUDE_EXOTIC_SUBS = True
 DOWNLOAD_TRIES = 0
 DOWNLOAD_RETRY_SLEEP = 2
 
-REMOVE_CRAP_FROM_FILENAME = re.compile(r"(?i)[\s_-]+(obfuscated|scrambled)(\.\w+)$")
+REMOVE_CRAP_FROM_FILENAME = re.compile(r"(?i)[\s_-]+(obfuscated|scrambled|nzbgeek|"
+                                       r"chamele0n|buymore|xpost|postbot)(\.\w+)$")
 
 SUBTITLE_EXTENSIONS = ('.srt', '.sub', '.smi', '.txt', '.ssa', '.ass', '.mpl', '.vtt')
 
@@ -355,6 +354,10 @@ class SZAsyncProviderPool(SZProviderPool):
         return subtitles
 
 
+if is_windows_special_path:
+    SZAsyncProviderPool = SZProviderPool
+
+
 def scan_video(path, dont_use_actual_file=False, hints=None):
     """Scan a video from a `path`.
 
@@ -377,7 +380,7 @@ def scan_video(path, dont_use_actual_file=False, hints=None):
         raise ValueError('Path does not exist')
 
     # check video extension
-    if not path.endswith(VIDEO_EXTENSIONS):
+    if not path.lower().endswith(VIDEO_EXTENSIONS):
         raise ValueError('%r is not a valid video extension' % os.path.splitext(path)[1])
 
     dirpath, filename = os.path.split(path)
@@ -436,11 +439,12 @@ def _search_external_subtitles(path, forced_tag=False):
         adv_tag = None
         if len(split_tag) > 1:
             adv_tag = split_tag[1].lower()
-            if adv_tag in ['forced', 'normal', 'default']:
+            if adv_tag in ['forced', 'normal', 'default', 'embedded', 'embedded-forced', 'custom']:
                 p_root = split_tag[0]
 
         # forced wanted but NIL
-        if forced_tag and adv_tag != "forced":
+        forced = "forced" in adv_tag
+        if (forced_tag and not forced) or (not forced_tag and forced):
             continue
 
         # extract the potential language code
@@ -614,8 +618,12 @@ def save_subtitles(video, subtitles, single=False, directory=None, chmod=None, f
                 subtitle_path = os.path.splitext(subtitle_path)[0] + (u".%s" % format)
 
             logger.debug(u"Saving %r to %r", subtitle, subtitle_path)
-            with open(subtitle_path, 'w') as f:
-                f.write(subtitle.get_modified_content(format=format))
+            content = subtitle.get_modified_content(format=format)
+            if content:
+                with open(subtitle_path, 'w') as f:
+                    f.write(content)
+            else:
+                logger.error(u"Something went wrong when getting modified subtitle for %s", subtitle)
 
         # change chmod if requested
         if chmod:

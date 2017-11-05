@@ -12,7 +12,7 @@ from babelfish import Language
 
 from subzero.lib.io import FileIO
 from subzero.constants import PREFIX, PLUGIN_IDENTIFIER
-from menu_helpers import SubFolderObjectContainer, debounce, set_refresh_menu_state, ZipObject, ObjectContainer
+from menu_helpers import SubFolderObjectContainer, debounce, set_refresh_menu_state, ZipObject, ObjectContainer, route
 from main import fatality
 from support.helpers import timestamp, pad_title
 from support.config import config
@@ -218,6 +218,7 @@ def apply_default_mods(reapply_current=False):
                         continue
 
                     subs_applied += 1
+    storage.destroy()
     Log.Debug("Applied mods to %i items" % subs_applied)
 
 
@@ -263,7 +264,7 @@ def GetLogsLink():
 
     elif "Referer" in req_headers:
         parsed = urlparse.urlparse(req_headers["Referer"])
-        link_base = "%s://%s:%s" % (parsed.scheme, parsed.hostname, parsed.port)
+        link_base = "%s://%s%s" % (parsed.scheme, parsed.hostname, (":%s" % parsed.port) if parsed.port else "")
         Log.Debug("Using referer-based link_base")
         get_external_ip = False
 

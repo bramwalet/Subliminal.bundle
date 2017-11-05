@@ -1,12 +1,13 @@
 # coding=utf-8
 
 import logging
-import io
 import re
 
 from lxml.etree import XMLSyntaxError
 
-from subliminal_patch.extensions import provider_registry
+from guessit import guessit
+from subliminal.subtitle import guess_matches
+from subliminal.utils import sanitize
 
 try:
     from lxml import etree
@@ -34,6 +35,45 @@ class PodnapisiSubtitle(_PodnapisiSubtitle):
                                                 season=season, episode=episode, year=year)
         self.release_info = u", ".join(releases)
 
+    def get_matches(self, video):
+        """
+        patch: set guessit to single_value
+        :param video:
+        :return:
+        """
+        matches = set()
+
+        # episode
+        if isinstance(video, Episode):
+            # series
+            if video.series and sanitize(self.title) == sanitize(video.series):
+                matches.add('series')
+            # year
+            if video.original_series and self.year is None or video.year and video.year == self.year:
+                matches.add('year')
+            # season
+            if video.season and self.season == video.season:
+                matches.add('season')
+            # episode
+            if video.episode and self.episode == video.episode:
+                matches.add('episode')
+            # guess
+            for release in self.releases:
+                matches |= guess_matches(video, guessit(release, {'type': 'episode', "single_value": True}))
+        # movie
+        elif isinstance(video, Movie):
+            # title
+            if video.title and sanitize(self.title) == sanitize(video.title):
+                matches.add('title')
+            # year
+            if video.year and self.year == video.year:
+                matches.add('year')
+            # guess
+            for release in self.releases:
+                matches |= guess_matches(video, guessit(release, {'type': 'movie', "single_value": True}))
+
+        return matches
+
 
 class PodnapisiProvider(_PodnapisiProvider):
     languages = ({Language('por', 'BR'), Language('srp', script='Latn'), Language('srp', script='Cyrl')} |
@@ -60,14 +100,12 @@ class PodnapisiProvider(_PodnapisiProvider):
         if isinstance(video, Episode):
             return [s for l in languages for s in self.query(l, video.series, season=video.season,
                                                              episode=video.episode, year=video.year,
-                                                             hash=video.hashes.get('opensubtitles'),
                                                              only_foreign=self.only_foreign)]
         elif isinstance(video, Movie):
             return [s for l in languages for s in self.query(l, video.title, year=video.year,
-                                                             hash=video.hashes.get('opensubtitles'),
                                                              only_foreign=self.only_foreign)]
 
-    def query(self, language, keyword, season=None, episode=None, year=None, hash=None, only_foreign=False):
+    def query(self, language, keyword, season=None, episode=None, year=None, only_foreign=False):
         search_language = str(language).lower()
 
         # sr-Cyrl specialcase
@@ -82,11 +120,7 @@ class PodnapisiProvider(_PodnapisiProvider):
             is_episode = True
             params['sTS'] = season
             params['sTE'] = episode
-            if hash:
-                params['sEH'] = hash
-        else:
-            if hash:
-                params['sMH'] = hash
+
         if year:
             params['sY'] = year
 
@@ -154,5 +188,6 @@ class PodnapisiProvider(_PodnapisiProvider):
             # increment current page
             params['page'] = int(xml.find('pagination/current').text) + 1
             logger.debug('Getting page %d', params['page'])
+            xml = None
 
         return subtitles

@@ -20,7 +20,11 @@ container_size_re = re.compile(ur'totalSize="(\d+)"')
 
 
 def get_item(key):
-    item_id = int(key)
+    try:
+        item_id = int(key)
+    except ValueError:
+        return
+
     item_container = Plex["library"].metadata(item_id)
 
     try:
@@ -315,7 +319,8 @@ def get_current_sub(rating_key, part_id, language):
 
 
 def set_mods_for_part(rating_key, part_id, language, item_type, mods, mode="add"):
-    from support.plex_media import get_plex_metadata, scan_videos
+    from support.plex_media import get_plex_metadata
+    from support.scanning import scan_videos
     from support.storage import save_subtitles
 
     current_sub, stored_subs, storage = get_current_sub(rating_key, part_id, language)
@@ -368,6 +373,8 @@ def set_mods_for_part(rating_key, part_id, language, item_type, mods, mode="add"
             current_sub.content = subtitle.content
             current_sub.encoding = "utf-8"
             storage.save(stored_subs)
+
+    storage.destroy()
 
     subtitle.plex_media_fps = plex_part.fps
     subtitle.page_link = "modify subtitles with: %s" % (", ".join(current_sub.mods) if current_sub.mods else "none")

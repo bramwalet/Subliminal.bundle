@@ -32,6 +32,7 @@ SZ_FIX_DATA = {
             u"at/on": u"ation",
             u"l/an": u"lian",
             u"lljust": u"ll just",
+            u". L ": u". I ",
         },
         "WholeWords": {
             u"I'11": u"I'll",
@@ -51,6 +52,34 @@ SZ_FIX_DATA = {
             u"LAst": u"Last",
             u"forthis": u"for this",
         }
+    },
+    "nld": {
+        "PartialWordsAlways": {
+            u"ט": u"è",
+            u"י": u"é",
+            u"כ": u"ë",
+            u"צ": u"ë",
+            u"ן": u"ï",
+            u"ף": u"ó",
+            u"א": u"à",
+            u"Iֻ": u"I",
+            u"č": u"è",
+            u"פ": u"o",
+            u"ם": u"i",
+        },
+    },
+    "swe": {
+        "PartialWordsAlways": {
+            u"ĺ": u"å",
+            u"Ĺ": u"Å",
+        }
+    }
+}
+
+SZ_FIX_DATA_GLOBAL = {
+    "PartialWordsAlways": {
+        u"¶¶": u"♫",
+        u"¶": u"♪"
     }
 }
 
@@ -91,6 +120,9 @@ if __name__ == "__main__":
                 # add our own dictionaries
                 if lang in SZ_FIX_DATA and grp in SZ_FIX_DATA[lang]:
                     data[lang][grp]["data"].update(SZ_FIX_DATA[lang][grp])
+
+                if grp in SZ_FIX_DATA_GLOBAL:
+                    data[lang][grp]["data"].update(SZ_FIX_DATA_GLOBAL[grp])
 
                 if pattern:
                     data[lang][grp]["pattern"] = pattern(data[lang][grp]["data"])

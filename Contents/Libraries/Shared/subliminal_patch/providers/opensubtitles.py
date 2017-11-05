@@ -9,7 +9,6 @@ from subliminal.providers.opensubtitles import OpenSubtitlesProvider as _OpenSub
     __short_version__, \
     OpenSubtitlesSubtitle as _OpenSubtitlesSubtitle, Episode, ServerProxy
 from mixins import ProviderRetryMixin
-from subliminal_patch.extensions import provider_registry
 from subliminal_patch.http import TimeoutSafeTransport
 
 logger = logging.getLogger(__name__)

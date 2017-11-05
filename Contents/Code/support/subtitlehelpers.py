@@ -90,7 +90,7 @@ ENDSWITH_LANGUAGECODE_RE = re.compile("\.([^-.]{2,3})(?:-[A-Za-z]{2,})?$")
 
 
 def match_ietf_language(s):
-    language_match = re.match(".+\.([^\.]+)$" if not helpers.cast_bool(Prefs["subtitles.language.ietf"])
+    language_match = re.match(".+\.([^\.]+)$" if not helpers.cast_bool(Prefs["subtitles.language.ietf_display"])
                               else IETF_MATCH, s)
     if language_match and len(language_match.groups()) == 1:
         language = language_match.groups()[0]
@@ -120,12 +120,14 @@ class DefaultSubtitleHelper(SubtitleHelper):
         forced = ''
         default = ''
         split_tag = file.rsplit('.', 1)
-        if len(split_tag) > 1 and split_tag[1].lower() in ['forced', 'normal', 'default', 'embedded', 'custom']:
+        if len(split_tag) > 1 and split_tag[1].lower() in ['forced', 'normal', 'default', 'embedded', 'embedded-forced',
+                                                           'custom']:
             file = split_tag[0]
+            sub_tag = split_tag[1].lower()
             # don't do anything with 'normal', we don't need it
-            if 'forced' == split_tag[1].lower():
+            if 'forced' in sub_tag:
                 forced = '1'
-            if 'default' == split_tag[1].lower():
+            elif 'default' == sub_tag:
                 default = '1'
 
         # Attempt to extract the language from the filename (e.g. Avatar (2009).eng)
@@ -157,7 +159,8 @@ class DefaultSubtitleHelper(SubtitleHelper):
                 Log("An error occurred while attempting to parse the subtitle file, skipping... : " + self.filename)
                 return lang_sub_map
 
-        if codec is None and ext in ['ass', 'ssa', 'smi', 'srt', 'psb', 'vtt']:
+        # fixme: re-add vtt once Plex Inc. fixes this line in LocalMedia.bundle
+        if codec is None and ext in ['ass', 'ssa', 'smi', 'srt', 'psb']:
             codec = ext.replace('ass', 'ssa')
 
         if format is None:
@@ -174,19 +177,20 @@ class DefaultSubtitleHelper(SubtitleHelper):
 
 def get_subtitles_from_metadata(part):
     subs = {}
-    for language in part.subtitles:
-        subs[language] = []
-        for key, proxy in getattr(part.subtitles[language], "_proxies").iteritems():
-            if not proxy or not len(proxy) >= 5:
-                Log.Debug("Can't parse metadata: %s" % repr(proxy))
-                continue
+    if hasattr(part, "subtitles") and part.subtitles:
+        for language in part.subtitles:
+            subs[language] = []
+            for key, proxy in getattr(part.subtitles[language], "_proxies").iteritems():
+                if not proxy or not len(proxy) >= 5:
+                    Log.Debug("Can't parse metadata: %s" % repr(proxy))
+                    continue
 
-            p_type = proxy[0]
+                p_type = proxy[0]
 
-            if p_type == "Media":
-                # metadata subtitle
-                Log.Debug(u"Found metadata subtitle: %s, %s" % (language, repr(proxy)))
-                subs[language].append(key)
+                if p_type == "Media":
+                    # metadata subtitle
+                    Log.Debug(u"Found metadata subtitle: %s, %s" % (language, repr(proxy)))
+                    subs[language].append(key)
     return subs
 
 

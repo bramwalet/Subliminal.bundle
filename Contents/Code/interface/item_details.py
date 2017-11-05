@@ -3,15 +3,15 @@ import os
 
 from sub_mod import SubtitleModificationsMenu
 from menu_helpers import debounce, SubFolderObjectContainer, default_thumb, add_ignore_options, get_item_task_data, \
-    set_refresh_menu_state
+    set_refresh_menu_state, route
 
 from refresh_item import RefreshItem
 from subzero.constants import PREFIX
 from support.config import config
-from support.helpers import timestamp, cast_bool, df, get_language
+from support.helpers import timestamp, df, get_language, display_language
 from support.items import get_item_kind_from_rating_key, get_item, get_current_sub
-from support.lib import Plex
-from support.plex_media import get_plex_metadata, scan_videos, PMSMediaProxy
+from support.plex_media import get_plex_metadata
+from support.scanning import scan_videos
 from support.scheduler import scheduler
 from support.storage import get_subtitle_storage
 
@@ -33,12 +33,22 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
     from interface.main import IgnoreMenu
 
     title = unicode(base_title) + " > " + unicode(title) if base_title else unicode(title)
-    item = get_item(rating_key)
+    item = plex_item = get_item(rating_key)
     current_kind = get_item_kind_from_rating_key(rating_key)
 
     timeout = 30
 
     oc = SubFolderObjectContainer(title2=title, replace_parent=True)
+
+    if not item:
+        oc.add(DirectoryObject(
+            key=Callback(ItemDetailsMenu, rating_key=rating_key, title=title, base_title=base_title,
+                         item_title=item_title, randomize=timestamp()),
+            title=u"Item not found: %s!" % item_title,
+            summary="Plex didn't return any information about the item, please refresh it and come back later",
+            thumb=default_thumb
+        ))
+        return oc
 
     # add back to season for episode
     if current_kind == "episode":
@@ -74,9 +84,6 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
     subtitle_storage = get_subtitle_storage()
     stored_subs = subtitle_storage.load_or_new(item)
 
-    # get the plex item
-    plex_item = get_item(rating_key)
-
     # look for subtitles for all available media parts and all of their languages
     has_multiple_parts = len(plex_item.media) > 1
     part_index = 0
@@ -111,31 +118,33 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
 
                     summary = u"%sCurrent subtitle: %s (added: %s, %s), Language: %s, Score: %i, Storage: %s" % \
                               (part_summary_addon, current_sub.provider_name, df(current_sub.date_added),
-                               current_sub.mode_verbose, lang, current_sub.score, current_sub.storage_type)
+                               current_sub.mode_verbose, display_language(lang), current_sub.score,
+                               current_sub.storage_type)
 
                     oc.add(DirectoryObject(
                         key=Callback(SubtitleOptionsMenu, rating_key=rating_key, part_id=part_id, title=title,
-                                     item_title=item_title, language=lang, language_name=lang.name,
+                                     item_title=item_title, language=lang, language_name=display_language(lang),
                                      current_id=current_sub_id,
                                      item_type=plex_item.type, filename=filename, current_data=summary,
                                      randomize=timestamp(), current_provider=current_sub_provider_name,
                                      current_score=current_score),
-                        title=u"%sActions for %s subtitle" % (part_index_addon, lang.name),
+                        title=u"%sActions for %s subtitle" % (part_index_addon, display_language(lang)),
                         summary=summary
                     ))
                 else:
                     oc.add(DirectoryObject(
                         key=Callback(ListAvailableSubsForItemMenu, rating_key=rating_key, part_id=part_id, title=title,
-                                     item_title=item_title, language=lang, language_name=lang.name,
+                                     item_title=item_title, language=lang, language_name=display_language(lang),
                                      current_id=current_sub_id,
                                      item_type=plex_item.type, filename=filename, current_data=summary,
                                      randomize=timestamp(), current_provider=current_sub_provider_name,
                                      current_score=current_score),
-                        title=u"%sList %s subtitles" % (part_index_addon, lang.name),
+                        title=u"%sList %s subtitles" % (part_index_addon, display_language(lang)),
                         summary=summary
                     ))
 
     add_ignore_options(oc, "videos", title=item_title, rating_key=rating_key, callback_menu=IgnoreMenu)
+    subtitle_storage.destroy()
 
     return oc
 
@@ -169,6 +178,8 @@ def SubtitleOptionsMenu(**kwargs):
             title=u"Modify %s subtitle" % kwargs["language_name"],
             summary=u"Currently applied mods: %s" % (", ".join(current_sub.mods) if current_sub.mods else "none")
         ))
+
+    storage.destroy()
     return oc
 
 
@@ -197,18 +208,22 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
     ))
 
     metadata = get_plex_metadata(rating_key, part_id, item_type)
-    scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
+    plex_part = None
+    if not config.low_impact_mode:
+        scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
 
-    if not scanned_parts:
-        Log.Error("Couldn't list available subtitles for %s", rating_key)
-        return oc
+        if not scanned_parts:
+            Log.Error("Couldn't list available subtitles for %s", rating_key)
+            return oc
 
-    video, plex_part = scanned_parts.items()[0]
+        video, plex_part = scanned_parts.items()[0]
 
-    video_display_data = [video.format] if video.format else []
-    if video.release_group:
-        video_display_data.append(u"by %s" % video.release_group)
-    video_display_data = " ".join(video_display_data)
+        video_display_data = [video.format] if video.format else []
+        if video.release_group:
+            video_display_data.append(u"by %s" % video.release_group)
+        video_display_data = " ".join(video_display_data)
+    else:
+        video_display_data = metadata["filename"]
 
     current_display = (u"Current: %s (%s) " % (current_provider, current_score) if current_provider else "")
     if not running:
@@ -240,7 +255,8 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
                          part_id=part_id, title=title, current_id=current_id, item_type=item_type,
                          current_provider=current_provider, current_score=current_score,
                          randomize=timestamp()),
-            title=u"Searching for %s subs (%s), refresh here ..." % (get_language(language).name, video_display_data),
+            title=u"Searching for %s subs (%s), refresh here ..." % (display_language(get_language(language)),
+                                                                     video_display_data),
             summary=u"%sFilename: %s" % (current_display, filename),
             thumb=default_thumb
         ))
@@ -255,7 +271,10 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
 
         wrong_fps_addon = ""
         if subtitle.wrong_fps:
-            wrong_fps_addon = " (wrong FPS, sub: %s, media: %s)" % (subtitle.fps, plex_part.fps)
+            if plex_part:
+                wrong_fps_addon = " (wrong FPS, sub: %s, media: %s)" % (subtitle.fps, plex_part.fps)
+            else:
+                wrong_fps_addon = " (wrong FPS, sub: %s, media: unknown, low impact mode)" % subtitle.fps
 
         oc.add(DirectoryObject(
             key=Callback(TriggerDownloadSubtitle, rating_key=rating_key, randomize=timestamp(), item_title=item_title,
@@ -266,7 +285,7 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
             thumb=default_thumb
         ))
 
-        seen.append(current_id)
+        seen.append(subtitle.id)
 
     return oc
 
@@ -289,5 +308,7 @@ def TriggerDownloadSubtitle(rating_key=None, subtitle_id=None, item_title=None, 
 
     else:
         scheduler.dispatch_task("DownloadSubtitleForItem", rating_key=rating_key, subtitle=download_subtitle)
+
+    scheduler.clear_task_data("AvailableSubsForItem")
 
     return fatality(randomize=timestamp(), header=" ", replace_parent=True)

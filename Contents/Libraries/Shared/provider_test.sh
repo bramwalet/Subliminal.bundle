@@ -26,3 +26,6 @@ python -c "import logging; logging.basicConfig(level=logging.DEBUG); logging.get
 
 # refining
 python -c "import logging; logging.basicConfig(level=logging.DEBUG); logging.getLogger('rebulk').setLevel(logging.WARNING); import os; os.environ['U1pfT01EQl9LRVk'] = '789CF30DAC2C8B0AF433F5C9AD34290A712DF30D7135F12D0FB3E502006FDE081E'; import subliminal_patch, subliminal; subliminal.region.configure('dogpile.cache.memory'); from subzero.video import parse_video; print parse_video('FILE_NAME', {}, hints={'type': 'episode'}, dry_run=True)"
+
+# full test with download
+python -c "import logging; logging.basicConfig(level=logging.DEBUG); logging.getLogger('rebulk').setLevel(logging.WARNING); import os; os.environ['U1pfT01EQl9LRVk'] = '789CF30DAC2C8B0AF433F5C9AD34290A712DF30D7135F12D0FB3E502006FDE081E'; import subliminal_patch, subliminal; from subliminal_patch.core import SZProviderPool; from babelfish import Language; subliminal.region.configure('dogpile.cache.memory'); from subzero.video import parse_video; video = parse_video('A.Series.of.Unfortunate.Events.S01E08.WebRip.x264-FS.mkv', {}, hints={'type': 'episode'}, dry_run=True); subtitle = SZProviderPool(providers=['titlovi'], )['titlovi'].list_subtitles(video, languages=[Language('hrv')]); SZProviderPool(providers=['titlovi'], )['titlovi'].download_subtitle(subtitle[0]);"

@@ -1,6 +1,6 @@
 [
   {
-    "id": "langPref1",
+    "id": "langPref1a",
     "label": "Subtitle Language (1)",
     "type": "enum",
     "values": [
@@ -55,7 +55,7 @@
     "default": "en"
   },
   {
-    "id": "langPref2",
+    "id": "langPref2a",
     "label": "Subtitle Language (2)",
     "type": "enum",
     "values": [
@@ -111,7 +111,7 @@
     "default": "None"
   },
   {
-    "id": "langPref3",
+    "id": "langPref3a",
     "label": "Subtitle Language (3)",
     "type": "enum",
     "values": [
@@ -179,10 +179,16 @@
     "default": "false"
   },
   {
-    "id": "subtitles.language.ietf",
-    "label": "Treat IETF language tags as ISO 639-1 (e.g. pt-BR = pt)",
+    "id": "subtitles.language.ietf_display",
+    "label": "Display languages with country attribute as ISO 639-1 (e.g. pt-BR = pt)",
     "type": "bool",
     "default": "true"
+  },
+  {
+    "id": "subtitles.language.ietf_normalize",
+    "label": "Treat languages with country attribute as ISO 639-1 (e.g. don't download pt-BR if pt subtitle exists)",
+    "type": "bool",
+    "default": "false"
   },
   {
     "id": "subtitles.only_one",
@@ -223,6 +229,12 @@
     "default": "true"
   },
   {
+    "id": "provider.titlovi.enabled",
+    "label": "Provider: Enable Titlovi.com",
+    "type": "bool",
+    "default": "true"
+  },
+  {
     "id": "provider.addic7ed.enabled",
     "label": "Provider: Enable Addic7ed",
     "type": "bool",
@@ -243,7 +255,7 @@
     "secure": "true"
   },
   {
-    "id": "provider.addic7ed.boost_by1",
+    "id": "provider.addic7ed.boost_by2",
     "label": "Addic7ed: boost score (if requirements met)",
     "type": "enum",
     "values": [
@@ -266,12 +278,13 @@
       "25",
       "21",
       "20",
+      "19",
       "15",
       "10",
       "5",
       "0"
     ],
-    "default": "21"
+    "default": "19"
   },
   {
     "id": "provider.addic7ed.use_random_agents",
@@ -281,7 +294,7 @@
   },
   {
     "id": "provider.legendastv.enabled",
-    "label": "Provider: Enable Legendas TV (mostly pt-BR)",
+    "label": "Provider: Enable Legendas TV (mostly pt-BR; UNRAR NEEDED)",
     "type": "bool",
     "default": "false"
   },
@@ -318,26 +331,6 @@
     "default": "false"
   },
   {
-    "id": "provider.subscenter.enabled",
-    "label": "Provider: Enable SubsCenter (Hebrew)",
-    "type": "bool",
-    "default": "false"
-  },
-  {
-    "id": "provider.subscenter.username",
-    "label": "SubsCenter Username",
-    "type": "text",
-    "default": ""
-  },
-  {
-    "id": "provider.subscenter.password",
-    "label": "SubsCenter Password",
-    "type": "text",
-    "option": "hidden",
-    "default": "",
-    "secure": "true"
-  },
-  {
     "id": "providers.multithreading",
     "label": "Search enabled providers simultaneously (multithreading)",
     "type": "bool",
@@ -351,25 +344,19 @@
   },
   {
     "id": "subtitles.scan.embedded",
-    "label": "Scan: include embedded subtitles (in the media file (MKV/MP4), don't download if existing)",
+    "label": "Don't search for subtitles if there are embedded subtitles inside the media file (MKV/MP4)?",
     "type": "bool",
     "default": "false"
   },
   {
     "id": "subtitles.scan.external",
-    "label": "Scan: include external subtitles (metadata/filesystem, don't download if existing)",
+    "label": "Don't search for subtitles if they already exist on the filesystem (metadata/filesystem)?",
     "type": "bool",
     "default": "true"
   },
   {
-    "id": "subtitles.scan.exotic_ext",
-    "label": "Scan: include \"exotic\" subtitle formats (anything else than .srt/.ssa/.ass/.vtt; embedded or external)",
-    "type": "bool",
-    "default": "false"
-  },
-  {
     "id": "subtitles.scan.filename_strictness",
-    "label": "Scan: which external subtitles should be picked up?",
+    "label": "How strict should these subtitles existing on the filesystem be detected?",
     "type": "enum",
     "values": [
       "exact: media filename match",
@@ -377,6 +364,12 @@
       "any"
     ],
     "default": "loose: filename contains media filename"
+  },
+  {
+    "id": "subtitles.scan.exotic_ext",
+    "label": "Include \"exotic\" subtitle formats (anything else than .srt/.ssa/.ass/.vtt; embedded or external) in the above?",
+    "type": "bool",
+    "default": "false"
   },
   {
     "id": "subtitles.search.minimumTVScore2",
@@ -507,7 +500,8 @@
       "never",
       "current media item",
       "next episode (series)",
-      "hybrid: current item or next episode"
+      "hybrid: current item or next episode",
+      "hybrid-plus: current item and next episode"
     ],
     "default": "never"
   },
@@ -518,6 +512,7 @@
     "values": [
       "never",
       "every 1 hours",
+      "every 2 hours",
       "every 3 hours",
       "every 6 hours",
       "every 12 hours",
@@ -539,7 +534,8 @@
       "3 weeks",
       "4 weeks",
       "5 weeks",
-      "6 weeks"
+      "6 weeks",
+      "12 weeks",
     ],
     "default": "2 weeks"
   },
@@ -663,6 +659,18 @@
     "label": "Check for correct folder permissions of every library on plugin start",
     "type": "bool",
     "default": "true"
+  },
+  {
+    "id": "low_impact_mode",
+    "label": "Low impact mode (for remote filesystems)",
+    "type": "bool",
+    "default": "false"
+  },
+  {
+    "id": "pms_request_timeout",
+    "label": "Timeout for API requests sent to the PMS",
+    "type": "text",
+    "default": "15"
   },
   {
     "id": "log_level",

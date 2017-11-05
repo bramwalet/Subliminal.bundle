@@ -44,6 +44,13 @@ def cast_bool(value):
     return str(value).strip() in ("true", "True")
 
 
+def cast_int(value, default=None):
+    try:
+        return int(value)
+    except ValueError:
+        return default
+
+
 # A platform independent way to split paths which might come in with different separators.
 def split_path(str):
     if str.find('\\') != -1:
@@ -329,9 +336,12 @@ def track_usage(category=None, action=None, label=None, value=None):
             except:
                 pass
 
-    Thread.Create(dispatch_track_usage, category, action, label, value,
-                  identifier=Dict["anon_id"], first_use=Dict["first_use"],
-                  add=Network.PublicAddress)
+    try:
+        Thread.Create(dispatch_track_usage, category, action, label, value,
+                      identifier=Dict["anon_id"], first_use=Dict["first_use"],
+                      add=Network.PublicAddress)
+    except:
+        Log.Debug("Something went wrong when reporting anonymous user statistics: %s", traceback.format_exc())
 
 
 def dispatch_track_usage(*args, **kwargs):
@@ -346,6 +356,16 @@ def dispatch_track_usage(*args, **kwargs):
 
 def get_language(lang_short):
     return Language.fromietf(lang_short)
+
+
+def display_language(l):
+    addons = []
+    if l.country:
+        addons.append(l.country.alpha2)
+    if l.script:
+        addons.append(l.script.code)
+
+    return l.name if not addons else "%s (%s)" % (l.name, ", ".join(addons))
 
 
 class PartUnknownException(Exception):

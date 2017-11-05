@@ -1,15 +1,16 @@
 # coding=utf-8
 import logging
 import re
+
 import subliminal
 from random import randint
 
-from subliminal.exceptions import TooManyRequests
-from subliminal.providers.addic7ed import Addic7edProvider as _Addic7edProvider, Addic7edSubtitle as _Addic7edSubtitle, \
-    ParserBeautifulSoup, Language
+from subliminal.exceptions import TooManyRequests, DownloadLimitExceeded
+from subliminal.providers.addic7ed import Addic7edProvider as _Addic7edProvider, \
+    Addic7edSubtitle as _Addic7edSubtitle, ParserBeautifulSoup, Language
 from subliminal.cache import SHOW_EXPIRATION_TIME, region
-from subliminal.utils import sanitize
-from subliminal_patch.extensions import provider_registry
+from subliminal.subtitle import fix_line_ending
+from subliminal_patch.utils import sanitize
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +57,8 @@ class Addic7edProvider(_Addic7edProvider):
     hearing_impaired_verifiable = True
     subtitle_class = Addic7edSubtitle
 
+    sanitize_characters = {'-', ':', '(', ')', '.', '/'}
+
     def __init__(self, username=None, password=None, use_random_agents=False):
         super(Addic7edProvider, self).__init__(username=username, password=password)
         self.USE_ADDICTED_RANDOM_AGENTS = use_random_agents
@@ -86,7 +89,7 @@ class Addic7edProvider(_Addic7edProvider):
         # populate the show ids
         show_ids = {}
         for show in soup.select('td.version > h3 > a[href^="/show/"]'):
-            show_clean = sanitize(show.text)
+            show_clean = sanitize(show.text, default_characters=self.sanitize_characters)
             try:
                 show_id = int(show['href'][6:])
             except ValueError:
@@ -97,6 +100,9 @@ class Addic7edProvider(_Addic7edProvider):
             if match and match.group(2) and match.group(1) not in show_ids:
                 # year found, also add it without year
                 show_ids[match.group(1)] = show_id
+
+        soup.decompose()
+        soup = None
 
         logger.debug('Found %d show ids', len(show_ids))
 
@@ -128,33 +134,46 @@ class Addic7edProvider(_Addic7edProvider):
             raise TooManyRequests()
         soup = ParserBeautifulSoup(r.content, ['lxml', 'html.parser'])
 
-        # get the suggestion
-        suggestion = soup.select('span.titulo > a[href^="/show/"]')
-        if not suggestion:
-            logger.warning('Show id not found: no suggestion')
-            return None
-        if not sanitize(suggestion[0].i.text.replace('\'', ' ')) == sanitize(series_year):
-            logger.warning('Show id not found: suggestion does not match')
-            return None
-        show_id = int(suggestion[0]['href'][6:])
-        logger.debug('Found show id %d', show_id)
+        suggestion = None
 
-        return show_id
+        # get the suggestion
+        try:
+            suggestion = soup.select('span.titulo > a[href^="/show/"]')
+            if not suggestion:
+                logger.warning('Show id not found: no suggestion')
+                return None
+            if not sanitize(suggestion[0].i.text.replace('\'', ' '),
+                            default_characters=self.sanitize_characters) == \
+                    sanitize(series_year, default_characters=self.sanitize_characters):
+                logger.warning('Show id not found: suggestion does not match')
+                return None
+            show_id = int(suggestion[0]['href'][6:])
+            logger.debug('Found show id %d', show_id)
+
+            return show_id
+        finally:
+            soup.decompose()
+            soup = None
 
     def query(self, series, season, year=None, country=None):
         # patch: fix logging
         # get the show id
         show_id = self.get_show_id(series, year, country)
         if show_id is None:
-            logger.error('No show id found for %r (%r)', series, {'year': year, 'country': country})
+            logger.info('No show id found for %r (%r)', series, {'year': year, 'country': country})
             return []
 
         # get the page of the season of the show
         logger.info('Getting the page of show id %d, season %d', show_id, season)
         r = self.session.get(self.server_url + 'show/%d' % show_id, params={'season': season}, timeout=10)
         r.raise_for_status()
-        if r.status_code == 304:
-            raise TooManyRequests()
+
+        if not r.content:
+            # Provider wrongful return a status of 304 Not Modified with an empty content
+            # raise_for_status won't raise exception for that status code
+            logger.error('No data returned from provider')
+            return []
+
         soup = ParserBeautifulSoup(r.content, ['lxml', 'html.parser'])
 
         # loop over subtitle rows
@@ -184,4 +203,25 @@ class Addic7edProvider(_Addic7edProvider):
             logger.debug('Found subtitle %r', subtitle)
             subtitles.append(subtitle)
 
+        soup.decompose()
+        soup = None
+
         return subtitles
+
+    def download_subtitle(self, subtitle):
+        # download the subtitle
+        r = self.session.get(self.server_url + subtitle.download_link, headers={'Referer': subtitle.page_link},
+                             timeout=10)
+        r.raise_for_status()
+
+        if not r.content:
+            # Provider wrongful return a status of 304 Not Modified with an empty content
+            # raise_for_status won't raise exception for that status code
+            logger.error('Unable to download subtitle. No data returned from provider')
+            return
+
+        # detect download limit exceeded
+        if r.headers['Content-Type'] == 'text/html':
+            raise DownloadLimitExceeded
+
+        subtitle.content = fix_line_ending(r.content)

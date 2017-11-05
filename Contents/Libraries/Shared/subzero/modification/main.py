@@ -49,6 +49,8 @@ class SubtitleModifications(object):
             elif content:
                 logger.exception("Couldn't load subtitle: %s", traceback.format_exc())
 
+        return bool(self.f)
+
     @classmethod
     def parse_identifier(cls, identifier):
         # simple identifier

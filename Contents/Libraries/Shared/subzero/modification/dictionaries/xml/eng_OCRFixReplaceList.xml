@@ -1921,6 +1921,27 @@
     <Word from="poweryour" to="power your" />
     <Word from="Ofcourse" to="Of course" />
     <Word from="Ofmy" to="Of my" />
+    <Word from="EIlen" to="Ellen" />
+    <Word from="Don'tget" to="Don't get" />
+    <Word from="tellme" to="tell me" />
+    <Word from="ofdecision" to="of decision" />
+    <Word from="itgoing" to="it going" />
+    <Word from="artificialgravity" to="artificial gravity" />
+    <Word from="shouldknow" to="should know" />
+    <Word from="Hasn'tgot" to="Hasn't got" />
+    <Word from="thirdjunction" to="third junction" />
+    <Word from="somebodypicks" to="somebody picks" />
+    <Word from="Willyou" to="Will you" />
+    <Word from="can'tget" to="can't get" />
+    <Word from="BuZZes" to="Buzzes" />
+    <Word from="wouldn'tyou" to="wouldn't you" />
+    <Word from="Wellbelow" to="Well below" />
+    <Word from="What'dyou" to="What'd you" />
+    <Word from="decipheredpart" to="deciphered part" />
+    <Word from="they'llknow" to="they'll know" />
+    <Word from="ifit's" to="if it's" />
+    <Word from="ornot" to="or not" />
+    <Word from="myposition" to="my position" />
   </WholeWords>
   <PartialWordsAlways>
     <!-- Will be replaced always -->
@@ -2212,11 +2233,14 @@
     <LinePart from=" Can,t " to=" Can't " />
     <LinePart from=" don,t " to=" don't " />
     <LinePart from=" Don,t " to=" Don't " />
+    <LinePart from="wouldn 'tyou" to="wouldn't you" />
+    <LinePart from=" lgot it" to=" I got it" />   
   </PartialLines>
   <PartialLinesAlways>
     <LinePart from="forbest act" to="for best act" />
   </PartialLinesAlways>
   <BeginLines>
+    <Beginning from="lgot it" to="I got it" /> 
     <Beginning from="Don,t " to="Don't " />
     <Beginning from="Can,t " to="Can't " />
     <Beginning from="Let,s " to="Let's " />

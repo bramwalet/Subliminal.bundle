@@ -6,12 +6,17 @@ from babelfish.exceptions import LanguageError
 from babelfish import Language
 from subliminal_patch import scan_video, refine, search_external_subtitles
 
-
 logger = logging.getLogger(__name__)
 
 
+def has_external_subtitle(part_id, stored_subs, language):
+    stored_sub = stored_subs.get_any(part_id, language)
+    if stored_sub and stored_sub.storage_type == "filesystem":
+        return True
+
+
 def parse_video(fn, video_info, hints, external_subtitles=False, embedded_subtitles=False, known_embedded=None,
-                forced_only=False, no_refining=False, dry_run=False):
+                forced_only=False, no_refining=False, dry_run=False, ignore_all=False, stored_subs=None):
 
     logger.debug("Parsing video: %s, hints: %s", os.path.basename(fn), hints)
     video = scan_video(fn, hints=hints, dont_use_actual_file=dry_run or no_refining)
@@ -88,11 +93,21 @@ def parse_video(fn, video_info, hints, external_subtitles=False, embedded_subtit
         logger.warning("Couldn't find corresponding series/movie in online databases, continuing")
 
     # scan for external subtitles
+    external_langs_found = set(search_external_subtitles(video.name, forced_tag=forced_only).values())
+
+    # found external subtitles should be considered?
     if external_subtitles:
         # |= is update, thanks plex
-        video.subtitle_languages.update(
-            set(search_external_subtitles(video.name, forced_tag=forced_only).values())
-        )
+        video.subtitle_languages.update(external_langs_found)
+
+    else:
+        # did we already download subtitles for this?
+        if not ignore_all and stored_subs and external_langs_found:
+            for lang in external_langs_found:
+                if has_external_subtitle(video_info["plex_part"].id, stored_subs, lang):
+                    logger.info("Not re-downloading subtitle for language %s, it already exists on the filesystem",
+                                lang)
+                    video.subtitle_languages.add(lang)
 
     # add known embedded subtitles
     if embedded_subtitles and known_embedded:

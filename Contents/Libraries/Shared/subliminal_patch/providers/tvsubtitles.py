@@ -1,14 +1,14 @@
 # coding=utf-8
 
-import re
 import logging
+
+
 from babelfish import Language
 from subliminal.providers import ParserBeautifulSoup
-from subliminal.cache import SHOW_EXPIRATION_TIME, region
+from subliminal.cache import SHOW_EXPIRATION_TIME, region, EPISODE_EXPIRATION_TIME
 from subliminal.providers.tvsubtitles import TVsubtitlesProvider as _TVsubtitlesProvider, \
-    TVsubtitlesSubtitle as _TVsubtitlesSubtitle, link_re
+    TVsubtitlesSubtitle as _TVsubtitlesSubtitle, link_re, episode_id_re
 from subliminal.utils import sanitize
-from subliminal_patch.extensions import provider_registry
 
 logger = logging.getLogger(__name__)
 
@@ -54,13 +54,54 @@ class TVsubtitlesProvider(_TVsubtitlesProvider):
                 logger.debug('Found show id %d', show_id)
                 break
 
+        soup.decompose()
+        soup = None
+
         return show_id
+
+    @region.cache_on_arguments(expiration_time=EPISODE_EXPIRATION_TIME)
+    def get_episode_ids(self, show_id, season):
+        """Get episode ids from the show id and the season.
+
+        :param int show_id: show id.
+        :param int season: season of the episode.
+        :return: episode ids per episode number.
+        :rtype: dict
+
+        """
+        # get the page of the season of the show
+        logger.info('Getting the page of show id %d, season %d', show_id, season)
+        r = self.session.get(self.server_url + 'tvshow-%d-%d.html' % (show_id, season), timeout=10)
+        soup = ParserBeautifulSoup(r.content, ['lxml', 'html.parser'])
+
+        # loop over episode rows
+        episode_ids = {}
+        for row in soup.select('table#table5 tr'):
+            # skip rows that do not have a link to the episode page
+            if not row('a', href=episode_id_re):
+                continue
+
+            # extract data from the cells
+            cells = row('td')
+            episode = int(cells[0].text.split('x')[1])
+            episode_id = int(cells[1].a['href'][8:-5])
+            episode_ids[episode] = episode_id
+
+        if episode_ids:
+            logger.debug('Found episode ids %r', episode_ids)
+        else:
+            logger.warning('No episode ids found')
+
+        soup.decompose()
+        soup = None
+
+        return episode_ids
 
     def query(self, series, season, episode, year=None):
         # search the show id
         show_id = self.search_show_id(series, year)
         if show_id is None:
-            logger.error('No show id found for %r (%r)', series, {'year': year})
+            logger.info('No show id found for %r (%r)', series, {'year': year})
             return []
 
         # get the episode ids
@@ -88,5 +129,8 @@ class TVsubtitlesProvider(_TVsubtitlesProvider):
                                            release)
             logger.info('Found subtitle %s', subtitle)
             subtitles.append(subtitle)
+
+        soup.decompose()
+        soup = None
 
         return subtitles

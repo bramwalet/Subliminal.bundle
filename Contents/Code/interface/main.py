@@ -2,13 +2,13 @@
 
 from subzero.constants import PREFIX, TITLE, ART
 from support.config import config
-from support.helpers import pad_title, timestamp, df, get_plex_item_display_title
+from support.helpers import pad_title, timestamp, df, get_plex_item_display_title, display_language
 from support.scheduler import scheduler
 from support.ignore import ignore_list
 from support.items import get_item_thumb, get_on_deck_items, get_all_items, get_items_info, get_item, \
     get_item_kind_from_item
-from menu_helpers import main_icon, debounce, SubFolderObjectContainer, default_thumb, dig_tree, add_ignore_options,\
-    ObjectContainer
+from menu_helpers import main_icon, debounce, SubFolderObjectContainer, default_thumb, dig_tree, add_ignore_options, \
+    ObjectContainer, route, handler
 from item_details import ItemDetailsMenu
 
 
@@ -92,10 +92,9 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
         ))
         oc.add(DirectoryObject(
             key=Callback(RecentMissingSubtitlesMenu, randomize=timestamp()),
-            title="Items with missing subtitles",
-            summary="Shows the items honoring the configured 'Item age to be considered recent'-setting (%s)"
-                    " and allowing you to individually (force-) refresh their metadata/subtitles. " %
-                    Prefs["scheduler.item_is_recent_age"],
+            title="Show recently added items with missing subtitles",
+            summary="Lists items with missing subtitles. Click on \"Find recent items with missing subs\" "
+                    "to update list",
             thumb=R("icon-missing.jpg")
         ))
         oc.add(DirectoryObject(
@@ -184,6 +183,9 @@ def RecentlyPlayedMenu():
     oc = SubFolderObjectContainer(title2=base_title, replace_parent=True)
 
     for item in [get_item(rating_key) for rating_key in Dict["last_played_items"]]:
+        if not item:
+            continue
+
         kind = get_item_kind_from_item(item)
         if kind not in ("episode", "movie"):
             continue
@@ -230,7 +232,7 @@ def RecentMissingSubtitlesMenu(force=False, randomize=None):
     if not running:
         oc.add(DirectoryObject(
             key=Callback(RecentMissingSubtitlesMenu, force=True, randomize=timestamp()),
-            title=u"Get items with missing subtitles",
+            title=u"Find recent items with missing subtitles",
             thumb=default_thumb
         ))
     else:
@@ -246,7 +248,7 @@ def RecentMissingSubtitlesMenu(force=False, randomize=None):
                 key=Callback(ItemDetailsMenu, title=title + " > " + item_title, item_title=item_title,
                              rating_key=item_id),
                 title=item_title,
-                summary="Missing: %s" % ", ".join(l.name for l in missing_languages),
+                summary="Missing: %s" % ", ".join(display_language(l) for l in missing_languages),
                 thumb=get_item_thumb(item) or default_thumb
             ))
 
