@@ -121,7 +121,7 @@ def refine(video, **kwargs):
     if isinstance(video, Episode):
         needs_attrs_to_work = ("series", "season", "episode",)
         for attr in needs_attrs_to_work:
-            if getattr(video, attr) is None:
+            if getattr(video, attr, None) is None:
                 logger.debug(u"Not enough data available for Sonarr")
                 return
 
