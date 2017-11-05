@@ -1,6 +1,7 @@
 # coding=utf-8
 import sys
 import datetime
+import time
 import os
 
 from subzero.sandbox import restore_builtins
@@ -138,6 +139,16 @@ class SubZeroAgent(object):
         if not media:
             Log.Error("Called with empty media, something is really wrong with your setup!")
             return
+
+        # debounce for 5 seconds
+        now = datetime.datetime.now()
+        if "last_call" in Dict:
+            last_call = Dict["last_call"]
+            if last_call + datetime.timedelta(seconds=5) > now:
+                wait = 5 - (now - last_call).seconds
+                if wait >= 1:
+                    time.sleep(wait)
+        Dict["last_call"] = now
 
         item_ids = []
         try:
