@@ -204,7 +204,7 @@
   },
   {
     "id": "provider.opensubtitles.enabled",
-    "label": "Provider: Enable OpenSubtitles",
+    "label": "Provider: Enable OpenSubtitles (consider becoming a VIP for ad-free subtitles and 1000 subs/day)",
     "type": "bool",
     "default": "true"
   },
@@ -511,9 +511,6 @@
     "type": "enum",
     "values": [
       "never",
-      "every 1 hours",
-      "every 2 hours",
-      "every 3 hours",
       "every 6 hours",
       "every 12 hours",
       "every 24 hours"
