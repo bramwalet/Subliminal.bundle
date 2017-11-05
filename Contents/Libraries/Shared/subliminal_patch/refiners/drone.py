@@ -50,7 +50,7 @@ class DroneAPIClient(object):
                 value = value.encode("utf-8")
 
             key = key.split('_')[0] + ''.join(x.capitalize() for x in key.split('_')[1:])
-            out[quote(key)] = value
+            out[key] = quote(value)
         return out
 
     def get(self, endpoint, **params):
