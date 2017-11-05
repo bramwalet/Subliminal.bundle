@@ -122,6 +122,7 @@ class SubZeroAgent(object):
     languages = [Locale.Language.English]
     primary_provider = False
     score_prefs_key = None
+    debounce = 10
 
     def __init__(self, *args, **kwargs):
         super(SubZeroAgent, self).__init__(*args, **kwargs)
@@ -140,12 +141,12 @@ class SubZeroAgent(object):
             Log.Error("Called with empty media, something is really wrong with your setup!")
             return
 
-        # debounce for 5 seconds
+        # debounce for self.debounce seconds
         now = datetime.datetime.now()
         if "last_call" in Dict:
             last_call = Dict["last_call"]
-            if last_call + datetime.timedelta(seconds=5) > now:
-                wait = 5 - (now - last_call).seconds
+            if last_call + datetime.timedelta(seconds=self.debounce) > now:
+                wait = self.debounce - (now - last_call).seconds
                 if wait >= 1:
                     Log.Debug("Waiting %s seconds until continuing", wait)
                     time.sleep(wait)
