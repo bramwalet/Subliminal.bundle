@@ -37,7 +37,7 @@ class DroneAPIClient(object):
 
     def build_params(self, params):
         """
-        quotes and converts values of params to camelCase from underscore
+        quotes values and converts keys of params to camelCase from underscore
         :param params: dict
         :return:
         """
@@ -77,6 +77,12 @@ class SonarrClient(DroneAPIClient):
         super(SonarrClient, self).__init__(base_url=base_url, **kwargs)
 
     def get_guess(self, video, scene_name):
+        """
+        run guessit on scene_name
+        :param video:
+        :param scene_name:
+        :return:
+        """
         ext = os.path.splitext(video.name)[1]
         guess_from = REMOVE_CRAP_FROM_FILENAME.sub(r"\2", scene_name + ext)
 
@@ -89,6 +95,12 @@ class SonarrClient(DroneAPIClient):
         return guessit(guess_from, options=hints)
 
     def update_video(self, video, scene_name):
+        """
+        update video attributes based on scene_name
+        :param video:
+        :param scene_name:
+        :return:
+        """
         guess = self.get_guess(video, scene_name)
         for attr in self._fill_attrs:
             if attr in guess:
