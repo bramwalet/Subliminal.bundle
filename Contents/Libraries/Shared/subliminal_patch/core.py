@@ -33,7 +33,7 @@ CUSTOM_PATHS = []
 INCLUDE_EXOTIC_SUBS = True
 
 DOWNLOAD_TRIES = 0
-DOWNLOAD_RETRY_SLEEP = 2
+DOWNLOAD_RETRY_SLEEP = 6
 
 REMOVE_CRAP_FROM_FILENAME = re.compile(r"(?i)[\s_-]+(obfuscated|scrambled|nzbgeek|"
                                        r"chamele0n|buymore|xpost|postbot)(\.\w+)$")

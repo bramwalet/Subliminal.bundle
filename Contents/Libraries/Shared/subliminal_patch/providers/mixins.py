@@ -29,7 +29,7 @@ class PunctuationMixin(object):
 
 
 class ProviderRetryMixin(object):
-    def retry(self, f, amount=3, exc=Exception, retry_timeout=1):
+    def retry(self, f, amount=2, exc=Exception, retry_timeout=10):
         i = 0
         while i <= amount:
             try:
