@@ -3,13 +3,16 @@
 import logging
 import os
 
+import dogpile
 from babelfish import Language, language_converters
+from dogpile.cache.api import NO_VALUE
 from subliminal.exceptions import ConfigurationError
 from subliminal.providers.opensubtitles import OpenSubtitlesProvider as _OpenSubtitlesProvider, checked, \
     __short_version__, \
-    OpenSubtitlesSubtitle as _OpenSubtitlesSubtitle, Episode, ServerProxy
+    OpenSubtitlesSubtitle as _OpenSubtitlesSubtitle, Episode, ServerProxy, Unauthorized
 from mixins import ProviderRetryMixin
 from subliminal_patch.http import TimeoutSafeTransport
+from subliminal.cache import region
 
 logger = logging.getLogger(__name__)
 
@@ -67,11 +70,16 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
     hash_verifiable = True
     hearing_impaired_verifiable = True
     skip_wrong_fps = True
+    is_vip = False
+
+    default_url = "https://api.opensubtitles.org/xml-rpc"
+    vip_url = "https://vip.api.opensubtitles.org/xml-rpc"
 
     languages = {Language.fromopensubtitles(l) for l in language_converters['szopensubtitles'].codes}# | {
         #Language.fromietf("sr-latn"), Language.fromietf("sr-cyrl")}
 
-    def __init__(self, username=None, password=None, use_tag_search=False, only_foreign=False, skip_wrong_fps=True):
+    def __init__(self, username=None, password=None, use_tag_search=False, only_foreign=False, skip_wrong_fps=True,
+                 is_vip=False):
         if username is not None and password is None or username is None and password is not None:
             raise ConfigurationError('Username and password must be specified')
 
@@ -80,6 +88,14 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         self.use_tag_search = use_tag_search
         self.only_foreign = only_foreign
         self.skip_wrong_fps = skip_wrong_fps
+        self.token = None
+        self.is_vip = is_vip
+
+        if is_vip:
+            self.server = ServerProxy(self.vip_url, TimeoutSafeTransport(4))
+            logger.info("Using VIP server")
+        else:
+            self.server = ServerProxy(self.default_url, TimeoutSafeTransport(4))
 
         if use_tag_search:
             logger.info("Using tag/exact filename search")
@@ -87,20 +103,44 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         if only_foreign:
             logger.info("Only searching for foreign/forced subtitles")
 
-        super(OpenSubtitlesProvider, self).__init__()
-        self.server = ServerProxy('https://api.opensubtitles.org/xml-rpc', TimeoutSafeTransport(4))
+    def log_in(self, server_url=None):
+        if server_url:
+            if self.server:
+                self.server.close()
 
-    def initialize(self):
-        logger.info('Logging in')
-        # fixme: retry on SSLError
+            self.server = ServerProxy(server_url, TimeoutSafeTransport(4))
+
         response = self.retry(
             lambda: checked(
                 self.server.LogIn(self.username, self.password, 'eng', os.environ.get("SZ_USER_AGENT", "Sub-Zero/2"))
             )
         )
+
         self.token = response['token']
         logger.debug('Logged in with token %r', self.token)
-        logger.debug('Server response: %s', response)
+
+        region.set("os_token", self.token)
+
+    def initialize(self):
+        logger.info('Logging in')
+
+        token = region.get("os_token")
+        if token is not NO_VALUE:
+            try:
+                self.server.NoOperation(token)
+                self.token = token
+                logger.info("Using previous login token: %s", self.token)
+                return
+            except:
+                pass
+
+        try:
+            self.log_in()
+
+        except Unauthorized:
+            if self.is_vip:
+                logger.info("VIP server login failed, falling back")
+                self.log_in(self.default_url)
 
     def list_subtitles(self, video, languages):
         """

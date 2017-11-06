@@ -5,6 +5,8 @@ import time
 import logging
 import traceback
 
+from subliminal.providers.opensubtitles import Unauthorized
+
 logger = logging.getLogger(__name__)
 
 
@@ -37,7 +39,7 @@ class ProviderRetryMixin(object):
             except exc:
                 formatted_exc = traceback.format_exc()
                 i += 1
-                if i == amount:
+                if i == amount or isinstance(exc, Unauthorized):
                     raise
 
             logger.debug(u"Retrying %s, try: %i/%i, exception: %s" % (self.__class__.__name__, i, amount, formatted_exc))
