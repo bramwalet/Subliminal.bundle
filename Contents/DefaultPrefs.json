@@ -204,7 +204,7 @@
   },
   {
     "id": "provider.opensubtitles.enabled",
-    "label": "Provider: Enable OpenSubtitles (VIP benefits: ad-free subs, 1000 subs/day, VIP server without caching)",
+    "label": "Provider: Enable OpenSubtitles",
     "type": "bool",
     "default": "true"
   },
@@ -224,7 +224,7 @@
   },
   {
     "id": "provider.opensubtitles.is_vip",
-    "label": "OpenSubtitles VIP?",
+    "label": "OpenSubtitles VIP? (Benefits: ad-free subs, 1000 subs/day, VIP server without caching)",
     "type": "bool",
     "default": "false"
   },
