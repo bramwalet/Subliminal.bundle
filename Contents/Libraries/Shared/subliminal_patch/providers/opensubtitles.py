@@ -11,7 +11,7 @@ from subliminal.providers.opensubtitles import OpenSubtitlesProvider as _OpenSub
     __short_version__, \
     OpenSubtitlesSubtitle as _OpenSubtitlesSubtitle, Episode, ServerProxy, Unauthorized
 from mixins import ProviderRetryMixin
-from subliminal_patch.http import TimeoutSafeTransport
+from subliminal_patch.http import TimeoutSafeTransport, TimeoutTransport
 from subliminal.cache import region
 
 logger = logging.getLogger(__name__)
@@ -73,7 +73,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
     is_vip = False
 
     default_url = "https://api.opensubtitles.org/xml-rpc"
-    vip_url = "https://vip.api.opensubtitles.org/xml-rpc"
+    vip_url = "http://vip.api.opensubtitles.org/xml-rpc"
 
     languages = {Language.fromopensubtitles(l) for l in language_converters['szopensubtitles'].codes}# | {
         #Language.fromietf("sr-latn"), Language.fromietf("sr-cyrl")}
@@ -92,10 +92,10 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         self.is_vip = is_vip
 
         if is_vip:
-            self.server = ServerProxy(self.vip_url, TimeoutSafeTransport(4))
+            self.server = self.get_server_proxy(self.vip_url)
             logger.info("Using VIP server")
         else:
-            self.server = ServerProxy(self.default_url, TimeoutSafeTransport(4))
+            self.server = self.get_server_proxy(self.default_url)
 
         if use_tag_search:
             logger.info("Using tag/exact filename search")
@@ -103,12 +103,16 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         if only_foreign:
             logger.info("Only searching for foreign/forced subtitles")
 
+    def get_server_proxy(self, url, timeout=4):
+        transport = TimeoutSafeTransport if url.startswith("https") else TimeoutTransport
+        return ServerProxy(url, transport(timeout))
+
     def log_in(self, server_url=None):
         if server_url:
             if self.server:
                 self.server.close()
 
-            self.server = ServerProxy(server_url, TimeoutSafeTransport(4))
+            self.server = self.get_server_proxy(server_url)
 
         response = self.retry(
             lambda: checked(

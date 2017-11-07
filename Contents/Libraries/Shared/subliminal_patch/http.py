@@ -1,5 +1,5 @@
 # coding=utf-8
-from xmlrpclib import SafeTransport, ProtocolError, Fault
+from xmlrpclib import SafeTransport, ProtocolError, Fault, Transport
 
 import certifi
 import ssl
@@ -40,6 +40,19 @@ class RetryingSession(Session):
 
     def post(self, *args, **kwargs):
         return self.retry_method("post", *args, **kwargs)
+
+
+class TimeoutTransport(Transport):
+    """Timeout support for ``xmlrpc.client.SafeTransport``."""
+    def __init__(self, timeout, *args, **kwargs):
+        Transport.__init__(self, *args, **kwargs)
+        self.timeout = timeout
+
+    def make_connection(self, host):
+        c = Transport.make_connection(self, host)
+        c.timeout = self.timeout
+
+        return c
 
 
 class TimeoutSafeTransport(SafeTransport):
