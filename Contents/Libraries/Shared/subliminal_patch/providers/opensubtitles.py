@@ -128,15 +128,15 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
     def initialize(self):
         logger.info('Logging in')
 
-        token = region.get("os_token")
-        if token is not NO_VALUE:
-            try:
-                self.server.NoOperation(token)
-                self.token = token
-                logger.info("Using previous login token: %s", self.token)
-                return
-            except:
-                pass
+        # token = region.get("os_token", expiration_time=60*15)
+        # if token is not NO_VALUE:
+        #     try:
+        #         self.server.NoOperation(token)
+        #         self.token = token
+        #         logger.info("Using previous login token: %s", self.token)
+        #         return
+        #     except:
+        #         pass
 
         try:
             self.log_in()
