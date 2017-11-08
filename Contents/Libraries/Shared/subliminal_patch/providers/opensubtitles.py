@@ -73,7 +73,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
     is_vip = False
 
     default_url = "https://api.opensubtitles.org/xml-rpc"
-    vip_url = "http://vip.api.opensubtitles.org/xml-rpc"
+    vip_url = "https://vip-api.opensubtitles.org/xml-rpc"
 
     languages = {Language.fromopensubtitles(l) for l in language_converters['szopensubtitles'].codes}# | {
         #Language.fromietf("sr-latn"), Language.fromietf("sr-cyrl")}
@@ -145,6 +145,10 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
             if self.is_vip:
                 logger.info("VIP server login failed, falling back")
                 self.log_in(self.default_url)
+                
+    def terminate(self):
+        if self.server:
+            self.server.close()
 
     def list_subtitles(self, video, languages):
         """
