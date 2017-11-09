@@ -59,9 +59,12 @@ def download_best_subtitles(video_part_map, min_score=0, throttle_time=None):
     if missing_languages:
         # re-add country codes to the missing languages, in case we've removed them above
         if ietf_as_alpha3:
+            languages = list(languages)
             for language in languages:
                 if language.country_orig:
                     language.country = language.country_orig
+
+            languages = set(languages)
 
         Log.Debug("Download best subtitles using settings: min_score: %s, hearing_impaired: %s, languages: %s" %
                   (min_score, hearing_impaired, languages))
