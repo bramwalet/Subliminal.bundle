@@ -592,7 +592,7 @@ def download_best_subtitles(videos, languages, min_score=0, hearing_impaired=Fal
             downloaded_subtitles[video].extend(subtitles)
 
             if got_multiple and throttle_time:
-                logger.debug("Waiting %ss until continuing ...", throttle_time)
+                logger.debug("Waiting %ss before continuing ...", throttle_time)
                 time.sleep(throttle_time)
 
     return downloaded_subtitles
