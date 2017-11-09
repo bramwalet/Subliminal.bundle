@@ -8,7 +8,7 @@ from subtitlehelpers import get_subtitles_from_metadata
 from subliminal_patch import compute_score
 
 
-def download_best_subtitles(video_part_map, min_score=0):
+def download_best_subtitles(video_part_map, min_score=0, throttle_time=None):
     hearing_impaired = Prefs['subtitles.search.hearingImpaired']
     ietf_as_alpha3 = cast_bool(Prefs["subtitles.language.ietf_normalize"])
     languages = config.lang_list.copy()
@@ -68,5 +68,5 @@ def download_best_subtitles(video_part_map, min_score=0):
 
         return subliminal.download_best_subtitles(video_part_map.keys(), languages, min_score, hearing_impaired, providers=config.providers,
                                                   provider_configs=config.provider_settings, pool_class=config.provider_pool,
-                                                  compute_score=compute_score)
+                                                  compute_score=compute_score, throttle_time=throttle_time)
     Log.Debug("All languages for all requested videos exist. Doing nothing.")
