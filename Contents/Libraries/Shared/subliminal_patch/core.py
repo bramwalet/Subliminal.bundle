@@ -444,9 +444,10 @@ def _search_external_subtitles(path, forced_tag=False):
                 p_root = split_tag[0]
 
         # forced wanted but NIL
-        forced = "forced" in adv_tag
-        if (forced_tag and not forced) or (not forced_tag and forced):
-            continue
+        if adv_tag:
+            forced = "forced" in adv_tag
+            if (forced_tag and not forced) or (not forced_tag and forced):
+                continue
 
         # extract the potential language code
         language_code = p_root[len(fileroot):].replace('_', '-')[1:]
