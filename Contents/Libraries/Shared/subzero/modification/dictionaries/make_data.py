@@ -33,6 +33,8 @@ SZ_FIX_DATA = {
             u"l/an": u"lian",
             u"lljust": u"ll just",
             u". L ": u". I ",
+
+            # fixme: this is PartialLines
             u"L know": u"I know",
             u"L should": u"I should",
             u"L do": u"I do",
