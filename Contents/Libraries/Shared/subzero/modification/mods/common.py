@@ -87,7 +87,8 @@ class RemoveTags(SubtitleModification):
 
     def modify(self, content, debug=False, parent=None, **kwargs):
         for entry in parent.f:
-            entry.text = entry.plaintext
+            # this actually plaintexts the entry and by re-assigning it to plaintext, it replaces \n with \N again
+            entry.plaintext = entry.plaintext
 
 
 registry.register(CommonFixes)
