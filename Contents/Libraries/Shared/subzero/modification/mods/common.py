@@ -79,7 +79,6 @@ class RemoveTags(SubtitleModification):
     identifier = "remove_tags"
     description = "Remove all style tags"
     exclusive = True
-    advanced = True
     modifies_whole_file = True
 
     long_description = """\
