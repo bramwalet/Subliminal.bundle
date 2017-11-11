@@ -19,7 +19,7 @@ if debug:
 
 submod = SubMod(debug=debug)
 submod.load(fn, language=Language.fromietf("eng"), encoding="utf-8")
-submod.modify("remove_HI", "OCR_fixes", "common", "remove_tags", "OCR_fixes", "shift_offset(s=20)", "OCR_fixes", "color(name=red)", "shift_offset(s=-5, ms=-350)")
+submod.modify("remove_HI", "OCR_fixes", "common", "remove_tags", "OCR_fixes", "OCR_fixes")
 #submod.modify("remove_HI", "OCR_fixes", "common", "OCR_fixes", "shift_offset(s=20)", "OCR_fixes", "color(name=white)", "shift_offset(s=-5, ms=-350)")
 
 #srt = submod.to_unicode()
