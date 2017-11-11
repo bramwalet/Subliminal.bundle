@@ -411,7 +411,7 @@
     "id": "subtitles.remove_tags",
     "label": "Remove style tags from downloaded subtitles (bold, italic, underline, colors, ...)",
     "type": "bool",
-    "default": "true"
+    "default": "false"
   },
   {
     "id": "subtitles.fix_common",
