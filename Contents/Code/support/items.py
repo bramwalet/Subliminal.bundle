@@ -314,10 +314,10 @@ def refresh_item(rating_key, force=False, timeout=8000, refresh_kind=None, paren
             time.sleep(10)
 
 
-def get_current_sub(rating_key, part_id, language):
+def get_current_sub(rating_key, part_id, language, plex_item=None):
     from support.storage import get_subtitle_storage
 
-    item = get_item(rating_key)
+    item = plex_item or get_item(rating_key)
     subtitle_storage = get_subtitle_storage()
     stored_subs = subtitle_storage.load_or_new(item)
     current_sub = stored_subs.get_any(part_id, language)
@@ -329,7 +329,12 @@ def set_mods_for_part(rating_key, part_id, language, item_type, mods, mode="add"
     from support.scanning import scan_videos
     from support.storage import save_subtitles
 
-    current_sub, stored_subs, storage = get_current_sub(rating_key, part_id, language)
+    plex_item = get_item(rating_key)
+
+    if not plex_item:
+        return
+
+    current_sub, stored_subs, storage = get_current_sub(rating_key, part_id, language, plex_item=plex_item)
     if mode == "add":
         for mod in mods:
             identifier, args = SubtitleModifications.parse_identifier(mod)
@@ -360,7 +365,7 @@ def set_mods_for_part(rating_key, part_id, language, item_type, mods, mode="add"
     storage.save(stored_subs)
 
     try:
-        metadata = get_plex_metadata(rating_key, part_id, item_type)
+        metadata = get_plex_metadata(rating_key, part_id, item_type, plex_item=plex_item)
     except PartUnknownException:
         return
 
