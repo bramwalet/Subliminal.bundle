@@ -2,7 +2,7 @@
 
 import re
 
-from subzero.modification.mods import SubtitleTextModification, empty_line_post_processors
+from subzero.modification.mods import SubtitleTextModification, empty_line_post_processors, SubtitleModification
 from subzero.modification.processors.string_processor import StringProcessor
 from subzero.modification.processors.re_processor import NReProcessor
 from subzero.modification import registry
@@ -75,4 +75,21 @@ class CommonFixes(SubtitleTextModification):
     post_processors = empty_line_post_processors
 
 
+class RemoveTags(SubtitleModification):
+    identifier = "remove_tags"
+    description = "Remove all style tags"
+    exclusive = True
+    advanced = True
+    modifies_whole_file = True
+
+    long_description = """\
+    Removes all possible style tags from the subtitle, such as font, bold, color etc.
+    """
+
+    def modify(self, content, debug=False, parent=None, **kwargs):
+        for entry in parent.f:
+            entry.text = entry.plaintext
+
+
 registry.register(CommonFixes)
+registry.register(RemoveTags)
