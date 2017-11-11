@@ -163,6 +163,13 @@ def get_media_item_ids(media, kind="series"):
     return ids
 
 
+def get_part(plex_item, part_id):
+    for media in plex_item.media:
+        for part in media.parts:
+            if str(part.id) == str(part_id):
+                return part
+
+
 def get_plex_metadata(rating_key, part_id, item_type, plex_item=None):
     """
     uses the Plex 3rd party API accessor to get metadata information
@@ -180,11 +187,7 @@ def get_plex_metadata(rating_key, part_id, item_type, plex_item=None):
         return
 
     # find current part
-    current_part = None
-    for media in plex_item.media:
-        for part in media.parts:
-            if str(part.id) == str(part_id):
-                current_part = part
+    current_part = get_part(plex_item, part_id)
 
     if not current_part:
         raise helpers.PartUnknownException("Part unknown")
