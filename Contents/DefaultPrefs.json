@@ -408,6 +408,12 @@
     "default": "false"
   },
   {
+    "id": "subtitles.remove_tags",
+    "label": "Remove style tags from downloaded subtitles (bold, italic, underline, colors, ...)",
+    "type": "bool",
+    "default": "true"
+  },
+  {
     "id": "subtitles.fix_common",
     "label": "Fix common whitespace/punctuation issues in subtitles",
     "type": "bool",
