@@ -103,7 +103,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         if only_foreign:
             logger.info("Only searching for foreign/forced subtitles")
 
-    def get_server_proxy(self, url, timeout=4):
+    def get_server_proxy(self, url, timeout=10):
         transport = TimeoutSafeTransport if url.startswith("https") else TimeoutTransport
         return ServerProxy(url, transport(timeout))
 
@@ -128,7 +128,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
     def initialize(self):
         logger.info('Logging in')
 
-        # token = region.get("os_token", expiration_time=60*15)
+        # token = "aaaaaaaaaaaaaaabcd" #region.get("os_token", expiration_time=60*15)
         # if token is not NO_VALUE:
         #     try:
         #         self.server.NoOperation(token)
