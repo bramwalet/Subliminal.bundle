@@ -355,13 +355,11 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
     current_bl, subs = stored_subs.get_blacklist(part_id, language)
 
     seen = []
-    print current_bl
     for subtitle in search_results:
         if subtitle.id in seen:
             continue
 
         bl_addon = ""
-        print str(subtitle.provider_name), str(subtitle.id), (str(subtitle.provider_name), str(subtitle.id)) in current_bl
         if (str(subtitle.provider_name), str(subtitle.id)) in current_bl:
             bl_addon = "Blacklisted "
 
