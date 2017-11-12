@@ -100,7 +100,7 @@ class Config(object):
     activity_mode = None
     no_refresh = False
 
-    store_recently_played_amount = 20
+    store_recently_played_amount = 40
 
     initialized = False
 

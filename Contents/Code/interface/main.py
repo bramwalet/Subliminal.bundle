@@ -185,6 +185,9 @@ def RecentlyPlayedMenu():
         if not item:
             continue
 
+        if getattr(getattr(item, "__class__"), "__name__") not in ("Episode", "Movie"):
+            continue
+
         item_title = get_item_title(item)
 
         oc.add(DirectoryObject(
