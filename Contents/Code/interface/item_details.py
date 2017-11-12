@@ -200,11 +200,18 @@ def SubtitleOptionsMenu(**kwargs):
     return oc
 
 
-@route(PREFIX + '/item/blacklist_all/{rating_key}/{language}')
-def BlacklistAllPartsOneLanguageSubtitleMenu(**kwargs):
+@route(PREFIX + '/item/blacklist_recent/{language}')
+@route(PREFIX + '/item/blacklist_recent')
+def BlacklistRecentSubtitleMenu(**kwargs):
+    if "last_played_items" not in Dict or not Dict["last_played_items"]:
+        return
+
+    rating_key = Dict["last_played_items"][0]
+    kwargs["rating_key"] = rating_key
     return BlacklistAllPartsSubtitleMenu(**kwargs)
 
 
+@route(PREFIX + '/item/blacklist_all/{rating_key}/{language}')
 @route(PREFIX + '/item/blacklist_all/{rating_key}')
 def BlacklistAllPartsSubtitleMenu(**kwargs):
     rating_key = kwargs.get("rating_key")
