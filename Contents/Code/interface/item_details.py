@@ -206,6 +206,7 @@ def BlacklistSubtitleMenu(**kwargs):
     rating_key = kwargs["rating_key"]
     part_id = kwargs["part_id"]
     language = kwargs["language"]
+    item_title = kwargs["item_title"]
 
     current_sub, stored_subs, storage = get_current_sub(rating_key, part_id, language)
     kwargs.pop("randomize")
@@ -214,7 +215,9 @@ def BlacklistSubtitleMenu(**kwargs):
     storage.save(stored_subs)
     storage.destroy()
 
-    return ItemDetailsMenu(randomize=timestamp(), **kwargs)
+    Log.Info("Added %s to blacklist", current_sub.key)
+
+    return RefreshItem(rating_key=rating_key, item_title=item_title, force=True, randomize=timestamp(), timeout=30000)
 
 
 @route(PREFIX + '/item/manage_blacklist/{rating_key}/{part_id}', force=bool)
@@ -224,7 +227,7 @@ def ManageBlacklistMenu(**kwargs):
     rating_key = kwargs["rating_key"]
     part_id = kwargs["part_id"]
     language = kwargs["language"]
-    remove_sub_key = kwargs.get("remove_sub_key")
+    remove_sub_key = kwargs.pop("remove_sub_key", None)
 
     current_sub, stored_subs, storage = get_current_sub(rating_key, part_id, language)
     current_bl, subs = stored_subs.get_blacklist(part_id, language)
@@ -245,10 +248,14 @@ def ManageBlacklistMenu(**kwargs):
         thumb=default_thumb
     ))
 
-    for sub_key, data in current_bl.iteritems():
+    def sorter(pair):
+        # thanks RestrictedModule parser for messing with lambda (x, y)
+        return pair[1]["date_added"]
+
+    for sub_key, data in sorted(current_bl.iteritems(), key=sorter, reverse=True):
         provider_name, subtitle_id = sub_key
-        title = u"%s (added: %s, %s), Language: " \
-                u"%s, Score: %i, Storage: %s" % (provider_name, df(data["date_added"]),
+        title = u"%s, %s (added: %s, %s), Language: " \
+                u"%s, Score: %i, Storage: %s" % (provider_name, subtitle_id, df(data["date_added"]),
                                                  current_sub.get_mode_verbose(data["mode"]),
                                                  display_language(Language.fromietf(language)), data["score"],
                                                  data["storage_type"])
@@ -344,10 +351,19 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
     if not search_results or search_results == "found_none":
         return oc
 
+    current_sub, stored_subs, storage = get_current_sub(rating_key, part_id, language)
+    current_bl, subs = stored_subs.get_blacklist(part_id, language)
+
     seen = []
+    print current_bl
     for subtitle in search_results:
         if subtitle.id in seen:
             continue
+
+        bl_addon = ""
+        print str(subtitle.provider_name), str(subtitle.id), (str(subtitle.provider_name), str(subtitle.id)) in current_bl
+        if (str(subtitle.provider_name), str(subtitle.id)) in current_bl:
+            bl_addon = "Blacklisted "
 
         wrong_fps_addon = ""
         if subtitle.wrong_fps:
@@ -359,8 +375,8 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
         oc.add(DirectoryObject(
             key=Callback(TriggerDownloadSubtitle, rating_key=rating_key, randomize=timestamp(), item_title=item_title,
                          subtitle_id=str(subtitle.id), language=language),
-            title=u"%s: %s, score: %s%s" % ("Available" if current_id != subtitle.id else "Current",
-                                            subtitle.provider_name, subtitle.score, wrong_fps_addon),
+            title=u"%s%s: %s, score: %s%s" % (bl_addon, "Available" if current_id != subtitle.id else "Current",
+                                              subtitle.provider_name, subtitle.score, wrong_fps_addon),
             summary=u"Release: %s, Matches: %s" % (subtitle.release_info, ", ".join(subtitle.matches)),
             thumb=default_thumb
         ))

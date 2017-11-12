@@ -242,6 +242,24 @@ def get_plex_metadata(rating_key, part_id, item_type, plex_item=None):
     return metadata
 
 
+def get_blacklist_from_part_map(video_part_map, languages):
+    from support.storage import get_subtitle_storage
+    subtitle_storage = get_subtitle_storage()
+    blacklist = []
+    for video, part in video_part_map.iteritems():
+        stored_subs = subtitle_storage.load_or_new(video.plexapi_metadata["item"])
+        for language in languages:
+            current_bl, subs = stored_subs.get_blacklist(part.id, language)
+            if not current_bl:
+                continue
+
+            blacklist = blacklist + [(str(a), str(b)) for a, b in current_bl.keys()]
+
+    subtitle_storage.destroy()
+
+    return blacklist
+
+
 class PMSMediaProxy(object):
     """
     Proxy object for getting data from a mediatree items "internally" via the PMS

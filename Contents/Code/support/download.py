@@ -6,6 +6,7 @@ from support.config import config
 from support.helpers import cast_bool
 from subtitlehelpers import get_subtitles_from_metadata
 from subliminal_patch import compute_score
+from support.plex_media import get_blacklist_from_part_map
 
 
 def download_best_subtitles(video_part_map, min_score=0, throttle_time=None):
@@ -69,7 +70,10 @@ def download_best_subtitles(video_part_map, min_score=0, throttle_time=None):
         Log.Debug("Download best subtitles using settings: min_score: %s, hearing_impaired: %s, languages: %s" %
                   (min_score, hearing_impaired, languages))
 
+        # prepare blacklist
+        blacklist = get_blacklist_from_part_map(video_part_map, languages)
+
         return subliminal.download_best_subtitles(video_part_map.keys(), languages, min_score, hearing_impaired, providers=config.providers,
                                                   provider_configs=config.provider_settings, pool_class=config.provider_pool,
-                                                  compute_score=compute_score, throttle_time=throttle_time)
+                                                  compute_score=compute_score, throttle_time=throttle_time, blacklist=blacklist)
     Log.Debug("All languages for all requested videos exist. Doing nothing.")

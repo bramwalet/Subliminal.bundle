@@ -229,8 +229,8 @@ class JSONStoredVideoSubtitles(object):
                                 subtitle_data = tuple(subtitle_data.split("__"))
                             self.parts[part_id][language]["current"] = subtitle_data
                         elif sub_key == "blacklist":
-                            self.parts[part_id][language]["blacklist"] = dict((tuple(k.split("__")), v) for k, v in
-                                                                              subtitle_data.iteritems())
+                            bl = dict((tuple([str(a) for a in k.split("__")]), v) for k, v in subtitle_data.iteritems())
+                            self.parts[part_id][language]["blacklist"] = bl
                         else:
                             sub = JSONStoredSubtitle()
 
@@ -324,11 +324,11 @@ class JSONStoredVideoSubtitles(object):
         part_id = str(part_id)
         part = self.parts.get(part_id)
         if not part:
-            return
+            return None, None
 
         subs = part.get(str(lang))
         if not subs:
-            return
+            return None, None
 
         current_bl = subs.get("blacklist", {})
         return current_bl, subs

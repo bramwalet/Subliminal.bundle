@@ -43,7 +43,7 @@ SUBTITLE_EXTENSIONS = ('.srt', '.sub', '.smi', '.txt', '.ssa', '.ass', '.mpl', '
 
 
 class SZProviderPool(ProviderPool):
-    def __init__(self, providers=None, provider_configs=None):
+    def __init__(self, providers=None, provider_configs=None, blacklist=None):
         #: Name of providers to use
         self.providers = providers or provider_registry.names()
 
@@ -55,6 +55,8 @@ class SZProviderPool(ProviderPool):
 
         #: Discarded providers
         self.discarded_providers = set()
+
+        self.blacklist = blacklist or []
 
     def __enter__(self):
         return self
@@ -117,10 +119,20 @@ class SZProviderPool(ProviderPool):
         # list subtitles
         logger.info('Listing subtitles with provider %r and languages %r', provider, provider_languages)
         try:
-            ret = self[provider].list_subtitles(video, provider_languages)
-            for s in ret:
+            results = self[provider].list_subtitles(video, provider_languages)
+            seen = []
+            out = []
+            for s in results:
+                if (str(provider), str(s.id)) in self.blacklist:
+                    logger.info("Skipping blacklisted subtitle: %s", s)
+                    continue
+                if s.id in seen:
+                    continue
                 s.plex_media_fps = float(video.fps)
-            return ret
+                out.append(s)
+                seen.append(s.id)
+
+            return out
 
         except (requests.Timeout, socket.timeout):
             logger.error('Provider %r timed out', provider)
@@ -336,7 +348,7 @@ class SZAsyncProviderPool(SZProviderPool):
 
         return provider, provider_subtitles
 
-    def list_subtitles(self, video, languages):
+    def list_subtitles(self, video, languages, blacklist=None):
         subtitles = []
 
         with ThreadPoolExecutor(self.max_workers) as executor:
