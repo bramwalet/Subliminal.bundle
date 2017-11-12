@@ -1,6 +1,8 @@
 # coding=utf-8
 import os
 
+from babelfish import Language
+
 from sub_mod import SubtitleModificationsMenu
 from menu_helpers import debounce, SubFolderObjectContainer, default_thumb, add_ignore_options, get_item_task_data, \
     set_refresh_menu_state, route
@@ -152,10 +154,11 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
 @route(PREFIX + '/item/current_sub/{rating_key}/{part_id}', force=bool)
 @debounce
 def SubtitleOptionsMenu(**kwargs):
-    oc = SubFolderObjectContainer(title2=kwargs["title"], replace_parent=True)
+    oc = SubFolderObjectContainer(title2=unicode(kwargs["title"]), replace_parent=True)
     rating_key = kwargs["rating_key"]
     part_id = kwargs["part_id"]
     language = kwargs["language"]
+    current_data = kwargs["current_data"]
 
     current_sub, stored_subs, storage = get_current_sub(rating_key, part_id, language)
     kwargs.pop("randomize")
@@ -179,7 +182,84 @@ def SubtitleOptionsMenu(**kwargs):
             summary=u"Currently applied mods: %s" % (", ".join(current_sub.mods) if current_sub.mods else "none")
         ))
 
+        oc.add(DirectoryObject(
+            key=Callback(BlacklistSubtitleMenu, randomize=timestamp(), **kwargs),
+            title=u"Blacklist %s subtitle and search for a new one" % kwargs["language_name"],
+            summary=current_data
+        ))
+
+        current_bl, subs = stored_subs.get_blacklist(part_id, language)
+        if current_bl:
+            oc.add(DirectoryObject(
+                key=Callback(ManageBlacklistMenu, randomize=timestamp(), **kwargs),
+                title=u"Manage blacklist (%s contained)" % len(current_bl),
+                summary=u"Inspect currently blacklisted subtitles"
+            ))
+
     storage.destroy()
+    return oc
+
+
+@route(PREFIX + '/item/blacklist/{rating_key}/{part_id}', force=bool)
+@debounce
+def BlacklistSubtitleMenu(**kwargs):
+    rating_key = kwargs["rating_key"]
+    part_id = kwargs["part_id"]
+    language = kwargs["language"]
+
+    current_sub, stored_subs, storage = get_current_sub(rating_key, part_id, language)
+    kwargs.pop("randomize")
+
+    stored_subs.blacklist(part_id, language, current_sub.key)
+    storage.save(stored_subs)
+    storage.destroy()
+
+    return ItemDetailsMenu(randomize=timestamp(), **kwargs)
+
+
+@route(PREFIX + '/item/manage_blacklist/{rating_key}/{part_id}', force=bool)
+@debounce
+def ManageBlacklistMenu(**kwargs):
+    oc = SubFolderObjectContainer(title2=unicode(kwargs["title"]), replace_parent=True)
+    rating_key = kwargs["rating_key"]
+    part_id = kwargs["part_id"]
+    language = kwargs["language"]
+    remove_sub_key = kwargs.get("remove_sub_key")
+
+    current_sub, stored_subs, storage = get_current_sub(rating_key, part_id, language)
+    current_bl, subs = stored_subs.get_blacklist(part_id, language)
+
+    if remove_sub_key:
+        remove_sub_key = tuple(remove_sub_key.split("__"))
+        stored_subs.blacklist(part_id, language, remove_sub_key, add=False)
+        storage.save(stored_subs)
+        Log.Info("Removed %s from blacklist", remove_sub_key)
+
+    kwargs.pop("randomize")
+
+    oc.add(DirectoryObject(
+        key=Callback(ItemDetailsMenu, rating_key=kwargs["rating_key"], item_title=kwargs["item_title"],
+                     title=kwargs["title"], randomize=timestamp()),
+        title=u"< Back to %s" % kwargs["title"],
+        summary=kwargs["current_data"],
+        thumb=default_thumb
+    ))
+
+    for sub_key, data in current_bl.iteritems():
+        provider_name, subtitle_id = sub_key
+        title = u"%s (added: %s, %s), Language: " \
+                u"%s, Score: %i, Storage: %s" % (provider_name, df(data["date_added"]),
+                                                 current_sub.get_mode_verbose(data["mode"]),
+                                                 display_language(Language.fromietf(language)), data["score"],
+                                                 data["storage_type"])
+        oc.add(DirectoryObject(
+            key=Callback(ManageBlacklistMenu, remove_sub_key="__".join(sub_key), randomize=timestamp(), **kwargs),
+            title=title,
+            summary=u"Remove subtitle from blacklist"
+        ))
+
+    storage.destroy()
+
     return oc
 
 
