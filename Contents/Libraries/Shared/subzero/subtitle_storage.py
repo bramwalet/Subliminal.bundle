@@ -324,11 +324,11 @@ class JSONStoredVideoSubtitles(object):
         part_id = str(part_id)
         part = self.parts.get(part_id)
         if not part:
-            return None, None
+            return {}, {}
 
         subs = part.get(str(lang))
         if not subs:
-            return None, None
+            return {}, {}
 
         current_bl = subs.get("blacklist", {})
         return current_bl, subs
