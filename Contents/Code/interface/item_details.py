@@ -11,7 +11,7 @@ from refresh_item import RefreshItem
 from subzero.constants import PREFIX
 from support.config import config
 from support.helpers import timestamp, df, get_language, display_language
-from support.items import get_item_kind_from_rating_key, get_item, get_current_sub
+from support.items import get_item_kind_from_rating_key, get_item, get_current_sub, get_item_title
 from support.plex_media import get_plex_metadata
 from support.scanning import scan_videos
 from support.scheduler import scheduler
@@ -151,7 +151,7 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
     return oc
 
 
-@route(PREFIX + '/item/current_sub/{rating_key}/{part_id}', force=bool)
+@route(PREFIX + '/item/current_sub/{rating_key}/{part_id}')
 @debounce
 def SubtitleOptionsMenu(**kwargs):
     oc = SubFolderObjectContainer(title2=unicode(kwargs["title"]), replace_parent=True)
@@ -200,7 +200,57 @@ def SubtitleOptionsMenu(**kwargs):
     return oc
 
 
-@route(PREFIX + '/item/blacklist/{rating_key}/{part_id}', force=bool)
+@route(PREFIX + '/item/blacklist_all/{rating_key}')
+def BlacklistAllPartsSubtitleMenu(**kwargs):
+    rating_key = kwargs.get("rating_key")
+    language = kwargs.get("language")
+    if language:
+        language = Language.fromietf(language)
+
+    item = get_item(rating_key)
+
+    if not item:
+        return
+
+    item_title = get_item_title(item)
+
+    subtitle_storage = get_subtitle_storage()
+    stored_subs = subtitle_storage.load_or_new(item)
+    for part_id, languages in stored_subs.parts.iteritems():
+        sub_dict = languages
+        if language:
+            key = str(language)
+            if key not in sub_dict:
+                continue
+
+            sub_dict = {key: sub_dict[key]}
+
+        for language, subs in sub_dict.iteritems():
+            if "current" in subs:
+                stored_subs.blacklist(part_id, language, subs["current"])
+                Log.Info("Added %s to blacklist", subs["current"])
+
+    subtitle_storage.save(stored_subs)
+    subtitle_storage.destroy()
+
+    return RefreshItem(rating_key=rating_key, item_title=item_title, force=True, randomize=timestamp(), timeout=30000)
+
+
+def blacklist(rating_key, part_id, language):
+    current_sub, stored_subs, storage = get_current_sub(rating_key, part_id, language)
+    if not current_sub:
+        return
+
+    stored_subs.blacklist(part_id, language, current_sub.key)
+    storage.save(stored_subs)
+    storage.destroy()
+
+    Log.Info("Added %s to blacklist", current_sub.key)
+
+    return True
+
+
+@route(PREFIX + '/item/blacklist/{rating_key}/{part_id}')
 @debounce
 def BlacklistSubtitleMenu(**kwargs):
     rating_key = kwargs["rating_key"]
@@ -208,14 +258,8 @@ def BlacklistSubtitleMenu(**kwargs):
     language = kwargs["language"]
     item_title = kwargs["item_title"]
 
-    current_sub, stored_subs, storage = get_current_sub(rating_key, part_id, language)
+    blacklist(rating_key, part_id, language)
     kwargs.pop("randomize")
-
-    stored_subs.blacklist(part_id, language, current_sub.key)
-    storage.save(stored_subs)
-    storage.destroy()
-
-    Log.Info("Added %s to blacklist", current_sub.key)
 
     return RefreshItem(rating_key=rating_key, item_title=item_title, force=True, randomize=timestamp(), timeout=30000)
 

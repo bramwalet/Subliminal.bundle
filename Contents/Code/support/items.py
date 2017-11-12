@@ -57,6 +57,18 @@ def get_item_kind_from_item(item):
     return PLEX_API_TYPE_MAP.get(get_item_kind(item))
 
 
+def get_item_title(item):
+    kind = get_item_kind_from_item(item)
+    if kind not in ("episode", "movie"):
+        return
+
+    if kind == "episode":
+        return get_plex_item_display_title(item, "show", parent=item.season, section_title=None,
+                                                 parent_title=item.show.title)
+    else:
+        return get_plex_item_display_title(item, kind, section_title=None)
+
+
 def get_item_thumb(item):
     kind = get_item_kind(item)
     if kind == "Episode":
