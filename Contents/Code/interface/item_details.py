@@ -200,6 +200,11 @@ def SubtitleOptionsMenu(**kwargs):
     return oc
 
 
+@route(PREFIX + '/item/blacklist_all/{rating_key}/{language}')
+def BlacklistAllPartsOneLanguageSubtitleMenu(**kwargs):
+    return BlacklistAllPartsSubtitleMenu(**kwargs)
+
+
 @route(PREFIX + '/item/blacklist_all/{rating_key}')
 def BlacklistAllPartsSubtitleMenu(**kwargs):
     rating_key = kwargs.get("rating_key")
