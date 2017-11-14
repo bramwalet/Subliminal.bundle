@@ -116,7 +116,8 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
 
         response = self.retry(
             lambda: checked(
-                self.server.LogIn(self.username, self.password, 'eng', os.environ.get("SZ_USER_AGENT", "Sub-Zero/2"))
+                self.server.LogIn(self.username, self.password, 'eng',
+                                  os.environ.get("SZ_USER_AGENT", "Sub-Zero/2"))
             )
         )
 
@@ -125,18 +126,25 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
 
         region.set("os_token", self.token)
 
+    def use_token_or_login(self, func):
+        try:
+            return func()
+        except Unauthorized:
+            self.log_in()
+            return func()
+
     def initialize(self):
         logger.info('Logging in')
 
-        # token = "aaaaaaaaaaaaaaabcd" #region.get("os_token", expiration_time=60*15)
-        # if token is not NO_VALUE:
-        #     try:
-        #         self.server.NoOperation(token)
-        #         self.token = token
-        #         logger.info("Using previous login token: %s", self.token)
-        #         return
-        #     except:
-        #         pass
+        token = region.get("os_token", expiration_time=3600)
+        if token is not NO_VALUE:
+            try:
+                checked(self.server.NoOperation(token))
+                self.token = token
+                logger.info("Using previous login token: %s", self.token)
+                return
+            except:
+                pass
 
         try:
             self.log_in()
@@ -202,7 +210,10 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
 
         # query the server
         logger.info('Searching subtitles %r', criteria)
-        response = self.retry(lambda: checked(self.server.SearchSubtitles(self.token, criteria)))
+        response = self.use_token_or_login(
+            lambda: self.retry(lambda: checked(self.server.SearchSubtitles(self.token, criteria)))
+        )
+
         subtitles = []
 
         # exit if no data
@@ -250,3 +261,6 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
             subtitles.append(subtitle)
 
         return subtitles
+
+    def download_subtitle(self, subtitle):
+        return self.use_token_or_login(lambda: super(OpenSubtitlesProvider, self).download_subtitle(subtitle))
