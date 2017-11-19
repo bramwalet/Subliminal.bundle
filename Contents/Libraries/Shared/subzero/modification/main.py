@@ -112,7 +112,7 @@ class SubtitleModifications(object):
         start = time.time()
         line_mods, non_line_mods = self.prepare_mods(*mods)
 
-        # apply file mods
+        # apply non-last file mods
         if non_line_mods:
             non_line_mods_start = time.time()
             self.apply_non_line_mods(non_line_mods)
@@ -132,13 +132,25 @@ class SubtitleModifications(object):
                 logger.debug("Line mods took %ss", time.time() - line_mods_start)
 
         self.f.events = new_entries
+
+        # apply last file mods
+        if non_line_mods:
+            non_line_mods_start = time.time()
+            self.apply_non_line_mods(non_line_mods, only_last=True)
+
+            if self.debug:
+                logger.debug("Final Non-Line mods took %ss", time.time() - non_line_mods_start)
+
         if self.debug:
             logger.debug("Subtitle Modification took %ss", time.time() - start)
 
-    def apply_non_line_mods(self, mods):
+    def apply_non_line_mods(self, mods, only_last=False):
         for identifier, args in mods:
             mod = self.initialized_mods[identifier]
-            mod.modify(None, debug=self.debug, parent=self, **args)
+            if (not only_last and not mod.apply_last) or (only_last and mod.apply_last):
+                if self.debug:
+                    logger.debug("Applying %s", identifier)
+                mod.modify(None, debug=self.debug, parent=self, **args)
 
     def apply_line_mods(self, new_entries, mods):
         for entry in self.f:

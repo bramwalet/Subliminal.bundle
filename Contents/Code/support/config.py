@@ -84,6 +84,7 @@ class Config(object):
     sections = None
     enabled_sections = None
     remove_hi = False
+    remove_tags = False
     fix_ocr = False
     fix_common = False
     colors = ""
@@ -100,7 +101,7 @@ class Config(object):
     no_refresh = False
     plex_transcoder = None
 
-    store_recently_played_amount = 20
+    store_recently_played_amount = 40
 
     initialized = False
 
@@ -149,6 +150,7 @@ class Config(object):
         self.permissions_ok = self.check_permissions()
         self.notify_executable = self.check_notify_executable()
         self.remove_hi = cast_bool(Prefs['subtitles.remove_hi'])
+        self.remove_tags = cast_bool(Prefs['subtitles.remove_tags'])
         self.fix_ocr = cast_bool(Prefs['subtitles.fix_ocr'])
         self.fix_common = cast_bool(Prefs['subtitles.fix_common'])
         self.colors = Prefs['subtitles.colors'] if Prefs['subtitles.colors'] != "don't change" else None
@@ -503,7 +505,8 @@ class Config(object):
                              'opensubtitles': {'username': Prefs['provider.opensubtitles.username'],
                                                'password': Prefs['provider.opensubtitles.password'],
                                                'use_tag_search': cast_bool(Prefs['provider.opensubtitles.use_tags']),
-                                               'only_foreign': cast_bool(Prefs['subtitles.only_foreign'])
+                                               'only_foreign': cast_bool(Prefs['subtitles.only_foreign']),
+                                               'is_vip': cast_bool(Prefs['provider.opensubtitles.is_vip'])
                                                },
                              'podnapisi': {
                                  'only_foreign': cast_bool(Prefs['subtitles.only_foreign'])
@@ -566,6 +569,8 @@ class Config(object):
         mods = []
         if self.remove_hi:
             mods.append("remove_HI")
+        if self.remove_tags:
+            mods.append("remove_tags")
         if self.fix_ocr:
             mods.append("OCR_fixes")
         if self.fix_common:

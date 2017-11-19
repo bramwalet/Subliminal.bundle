@@ -128,7 +128,9 @@ class SubtitleListingMixin(object):
         else:
             min_score = 60
 
-        available_subs = list_all_subtitles(scanned_parts, {Language.fromietf(language)},
+        languages = {Language.fromietf(language)}
+
+        available_subs = list_all_subtitles(scanned_parts, languages,
                                             providers=config.providers,
                                             provider_configs=provider_settings,
                                             pool_class=config.provider_pool)

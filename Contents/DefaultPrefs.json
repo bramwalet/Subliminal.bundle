@@ -228,7 +228,7 @@
   },
   {
     "id": "provider.opensubtitles.username",
-    "label": "Opensubtitles Username (VIP)",
+    "label": "Opensubtitles Username",
     "type": "text",
     "default": ""
   },
@@ -239,6 +239,12 @@
     "option": "hidden",
     "default": "",
     "secure": "true"
+  },
+  {
+    "id": "provider.opensubtitles.is_vip",
+    "label": "OpenSubtitles VIP? (Benefits: ad-free subs, 1000 subs/day, VIP server without caching)",
+    "type": "bool",
+    "default": "false"
   },
   {
     "id": "provider.podnapisi.enabled",
@@ -420,6 +426,12 @@
     "default": "false"
   },
   {
+    "id": "subtitles.remove_tags",
+    "label": "Remove style tags from downloaded subtitles (bold, italic, underline, colors, ...)",
+    "type": "bool",
+    "default": "false"
+  },
+  {
     "id": "subtitles.fix_common",
     "label": "Fix common whitespace/punctuation issues in subtitles",
     "type": "bool",
@@ -529,9 +541,6 @@
     "type": "enum",
     "values": [
       "never",
-      "every 1 hours",
-      "every 2 hours",
-      "every 3 hours",
       "every 6 hours",
       "every 12 hours",
       "every 24 hours"
@@ -553,7 +562,7 @@
       "4 weeks",
       "5 weeks",
       "6 weeks",
-      "12 weeks",
+      "12 weeks"
     ],
     "default": "2 weeks"
   },

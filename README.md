@@ -56,6 +56,7 @@ They currently consist of six individual mods:
 - **Color**: Adds color to your subtitles (for playback devices/software that don't ship their own color modes; only works for players that support color tags)
 - **Common**: fixes common issues in subtitles, such as punctuation (`-- I don't know!` -> `... I don't know!`; `over 9 000!` -> `over 9000!`)
 - **OCR**: fixes problems in subtitles introduced by OCR (custom implementation of [SubtitleEdit](https://github.com/SubtitleEdit/subtitleedit)'s dictionaries) (`hands agaInst the waII!` -> `hands against the wall!`)
+- **Remove Tags**: removes any font style tags from the subtitles (bold, italic, underline, colors, ...)
 
 Hearing Impaired, Common, OCR and Color can be applied automatically on every subtitle downloaded. All mods are manually managable via the channel menu.
 
@@ -69,6 +70,13 @@ Simply go to the Plex Channels in your Plex Media Server, search for Sub-Zero an
 For further help or manual installation, [please go to the wiki](https://github.com/pannal/Sub-Zero.bundle/wiki).
 
 ## Changelog
+
+2.0.29.1767
+- core: fix internal subtitle storage issues
+- core: handle "embedded-forced" tag (futureproofing)
+- core: remove more garbage tags from release groups (nzbgeek, chamele0n, buymore, xpost, postbot)
+- submod: OCR fix: fix music icon = paragraph
+
 
 2.0.29.1756
 - core: don't fail on uppercase file extensions
@@ -86,20 +94,6 @@ For further help or manual installation, [please go to the wiki](https://github.
 - config: `Scheduler: Item age to be considered recent` now can go up to 12 weeks
 - config: `Scheduler: Periodically search for recent items with missing subtitles` added `every 2 hours`
 - submod: swe: add Ĺ to Å
-
-
-2.0.26.1715
-- core: submod: OCR fixes: swe: replace ĺ with å inside words
-- core: fix handling of non-existant PMS audio_codec info
-- core: filename matching ignored the strictness setting in certain global directory configurations (thanks @raduc)
-- core: don't fail on migration errors
-- provider titlovi: handle multiple subtitles per archive
-- provider addic7ed: reset default boost to 19 (was 21)
-- menu: add warning icon on missing permissions
-- menu: manual subtitle list sometimes listed duplicates (thanks @andreashoyer)
-- menu: don't request PMS metadata in item details menu twice
-- menu: don't fail badly on non existant PMS metadata in item details menu
-
 
 
 Big thanks to the beta testing team! You know who you are!

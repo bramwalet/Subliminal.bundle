@@ -1,3 +1,16 @@
+2.0.26.1715
+- core: submod: OCR fixes: swe: replace ĺ with å inside words
+- core: fix handling of non-existant PMS audio_codec info
+- core: filename matching ignored the strictness setting in certain global directory configurations (thanks @raduc)
+- core: don't fail on migration errors
+- provider titlovi: handle multiple subtitles per archive
+- provider addic7ed: reset default boost to 19 (was 21)
+- menu: add warning icon on missing permissions
+- menu: manual subtitle list sometimes listed duplicates (thanks @andreashoyer)
+- menu: don't request PMS metadata in item details menu twice
+- menu: don't fail badly on non existant PMS metadata in item details menu
+
+
 2.0.26.1695
 ## ATTENTION: THIS RELEASE RESETS YOUR CONFIGURED LANGUAGES TO DEFAULT!
 - core: fix bug that caused SZ not to work for Windows users with special characters in their username

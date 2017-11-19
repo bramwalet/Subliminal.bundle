@@ -5,6 +5,7 @@ import sys
 import codecs
 
 from babelfish import Language
+from subliminal_patch import Subtitle
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +19,8 @@ if debug:
 
 submod = SubMod(debug=debug)
 submod.load(fn, language=Language.fromietf("eng"), encoding="utf-8")
-submod.modify("remove_HI", "OCR_fixes", "common", "OCR_fixes", "shift_offset(s=20)", "OCR_fixes", "color(color=#FF0000)", "shift_offset(s=-5, ms=-350)")
+submod.modify("remove_HI", "OCR_fixes", "common", "remove_tags", "OCR_fixes", "OCR_fixes")
+#submod.modify("remove_HI", "OCR_fixes", "common", "OCR_fixes", "shift_offset(s=20)", "OCR_fixes", "color(name=white)", "shift_offset(s=-5, ms=-350)")
 
 #srt = submod.to_unicode()
 #print submod.f.to_string("srt", encoding="utf-8")
@@ -31,4 +33,4 @@ submod.modify("remove_HI", "OCR_fixes", "common", "OCR_fixes", "shift_offset(s=2
 #submod.modify("change_FPS(from=24,to=25)")
 #submod.modify("common")
 
-#print submod.f.to_string("srt")
+#print Subtitle.pysubs2_to_unicode(submod.f)

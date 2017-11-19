@@ -91,9 +91,13 @@ class JSONStoredSubtitle(object):
 
         self.mods.append(identifier)
 
+    @classmethod
+    def get_mode_verbose(cls, mode):
+        return mode_map.get(mode, "Unknown")
+
     @property
     def mode_verbose(self):
-        return mode_map.get(self.mode, "Unknown")
+        return self.get_mode_verbose(self.mode)
 
     def serialize(self):
         # if self.content:
@@ -115,6 +119,10 @@ class JSONStoredSubtitle(object):
                 data["content"] = data["content"].encode(data["encoding"])
 
         self.initialize(**data)
+
+    @property
+    def key(self):
+        return self.provider_name, self.id
 
 
 class StoredVideoSubtitles(object):
@@ -220,6 +228,9 @@ class JSONStoredVideoSubtitles(object):
                             if not isinstance(subtitle_data, tuple):
                                 subtitle_data = tuple(subtitle_data.split("__"))
                             self.parts[part_id][language]["current"] = subtitle_data
+                        elif sub_key == "blacklist":
+                            bl = dict((tuple([str(a) for a in k.split("__")]), v) for k, v in subtitle_data.iteritems())
+                            self.parts[part_id][language]["blacklist"] = bl
                         else:
                             sub = JSONStoredSubtitle()
 
@@ -259,6 +270,9 @@ class JSONStoredVideoSubtitles(object):
                 for sub_key, stored_subtitle in sub_data.iteritems():
                     if sub_key == "current":
                         data["parts"][part_id][language]["current"] = "__".join(stored_subtitle)
+                    elif sub_key == "blacklist":
+                        data["parts"][part_id][language]["blacklist"] = dict(("__".join(k), v) for k, v in
+                                                                             stored_subtitle.iteritems())
                     else:
                         if stored_subtitle.content and not stored_subtitle.encoding:
                             continue
@@ -305,6 +319,37 @@ class JSONStoredVideoSubtitles(object):
 
     def get_sub_key(self, provider_name, id):
         return provider_name, str(id)
+
+    def get_blacklist(self, part_id, lang):
+        part_id = str(part_id)
+        part = self.parts.get(part_id)
+        if not part:
+            return {}, {}
+
+        subs = part.get(str(lang))
+        if not subs:
+            return {}, {}
+
+        current_bl = subs.get("blacklist", {})
+        return current_bl, subs
+
+    def blacklist(self, part_id, lang, sub_key, add=True):
+        current_bl, subs = self.get_blacklist(part_id, lang)
+        sub = subs.get(subs["current"])
+        if not sub:
+            return
+
+        if sub_key in current_bl:
+            if add:
+                return
+            else:
+                del current_bl[sub_key]
+                subs["blacklist"] = current_bl
+                return
+
+        current_bl[sub_key] = {"date_added": sub.date_added, "score": sub.score, "mode": sub.mode, "storage_type":
+            sub.storage_type}
+        subs["blacklist"] = current_bl
 
     def __repr__(self):
         return unicode(self)
@@ -398,6 +443,10 @@ class StoredSubtitlesManager(object):
                     for part in media.parts:
                         known_parts.append(str(part.id))
                 stored_subs = self.load(filename=fn)
+
+                if not stored_subs:
+                    continue
+
                 missing_parts = set(stored_subs.parts).difference(set(known_parts))
 
                 changed_any = False

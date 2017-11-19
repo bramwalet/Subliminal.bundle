@@ -297,7 +297,11 @@ class Subtitle(Subtitle_):
             logger.info("Applying mods: %s", self.mods)
             submods.modify(*self.mods)
 
-            return fix_text(self.pysubs2_to_unicode(submods.f, format=format), **ftfy_defaults).encode(encoding="utf-8")
+            content = fix_text(self.pysubs2_to_unicode(submods.f, format=format), **ftfy_defaults)\
+                .encode(encoding="utf-8")
+            submods.f = None
+            del submods
+            return content
         return None
 
 

@@ -2,11 +2,10 @@
 
 from subzero.constants import PREFIX, TITLE, ART
 from support.config import config
-from support.helpers import pad_title, timestamp, df, get_plex_item_display_title, display_language
+from support.helpers import pad_title, timestamp, df, display_language
 from support.scheduler import scheduler
 from support.ignore import ignore_list
-from support.items import get_item_thumb, get_on_deck_items, get_all_items, get_items_info, get_item, \
-    get_item_kind_from_item
+from support.items import get_item_thumb, get_on_deck_items, get_all_items, get_items_info, get_item, get_item_title
 from menu_helpers import main_icon, debounce, SubFolderObjectContainer, default_thumb, dig_tree, add_ignore_options, \
     ObjectContainer, route, handler
 from item_details import ItemDetailsMenu
@@ -186,15 +185,10 @@ def RecentlyPlayedMenu():
         if not item:
             continue
 
-        kind = get_item_kind_from_item(item)
-        if kind not in ("episode", "movie"):
+        if getattr(getattr(item, "__class__"), "__name__") not in ("Episode", "Movie"):
             continue
 
-        if kind == "episode":
-            item_title = get_plex_item_display_title(item, "show", parent=item.season, section_title=None,
-                                                     parent_title=item.show.title)
-        else:
-            item_title = get_plex_item_display_title(item, kind, section_title=None)
+        item_title = get_item_title(item)
 
         oc.add(DirectoryObject(
             title=item_title,
