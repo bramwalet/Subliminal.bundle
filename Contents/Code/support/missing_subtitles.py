@@ -4,6 +4,8 @@ import time
 
 import os
 
+from babelfish import Language
+
 from support.config import config
 from support.helpers import get_plex_item_display_title, cast_bool
 from support.items import get_item
@@ -83,7 +85,7 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
                     else:
                         key = "external"
 
-                    lang = Locale.Language.Match(stream.language_code)
+                    lang = Language.fromietf(stream.language_code)
                     if lang:
                         existing_subs[key].append(lang)
                         existing_subs["count"] = existing_subs["count"] + 1
