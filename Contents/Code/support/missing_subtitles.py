@@ -83,8 +83,10 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
                     else:
                         key = "external"
 
-                    existing_subs[key].append(Locale.Language.Match(stream.language_code or ""))
-                    existing_subs["count"] = existing_subs["count"] + 1
+                    lang = Locale.Language.Match(stream.language_code)
+                    if lang:
+                        existing_subs[key].append(lang)
+                        existing_subs["count"] = existing_subs["count"] + 1
 
         missing_from_part = set(languages_set)
         if existing_subs["count"]:
