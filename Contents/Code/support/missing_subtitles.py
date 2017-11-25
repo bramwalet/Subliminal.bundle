@@ -4,7 +4,7 @@ import time
 
 import os
 
-from babelfish import Language
+from babelfish import Language, LanguageReverseError
 
 from support.config import config
 from support.helpers import get_plex_item_display_title, cast_bool
@@ -85,10 +85,22 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
                     else:
                         key = "external"
 
-                    lang = Language.fromietf(stream.language_code)
-                    if lang:
-                        existing_subs[key].append(lang)
-                        existing_subs["count"] = existing_subs["count"] + 1
+                    # we can't parse empty language codes
+                    if not stream.language_code:
+                        continue
+
+                    # parse with internal language parser first
+                    try:
+                        lang = Locale.Language.Match(stream.language_code)
+                        if lang and lang != "xx":
+                            #Log.Debug("Found language: %r", lang)
+                            lang = Language.fromietf(lang)
+                            if lang:
+                                #Log.Debug("Found babelfish language: %r", lang)
+                                existing_subs[key].append(lang)
+                                existing_subs["count"] = existing_subs["count"] + 1
+                    except (ValueError, LanguageReverseError):
+                        continue
 
         missing_from_part = set(languages_set)
         if existing_subs["count"]:
