@@ -116,13 +116,13 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
                         existing_subs[key].append(lang)
                         existing_subs["count"] = existing_subs["count"] + 1
 
-        missing_from_part = set(languages_set)
+        missing_from_part = set([Language.fromietf(str(l)) for l in languages])
         if existing_subs["count"]:
             existing_flat = set((existing_subs["internal"] if internal else [])
                                 + (existing_subs["external"] if external else [])
                                 + existing_subs["own_external"])
 
-            check_languages = set(languages)
+            check_languages = set([Language.fromietf(str(l)) for l in languages])
             if ietf_as_alpha3:
                 for language in existing_flat:
                     language.country_orig = language.country
