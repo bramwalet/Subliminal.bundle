@@ -1,4 +1,5 @@
 # coding=utf-8
+from babelfish import Language
 
 import subliminal_patch as subliminal
 
@@ -12,18 +13,15 @@ from support.plex_media import get_blacklist_from_part_map
 def download_best_subtitles(video_part_map, min_score=0, throttle_time=None):
     hearing_impaired = Prefs['subtitles.search.hearingImpaired']
     ietf_as_alpha3 = cast_bool(Prefs["subtitles.language.ietf_normalize"])
-    languages = config.lang_list.copy()
+    languages = set([Language.fromietf(str(l)) for l in config.lang_list])
     if not languages:
         return
 
     # should we treat IETF as alpha3? (ditch the country part)
     if ietf_as_alpha3:
-        languages = list(languages)
         for language in languages:
             language.country_orig = language.country
             language.country = None
-
-        languages = set(languages)
 
     missing_languages = False
     for video, part in video_part_map.iteritems():
@@ -37,11 +35,9 @@ def download_best_subtitles(video_part_map, min_score=0, throttle_time=None):
 
         have_languages = video.subtitle_languages.copy()
         if ietf_as_alpha3:
-            have_languages = list(have_languages)
             for language in have_languages:
                 language.country_orig = language.country
                 language.country = None
-            have_languages = set(have_languages)
 
         missing_subs = (languages - have_languages)
 
@@ -60,12 +56,9 @@ def download_best_subtitles(video_part_map, min_score=0, throttle_time=None):
     if missing_languages:
         # re-add country codes to the missing languages, in case we've removed them above
         if ietf_as_alpha3:
-            languages = list(languages)
             for language in languages:
                 if language.country_orig:
                     language.country = language.country_orig
-
-            languages = set(languages)
 
         Log.Debug("Download best subtitles using settings: min_score: %s, hearing_impaired: %s, languages: %s" %
                   (min_score, hearing_impaired, languages))

@@ -32,7 +32,7 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
     ietf_as_alpha3 = cast_bool(Prefs["subtitles.language.ietf_normalize"])
 
     missing = set()
-    languages_set = set(languages)
+    languages_set = set([Language.fromietf(str(l)) for l in languages])
     for media in item.media:
         existing_subs = {"internal": [], "external": [], "own_external": [], "count": 0}
         for part in media.parts:
@@ -90,7 +90,7 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
 
                     # treat unknown language as lang1?
                     if not stream.language_code and config.treat_und_as_first:
-                        lang = list(config.lang_list)[0]
+                        lang = Language.fromietf(str(list(config.lang_list)[0]))
 
                     # we can't parse empty language codes
                     elif not stream.language_code or not stream.codec:
@@ -104,7 +104,7 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
                                 #Log.Debug("Found language: %r", lang)
                                 lang = Language.fromietf(lang)
                             elif lang == "xx" and config.treat_und_as_first:
-                                lang = list(config.lang_list)[0]
+                                lang = Language.fromietf(str(list(config.lang_list)[0]))
                             else:
                                 continue
 
@@ -124,19 +124,13 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
 
             check_languages = set(languages)
             if ietf_as_alpha3:
-                existing_flat = list(existing_flat)
                 for language in existing_flat:
                     language.country_orig = language.country
                     language.country = None
 
-                existing_flat = set(existing_flat)
-
-                check_languages = list(check_languages)
                 for language in check_languages:
                     language.country_orig = language.country
                     language.country = None
-
-                check_languages = set(check_languages)
 
             if check_languages.issubset(existing_flat) or (len(existing_flat) >= 1 and Prefs['subtitles.only_one']):
                 # all subs found
@@ -145,12 +139,9 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
 
             missing_from_part = check_languages - existing_flat
             if ietf_as_alpha3:
-                missing_from_part = list(missing_from_part)
                 for language in missing_from_part:
                     if language.country_orig:
                         language.country = language.country_orig
-
-                missing_from_part = set(missing_from_part)
 
         if missing_from_part:
             Log.Info(u"Subs still missing for '%s' (%s: %s): %s", item_title, rating_key, media.id,
