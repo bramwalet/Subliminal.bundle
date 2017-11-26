@@ -6,7 +6,7 @@ import os
 
 from babelfish import Language, LanguageReverseError
 
-from support.config import config
+from support.config import config, TEXT_SUBTITLE_EXTS
 from support.helpers import get_plex_item_display_title, cast_bool
 from support.items import get_item
 from support.lib import Plex
@@ -89,7 +89,7 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
                     if not stream.language_code or not stream.codec:
                         continue
 
-                    if not config.exotic_ext and stream.codec.lower() not in ("srt", "ass", "ssa", "vtt"):
+                    if not config.exotic_ext and stream.codec.lower() not in TEXT_SUBTITLE_EXTS:
                         continue
 
                     # parse with internal language parser first

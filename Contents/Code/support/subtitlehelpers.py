@@ -3,7 +3,7 @@
 import re, os
 import helpers
 
-from config import config, SUBTITLE_EXTS
+from config import config, SUBTITLE_EXTS, TEXT_SUBTITLE_EXTS
 from bs4 import UnicodeDammit
 
 
@@ -136,7 +136,7 @@ class DefaultSubtitleHelper(SubtitleHelper):
         language = Locale.Language.Match(match_ietf_language(file))
 
         # skip non-SRT if wanted
-        if not config.exotic_ext and ext not in ["srt", "ass", "ssa", "vtt"]:
+        if not config.exotic_ext and ext not in TEXT_SUBTITLE_EXTS:
             return lang_sub_map
 
         codec = None
