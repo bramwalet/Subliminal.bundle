@@ -104,6 +104,8 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
                             if lang and lang != "xx":
                                 #Log.Debug("Found language: %r", lang)
                                 lang = Language.fromietf(lang)
+                            elif lang == "xx" and config.treat_und_as_first:
+                                lang = list(config.lang_list)[0]
                             else:
                                 continue
 
