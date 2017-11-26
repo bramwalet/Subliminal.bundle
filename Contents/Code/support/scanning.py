@@ -50,7 +50,7 @@ def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, no
                     # embedded subtitle
                     # fixme: tap into external subtitles here instead of scanning for ourselves later?
                     if not stream.stream_key and stream.codec:
-                        if config.exotic_ext or stream.codec in TEXT_SUBTITLE_EXTS:
+                        if config.exotic_ext or stream.codec.lower() in TEXT_SUBTITLE_EXTS:
                             lang_code = stream.language_code
 
                             # treat unknown language as lang1?
