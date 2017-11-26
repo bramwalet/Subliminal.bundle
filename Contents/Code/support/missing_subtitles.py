@@ -80,7 +80,6 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
 
             for stream in part.streams:
                 if stream.stream_type == 3:
-                    lang = None
                     if stream.index:
                         key = "internal"
                     else:
