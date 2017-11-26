@@ -85,11 +85,18 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
                     else:
                         key = "external"
 
-                    # we can't parse empty language codes
-                    if not stream.language_code or not stream.codec:
+                    if not config.exotic_ext and stream.codec.lower() not in TEXT_SUBTITLE_EXTS:
                         continue
 
-                    if not config.exotic_ext and stream.codec.lower() not in TEXT_SUBTITLE_EXTS:
+                    # treat unknown language as lang1?
+                    if not stream.language_code and config.treat_und_as_first:
+                        lang = list(config.lang_list)[0]
+                        existing_subs[key].append(lang)
+                        existing_subs["count"] = existing_subs["count"] + 1
+                        continue
+
+                    # we can't parse empty language codes
+                    if not stream.language_code or not stream.codec:
                         continue
 
                     # parse with internal language parser first
