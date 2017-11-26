@@ -170,7 +170,7 @@ def items_get_all_missing_subs(items, sleep_after_request=False):
                 kind=kind,
                 added_at=added_at,
                 section_title=section_title,
-                languages=config.lang_list,
+                languages=config.lang_list.copy(),
                 internal=cast_bool(Prefs["subtitles.scan.embedded"]),
                 external=cast_bool(Prefs["subtitles.scan.external"])
             )
