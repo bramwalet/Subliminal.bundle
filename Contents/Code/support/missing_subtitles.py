@@ -80,6 +80,7 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
 
             for stream in part.streams:
                 if stream.stream_type == 3:
+                    lang = None
                     if stream.index:
                         key = "internal"
                     else:
@@ -91,26 +92,28 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
                     # treat unknown language as lang1?
                     if not stream.language_code and config.treat_und_as_first:
                         lang = list(config.lang_list)[0]
-                        existing_subs[key].append(lang)
-                        existing_subs["count"] = existing_subs["count"] + 1
-                        continue
 
                     # we can't parse empty language codes
-                    if not stream.language_code or not stream.codec:
+                    elif not stream.language_code or not stream.codec:
                         continue
 
-                    # parse with internal language parser first
-                    try:
-                        lang = Locale.Language.Match(stream.language_code)
-                        if lang and lang != "xx":
-                            #Log.Debug("Found language: %r", lang)
-                            lang = Language.fromietf(lang)
-                            if lang:
-                                #Log.Debug("Found babelfish language: %r", lang)
-                                existing_subs[key].append(lang)
-                                existing_subs["count"] = existing_subs["count"] + 1
-                    except (ValueError, LanguageReverseError):
-                        continue
+                    else:
+                        # parse with internal language parser first
+                        try:
+                            lang = Locale.Language.Match(stream.language_code)
+                            if lang and lang != "xx":
+                                #Log.Debug("Found language: %r", lang)
+                                lang = Language.fromietf(lang)
+                            else:
+                                continue
+
+                        except (ValueError, LanguageReverseError):
+                            continue
+
+                    if lang:
+                        # Log.Debug("Found babelfish language: %r", lang)
+                        existing_subs[key].append(lang)
+                        existing_subs["count"] = existing_subs["count"] + 1
 
         missing_from_part = set(languages_set)
         if existing_subs["count"]:
