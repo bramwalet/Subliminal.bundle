@@ -86,7 +86,10 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
                         key = "external"
 
                     # we can't parse empty language codes
-                    if not stream.language_code:
+                    if not stream.language_code or not stream.codec:
+                        continue
+
+                    if not config.exotic_ext and stream.codec.lower() not in ("srt", "ass", "ssa", "vtt"):
                         continue
 
                     # parse with internal language parser first
