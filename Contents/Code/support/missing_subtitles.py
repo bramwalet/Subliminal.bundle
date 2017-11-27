@@ -137,7 +137,7 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
                 #Log.Info(u"All subtitles exist for '%s'", item_title)
                 continue
 
-            missing_from_part = check_languages - existing_flat
+            missing_from_part = set(str(l) for l in check_languages) - set(str(l) for l in existing_flat)
             if ietf_as_alpha3:
                 for language in missing_from_part:
                     if language.country_orig:
