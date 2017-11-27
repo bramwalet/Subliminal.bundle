@@ -132,12 +132,16 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
                     language.country_orig = language.country
                     language.country = None
 
-            if check_languages.issubset(existing_flat) or (len(existing_flat) >= 1 and Prefs['subtitles.only_one']):
+            # compare sets of strings, not sets of different Language instances
+            check_languages_str = set(str(l) for l in check_languages)
+            existing_flat_str = set(str(l) for l in existing_flat)
+            if check_languages_str.issubset(existing_flat_str) or \
+                    (len(existing_flat) >= 1 and Prefs['subtitles.only_one']):
                 # all subs found
                 #Log.Info(u"All subtitles exist for '%s'", item_title)
                 continue
 
-            missing_from_part = set(str(l) for l in check_languages) - set(str(l) for l in existing_flat)
+            missing_from_part = check_languages_str - existing_flat_str
             if ietf_as_alpha3:
                 for language in missing_from_part:
                     if language.country_orig:
