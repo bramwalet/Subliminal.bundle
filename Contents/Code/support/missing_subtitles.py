@@ -143,7 +143,6 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
             check_languages_str = set(str(l) for l in check_languages)
             existing_flat_str = set(str(l) for l in existing_flat)
 
-            print check_languages_str, existing_subs
             if check_languages_str.issubset(existing_flat_str) or \
                     (len(existing_flat) >= 1 and Prefs['subtitles.only_one']):
                 # all subs found
