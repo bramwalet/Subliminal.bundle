@@ -18,10 +18,12 @@ def download_best_subtitles(video_part_map, min_score=0, throttle_time=None):
         return
 
     # should we treat IETF as alpha3? (ditch the country part)
+    alpha3_map = {}
     if ietf_as_alpha3:
         for language in languages:
-            language.country_orig = language.country
-            language.country = None
+            if language.country:
+                alpha3_map[language.alpha3] = language.country
+                language.country = None
 
     missing_languages = False
     for video, part in video_part_map.iteritems():
@@ -36,8 +38,9 @@ def download_best_subtitles(video_part_map, min_score=0, throttle_time=None):
         have_languages = video.subtitle_languages.copy()
         if ietf_as_alpha3:
             for language in have_languages:
-                language.country_orig = language.country
-                language.country = None
+                if language.country:
+                    alpha3_map[language.alpha3] = language.country
+                    language.country = None
 
         missing_subs = (set(str(l) for l in languages) - set(str(l) for l in have_languages))
 
@@ -57,8 +60,7 @@ def download_best_subtitles(video_part_map, min_score=0, throttle_time=None):
         # re-add country codes to the missing languages, in case we've removed them above
         if ietf_as_alpha3:
             for language in languages:
-                if language.country_orig:
-                    language.country = language.country_orig
+                language.country = alpha3_map.get(language.alpha3, None)
 
         Log.Debug("Download best subtitles using settings: min_score: %s, hearing_impaired: %s, languages: %s" %
                   (min_score, hearing_impaired, languages))

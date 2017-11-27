@@ -123,29 +123,33 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
                                 + existing_subs["own_external"])
 
             check_languages = set([Language.fromietf(str(l)) for l in languages])
+            alpha3_map = {}
             if ietf_as_alpha3:
                 for language in existing_flat:
-                    language.country_orig = language.country
-                    language.country = None
+                    if language.country:
+                        alpha3_map[language.alpha3] = language.country
+                        language.country = None
 
                 for language in check_languages:
-                    language.country_orig = language.country
-                    language.country = None
+                    if language.country:
+                        alpha3_map[language.alpha3] = language.country
+                        language.country = None
 
             # compare sets of strings, not sets of different Language instances
             check_languages_str = set(str(l) for l in check_languages)
             existing_flat_str = set(str(l) for l in existing_flat)
+
+            print check_languages_str, existing_subs
             if check_languages_str.issubset(existing_flat_str) or \
                     (len(existing_flat) >= 1 and Prefs['subtitles.only_one']):
                 # all subs found
                 #Log.Info(u"All subtitles exist for '%s'", item_title)
                 continue
 
-            missing_from_part = check_languages_str - existing_flat_str
+            missing_from_part = set(Language.fromietf(l) for l in check_languages_str - existing_flat_str)
             if ietf_as_alpha3:
                 for language in missing_from_part:
-                    if language.country_orig:
-                        language.country = language.country_orig
+                    language.country = alpha3_map.get(language.alpha3, None)
 
         if missing_from_part:
             Log.Info(u"Subs still missing for '%s' (%s: %s): %s", item_title, rating_key, media.id,
