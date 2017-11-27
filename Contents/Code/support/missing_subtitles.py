@@ -153,6 +153,8 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
             missing.update(missing_from_part)
 
     if missing:
+        # deduplicate
+        missing = set(Language.fromietf(la) for la in set(str(l) for l in missing))
         return added_at, item_id, item_title, item, missing
 
 
