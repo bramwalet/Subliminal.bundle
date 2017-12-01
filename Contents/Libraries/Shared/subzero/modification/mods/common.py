@@ -28,6 +28,9 @@ class CommonFixes(SubtitleTextModification):
         # remove leading ...
         NReProcessor(re.compile(r'(?u)^\.\.\.[\s]*'), "", name="CM_leading_ellipsis"),
 
+        # remove "downloaded from" tags
+        NReProcessor(re.compile(r'(?ui).+downloaded\s+from.+'), "", name="CM_crap"),
+
         # no space after ellipsis
         NReProcessor(re.compile(r'(?u)\.\.\.(?![\s.,!?\'"])(?!$)'), "... ", name="CM_ellipsis_no_space"),
 
