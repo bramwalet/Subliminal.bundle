@@ -15,7 +15,7 @@ class CommonFixes(SubtitleTextModification):
     order = 40
 
     long_description = """\
-    Fix common whitespace/punctuation issues in subtitles
+    Fix common and whitespace/punctuation issues in subtitles
     """
 
     processors = [

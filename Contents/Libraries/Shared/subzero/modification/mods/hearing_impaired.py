@@ -20,7 +20,7 @@ class HearingImpaired(SubtitleTextModification):
     identifier = "remove_HI"
     description = "Remove Hearing Impaired tags"
     exclusive = True
-    order = 10
+    order = 20
 
     long_description = """\
     Removes tags, text and characters from subtitles that are meant for hearing impaired people
