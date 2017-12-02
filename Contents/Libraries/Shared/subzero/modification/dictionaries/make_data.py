@@ -33,8 +33,27 @@ SZ_FIX_DATA = {
             u"l/an": u"lian",
             u"lljust": u"ll just",
             u". L ": u". I ",
-
-            # fixme: this is PartialLines
+        },
+        "WholeWords": {
+            u"I'11": u"I'll",
+            u"Tun": u"Run",
+            u"pan'": u"part",
+            u"al'": u"at",
+            u"a re": u"are",
+            u"wail'": u"wait",
+            u"he)'": u"hey",
+            u"he)\"": u"hey",
+            u"He)'": u"Hey",
+            u"He)\"": u"Hey",
+            u"He)’": u"Hey",
+            u"Yea h": u"Yeah",
+            u"yea h": u"yeah",
+            u"h is": u"his",
+            u" 're ": u"'re ",
+            u"LAst": u"Last",
+            u"forthis": u"for this",
+        },
+        "PartialLines": {
             u"L know": u"I know",
             u"L should": u"I should",
             u"L do": u"I do",
@@ -55,24 +74,6 @@ SZ_FIX_DATA = {
             u"L love": u"I love",
             u"L don't": u"I don't",
             u"L won't": u"I won't",
-        },
-        "WholeWords": {
-            u"I'11": u"I'll",
-            u"Tun": u"Run",
-            u"pan'": u"part",
-            u"al'": u"at",
-            u"a re": u"are",
-            u"wail'": u"wait",
-            u"he)'": u"hey",
-            u"he)\"": u"hey",
-            u"He)'": u"Hey",
-            u"He)\"": u"Hey",
-            u"Yea h": u"Yeah",
-            u"yea h": u"yeah",
-            u"h is": u"his",
-            u" 're ": u"'re ",
-            u"LAst": u"Last",
-            u"forthis": u"for this",
         }
     },
     "nld": {
@@ -120,8 +121,8 @@ if __name__ == "__main__":
             fetch_data = (
                     # group, item_name, pattern
                     ("WholeLines", "Line", None),
-                    ("WholeWords", "Word", lambda d: (ur"(?um)\b(?:" + u"|".join([re.escape(k) for k in d.keys()])
-                                                      + ur')\b') if d else None),
+                    ("WholeWords", "Word", lambda d: (ur"(?um)(\b|^)(?:" + u"|".join([re.escape(k) for k in d.keys()])
+                                                      + ur')(\b|$)') if d else None),
                     ("PartialWordsAlways", "WordPart", None),
                     ("PartialLines", "LinePart", lambda d: (ur"(?um)(?:(?<=\s)|(?<=^)|(?<=\b))(?:" +
                                                             u"|".join([re.escape(k) for k in d.keys()]) +
