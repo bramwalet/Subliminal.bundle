@@ -1,3 +1,21 @@
+2.0.29.1756
+- core: don't fail on uppercase file extensions
+- core: don't re-download a subtitle if we already downloaded one, it still physically exists and external subtitles are configured to be ignored
+- core: fix VTT subtitle duplication
+- core: if forced subtitles not explicitly wanted, ignore existing forced subtitles when searching
+- core: add full IETF language support for `Treat languages with country attribute as ISO 639-1 (e.g. don't download pt-BR if pt subtitle exists)`-setting for embedded subtitles
+- menu: remove buggy dynamic permission-based channel icon introduced in 1715
+- menu: improve `Items with missing subtitles` menu usage and item display
+- menu: `Advanced -> Get my logs` handle custom domains without port
+- menu: correctly show country/script part of languages with such attributes (e.g. pt-BR)
+- config: rename `Scan:` settings; make them better understandable and translatable
+- config: rephrase IETF options as "languages with country attribute" (e.g. pt-BR)
+- config: separate IETF options into how to display languages with country attribute and how they should be handled when searching/scanning (e.g. pt-BR)
+- config: `Scheduler: Item age to be considered recent` now can go up to 12 weeks
+- config: `Scheduler: Periodically search for recent items with missing subtitles` added `every 2 hours`
+- submod: swe: add Ĺ to Å
+
+
 2.0.26.1715
 - core: submod: OCR fixes: swe: replace ĺ with å inside words
 - core: fix handling of non-existant PMS audio_codec info

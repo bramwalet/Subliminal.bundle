@@ -16,6 +16,7 @@ class SubtitleModification(object):
     args_mergeable = False
     order = None
     modifies_whole_file = False  # operates on the whole file, not individual entries
+    apply_last = False
     pre_processors = []
     processors = []
     post_processors = []

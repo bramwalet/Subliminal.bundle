@@ -45,12 +45,35 @@ SZ_FIX_DATA = {
             u"he)\"": u"hey",
             u"He)'": u"Hey",
             u"He)\"": u"Hey",
+            u"He)’": u"Hey",
             u"Yea h": u"Yeah",
             u"yea h": u"yeah",
             u"h is": u"his",
             u" 're ": u"'re ",
             u"LAst": u"Last",
             u"forthis": u"for this",
+        },
+        "PartialLines": {
+            u"L know": u"I know",
+            u"L should": u"I should",
+            u"L do": u"I do",
+            u"L would": u"I would",
+            u"L could": u"I could",
+            u"L can": u"I can",
+            u"L happen": u"I happen",
+            u"L might": u"I might",
+            u"L have ": u"I have",
+            u"L had": u"I had",
+            u"L want": u"I want",
+            u"L was": u"I was",
+            u"L am": u"I am",
+            u"L suggest": u"I suggest",
+            u"L think": u"I think",
+            u"L reckon": u"I reckon",
+            u"L like": u"I like",
+            u"L love": u"I love",
+            u"L don't": u"I don't",
+            u"L won't": u"I won't",
         }
     },
     "nld": {
@@ -98,8 +121,8 @@ if __name__ == "__main__":
             fetch_data = (
                     # group, item_name, pattern
                     ("WholeLines", "Line", None),
-                    ("WholeWords", "Word", lambda d: (ur"(?um)\b(?:" + u"|".join([re.escape(k) for k in d.keys()])
-                                                      + ur')\b') if d else None),
+                    ("WholeWords", "Word", lambda d: (ur"(?um)(\b|^)(?:" + u"|".join([re.escape(k) for k in d.keys()])
+                                                      + ur')(\b|$)') if d else None),
                     ("PartialWordsAlways", "WordPart", None),
                     ("PartialLines", "LinePart", lambda d: (ur"(?um)(?:(?<=\s)|(?<=^)|(?<=\b))(?:" +
                                                             u"|".join([re.escape(k) for k in d.keys()]) +

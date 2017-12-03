@@ -204,13 +204,13 @@
   },
   {
     "id": "provider.opensubtitles.enabled",
-    "label": "Provider: Enable OpenSubtitles (consider becoming a VIP for ad-free subtitles and 1000 subs/day)",
+    "label": "Provider: Enable OpenSubtitles",
     "type": "bool",
     "default": "true"
   },
   {
     "id": "provider.opensubtitles.username",
-    "label": "Opensubtitles Username (VIP)",
+    "label": "Opensubtitles Username",
     "type": "text",
     "default": ""
   },
@@ -221,6 +221,12 @@
     "option": "hidden",
     "default": "",
     "secure": "true"
+  },
+  {
+    "id": "provider.opensubtitles.is_vip",
+    "label": "OpenSubtitles VIP? (ad-free subs, 1000 subs/day, no-cache VIP server: http://v.ht/osvip)",
+    "type": "bool",
+    "default": "false"
   },
   {
     "id": "provider.podnapisi.enabled",
@@ -398,6 +404,12 @@
   {
     "id": "subtitles.remove_hi",
     "label": "Remove Hearing Impaired tags from downloaded subtitles",
+    "type": "bool",
+    "default": "false"
+  },
+  {
+    "id": "subtitles.remove_tags",
+    "label": "Remove style tags from downloaded subtitles (bold, italic, underline, colors, ...)",
     "type": "bool",
     "default": "false"
   },

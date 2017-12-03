@@ -1,6 +1,8 @@
 # coding=utf-8
 import os
 
+from babelfish import Language
+
 from sub_mod import SubtitleModificationsMenu
 from menu_helpers import debounce, SubFolderObjectContainer, default_thumb, add_ignore_options, get_item_task_data, \
     set_refresh_menu_state, route
@@ -9,7 +11,7 @@ from refresh_item import RefreshItem
 from subzero.constants import PREFIX
 from support.config import config
 from support.helpers import timestamp, df, get_language, display_language
-from support.items import get_item_kind_from_rating_key, get_item, get_current_sub
+from support.items import get_item_kind_from_rating_key, get_item, get_current_sub, get_item_title
 from support.plex_media import get_plex_metadata
 from support.scanning import scan_videos
 from support.scheduler import scheduler
@@ -149,13 +151,14 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
     return oc
 
 
-@route(PREFIX + '/item/current_sub/{rating_key}/{part_id}', force=bool)
+@route(PREFIX + '/item/current_sub/{rating_key}/{part_id}')
 @debounce
 def SubtitleOptionsMenu(**kwargs):
-    oc = SubFolderObjectContainer(title2=kwargs["title"], replace_parent=True)
+    oc = SubFolderObjectContainer(title2=unicode(kwargs["title"]), replace_parent=True)
     rating_key = kwargs["rating_key"]
     part_id = kwargs["part_id"]
     language = kwargs["language"]
+    current_data = kwargs["current_data"]
 
     current_sub, stored_subs, storage = get_current_sub(rating_key, part_id, language)
     kwargs.pop("randomize")
@@ -179,7 +182,147 @@ def SubtitleOptionsMenu(**kwargs):
             summary=u"Currently applied mods: %s" % (", ".join(current_sub.mods) if current_sub.mods else "none")
         ))
 
+        oc.add(DirectoryObject(
+            key=Callback(BlacklistSubtitleMenu, randomize=timestamp(), **kwargs),
+            title=u"Blacklist %s subtitle and search for a new one" % kwargs["language_name"],
+            summary=current_data
+        ))
+
+        current_bl, subs = stored_subs.get_blacklist(part_id, language)
+        if current_bl:
+            oc.add(DirectoryObject(
+                key=Callback(ManageBlacklistMenu, randomize=timestamp(), **kwargs),
+                title=u"Manage blacklist (%s contained)" % len(current_bl),
+                summary=u"Inspect currently blacklisted subtitles"
+            ))
+
     storage.destroy()
+    return oc
+
+
+@route(PREFIX + '/item/blacklist_recent/{language}')
+@route(PREFIX + '/item/blacklist_recent')
+def BlacklistRecentSubtitleMenu(**kwargs):
+    if "last_played_items" not in Dict or not Dict["last_played_items"]:
+        return
+
+    rating_key = Dict["last_played_items"][0]
+    kwargs["rating_key"] = rating_key
+    return BlacklistAllPartsSubtitleMenu(**kwargs)
+
+
+@route(PREFIX + '/item/blacklist_all/{rating_key}/{language}')
+@route(PREFIX + '/item/blacklist_all/{rating_key}')
+def BlacklistAllPartsSubtitleMenu(**kwargs):
+    rating_key = kwargs.get("rating_key")
+    language = kwargs.get("language")
+    if language:
+        language = Language.fromietf(language)
+
+    item = get_item(rating_key)
+
+    if not item:
+        return
+
+    item_title = get_item_title(item)
+
+    subtitle_storage = get_subtitle_storage()
+    stored_subs = subtitle_storage.load_or_new(item)
+    for part_id, languages in stored_subs.parts.iteritems():
+        sub_dict = languages
+        if language:
+            key = str(language)
+            if key not in sub_dict:
+                continue
+
+            sub_dict = {key: sub_dict[key]}
+
+        for language, subs in sub_dict.iteritems():
+            if "current" in subs:
+                stored_subs.blacklist(part_id, language, subs["current"])
+                Log.Info("Added %s to blacklist", subs["current"])
+
+    subtitle_storage.save(stored_subs)
+    subtitle_storage.destroy()
+
+    return RefreshItem(rating_key=rating_key, item_title=item_title, force=True, randomize=timestamp(), timeout=30000)
+
+
+def blacklist(rating_key, part_id, language):
+    current_sub, stored_subs, storage = get_current_sub(rating_key, part_id, language)
+    if not current_sub:
+        return
+
+    stored_subs.blacklist(part_id, language, current_sub.key)
+    storage.save(stored_subs)
+    storage.destroy()
+
+    Log.Info("Added %s to blacklist", current_sub.key)
+
+    return True
+
+
+@route(PREFIX + '/item/blacklist/{rating_key}/{part_id}')
+@debounce
+def BlacklistSubtitleMenu(**kwargs):
+    rating_key = kwargs["rating_key"]
+    part_id = kwargs["part_id"]
+    language = kwargs["language"]
+    item_title = kwargs["item_title"]
+
+    blacklist(rating_key, part_id, language)
+    kwargs.pop("randomize")
+
+    return RefreshItem(rating_key=rating_key, item_title=item_title, force=True, randomize=timestamp(), timeout=30000)
+
+
+@route(PREFIX + '/item/manage_blacklist/{rating_key}/{part_id}', force=bool)
+@debounce
+def ManageBlacklistMenu(**kwargs):
+    oc = SubFolderObjectContainer(title2=unicode(kwargs["title"]), replace_parent=True)
+    rating_key = kwargs["rating_key"]
+    part_id = kwargs["part_id"]
+    language = kwargs["language"]
+    remove_sub_key = kwargs.pop("remove_sub_key", None)
+
+    current_sub, stored_subs, storage = get_current_sub(rating_key, part_id, language)
+    current_bl, subs = stored_subs.get_blacklist(part_id, language)
+
+    if remove_sub_key:
+        remove_sub_key = tuple(remove_sub_key.split("__"))
+        stored_subs.blacklist(part_id, language, remove_sub_key, add=False)
+        storage.save(stored_subs)
+        Log.Info("Removed %s from blacklist", remove_sub_key)
+
+    kwargs.pop("randomize")
+
+    oc.add(DirectoryObject(
+        key=Callback(ItemDetailsMenu, rating_key=kwargs["rating_key"], item_title=kwargs["item_title"],
+                     title=kwargs["title"], randomize=timestamp()),
+        title=u"< Back to %s" % kwargs["title"],
+        summary=kwargs["current_data"],
+        thumb=default_thumb
+    ))
+
+    def sorter(pair):
+        # thanks RestrictedModule parser for messing with lambda (x, y)
+        return pair[1]["date_added"]
+
+    for sub_key, data in sorted(current_bl.iteritems(), key=sorter, reverse=True):
+        provider_name, subtitle_id = sub_key
+        title = u"%s, %s (added: %s, %s), Language: " \
+                u"%s, Score: %i, Storage: %s" % (provider_name, subtitle_id, df(data["date_added"]),
+                                                 current_sub.get_mode_verbose(data["mode"]),
+                                                 display_language(Language.fromietf(language)), data["score"],
+                                                 data["storage_type"])
+        oc.add(DirectoryObject(
+            key=Callback(ManageBlacklistMenu, remove_sub_key="__".join(sub_key), randomize=timestamp(), **kwargs),
+            title=title,
+            summary=u"Remove subtitle from blacklist"
+        ))
+
+    storage.destroy()
+
     return oc
 
 
@@ -264,10 +407,17 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
     if not search_results or search_results == "found_none":
         return oc
 
+    current_sub, stored_subs, storage = get_current_sub(rating_key, part_id, language)
+    current_bl, subs = stored_subs.get_blacklist(part_id, language)
+
     seen = []
     for subtitle in search_results:
         if subtitle.id in seen:
             continue
+
+        bl_addon = ""
+        if (str(subtitle.provider_name), str(subtitle.id)) in current_bl:
+            bl_addon = "Blacklisted "
 
         wrong_fps_addon = ""
         if subtitle.wrong_fps:
@@ -279,8 +429,8 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
         oc.add(DirectoryObject(
             key=Callback(TriggerDownloadSubtitle, rating_key=rating_key, randomize=timestamp(), item_title=item_title,
                          subtitle_id=str(subtitle.id), language=language),
-            title=u"%s: %s, score: %s%s" % ("Available" if current_id != subtitle.id else "Current",
-                                            subtitle.provider_name, subtitle.score, wrong_fps_addon),
+            title=u"%s%s: %s, score: %s%s" % (bl_addon, "Available" if current_id != subtitle.id else "Current",
+                                              subtitle.provider_name, subtitle.score, wrong_fps_addon),
             summary=u"Release: %s, Matches: %s" % (subtitle.release_info, ", ".join(subtitle.matches)),
             thumb=default_thumb
         ))

@@ -193,7 +193,8 @@ class SubZeroAgent(object):
 
             else:
                 # downloaded_subtitles = {subliminal.Video: [subtitle, subtitle, ...]}
-                downloaded_subtitles = download_best_subtitles(scanned_video_part_map, min_score=use_score)
+                downloaded_subtitles = download_best_subtitles(scanned_video_part_map, min_score=use_score,
+                                                               throttle_time=self.debounce)
                 item_ids = get_media_item_ids(media, kind=self.agent_type)
 
             downloaded_any = False

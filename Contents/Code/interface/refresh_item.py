@@ -6,7 +6,8 @@ from support.items import refresh_item
 from support.helpers import timestamp
 
 
-@route(PREFIX + '/item/{rating_key}')
+@route(PREFIX + '/item/refresh/{rating_key}/force', force=True)
+@route(PREFIX + '/item/refresh/{rating_key}')
 @debounce
 def RefreshItem(rating_key=None, came_from="/recent", item_title=None, force=False, refresh_kind=None,
                 previous_rating_key=None, timeout=8000, randomize=None, trigger=True):

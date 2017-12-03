@@ -129,6 +129,8 @@ def save_subtitles(scanned_video_part_map, downloaded_subtitles, mode="a", bare_
     meta_fallback = False
     save_successful = False
 
+    # big fixme: scanned_video_part_map isn't needed to the current extent. rewrite.
+
     if mods:
         for video, video_subtitles in downloaded_subtitles.items():
             if not video_subtitles:

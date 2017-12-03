@@ -24,7 +24,8 @@ from extensions import provider_registry
 from subliminal.score import compute_score as default_compute_score
 from subliminal.utils import hash_napiprojekt, hash_opensubtitles, hash_shooter, hash_thesubdb
 from subliminal.video import VIDEO_EXTENSIONS, Video, Episode, Movie
-from subliminal.core import guessit, Language, ProviderPool, io, download_best_subtitles, is_windows_special_path, ThreadPoolExecutor
+from subliminal.core import guessit, Language, ProviderPool, io, is_windows_special_path, \
+    ThreadPoolExecutor, check_video
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +43,7 @@ SUBTITLE_EXTENSIONS = ('.srt', '.sub', '.smi', '.txt', '.ssa', '.ass', '.mpl', '
 
 
 class SZProviderPool(ProviderPool):
-    def __init__(self, providers=None, provider_configs=None):
+    def __init__(self, providers=None, provider_configs=None, blacklist=None):
         #: Name of providers to use
         self.providers = providers or provider_registry.names()
 
@@ -54,6 +55,8 @@ class SZProviderPool(ProviderPool):
 
         #: Discarded providers
         self.discarded_providers = set()
+
+        self.blacklist = blacklist or []
 
     def __enter__(self):
         return self
@@ -116,10 +119,20 @@ class SZProviderPool(ProviderPool):
         # list subtitles
         logger.info('Listing subtitles with provider %r and languages %r', provider, provider_languages)
         try:
-            ret = self[provider].list_subtitles(video, provider_languages)
-            for s in ret:
+            results = self[provider].list_subtitles(video, provider_languages)
+            seen = []
+            out = []
+            for s in results:
+                if (str(provider), str(s.id)) in self.blacklist:
+                    logger.info("Skipping blacklisted subtitle: %s", s)
+                    continue
+                if s.id in seen:
+                    continue
                 s.plex_media_fps = float(video.fps)
-            return ret
+                out.append(s)
+                seen.append(s.id)
+
+            return out
 
         except (requests.Timeout, socket.timeout):
             logger.error('Provider %r timed out', provider)
@@ -335,7 +348,7 @@ class SZAsyncProviderPool(SZProviderPool):
 
         return provider, provider_subtitles
 
-    def list_subtitles(self, video, languages):
+    def list_subtitles(self, video, languages, blacklist=None):
         subtitles = []
 
         with ThreadPoolExecutor(self.max_workers) as executor:
@@ -443,9 +456,10 @@ def _search_external_subtitles(path, forced_tag=False):
                 p_root = split_tag[0]
 
         # forced wanted but NIL
-        forced = "forced" in adv_tag
-        if (forced_tag and not forced) or (not forced_tag and forced):
-            continue
+        if adv_tag:
+            forced = "forced" in adv_tag
+            if (forced_tag and not forced) or (not forced_tag and forced):
+                continue
 
         # extract the potential language code
         language_code = p_root[len(fileroot):].replace('_', '-')[1:]
@@ -539,6 +553,62 @@ def download_subtitles(subtitles, pool_class=ProviderPool, **kwargs):
         for subtitle in subtitles:
             logger.info('Downloading subtitle %r with score %s', subtitle, subtitle.score)
             pool.download_subtitle(subtitle)
+
+
+def download_best_subtitles(videos, languages, min_score=0, hearing_impaired=False, only_one=False, compute_score=None,
+                            pool_class=ProviderPool, throttle_time=0, **kwargs):
+    """List and download the best matching subtitles.
+
+    The `videos` must pass the `languages` and `undefined` (`only_one`) checks of :func:`check_video`.
+
+    :param videos: videos to download subtitles for.
+    :type videos: set of :class:`~subliminal.video.Video`
+    :param languages: languages to download.
+    :type languages: set of :class:`~babelfish.language.Language`
+    :param int min_score: minimum score for a subtitle to be downloaded.
+    :param bool hearing_impaired: hearing impaired preference.
+    :param bool only_one: download only one subtitle, not one per language.
+    :param compute_score: function that takes `subtitle` and `video` as positional arguments,
+        `hearing_impaired` as keyword argument and returns the score.
+    :param pool_class: class to use as provider pool.
+    :type pool_class: :class:`ProviderPool`, :class:`AsyncProviderPool` or similar
+    :param \*\*kwargs: additional parameters for the provided `pool_class` constructor.
+    :return: downloaded subtitles per video.
+    :rtype: dict of :class:`~subliminal.video.Video` to list of :class:`~subliminal.subtitle.Subtitle`
+
+    """
+    downloaded_subtitles = defaultdict(list)
+
+    # check videos
+    checked_videos = []
+    for video in videos:
+        if not check_video(video, languages=languages, undefined=only_one):
+            logger.info('Skipping video %r', video)
+            continue
+        checked_videos.append(video)
+
+    # return immediately if no video passed the checks
+    if not checked_videos:
+        return downloaded_subtitles
+
+    got_multiple = len(checked_videos) > 1
+
+    # download best subtitles
+    with pool_class(**kwargs) as pool:
+        for video in checked_videos:
+            logger.info('Downloading best subtitles for %r', video)
+            subtitles = pool.download_best_subtitles(pool.list_subtitles(video, languages - video.subtitle_languages),
+                                                     video, languages, min_score=min_score,
+                                                     hearing_impaired=hearing_impaired, only_one=only_one,
+                                                     compute_score=compute_score)
+            logger.info('Downloaded %d subtitle(s)', len(subtitles))
+            downloaded_subtitles[video].extend(subtitles)
+
+            if got_multiple and throttle_time:
+                logger.debug("Waiting %ss before continuing ...", throttle_time)
+                time.sleep(throttle_time)
+
+    return downloaded_subtitles
 
 
 def get_subtitle_path(video_path, language=None, extension='.srt', forced_tag=False):

@@ -25,6 +25,7 @@ from helpers import check_write_permissions, cast_bool, cast_int
 
 SUBTITLE_EXTS = ['utf', 'utf8', 'utf-8', 'srt', 'smi', 'rt', 'ssa', 'aqt', 'jss', 'ass', 'idx', 'sub', 'txt', 'psb',
                  'vtt']
+TEXT_SUBTITLE_EXTS = ("srt", "ass", "ssa", "vtt")
 VIDEO_EXTS = ['3g2', '3gp', 'asf', 'asx', 'avc', 'avi', 'avs', 'bivx', 'bup', 'divx', 'dv', 'dvr-ms', 'evo', 'fli',
               'flv',
               'm2t', 'm2ts', 'm2v', 'm4v', 'mkv', 'mov', 'mp4', 'mpeg', 'mpg', 'mts', 'nsv', 'nuv', 'ogm', 'ogv', 'tp',
@@ -84,6 +85,7 @@ class Config(object):
     sections = None
     enabled_sections = None
     remove_hi = False
+    remove_tags = False
     fix_ocr = False
     fix_common = False
     colors = ""
@@ -99,7 +101,7 @@ class Config(object):
     activity_mode = None
     no_refresh = False
 
-    store_recently_played_amount = 20
+    store_recently_played_amount = 40
 
     initialized = False
 
@@ -148,6 +150,7 @@ class Config(object):
         self.permissions_ok = self.check_permissions()
         self.notify_executable = self.check_notify_executable()
         self.remove_hi = cast_bool(Prefs['subtitles.remove_hi'])
+        self.remove_tags = cast_bool(Prefs['subtitles.remove_tags'])
         self.fix_ocr = cast_bool(Prefs['subtitles.fix_ocr'])
         self.fix_common = cast_bool(Prefs['subtitles.fix_common'])
         self.colors = Prefs['subtitles.colors'] if Prefs['subtitles.colors'] != "don't change" else None
@@ -501,7 +504,8 @@ class Config(object):
                              'opensubtitles': {'username': Prefs['provider.opensubtitles.username'],
                                                'password': Prefs['provider.opensubtitles.password'],
                                                'use_tag_search': cast_bool(Prefs['provider.opensubtitles.use_tags']),
-                                               'only_foreign': cast_bool(Prefs['subtitles.only_foreign'])
+                                               'only_foreign': cast_bool(Prefs['subtitles.only_foreign']),
+                                               'is_vip': cast_bool(Prefs['provider.opensubtitles.is_vip'])
                                                },
                              'podnapisi': {
                                  'only_foreign': cast_bool(Prefs['subtitles.only_foreign'])
@@ -564,6 +568,8 @@ class Config(object):
         mods = []
         if self.remove_hi:
             mods.append("remove_HI")
+        if self.remove_tags:
+            mods.append("remove_tags")
         if self.fix_ocr:
             mods.append("OCR_fixes")
         if self.fix_common:

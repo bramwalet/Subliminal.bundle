@@ -1,5 +1,5 @@
 # coding=utf-8
-from xmlrpclib import SafeTransport
+from xmlrpclib import SafeTransport, ProtocolError, Fault, Transport
 
 import certifi
 import ssl
@@ -42,6 +42,19 @@ class RetryingSession(Session):
         return self.retry_method("post", *args, **kwargs)
 
 
+class TimeoutTransport(Transport):
+    """Timeout support for ``xmlrpc.client.SafeTransport``."""
+    def __init__(self, timeout, *args, **kwargs):
+        Transport.__init__(self, *args, **kwargs)
+        self.timeout = timeout
+
+    def make_connection(self, host):
+        c = Transport.make_connection(self, host)
+        c.timeout = self.timeout
+
+        return c
+
+
 class TimeoutSafeTransport(SafeTransport):
     """Timeout support for ``xmlrpc.client.SafeTransport``."""
     def __init__(self, timeout, *args, **kwargs):
@@ -54,3 +67,42 @@ class TimeoutSafeTransport(SafeTransport):
         c.timeout = self.timeout
 
         return c
+
+    def single_request(self, host, handler, request_body, verbose=0):
+        # issue XML-RPC request
+
+        h = self.make_connection(host)
+        if verbose:
+            h.set_debuglevel(1)
+
+        try:
+            self.send_request(h, handler, request_body)
+            self.send_host(h, host)
+            self.send_user_agent(h)
+            self.send_content(h, request_body)
+
+            response = h.getresponse(buffering=True)
+            headers = response.getheaders()
+
+            if response.status == 200:
+                self.verbose = verbose
+                response = self.parse_response(response)
+                response[0]["headers"] = dict(headers)
+                return response
+
+        except Fault:
+            raise
+        except Exception:
+            # All unexpected errors leave connection in
+            # a strange state, so we clear it.
+            self.close()
+            raise
+
+        #discard any response data and raise exception
+        if (response.getheader("content-length", 0)):
+            response.read()
+        raise ProtocolError(
+            host + handler,
+            response.status, response.reason,
+            response.msg,
+            )
