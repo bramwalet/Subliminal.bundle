@@ -88,7 +88,7 @@ For further help or manual installation, [please go to the wiki](https://github.
 - submod: HI: be more aggressive at handling brackets
 - submod: OCR: update en and hrv
 - submod: common: remove "torrent downloaded from ..." lines
-- submod: OCR: fix WholeWorld handling, improving modification
+- submod: OCR: fix WholeWord handling, improving modification
 - submod: apply OCR fixes before HI
 - submod: OCR: fix broken HI tag colons (ANNOUNCER'. instead of ANNOUNCER:)
 - menu: advanced: speed up batch modifications
