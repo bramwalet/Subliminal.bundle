@@ -71,29 +71,36 @@ For further help or manual installation, [please go to the wiki](https://github.
 
 ## Changelog
 
+2.0.33.1849
+- opensubtitles: add VIP server handling + preference; 10€/year, ad-free subs, 1000 subs/day, no-cache VIP server, help SZ and subscribe via http://v.ht/osvip
+- opensubtitles: try to reuse previous token instead of logging in every time
+- core: add throttling between searches (10 seconds)
+- core: fix IETF handling for good
+- core: fix no subtitles being searched in certain situations (when an external subtitle without special tag exists)
+- core: add subtitle blacklist
+- core: fixes
+- core: fix detection of certain PMS media stream language tags ("FR" for example)
+- core: missing subtitles: correctly skip unwanted subtitle extensions
+- core: missing subtitles: honor "treat undefined as first language" option correctly
+- api: add blacklisting endpoints for quickly searching for new subtitls via bookmarklet
+- submod: colors: apply color mods at the end of processing modifications; fix color mods
+- submod: new remove_tags modification to remove all styling tags from subtitles
+- submod: HI: be more aggressive at handling brackets
+- submod: OCR: update en and hrv
+- submod: common: remove "torrent downloaded from ..." lines
+- submod: OCR: fix WholeWorld handling, improving modification
+- submod: apply OCR fixes before HI
+- submod: OCR: fix broken HI tag colons (ANNOUNCER'. instead of ANNOUNCER:)
+- menu: advanced: speed up batch modifications
+- menu: add subtitle blacklist
+- menu: recently played: show only TV episodes and movies (music tracks were listed here as well)
+
+
 2.0.29.1767
 - core: fix internal subtitle storage issues
 - core: handle "embedded-forced" tag (futureproofing)
 - core: remove more garbage tags from release groups (nzbgeek, chamele0n, buymore, xpost, postbot)
 - submod: OCR fix: fix music icon = paragraph
-
-
-2.0.29.1756
-- core: don't fail on uppercase file extensions
-- core: don't re-download a subtitle if we already downloaded one, it still physically exists and external subtitles are configured to be ignored
-- core: fix VTT subtitle duplication
-- core: if forced subtitles not explicitly wanted, ignore existing forced subtitles when searching
-- core: add full IETF language support for `Treat languages with country attribute as ISO 639-1 (e.g. don't download pt-BR if pt subtitle exists)`-setting for embedded subtitles
-- menu: remove buggy dynamic permission-based channel icon introduced in 1715
-- menu: improve `Items with missing subtitles` menu usage and item display
-- menu: `Advanced -> Get my logs` handle custom domains without port
-- menu: correctly show country/script part of languages with such attributes (e.g. pt-BR)
-- config: rename `Scan:` settings; make them better understandable and translatable
-- config: rephrase IETF options as "languages with country attribute" (e.g. pt-BR)
-- config: separate IETF options into how to display languages with country attribute and how they should be handled when searching/scanning (e.g. pt-BR)
-- config: `Scheduler: Item age to be considered recent` now can go up to 12 weeks
-- config: `Scheduler: Periodically search for recent items with missing subtitles` added `every 2 hours`
-- submod: swe: add Ĺ to Å
 
 
 Big thanks to the beta testing team! You know who you are!
