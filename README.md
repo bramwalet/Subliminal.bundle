@@ -72,7 +72,7 @@ For further help or manual installation, [please go to the wiki](https://github.
 ## Changelog
 
 2.0.33.1849
-- opensubtitles: add VIP server handling + preference; 10€/year, ad-free subs, 1000 subs/day, no-cache VIP server, help SZ and subscribe via http://v.ht/osvip
+- opensubtitles: add VIP server handling + preference; VIP benefits: 10€/year, ad-free subs, 1000 subs/day, no-cache VIP server, help SZ and subscribe via http://v.ht/osvip
 - opensubtitles: try to reuse previous token instead of logging in every time
 - core: add throttling between searches (10 seconds)
 - core: fix IETF handling for good
