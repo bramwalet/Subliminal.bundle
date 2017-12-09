@@ -73,8 +73,9 @@ class Subtitle(Subtitle_):
         return self
 
     def set_encoding(self, encoding):
-        logger.debug("Encoding change requested: to %s, from %s", encoding, self.guess_encoding())
-        if encoding == self.guess_encoding():
+        ge = self.guess_encoding()
+        logger.debug("Encoding change requested: to %s, from %s", encoding, ge)
+        if encoding == ge:
             logger.debug("Encoding already is %s", encoding)
             return
 
