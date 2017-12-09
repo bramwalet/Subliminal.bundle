@@ -82,6 +82,16 @@ class Subtitle(Subtitle_):
         self.content = unicontent.encode(encoding)
         self._guessed_encoding = encoding
 
+    def normalize(self):
+        """
+        Set encoding to UTF-8 and normalize line endings
+        :return:
+        """
+        self.set_encoding("utf-8")
+
+        # normalize line endings
+        self.content = self.content.replace("\r\n", "\n").replace('\r', '\n')
+
     def guess_encoding(self):
         """Guess encoding using the language, falling back on chardet.
 

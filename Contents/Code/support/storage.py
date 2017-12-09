@@ -36,7 +36,7 @@ def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_ty
 
         for subtitle in video_subtitles:
             lang = str(subtitle.language)
-            subtitle.set_encoding("utf-8")
+            subtitle.normalize()
             Log.Debug(u"Adding subtitle to storage: %s, %s, %s, %s" % (video_id, part_id, title,
                                                                        subtitle.guess_encoding()))
             ret_val = stored_subs.add(part_id, lang, subtitle, storage_type, mode=mode)

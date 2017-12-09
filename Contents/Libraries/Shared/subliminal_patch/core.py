@@ -234,7 +234,7 @@ class SZProviderPool(ProviderPool):
             logger.error('Invalid subtitle')
             return False
 
-        subtitle.set_encoding("utf-8")
+        subtitle.normalize()
 
         return True
 
