@@ -36,8 +36,8 @@ INCLUDE_EXOTIC_SUBS = True
 DOWNLOAD_TRIES = 0
 DOWNLOAD_RETRY_SLEEP = 6
 
-REMOVE_CRAP_FROM_FILENAME = re.compile(r"(?i)[\s_-]+(obfuscated|scrambled|nzbgeek|"
-                                       r"chamele0n|buymore|xpost|postbot)(\.\w+)$")
+REMOVE_CRAP_FROM_FILENAME = re.compile(r"(?i)[\s_-]+(obfuscated|scrambled|nzbgeek|chamele0n"
+                                       r"|buymore|xpost|postbot)(\.\w+|$)$")
 
 SUBTITLE_EXTENSIONS = ('.srt', '.sub', '.smi', '.txt', '.ssa', '.ass', '.mpl', '.vtt')
 
@@ -401,7 +401,19 @@ def scan_video(path, dont_use_actual_file=False, hints=None):
 
     # hint guessit the filename itself and its 2 parent directories if we're an episode (most likely
     # Series name/Season/filename), else only one
-    guess_from = os.path.join(*os.path.normpath(path).split(os.path.sep)[-3 if video_type == "episode" else -2:])
+    split_path = os.path.normpath(path).split(os.path.sep)[-3 if video_type == "episode" else -2:]
+
+    # remove crap from folder names
+    if video_type == "episode":
+        if len(split_path) > 2:
+            split_path[-3] = REMOVE_CRAP_FROM_FILENAME.sub(r"\2", split_path[-3])
+    else:
+        if len(split_path) > 1:
+            split_path[-2] = REMOVE_CRAP_FROM_FILENAME.sub(r"\2", split_path[-2])
+
+    guess_from = os.path.join(*split_path)
+
+    # remove crap from file name
     guess_from = REMOVE_CRAP_FROM_FILENAME.sub(r"\2", guess_from)
 
     # guess
