@@ -82,13 +82,13 @@ class TimeoutSafeTransport(SafeTransport):
             self.send_content(h, request_body)
 
             response = h.getresponse(buffering=True)
-            headers = response.getheaders()
 
             if response.status == 200:
                 self.verbose = verbose
-                response = self.parse_response(response)
-                response[0]["headers"] = dict(headers)
-                return response
+                headers = response.getheaders()
+                rsp = self.parse_response(response)
+                rsp[0]["headers"] = dict(headers)
+                return rsp
 
         except Fault:
             raise
