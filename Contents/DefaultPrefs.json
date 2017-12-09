@@ -242,7 +242,7 @@
   },
   {
     "id": "provider.opensubtitles.is_vip",
-    "label": "OpenSubtitles VIP? (Benefits: ad-free subs, 1000 subs/day, VIP server without caching)",
+    "label": "OpenSubtitles VIP? (ad-free subs, 1000 subs/day, no-cache VIP server: http://v.ht/osvip)",
     "type": "bool",
     "default": "false"
   },

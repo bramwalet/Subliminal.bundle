@@ -4,7 +4,9 @@ import time
 
 import os
 
-from support.config import config
+from babelfish import Language, LanguageReverseError
+
+from support.config import config, TEXT_SUBTITLE_EXTS
 from support.helpers import get_plex_item_display_title, cast_bool
 from support.items import get_item
 from support.lib import Plex
@@ -30,7 +32,7 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
     ietf_as_alpha3 = cast_bool(Prefs["subtitles.language.ietf_normalize"])
 
     missing = set()
-    languages_set = set(languages)
+    languages_set = set([Language.fromietf(str(l)) for l in languages])
     for media in item.media:
         existing_subs = {"internal": [], "external": [], "own_external": [], "count": 0}
         for part in media.parts:
@@ -83,44 +85,74 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
                     else:
                         key = "external"
 
-                    existing_subs[key].append(Locale.Language.Match(stream.language_code or ""))
-                    existing_subs["count"] = existing_subs["count"] + 1
+                    if not config.exotic_ext and stream.codec.lower() not in TEXT_SUBTITLE_EXTS:
+                        continue
 
-        missing_from_part = set(languages_set)
+                    # treat unknown language as lang1?
+                    if not stream.language_code and config.treat_und_as_first:
+                        lang = Language.fromietf(str(list(config.lang_list)[0]))
+
+                    # we can't parse empty language codes
+                    elif not stream.language_code or not stream.codec:
+                        continue
+
+                    else:
+                        # parse with internal language parser first
+                        try:
+                            lang = Locale.Language.Match(stream.language_code)
+                            if lang and lang != "xx":
+                                #Log.Debug("Found language: %r", lang)
+                                lang = Language.fromietf(lang)
+                            elif lang == "xx" and config.treat_und_as_first:
+                                lang = Language.fromietf(str(list(config.lang_list)[0]))
+                            else:
+                                continue
+
+                        except (ValueError, LanguageReverseError):
+                            continue
+
+                    if lang:
+                        # Log.Debug("Found babelfish language: %r", lang)
+                        existing_subs[key].append(lang)
+                        existing_subs["count"] = existing_subs["count"] + 1
+
+        missing_from_part = set([Language.fromietf(str(l)) for l in languages])
         if existing_subs["count"]:
+
+            # fixme: this is actually somewhat broken with IETF, as Plex doesn't store the country portion
+            # (pt instead of pt-BR) inside the database. So it might actually download pt-BR if there's a local pt-BR
+            # subtitle but not our own.
             existing_flat = set((existing_subs["internal"] if internal else [])
                                 + (existing_subs["external"] if external else [])
                                 + existing_subs["own_external"])
 
-            check_languages = set(languages)
+            check_languages = set([Language.fromietf(str(l)) for l in languages])
+            alpha3_map = {}
             if ietf_as_alpha3:
-                existing_flat = list(existing_flat)
                 for language in existing_flat:
-                    language.country_orig = language.country
-                    language.country = None
+                    if language.country:
+                        alpha3_map[language.alpha3] = language.country
+                        language.country = None
 
-                existing_flat = set(existing_flat)
-
-                check_languages = list(check_languages)
                 for language in check_languages:
-                    language.country_orig = language.country
-                    language.country = None
+                    if language.country:
+                        alpha3_map[language.alpha3] = language.country
+                        language.country = None
 
-                check_languages = set(check_languages)
+            # compare sets of strings, not sets of different Language instances
+            check_languages_str = set(str(l) for l in check_languages)
+            existing_flat_str = set(str(l) for l in existing_flat)
 
-            if check_languages.issubset(existing_flat) or (len(existing_flat) >= 1 and Prefs['subtitles.only_one']):
+            if check_languages_str.issubset(existing_flat_str) or \
+                    (len(existing_flat) >= 1 and Prefs['subtitles.only_one']):
                 # all subs found
                 #Log.Info(u"All subtitles exist for '%s'", item_title)
                 continue
 
-            missing_from_part = check_languages - existing_flat
+            missing_from_part = set(Language.fromietf(l) for l in check_languages_str - existing_flat_str)
             if ietf_as_alpha3:
-                missing_from_part = list(missing_from_part)
                 for language in missing_from_part:
-                    if language.country_orig:
-                        language.country = language.country_orig
-
-                missing_from_part = set(missing_from_part)
+                    language.country = alpha3_map.get(language.alpha3, None)
 
         if missing_from_part:
             Log.Info(u"Subs still missing for '%s' (%s: %s): %s", item_title, rating_key, media.id,
@@ -128,6 +160,8 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
             missing.update(missing_from_part)
 
     if missing:
+        # deduplicate
+        missing = set(Language.fromietf(la) for la in set(str(l) for l in missing))
         return added_at, item_id, item_title, item, missing
 
 
@@ -140,7 +174,7 @@ def items_get_all_missing_subs(items, sleep_after_request=False):
                 kind=kind,
                 added_at=added_at,
                 section_title=section_title,
-                languages=config.lang_list,
+                languages=config.lang_list.copy(),
                 internal=cast_bool(Prefs["subtitles.scan.embedded"]),
                 external=cast_bool(Prefs["subtitles.scan.external"])
             )

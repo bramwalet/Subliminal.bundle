@@ -1,9 +1,11 @@
 # coding=utf-8
 import logging
 
+import re
+
 from subzero.modification.mods import SubtitleTextModification
 from subzero.modification.processors.string_processor import MultipleLineProcessor, WholeLineProcessor
-from subzero.modification.processors.re_processor import MultipleWordReProcessor
+from subzero.modification.processors.re_processor import MultipleWordReProcessor, NReProcessor
 from subzero.modification import registry
 from subzero.modification.dictionaries.data import data as OCR_fix_data
 
@@ -14,7 +16,7 @@ class FixOCR(SubtitleTextModification):
     identifier = "OCR_fixes"
     description = "Fix common OCR issues"
     exclusive = True
-    order = 20
+    order = 10
     data_dict = None
 
     long_description = """\
@@ -36,6 +38,8 @@ class FixOCR(SubtitleTextModification):
             return []
 
         return [
+            # remove broken HI tag colons (ANNOUNCER'., ". instead of :) after at least 3 uppercase chars
+            NReProcessor(re.compile(ur'(?u)(^.*(?<=[A-ZÀ-Ž]{3})[A-ZÀ-Ž-_\s0-9"\']+["\'’ʼ❜‘‛”“‟„][.,‚،⹁、]\s*)'), "", name="SE_fix_HI_colons"),
             WholeLineProcessor(self.data_dict["WholeLines"], name="SE_replace_line"),
             MultipleWordReProcessor(self.data_dict["WholeWords"], name="SE_replace_word"),
             MultipleWordReProcessor(self.data_dict["BeginLines"], name="SE_replace_beginline"),

@@ -4,7 +4,7 @@ import helpers
 from support.lib import Plex, get_intent
 from support.plex_media import get_stream_fps
 from support.storage import get_subtitle_storage
-from support.config import config
+from support.config import config, TEXT_SUBTITLE_EXTS
 
 from subzero.video import parse_video
 
@@ -49,8 +49,8 @@ def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, no
 
                     # embedded subtitle
                     # fixme: tap into external subtitles here instead of scanning for ourselves later?
-                    if not stream.stream_key:
-                        if config.exotic_ext or stream.codec in ("srt", "ass", "ssa"):
+                    if not stream.stream_key and stream.codec:
+                        if config.exotic_ext or stream.codec.lower() in TEXT_SUBTITLE_EXTS:
                             lang_code = stream.language_code
 
                             # treat unknown language as lang1?

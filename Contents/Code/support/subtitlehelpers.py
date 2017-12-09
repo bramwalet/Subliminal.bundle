@@ -1,9 +1,9 @@
 # coding=utf-8
 
 import re, os
-import config
 import helpers
 
+from config import config, SUBTITLE_EXTS, TEXT_SUBTITLE_EXTS
 from bs4 import UnicodeDammit
 
 
@@ -102,7 +102,7 @@ class DefaultSubtitleHelper(SubtitleHelper):
     @classmethod
     def is_helper_for(cls, filename):
         (file, file_extension) = os.path.splitext(filename)
-        return file_extension.lower()[1:] in config.SUBTITLE_EXTS
+        return file_extension.lower()[1:] in SUBTITLE_EXTS
 
     def process_subtitles(self, part):
 
@@ -136,7 +136,7 @@ class DefaultSubtitleHelper(SubtitleHelper):
         language = Locale.Language.Match(match_ietf_language(file))
 
         # skip non-SRT if wanted
-        if not helpers.cast_bool(Prefs["subtitles.scan.exotic_ext"]) and ext not in ["srt", "ass", "ssa", "vtt"]:
+        if not config.exotic_ext and ext not in TEXT_SUBTITLE_EXTS:
             return lang_sub_map
 
         codec = None
