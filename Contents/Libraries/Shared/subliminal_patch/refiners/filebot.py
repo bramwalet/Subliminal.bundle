@@ -4,6 +4,7 @@ import sys
 import traceback
 import logging
 import re
+import binascii
 
 from pipes import quote
 
@@ -18,11 +19,19 @@ def quote_args(seq):
     return ' '.join(quote(arg) for arg in seq)
 
 
+def darwin_xattr_result(data):
+    return binascii.unhexlify(data.replace(' ', '').replace('\n', '')).strip("\x00")
+
+
 XATTR_MAP = {
     "default": (
         lambda fn: ["getfattr", "-n", "user.net.filebot.filename", fn],
         lambda result: re.search('(?um)user\.net\.filebot\.filename="(.+)"', result).group(1)
-    )
+    ),
+    "darwin": {
+        lambda fn: ["xattr", "-p", "net.filebot.filename", fn],
+        darwin_xattr_result
+    }
 }
 
 
@@ -37,7 +46,11 @@ def refine(video, **kwargs):
     if sys.platform == "win32":
         return
 
-    # fixme: OSX xattr
+    if sys.platform in XATTR_MAP:
+        logger.debug("Using native xattr calls for %s", sys.platform)
+    else:
+        logger.debug("Using default xattr calls for %s", sys.platform)
+
     args_func, match_func = XATTR_MAP.get(sys.platform, XATTR_MAP["default"])
 
     args = args_func(video.name)
