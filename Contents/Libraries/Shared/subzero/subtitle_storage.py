@@ -534,6 +534,7 @@ class StoredSubtitlesManager(object):
             data = None
 
         elif not bare_fn.endswith(".json.gz") and os.path.exists(os.path.join(self.dataitems_path, bare_fn)):
+            logger.info("Migrating legacy data for: %s", bare_fn)
             subs_for_video = self.migrate_legacy_data(bare_fn, json_path)
 
         if not subs_for_video:
@@ -566,6 +567,7 @@ class StoredSubtitlesManager(object):
     def load_or_new(self, plex_item, save=False):
         subs_for_video = self.load(plex_item.rating_key)
         if not subs_for_video:
+            logger.info("Creating new subtitle storage for: %s", plex_item.rating_key)
             subs_for_video = JSONStoredVideoSubtitles()
             subs_for_video.initialize(plex_item, version=self.version)
             if save:
