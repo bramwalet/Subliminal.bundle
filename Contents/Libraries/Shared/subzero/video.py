@@ -27,7 +27,7 @@ def parse_video(fn, video_info, hints, external_subtitles=False, embedded_subtit
         return video
 
     # refiners
-
+    # fixme: add prefs for filebot, sonarr and radarr
     refine_kwargs = {
         "episode_refiners": ('filebot', 'tvdb', 'sz_omdb',),#('drone',),
         "movie_refiners": ('filebot', 'sz_omdb',),
