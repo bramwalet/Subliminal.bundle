@@ -19,10 +19,6 @@ def quote_args(seq):
     return ' '.join(quote(arg) for arg in seq)
 
 
-def darwin_xattr_result(data):
-    return binascii.unhexlify(data.replace(' ', '').replace('\n', '')).strip("\x00")
-
-
 XATTR_MAP = {
     "default": (
         lambda fn: ["getfattr", "-n", "user.net.filebot.filename", fn],
@@ -30,7 +26,7 @@ XATTR_MAP = {
     ),
     "darwin": {
         lambda fn: ["xattr", "-p", "net.filebot.filename", fn],
-        darwin_xattr_result
+        lambda result: binascii.unhexlify(result.replace(' ', '').replace('\n', '')).strip("\x00")
     }
 }
 
