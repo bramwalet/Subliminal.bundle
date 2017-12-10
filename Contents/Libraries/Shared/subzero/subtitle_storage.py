@@ -3,6 +3,7 @@ import datetime
 import hashlib
 import os
 import logging
+import threading
 import traceback
 import gzip
 import types
@@ -17,6 +18,8 @@ from constants import mode_map
 from subliminal_patch.subtitle import ModifiedSubtitle
 
 logger = logging.getLogger(__name__)
+
+storage_lock = threading.Lock()
 
 
 class StoredSubtitle(object):
@@ -523,7 +526,8 @@ class StoredSubtitlesManager(object):
             subs_for_video = JSONStoredVideoSubtitles()
             try:
                 with gzip.open(json_path, 'rb', compresslevel=6) as f:
-                    s = f.read()
+                    with storage_lock:
+                        s = f.read()
 
                 data = loads(s)
             except:
