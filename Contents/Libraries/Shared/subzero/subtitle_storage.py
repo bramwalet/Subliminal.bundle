@@ -583,9 +583,11 @@ class StoredSubtitlesManager(object):
         temp_fn = self.get_json_data_path(self.get_storage_filename(subs_for_video.video_id) + "_tmp")
         fn = self.get_json_data_path(self.get_storage_filename(subs_for_video.video_id))
         json_data = str(dumps(data, ensure_ascii=False))
-        with gzip.open(temp_fn, "wb", compresslevel=6) as f:
-            f.write(json_data)
-        os.rename(temp_fn, fn)
+        with storage_lock:
+            with gzip.open(temp_fn, "wb", compresslevel=6) as f:
+                f.write(json_data)
+
+            os.rename(temp_fn, fn)
 
     def delete(self, filename):
         os.remove(filename)
