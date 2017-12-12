@@ -35,7 +35,7 @@ class MPL2Format(FormatBase):
                     out.append(r"{\i1}%s{\i0}" % s[1:])
                     continue
                 out.append(s)
-            return "".join(out)
+            return "\n".join(out)
 
         subs.events = [SSAEvent(start=times_to_ms(s=float(start) / 10), end=times_to_ms(s=float(end) / 10),
                        text=prepare_text(text)) for start, end, text in MPL2_FORMAT.findall(fp.getvalue())]
