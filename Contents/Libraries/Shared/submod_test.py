@@ -20,7 +20,7 @@ debug = "--debug" in sys.argv
 if debug:
     logging.basicConfig(level=logging.DEBUG)
 
-sub = Subtitle(Language.fromietf("pol"), mods=["OCR_fixes", "common", "remove_tags", "OCR_fixes", "shift_offset(s=-5, ms=-350)"])
+sub = Subtitle(Language.fromietf("eng"), mods=["OCR_fixes", "common", "remove_tags", "OCR_fixes", "shift_offset(s=-5, ms=-350)"])
 sub.content = open(fn).read()
 sub.normalize()
 content = sub.get_modified_content(debug=True)
@@ -35,10 +35,10 @@ content = sub.get_modified_content(debug=True)
 #content = fix_text(Subtitle.pysubs2_to_unicode(submod.f, format=format), **ftfy_defaults)\
 #                .encode(encoding="utf-8")
 #print submod.f.to_string("srt", encoding="utf-8")
-#print repr(srt)
-f = codecs.open("testout.srt", "w+")
-f.write(content)
-f.close()
+#print repr(content)
+#f = codecs.open("testout.srt", "w+")
+#f.write(content)
+#f.close()
 #print submod.f.to_string("srt")
 #submod.modify("OCR_fixes")
 #submod.modify("change_FPS(from=24,to=25)")

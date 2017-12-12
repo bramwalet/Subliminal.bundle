@@ -71,6 +71,11 @@ class CommonFixes(SubtitleTextModification):
         NReProcessor(re.compile(ur'(?u)((?:[^.\s])+\.\s+)([a-zà-ž])'),
                      lambda match: ur'%s%s' % (match.group(1), match.group(2).upper()), name="CM_uppercase_after_dot"),
 
+        # remove double interpunction
+        NReProcessor(re.compile(ur'(?u)(\s*[,!?])\s*([,.!?][,.!?\s]*)'),
+                     lambda match: match.group(1).strip() + (" " if match.group(2).endswith(" ") else ""),
+                     name="CM_double_interpunct"),
+
         # remove spaces before punctuation
         NReProcessor(re.compile(r'(?u)(?:(?<=^)|(?<=\w)) +([!?.,](?![!?.,]))'), r"\1", name="CM_punctuation_space"),
     ]
