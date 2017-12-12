@@ -78,6 +78,7 @@ For further help or manual installation, [please go to the wiki](https://github.
 - core: fix MPL2 newline parsing, which resulted in broken subtitles
 - core: encoding change: reduce log spam
 - submod: common: fix CM_starting_spacedots
+- submod: common: remove redundant interpunction
 - opensubtitles: fix request/response handling
 
 
