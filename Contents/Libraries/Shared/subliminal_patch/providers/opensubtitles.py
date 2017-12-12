@@ -109,8 +109,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
 
     def log_in(self, server_url=None):
         if server_url:
-            if self.server:
-                self.server.close()
+            self.terminate()
 
             self.server = self.get_server_proxy(server_url)
 
@@ -155,8 +154,13 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
                 self.log_in(self.default_url)
                 
     def terminate(self):
-        if self.server:
-            self.server.close()
+        try:
+            if self.server:
+                self.server.close()
+        except:
+            pass
+
+        self.token = None
 
     def list_subtitles(self, video, languages):
         """
