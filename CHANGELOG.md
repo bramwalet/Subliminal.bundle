@@ -1,3 +1,10 @@
+2.0.29.1767
+- core: fix internal subtitle storage issues
+- core: handle "embedded-forced" tag (futureproofing)
+- core: remove more garbage tags from release groups (nzbgeek, chamele0n, buymore, xpost, postbot)
+- submod: OCR fix: fix music icon = paragraph
+
+
 2.0.29.1756
 - core: don't fail on uppercase file extensions
 - core: don't re-download a subtitle if we already downloaded one, it still physically exists and external subtitles are configured to be ignored

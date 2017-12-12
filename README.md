@@ -71,6 +71,17 @@ For further help or manual installation, [please go to the wiki](https://github.
 
 ## Changelog
 
+2.0.33.1871
+- core: normalize line endings in subtitles to LF (\n)
+- core: add subtitle storage lock to avoid race condition
+- core: be more verbose about subtitle storage addition
+- core: fix MPL2 newline parsing, which resulted in broken subtitles
+- core: encoding change: reduce log spam
+- submod: common: fix CM_starting_spacedots
+- opensubtitles: fix request/response handling
+
+
+
 2.0.33.1849
 - opensubtitles: add VIP server handling + preference; VIP benefits: 10€/year, ad-free subs, 1000 subs/day, no-cache VIP server, help SZ and subscribe via http://v.ht/osvip
 - opensubtitles: try to reuse previous token instead of logging in every time
@@ -94,13 +105,6 @@ For further help or manual installation, [please go to the wiki](https://github.
 - menu: advanced: speed up batch modifications
 - menu: add subtitle blacklist
 - menu: recently played: show only TV episodes and movies (music tracks were listed here as well)
-
-
-2.0.29.1767
-- core: fix internal subtitle storage issues
-- core: handle "embedded-forced" tag (futureproofing)
-- core: remove more garbage tags from release groups (nzbgeek, chamele0n, buymore, xpost, postbot)
-- submod: OCR fix: fix music icon = paragraph
 
 
 Big thanks to the beta testing team! You know who you are!
