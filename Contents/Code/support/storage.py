@@ -16,7 +16,7 @@ from support.items import get_item
 
 
 def get_subtitle_storage():
-    return StoredSubtitlesManager(Data, get_item)
+    return StoredSubtitlesManager(Data, Thread, get_item)
 
 
 def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_type, mode="a"):

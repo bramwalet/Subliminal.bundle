@@ -8,6 +8,8 @@ import traceback
 import gzip
 import types
 
+import zlib
+
 from babelfish import Language
 
 from json_tricks.nonp import loads#, dumps
@@ -372,9 +374,10 @@ class StoredSubtitlesManager(object):
     version = 3
     extension = ".json.gz"
 
-    def __init__(self, storage, plexapi_item_getter):
+    def __init__(self, storage, threadkit, plexapi_item_getter):
         self.storage = storage
         self.get_item = plexapi_item_getter
+        self.threadkit = threadkit
 
     def destroy(self):
         self.storage = None
@@ -525,8 +528,8 @@ class StoredSubtitlesManager(object):
             # new style data
             subs_for_video = JSONStoredVideoSubtitles()
             try:
-                with gzip.open(json_path, 'rb', compresslevel=6) as f:
-                    with storage_lock:
+                with self.threadkit.Lock(key="sub_storage"):
+                    with gzip.open(json_path, 'rb', compresslevel=6) as f:
                         s = f.read()
 
                 data = loads(s)
@@ -580,14 +583,14 @@ class StoredSubtitlesManager(object):
 
     def save(self, subs_for_video):
         data = subs_for_video.serialize()
-        temp_fn = self.get_json_data_path(self.get_storage_filename(subs_for_video.video_id) + "_tmp")
+        #temp_fn = self.get_json_data_path(self.get_storage_filename(subs_for_video.video_id) + "_tmp")
         fn = self.get_json_data_path(self.get_storage_filename(subs_for_video.video_id))
         json_data = str(dumps(data, ensure_ascii=False))
-        with storage_lock:
-            with gzip.open(temp_fn, "wb", compresslevel=6) as f:
+        with self.threadkit.Lock(key="sub_storage"):
+            with gzip.open(fn, "wb", compresslevel=6) as f:
                 f.write(json_data)
 
-            os.rename(temp_fn, fn)
+            #os.rename(temp_fn, fn)
 
     def delete(self, filename):
         os.remove(filename)
