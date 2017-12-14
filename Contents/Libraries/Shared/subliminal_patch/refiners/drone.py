@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 class DroneAPIClient(object):
     api_url = None
+    _fill_attrs = None
 
     def __init__(self, version=1, session=None, headers=None, timeout=10, base_url=None, api_key=None):
         headers = dict(headers or {}, **{"X-Api-Key": api_key})

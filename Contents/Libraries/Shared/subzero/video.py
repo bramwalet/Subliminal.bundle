@@ -17,30 +17,37 @@ def has_external_subtitle(part_id, stored_subs, language):
 
 
 def parse_video(fn, video_info, hints, external_subtitles=False, embedded_subtitles=False, known_embedded=None,
-                forced_only=False, no_refining=False, dry_run=False, ignore_all=False, stored_subs=None):
+                forced_only=False, no_refining=False, dry_run=False, ignore_all=False, stored_subs=None,
+                refiner_settings=None):
 
     logger.debug("Parsing video: %s, hints: %s", os.path.basename(fn), hints)
     video = scan_video(fn, hints=hints, dont_use_actual_file=dry_run or no_refining)
+
+    refiner_settings = refiner_settings or {}
 
     if no_refining:
         logger.debug("Taking parse_video shortcut")
         return video
 
     # refiners
-    # fixme: add prefs for filebot, sonarr and radarr
     refine_kwargs = {
-        "episode_refiners": ('drone',), #'filebot', 'tvdb', 'sz_omdb',), #('drone',),
-        "movie_refiners": ('drone',),#('filebot', 'sz_omdb',),
+        "episode_refiners": ['tvdb', 'sz_omdb',],
+        "movie_refiners": ['sz_omdb',],
         "embedded_subtitles": False,
-        "sonarr": {
-            "base_url": "http://127.0.0.1:8989/nzbdrone",
-            "api_key": "xxxxxxxxxxxxxxxxxxxxxxx"
-        },
-        "radarr": {
-            "base_url": "http://127.0.0.1:17878/radarr",
-            "api_key": "xxxxxxxxxxxxxxxxxxxxxxx"
-        },
     }
+    refine_kwargs.update(refiner_settings)
+
+    if "filebot" in refiner_settings:
+        # filebot always comes first
+        refine_kwargs["episode_refiners"].insert(0, "filebot")
+        refine_kwargs["movie_refiners"].insert(0, "filebot")
+
+    if "sonarr" in refiner_settings:
+        # drone always comes last
+        refine_kwargs["episode_refiners"].append("drone")
+
+    if "radarr" in refiner_settings:
+        refine_kwargs["movie_refiners"].append("drone")
 
     # our own metadata refiner :)
     if "stream" in video_info:

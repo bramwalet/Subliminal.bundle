@@ -625,14 +625,14 @@ class Config(object):
         elif mode == "Sonarr/Radarr (fill api info below)":
             if Prefs["drone_api.sonarr.url"] and Prefs["drone_api.sonarr.api_key"]:
                 self.refiner_settings["sonarr"] = {
-                    "url": Prefs["drone_api.sonarr.url"],
+                    "base_url": Prefs["drone_api.sonarr.url"],
                     "api_key": Prefs["drone_api.sonarr.api_key"]
                 }
                 self.exact_filenames = True
 
             if Prefs["drone_api.radarr.url"] and Prefs["drone_api.radarr.api_key"]:
                 self.refiner_settings["radarr"] = {
-                    "url": Prefs["drone_api.radarr.url"],
+                    "base_url": Prefs["drone_api.radarr.url"],
                     "api_key": Prefs["drone_api.radarr.api_key"]
                 }
                 self.exact_filenames = True

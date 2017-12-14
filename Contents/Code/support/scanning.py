@@ -69,7 +69,7 @@ def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, no
         video = parse_video(plex_part.file, pms_video_info, hints, external_subtitles=external_subtitles,
                             embedded_subtitles=embedded_subtitles, known_embedded=known_embedded,
                             forced_only=config.forced_only, no_refining=no_refining, ignore_all=ignore_all,
-                            stored_subs=stored_subs)
+                            stored_subs=stored_subs, refiner_settings=config.refiner_settings)
 
         # add video fps info
         video.fps = plex_part.fps
