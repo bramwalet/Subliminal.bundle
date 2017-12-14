@@ -28,7 +28,8 @@ class DroneAPIClient(object):
         if not base_url.endswith("/"):
             base_url += "/"
 
-        self.api_url = urljoin(base_url, "api/")
+        if not base_url.endswith("api/"):
+            self.api_url = urljoin(base_url, "api/")
 
     def get_guess(self, video, scene_name):
         raise NotImplemented
@@ -84,7 +85,8 @@ class DroneAPIClient(object):
                 logger.debug(u"%s: Filling attribute %s: %s", video.name, attr, value)
                 setattr(video, attr, value)
 
-        video.name = scene_fn
+        dirname = os.path.dirname(video.name)
+        video.name = os.path.join(dirname, scene_fn)
 
 
 class SonarrClient(DroneAPIClient):
@@ -103,7 +105,8 @@ class SonarrClient(DroneAPIClient):
 
         found_show_id = None
         for show in self.get("series"):
-            if show["title"] == video.series or (video.series_tvdb_id and show["tvdbId"] == video.series_tvdb_id):
+            if show["title"] == video.series or (video.series_tvdb_id and "tvdbId" in show and
+                                                 show["tvdbId"] == video.series_tvdb_id):
                 found_show_id = show["id"]
                 break
 
@@ -117,6 +120,11 @@ class SonarrClient(DroneAPIClient):
                 if scene_name:
                     logger.debug(u"%s: Got original filename from Sonarr: %s", video.name, scene_name)
                     return {"scene_name": scene_name}
+
+                logger.debug(u"%s: Can't get original filename, sceneName-attribute not set", video.name)
+                return
+
+        logger.debug(u"%s: Episode not found in Sonarr: S%02dE%02d", video.name, video.season, video.episode)
 
     def get_guess(self, video, scene_name):
         """
@@ -154,7 +162,8 @@ class RadarrClient(DroneAPIClient):
         movie_fn = os.path.basename(video.name)
         for movie in self.get("movie"):
             movie_file = movie.get("movieFile", {})
-            if movie["title"] == video.title or (video.imdb_id and movie["imdbId"] == video.imdb_id)\
+            if movie["title"] == video.title or (video.imdb_id and "imdbId" in movie and
+                                                 movie["imdbId"] == video.imdb_id)\
                     or movie_file.get("relativePath") == movie_fn:
                 scene_name = movie_file.get("sceneName")
                 release_group = movie_file.get("releaseGroup")
@@ -217,8 +226,10 @@ def refine(video, **kwargs):
     client = DroneManager.get_client(video, kwargs)
 
     additional_data = client.get_additional_data(video)
-    if "scene_name" in additional_data:
-        client.update_video(video, additional_data["scene_name"])
 
-    if "release_group" in additional_data and not video.release_group:
-        video.release_group = REMOVE_CRAP_FROM_FILENAME.sub(r"\2", additional_data["release_group"])
+    if additional_data:
+        if "scene_name" in additional_data:
+            client.update_video(video, additional_data["scene_name"])
+
+        if "release_group" in additional_data and not video.release_group:
+            video.release_group = REMOVE_CRAP_FROM_FILENAME.sub(r"\2", additional_data["release_group"])
