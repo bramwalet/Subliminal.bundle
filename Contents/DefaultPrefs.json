@@ -203,10 +203,16 @@
     "default": "true"
   },
   {
-    "id": "drone_api.sonarr.enable",
-    "label": "Enable Sonarr integration",
-    "type": "bool",
-    "default": "false"
+    "id": "media_rename",
+    "label": "I rename my files using",
+    "type": "enum",
+    "values": [
+      "Sonarr/Radarr (fill api info below)",
+      "Filebot",
+      "I keep the original filenames",
+      "none of the above"
+    ],
+    "default": "I keep the original filenames"
   },
   {
     "id": "drone_api.sonarr.url",
@@ -215,8 +221,20 @@
     "default": "http://127.0.0.1:8989"
   },
   {
-    "id": "drone_api.sonarr.apikey",
+    "id": "drone_api.sonarr.api_key",
     "label": "Sonarr API key",
+    "type": "text",
+    "default": ""
+  },
+  {
+    "id": "drone_api.radarr.url",
+    "label": "Radarr URL (add URL base if configured, min. version: 0.2.0.897)",
+    "type": "text",
+    "default": "http://127.0.0.1:7878"
+  },
+  {
+    "id": "drone_api.radarr.api_key",
+    "label": "Radarr API key",
     "type": "text",
     "default": ""
   },
@@ -357,12 +375,6 @@
   {
     "id": "providers.multithreading",
     "label": "Search enabled providers simultaneously (multithreading)",
-    "type": "bool",
-    "default": "true"
-  },
-  {
-    "id": "provider.opensubtitles.use_tags",
-    "label": "I keep the exact (release-) filename of my media files",
     "type": "bool",
     "default": "true"
   },

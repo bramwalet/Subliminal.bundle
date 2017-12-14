@@ -101,6 +101,8 @@ class Config(object):
     activity_mode = None
     no_refresh = False
     plex_transcoder = None
+    refiner_settings = None
+    exact_filenames = False
 
     store_recently_played_amount = 40
 
@@ -136,6 +138,7 @@ class Config(object):
         self.set_plugin_mode()
         self.set_plugin_lock()
         self.set_activity_modes()
+        self.parse_rename_mode()
 
         self.lang_list = self.get_lang_list()
         self.subtitle_destination_folder = self.get_subtitle_destination_folder()
@@ -505,7 +508,7 @@ class Config(object):
                                           },
                              'opensubtitles': {'username': Prefs['provider.opensubtitles.username'],
                                                'password': Prefs['provider.opensubtitles.password'],
-                                               'use_tag_search': cast_bool(Prefs['provider.opensubtitles.use_tags']),
+                                               'use_tag_search': self.exact_filenames,
                                                'only_foreign': cast_bool(Prefs['subtitles.only_foreign']),
                                                'is_vip': cast_bool(Prefs['provider.opensubtitles.is_vip'])
                                                },
@@ -605,6 +608,32 @@ class Config(object):
         fn = os.path.join(base_path, "Plex Transcoder" if not mswindows else "Plex Transcoder.exe")
         if os.path.isfile(fn):
             return fn
+
+    def parse_rename_mode(self):
+        mode = Prefs["media_rename"]
+        self.refiner_settings = {}
+
+        if mode == "none of the above":
+            return
+
+        elif mode == "I keep the original filenames":
+            self.exact_filenames = True
+
+        elif mode == "Filebot":
+            self.refiner_settings["filebot"] = True
+
+        elif mode == "Sonarr/Radarr (fill api info below)":
+            if Prefs["drone_api.sonarr.url"] and Prefs["drone_api.sonarr.api_key"]:
+                self.refiner_settings["sonarr"] = {
+                    "url": Prefs["drone_api.sonarr.url"],
+                    "api_key": Prefs["drone_api.sonarr.api_key"]
+                }
+
+            if Prefs["drone_api.radarr.url"] and Prefs["drone_api.radarr.api_key"]:
+                self.refiner_settings["radarr"] = {
+                    "url": Prefs["drone_api.radarr.url"],
+                    "api_key": Prefs["drone_api.radarr.api_key"]
+                }
 
     def init_subliminal_patches(self):
         # configure custom subtitle destination folders for scanning pre-existing subs
