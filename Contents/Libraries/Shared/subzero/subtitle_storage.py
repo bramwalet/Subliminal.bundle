@@ -5,7 +5,6 @@ import os
 import logging
 import threading
 import traceback
-import gzip
 import types
 
 import zlib
@@ -14,6 +13,7 @@ from babelfish import Language
 
 from json_tricks.nonp import loads#, dumps
 from subzero.lib.json import dumps
+from subzero.lib import geezip
 
 
 from constants import mode_map
@@ -529,7 +529,7 @@ class StoredSubtitlesManager(object):
             subs_for_video = JSONStoredVideoSubtitles()
             try:
                 with self.threadkit.Lock(key="sub_storage"):
-                    with gzip.open(json_path, 'rb', compresslevel=6) as f:
+                    with geezip.open(json_path, 'rb', compresslevel=6) as f:
                         s = f.read()
 
                 data = loads(s)
@@ -587,7 +587,7 @@ class StoredSubtitlesManager(object):
         fn = self.get_json_data_path(self.get_storage_filename(subs_for_video.video_id))
         json_data = str(dumps(data, ensure_ascii=False))
         with self.threadkit.Lock(key="sub_storage"):
-            with gzip.open(fn, "wb", compresslevel=6) as f:
+            with geezip.open(fn, "wb", compresslevel=6) as f:
                 f.write(json_data)
 
             #os.rename(temp_fn, fn)
