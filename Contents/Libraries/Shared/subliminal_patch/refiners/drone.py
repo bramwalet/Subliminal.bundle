@@ -32,7 +32,7 @@ class DroneAPIClient(object):
     def get_guess(self, video, scene_name):
         raise NotImplemented
 
-    def get_scene_name(selfv, video):
+    def get_additional_data(self, video):
         raise NotImplemented
 
     def build_params(self, params):
@@ -92,28 +92,28 @@ class SonarrClient(DroneAPIClient):
     def __init__(self, base_url="http://127.0.0.1:8989/", **kwargs):
         super(SonarrClient, self).__init__(base_url=base_url, **kwargs)
 
-    def get_scene_name(self, video):
+    def get_additional_data(self, video):
         for attr in self.needs_attrs_to_work:
             if getattr(video, attr, None) is None:
-                logger.debug(u"Not enough data available for Sonarr")
+                logger.debug(u"%s: Not enough data available for Sonarr", video.name)
                 return
 
         found_show_id = None
         for show in self.get("series"):
-            if show["title"] == video.series:
+            if show["title"] == video.series or (video.series_tvdb_id and show["tvdbId"] == video.series_tvdb_id):
                 found_show_id = show["id"]
                 break
 
         if not found_show_id:
-            logger.debug(u"Show not found in Sonarr: %s", video.series)
+            logger.debug(u"%s: Show not found in Sonarr: %s", video.name, video.series)
             return
 
         for episode in self.get("episode", series_id=found_show_id):
             if episode["seasonNumber"] == video.season and episode["episodeNumber"] == video.episode:
                 scene_name = episode.get("episodeFile", {}).get("sceneName")
                 if scene_name:
-                    logger.debug(u"Got original filename from Sonarr: %s", scene_name)
-                    return scene_name
+                    logger.debug(u"%s: Got original filename from Sonarr: %s", video.name, scene_name)
+                    return {"scene_name": scene_name}
 
     def get_guess(self, video, scene_name):
         """
@@ -142,22 +142,30 @@ class RadarrClient(DroneAPIClient):
     def __init__(self, base_url="http://127.0.0.1:7878/", **kwargs):
         super(RadarrClient, self).__init__(base_url=base_url, **kwargs)
 
-    def get_scene_name(self, video):
+    def get_additional_data(self, video):
         for attr in self.needs_attrs_to_work:
             if getattr(video, attr, None) is None:
-                logger.debug(u"Not enough data available for Radarr")
+                logger.debug(u"%s: Not enough data available for Radarr")
                 return
 
-
-        # fixme: if no sceneName, use releaseGroup
         movie_fn = os.path.basename(video.name)
         for movie in self.get("movie"):
             movie_file = movie.get("movieFile", {})
-            if movie["title"] == video.title or movie_file.get("relativePath") == movie_fn:
+            if movie["title"] == video.title or (video.imdb_id and movie["imdbId"] == video.imdb_id)\
+                    or movie_file.get("relativePath") == movie_fn:
                 scene_name = movie_file.get("sceneName")
+                release_group = movie_file.get("releaseGroup")
+
+                additional_data = {}
                 if scene_name:
-                    logger.debug(u"Got original filename from Radarr: %s", scene_name)
-                    return scene_name
+                    logger.debug(u"%s: Got original filename from Radarr: %s", movie_fn, scene_name)
+                    additional_data["scene_name"] = scene_name
+
+                if release_group:
+                    logger.debug(u"%s: Got release group from Radarr: %s", movie_fn, release_group)
+                    additional_data["release_group"] = release_group
+
+                return additional_data
 
     def get_guess(self, video, scene_name):
         """
@@ -205,6 +213,9 @@ def refine(video, **kwargs):
 
     client = DroneManager.get_client(video, kwargs)
 
-    scene_name = client.get_scene_name(video)
-    if scene_name:
-        client.update_video(video, scene_name)
+    additional_data = client.get_additional_data(video)
+    if "scene_name" in additional_data:
+        client.update_video(video, additional_data["scene_name"])
+
+    if "release_group" in additional_data and not video.release_group:
+        video.release_group = REMOVE_CRAP_FROM_FILENAME.sub(r"\2", additional_data["release_group"])
