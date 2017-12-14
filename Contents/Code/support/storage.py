@@ -105,7 +105,7 @@ def save_subtitles_to_file(subtitles, tags=None, forced_tag=None):
         else:
             file_path = video
 
-        fld = get_target_folder(video)
+        fld = get_target_folder(file_path)
         subliminal_save_subtitles(file_path, video_subtitles, directory=fld, single=cast_bool(Prefs['subtitles.only_one']),
                                   chmod=config.chmod, forced_tag=forced_tag, path_decoder=force_unicode,
                                   debug_mods=config.debug_mods, formats=config.subtitle_formats, tags=tags)
