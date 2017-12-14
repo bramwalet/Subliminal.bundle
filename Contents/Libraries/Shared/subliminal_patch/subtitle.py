@@ -226,6 +226,8 @@ class Subtitle(Subtitle_):
                 subs = pysubs2.SSAFile.from_string(text)
                 if subs.format == "microdvd":
                     logger.info("Got FPS from MicroDVD subtitle: %s", subs.fps)
+                else:
+                    logger.info("Got format: %s", subs.format)
             except pysubs2.UnknownFPSError:
                 # if parsing failed, suggest our media file's fps
                 logger.info("No FPS info in subtitle. Using our own media FPS for the MicroDVD subtitle: %s",

@@ -17,7 +17,7 @@ from support.items import get_item
 
 
 def get_subtitle_storage():
-    return StoredSubtitlesManager(Data, get_item)
+    return StoredSubtitlesManager(Data, Thread, get_item)
 
 
 def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_type, mode="a"):
@@ -38,8 +38,8 @@ def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_ty
         for subtitle in video_subtitles:
             lang = str(subtitle.language)
             subtitle.normalize()
-            Log.Debug(u"Adding subtitle to storage: %s, %s, %s, %s" % (video_id, part_id, title,
-                                                                       subtitle.guess_encoding()))
+            Log.Debug(u"Adding subtitle to storage: %s, %s, %s, %s, %s" % (video_id, part_id, lang, title,
+                                                                           subtitle.guess_encoding()))
             ret_val = stored_subs.add(part_id, lang, subtitle, storage_type, mode=mode)
 
             if ret_val:
@@ -183,4 +183,3 @@ def save_subtitles(scanned_video_part_map, downloaded_subtitles, mode="a", bare_
         store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage, mode=mode)
 
     return save_successful
-

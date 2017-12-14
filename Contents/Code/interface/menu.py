@@ -2,7 +2,7 @@
 import locale
 import logging
 import os
-
+import platform
 import logger
 
 from item_details import ItemDetailsMenu
@@ -233,6 +233,7 @@ def ValidatePrefs():
     # fixme: check existance of and os access of logs
     Log.Debug("Platform: %s", Core.runtime.platform)
     Log.Debug("OS: %s", Core.runtime.os)
+    Log.Debug("Python: %s", platform.python_version())
     Log.Debug("----- Environment -----")
     for key, value in os.environ.iteritems():
         if key.startswith("PLEX") or key.startswith("SZ_"):

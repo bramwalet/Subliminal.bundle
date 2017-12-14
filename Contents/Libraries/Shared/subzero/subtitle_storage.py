@@ -3,9 +3,12 @@ import datetime
 import hashlib
 import os
 import logging
+import threading
 import traceback
 import gzip
 import types
+
+import zlib
 
 from babelfish import Language
 
@@ -17,6 +20,8 @@ from constants import mode_map
 from subliminal_patch.subtitle import ModifiedSubtitle
 
 logger = logging.getLogger(__name__)
+
+storage_lock = threading.Lock()
 
 
 class StoredSubtitle(object):
@@ -369,9 +374,10 @@ class StoredSubtitlesManager(object):
     version = 3
     extension = ".json.gz"
 
-    def __init__(self, storage, plexapi_item_getter):
+    def __init__(self, storage, threadkit, plexapi_item_getter):
         self.storage = storage
         self.get_item = plexapi_item_getter
+        self.threadkit = threadkit
 
     def destroy(self):
         self.storage = None
@@ -522,8 +528,9 @@ class StoredSubtitlesManager(object):
             # new style data
             subs_for_video = JSONStoredVideoSubtitles()
             try:
-                with gzip.open(json_path, 'rb', compresslevel=6) as f:
-                    s = f.read()
+                with self.threadkit.Lock(key="sub_storage"):
+                    with gzip.open(json_path, 'rb', compresslevel=6) as f:
+                        s = f.read()
 
                 data = loads(s)
             except:
@@ -534,6 +541,7 @@ class StoredSubtitlesManager(object):
             data = None
 
         elif not bare_fn.endswith(".json.gz") and os.path.exists(os.path.join(self.dataitems_path, bare_fn)):
+            logger.info("Migrating legacy data for: %s", bare_fn)
             subs_for_video = self.migrate_legacy_data(bare_fn, json_path)
 
         if not subs_for_video:
@@ -566,6 +574,7 @@ class StoredSubtitlesManager(object):
     def load_or_new(self, plex_item, save=False):
         subs_for_video = self.load(plex_item.rating_key)
         if not subs_for_video:
+            logger.info("Creating new subtitle storage for: %s", plex_item.rating_key)
             subs_for_video = JSONStoredVideoSubtitles()
             subs_for_video.initialize(plex_item, version=self.version)
             if save:
@@ -574,12 +583,14 @@ class StoredSubtitlesManager(object):
 
     def save(self, subs_for_video):
         data = subs_for_video.serialize()
-        temp_fn = self.get_json_data_path(self.get_storage_filename(subs_for_video.video_id) + "_tmp")
+        #temp_fn = self.get_json_data_path(self.get_storage_filename(subs_for_video.video_id) + "_tmp")
         fn = self.get_json_data_path(self.get_storage_filename(subs_for_video.video_id))
         json_data = str(dumps(data, ensure_ascii=False))
-        with gzip.open(temp_fn, "wb", compresslevel=6) as f:
-            f.write(json_data)
-        os.rename(temp_fn, fn)
+        with self.threadkit.Lock(key="sub_storage"):
+            with gzip.open(fn, "wb", compresslevel=6) as f:
+                f.write(json_data)
+
+            #os.rename(temp_fn, fn)
 
     def delete(self, filename):
         os.remove(filename)
