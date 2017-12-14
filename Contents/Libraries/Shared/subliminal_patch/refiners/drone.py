@@ -148,6 +148,8 @@ class RadarrClient(DroneAPIClient):
                 logger.debug(u"Not enough data available for Radarr")
                 return
 
+
+        # fixme: if no sceneName, use releaseGroup
         movie_fn = os.path.basename(video.name)
         for movie in self.get("movie"):
             movie_file = movie.get("movieFile", {})
