@@ -76,12 +76,14 @@ class DroneAPIClient(object):
         :param scene_name:
         :return:
         """
-        guess = self.get_guess(video, scene_name)
+        scene_fn, guess = self.get_guess(video, scene_name)
         for attr in self._fill_attrs:
             if attr in guess:
                 value = guess.get(attr)
-                logger.debug(u"Filling attribute %s: %s", attr, value)
+                logger.debug(u"%s: Filling attribute %s: %s", video.name, attr, value)
                 setattr(video, attr, value)
+
+        video.name = scene_fn
 
 
 class SonarrClient(DroneAPIClient):
@@ -131,7 +133,7 @@ class SonarrClient(DroneAPIClient):
             "type": "episode",
         }
 
-        return guessit(guess_from, options=hints)
+        return guess_from, guessit(guess_from, options=hints)
 
 
 class RadarrClient(DroneAPIClient):
@@ -183,7 +185,7 @@ class RadarrClient(DroneAPIClient):
             "type": "movie",
         }
 
-        return guessit(guess_from, options=hints)
+        return guess_from, guessit(guess_from, options=hints)
 
 
 class DroneManager(object):
