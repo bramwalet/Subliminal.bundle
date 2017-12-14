@@ -6,6 +6,7 @@ import logging
 import re
 import binascii
 import types
+import os
 
 from pipes import quote
 from guessit import guessit
@@ -92,3 +93,5 @@ def refine(video, **kwargs):
                 value = guess.get(attr)
                 logger.debug(u"%s: Filling attribute %s: %s", video.name, attr, value)
                 setattr(video, attr, value)
+
+        video.original_name = os.path.basename(guess_from)

@@ -85,8 +85,7 @@ class DroneAPIClient(object):
                 logger.debug(u"%s: Filling attribute %s: %s", video.name, attr, value)
                 setattr(video, attr, value)
 
-        dirname = os.path.dirname(video.name)
-        video.name = os.path.join(dirname, scene_fn)
+        video.original_name = scene_fn
 
 
 class SonarrClient(DroneAPIClient):
