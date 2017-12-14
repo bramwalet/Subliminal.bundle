@@ -51,9 +51,6 @@ def refine(video, **kwargs):
     :return:
     """
 
-    if sys.platform == "win32":
-        return
-
     if sys.platform in XATTR_MAP:
         logger.debug("Using native xattr calls for %s", sys.platform)
     else:
@@ -67,9 +64,9 @@ def refine(video, **kwargs):
             output = subprocess.check_output(quote_args(args), stderr=subprocess.PIPE, shell=True)
         except subprocess.CalledProcessError, e:
             if e.returncode == 1:
-                logger.info(u"Couldn't get filebot original filename: %s" % video.name)
+                logger.info(u"%s: Couldn't get filebot original filename", video.name)
             else:
-                logger.error(u"Unexpected error while getting filebot original filename: %s: ", video.name,
+                logger.error(u"%s: Unexpected error while getting filebot original filename: ", video.name,
                              traceback.format_exc())
             return
     else:
@@ -78,7 +75,7 @@ def refine(video, **kwargs):
     try:
         orig_fn = match_func(output)
     except:
-        logger.info(u"Couldn't get filebot original filename: %s" % video.name)
+        logger.info(u"%s: Couldn't get filebot original filename" % video.name)
     else:
         guess_from = REMOVE_CRAP_FROM_FILENAME.sub(r"\2", orig_fn)
 
@@ -93,5 +90,5 @@ def refine(video, **kwargs):
         for attr in ("release_group", "format",):
             if attr in guess:
                 value = guess.get(attr)
-                logger.debug(u"Filling attribute %s: %s", attr, value)
+                logger.debug(u"%s: Filling attribute %s: %s", video.name, attr, value)
                 setattr(video, attr, value)
