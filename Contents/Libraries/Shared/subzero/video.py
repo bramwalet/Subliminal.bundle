@@ -29,14 +29,17 @@ def parse_video(fn, video_info, hints, external_subtitles=False, embedded_subtit
     # refiners
     # fixme: add prefs for filebot, sonarr and radarr
     refine_kwargs = {
-        "episode_refiners": ('filebot', 'tvdb', 'sz_omdb',),#('drone',),
-        "movie_refiners": ('filebot', 'sz_omdb',),
+        "episode_refiners": ('drone',), #'filebot', 'tvdb', 'sz_omdb',), #('drone',),
+        "movie_refiners": ('drone',),#('filebot', 'sz_omdb',),
         "embedded_subtitles": False,
         "sonarr": {
             "base_url": "http://127.0.0.1:8989/nzbdrone",
-            "api_key": "xxxxxxxxxxxxxxxxxxxx"
+            "api_key": "xxxxxxxxxxxxxxxxxxxxxxx"
         },
-
+        "radarr": {
+            "base_url": "http://127.0.0.1:17878/radarr",
+            "api_key": "xxxxxxxxxxxxxxxxxxxxxxx"
+        },
     }
 
     # our own metadata refiner :)
@@ -85,11 +88,11 @@ def parse_video(fn, video_info, hints, external_subtitles=False, embedded_subtit
             refine(video, **refine_kwargs)
 
         # still no match? add our own data
-        if not video.series_tvdb_id:
+        if not video.series_tvdb_id and video_info.get("series_tvdb_id"):
             logger.info(u"Adding PMS series_tvdb_id info: %s", video_info.get("series_tvdb_id"))
             video.series_tvdb_id = video_info.get("series_tvdb_id")
 
-        if not video.tvdb_id:
+        if not video.tvdb_id and video_info.get("tvdb_id"):
             logger.info(u"Adding PMS tvdb_id info: %s", video_info.get("tvdb_id"))
             video.tvdb_id = video_info.get("tvdb_id")
 

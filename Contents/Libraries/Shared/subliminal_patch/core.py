@@ -749,4 +749,4 @@ def refine(video, episode_refiners=None, movie_refiners=None, **kwargs):
         try:
             refiner_manager[refiner].plugin(video, **kwargs)
         except:
-            logger.exception('Failed to refine video: %s' % traceback.format_exc())
+            logger.exception('Failed to refine video: ')
