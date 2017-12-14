@@ -5,18 +5,26 @@ import traceback
 import logging
 import re
 import binascii
+import types
 
 from pipes import quote
-
 from guessit import guessit
 from subliminal import Episode
 from subliminal_patch.core import REMOVE_CRAP_FROM_FILENAME
+
+if sys.platform == "win32":
+    from pyads import ADS
 
 logger = logging.getLogger(__name__)
 
 
 def quote_args(seq):
     return ' '.join(quote(arg) for arg in seq)
+
+
+def win32_xattr(fn):
+    handler = ADS(fn)
+    return handler.get_stream_content("net.filebot.filename")
 
 
 XATTR_MAP = {
@@ -27,6 +35,10 @@ XATTR_MAP = {
     "darwin": {
         lambda fn: ["xattr", "-p", "net.filebot.filename", fn],
         lambda result: binascii.unhexlify(result.replace(' ', '').replace('\n', '')).strip("\x00")
+    },
+    "win32": {
+        lambda fn: fn,
+        win32_xattr,
     }
 }
 
@@ -50,15 +62,18 @@ def refine(video, **kwargs):
     args_func, match_func = XATTR_MAP.get(sys.platform, XATTR_MAP["default"])
 
     args = args_func(video.name)
-    try:
-        output = subprocess.check_output(quote_args(args), stderr=subprocess.PIPE, shell=True)
-    except subprocess.CalledProcessError, e:
-        if e.returncode == 1:
-            logger.error(u"Couldn't get filebot original filename: %s" % video.name)
-        else:
-            logger.error(u"Unexpected error while getting filebot original filename: %s: ", video.name,
-                         traceback.format_exc())
-        return
+    if isinstance(args, types.ListType):
+        try:
+            output = subprocess.check_output(quote_args(args), stderr=subprocess.PIPE, shell=True)
+        except subprocess.CalledProcessError, e:
+            if e.returncode == 1:
+                logger.error(u"Couldn't get filebot original filename: %s" % video.name)
+            else:
+                logger.error(u"Unexpected error while getting filebot original filename: %s: ", video.name,
+                             traceback.format_exc())
+            return
+    else:
+        output = args
 
     try:
         orig_fn = match_func(output)
