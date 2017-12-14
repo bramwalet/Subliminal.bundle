@@ -628,12 +628,14 @@ class Config(object):
                     "url": Prefs["drone_api.sonarr.url"],
                     "api_key": Prefs["drone_api.sonarr.api_key"]
                 }
+                self.exact_filenames = True
 
             if Prefs["drone_api.radarr.url"] and Prefs["drone_api.radarr.api_key"]:
                 self.refiner_settings["radarr"] = {
                     "url": Prefs["drone_api.radarr.url"],
                     "api_key": Prefs["drone_api.radarr.api_key"]
                 }
+                self.exact_filenames = True
 
     def init_subliminal_patches(self):
         # configure custom subtitle destination folders for scanning pre-existing subs
