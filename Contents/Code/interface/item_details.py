@@ -115,7 +115,9 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                 embedded_langs = []
                 for stream in part.streams:
                     # subtitle stream
-                    if stream.stream_type == 3 and not stream.stream_key and stream.codec == "srt": #("srt", "ass", "ssa"):
+                    # fixme: add support for unknown language
+                    if stream.stream_type == 3 and not stream.stream_key and stream.codec == "srt" \
+                            and stream.language_code: #("srt", "ass", "ssa"):
                         embedded_langs.append(Language.fromietf(stream.language_code))
                         embedded_count += 1
 
