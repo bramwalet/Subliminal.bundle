@@ -215,14 +215,16 @@ def ValidatePrefs():
 
     for attr in ["plugin_log_path", "server_log_path"]:
         value = getattr(config, attr)
-        access = os.access(value, os.R_OK)
-        if Core.runtime.os == "Windows":
-            try:
-                f = open(value, "r")
-                f.read(1)
-                f.close()
-            except:
-                access = False
+
+        if value:
+            access = os.access(value, os.R_OK)
+            if Core.runtime.os == "Windows":
+                try:
+                    f = open(value, "r")
+                    f.read(1)
+                    f.close()
+                except:
+                    access = False
 
         Log.Debug("config.%s: %s (accessible: %s)", attr, value, access)
 
