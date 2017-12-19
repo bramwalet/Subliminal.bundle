@@ -587,8 +587,18 @@ class StoredSubtitlesManager(object):
         fn = self.get_json_data_path(self.get_storage_filename(subs_for_video.video_id))
         json_data = str(dumps(data, ensure_ascii=False))
         with self.threadkit.Lock(key="sub_storage"):
-            with geezip.open(fn, "wb", compresslevel=6) as f:
+            f = geezip.open(fn, "wb", compresslevel=6)
+
+            try:
+                f.seek(0, os.SEEK_CUR)
                 f.write(json_data)
+                f.flush(zlib_mode=geezip.Z_FINISH)
+                f.seek(0)
+                os.fsync(f.fileno)
+            except:
+                traceback.print_exc()
+            finally:
+                f.close()
 
             #os.rename(temp_fn, fn)
 
