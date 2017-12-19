@@ -1,5 +1,6 @@
 # coding=utf-8
 import datetime
+import gzip
 import hashlib
 import os
 import logging
@@ -9,6 +10,7 @@ import types
 import portalocker
 import zlib
 
+import sys
 from babelfish import Language
 
 from json_tricks.nonp import loads#, dumps
@@ -533,9 +535,15 @@ class StoredSubtitlesManager(object):
             subs_for_video = JSONStoredVideoSubtitles()
             try:
                 with self.threadkit.Lock(key="sub_storage_%s" % basename):
-                    with open(json_path, 'rb') as f:
-                        portalocker.lock(f, portalocker.LOCK_EX)
-                        s = zlib.decompress(f.read())
+                    if sys.platform == "win32":
+                        with open(json_path, 'rb') as f:
+                            portalocker.lock(f, portalocker.LOCK_EX)
+                            s = zlib.decompress(f.read())
+
+                    else:
+                        with gzip.open(json_path, 'rb', compresslevel=6) as f:
+                            portalocker.lock(f, portalocker.LOCK_EX)
+                            s = f.read()
 
                 data = loads(s)
             except:
@@ -593,21 +601,26 @@ class StoredSubtitlesManager(object):
         basename = os.path.basename(fn)
         json_data = str(dumps(data, ensure_ascii=False))
         with self.threadkit.Lock(key="sub_storage_%s" % basename):
-            try:
-                f = open(temp_fn, "w+b")
-                portalocker.lock(f, portalocker.LOCK_EX)
-
+            if sys.platform == "win32":
                 try:
-                    f.seek(0, os.SEEK_CUR)
-                    f.write(zlib.compress(json_data, 6))
-                    f.flush()
-                    os.fsync(f.fileno())
+                    f = open(temp_fn, "w+b")
+                    portalocker.lock(f, portalocker.LOCK_EX)
+
+                    try:
+                        f.seek(0, os.SEEK_CUR)
+                        f.write(zlib.compress(json_data, 6))
+                        f.flush()
+                    except:
+                        logger.error("Something went wrong when writing to: %s: %s", basename, traceback.format_exc())
+                    finally:
+                        f.close()
                 except:
-                    logger.error("Something went wrong when writing to: %s: %s", basename, traceback.format_exc())
-                finally:
-                    f.close()
-            except:
-                logger.error("Something REALLY went wrong when writing to: %s: %s", basename, traceback.format_exc())
+                    logger.error("Something REALLY went wrong when writing to: %s: %s", basename,
+                                 traceback.format_exc())
+            else:
+                with gzip.open(temp_fn, "wb", compresslevel=6) as f:
+                    portalocker.lock(f, portalocker.LOCK_EX)
+                    f.write(json_data)
 
             os.rename(temp_fn, fn)
 
