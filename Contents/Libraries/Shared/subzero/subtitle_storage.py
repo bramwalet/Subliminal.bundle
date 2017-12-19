@@ -525,13 +525,16 @@ class StoredSubtitlesManager(object):
         bare_fn = self.get_storage_filename(video_id) if video_id else filename
         json_path = self.get_json_data_path(bare_fn)
         basename = os.path.basename(json_path)
+
+        logger.debug("Loading subtitle storage data file: %s", basename)
+
         if os.path.exists(json_path):
             # new style data
             subs_for_video = JSONStoredVideoSubtitles()
             try:
                 with self.threadkit.Lock(key="sub_storage_%s" % basename):
-                    with geezip.open(json_path, 'rb', compresslevel=6) as f:
-                        s = f.read()
+                    with open(json_path, 'rb') as f:
+                        s = zlib.decompress(f.read())
 
                 data = loads(s)
             except:
@@ -590,11 +593,12 @@ class StoredSubtitlesManager(object):
         json_data = str(dumps(data, ensure_ascii=False))
         with self.threadkit.Lock(key="sub_storage_%s" % basename):
             try:
-                f = geezip.open(temp_fn, "w+b", compresslevel=6)
+                f = open(temp_fn, "w+b")
 
                 try:
                     f.seek(0, os.SEEK_CUR)
-                    f.write(json_data)
+                    f.write(zlib.compress(json_data, 6))
+                    f.flush()
                     os.fsync(f.fileno())
                 except:
                     logger.error("Something went wrong when writing to: %s: %s", basename, traceback.format_exc())
