@@ -6,7 +6,7 @@ import logging
 import threading
 import traceback
 import types
-
+import portalocker
 import zlib
 
 from babelfish import Language
@@ -534,6 +534,7 @@ class StoredSubtitlesManager(object):
             try:
                 with self.threadkit.Lock(key="sub_storage_%s" % basename):
                     with open(json_path, 'rb') as f:
+                        portalocker.lock(f, portalocker.LOCK_EX)
                         s = zlib.decompress(f.read())
 
                 data = loads(s)
@@ -594,6 +595,7 @@ class StoredSubtitlesManager(object):
         with self.threadkit.Lock(key="sub_storage_%s" % basename):
             try:
                 f = open(temp_fn, "w+b")
+                portalocker.lock(f, portalocker.LOCK_EX)
 
                 try:
                     f.seek(0, os.SEEK_CUR)
