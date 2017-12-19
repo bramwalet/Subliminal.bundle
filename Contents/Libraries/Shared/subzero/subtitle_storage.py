@@ -590,7 +590,7 @@ class StoredSubtitlesManager(object):
         json_data = str(dumps(data, ensure_ascii=False))
         with self.threadkit.Lock(key="sub_storage_%s" % basename):
             try:
-                f = geezip.open(fn, "wb", compresslevel=6)
+                f = geezip.open(temp_fn, "w+b", compresslevel=6)
 
                 try:
                     f.seek(0, os.SEEK_CUR)
