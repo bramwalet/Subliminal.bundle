@@ -589,18 +589,21 @@ class StoredSubtitlesManager(object):
         basename = os.path.basename(fn)
         json_data = str(dumps(data, ensure_ascii=False))
         with self.threadkit.Lock(key="sub_storage_%s" % basename):
-            f = geezip.open(fn, "wb", compresslevel=6)
-
             try:
-                f.seek(0, os.SEEK_CUR)
-                f.write(json_data)
-                f.flush(zlib_mode=geezip.Z_FINISH)
-                f.seek(0)
-                os.fsync(f.fileno)
+                f = geezip.open(fn, "wb", compresslevel=6)
+
+                try:
+                    f.seek(0, os.SEEK_CUR)
+                    f.write(json_data)
+                    f.flush(zlib_mode=geezip.Z_FINISH)
+                    f.seek(0)
+                    os.fsync(f.fileno)
+                except:
+                    logger.error("Something went wrong when writing to: %s: %s", basename, traceback.format_exc())
+                finally:
+                    f.close()
             except:
-                traceback.print_exc()
-            finally:
-                f.close()
+                logger.error("Something REALLY went wrong when writing to: %s: %s", basename, traceback.format_exc())
 
             #os.rename(temp_fn, fn)
 
