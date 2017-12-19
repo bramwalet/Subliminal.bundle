@@ -584,7 +584,7 @@ class StoredSubtitlesManager(object):
 
     def save(self, subs_for_video):
         data = subs_for_video.serialize()
-        #temp_fn = self.get_json_data_path(self.get_storage_filename(subs_for_video.video_id) + "_tmp")
+        temp_fn = self.get_json_data_path(self.get_storage_filename(subs_for_video.video_id) + "_tmp")
         fn = self.get_json_data_path(self.get_storage_filename(subs_for_video.video_id))
         basename = os.path.basename(fn)
         json_data = str(dumps(data, ensure_ascii=False))
@@ -596,7 +596,7 @@ class StoredSubtitlesManager(object):
                     f.seek(0, os.SEEK_CUR)
                     f.write(json_data)
                     f.flush(zlib_mode=geezip.Z_FINISH)
-                    f.seek(0)
+                    #f.seek(0)
                     os.fsync(f.fileno)
                 except:
                     logger.error("Something went wrong when writing to: %s: %s", basename, traceback.format_exc())
@@ -605,7 +605,7 @@ class StoredSubtitlesManager(object):
             except:
                 logger.error("Something REALLY went wrong when writing to: %s: %s", basename, traceback.format_exc())
 
-            #os.rename(temp_fn, fn)
+            os.rename(temp_fn, fn)
 
     def delete(self, filename):
         os.remove(filename)
