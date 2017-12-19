@@ -18,4 +18,20 @@ def open(filename, mode="rb", compresslevel=9):
 
 
 class GeezipFile(gzip.GzipFile):
-    pass
+    def close(self):
+        fileobj = self.fileobj
+        if fileobj is None:
+            return
+        self.fileobj = None
+        try:
+            if self.mode == gzip.WRITE:
+                fileobj.write(self.compress.flush(Z_FINISH))
+                gzip.write32u(fileobj, self.crc)
+                # self.size may exceed 2GB, or even 4GB
+                gzip.write32u(fileobj, self.size & 0xffffffffL)
+                fileobj.flush()
+        finally:
+            myfileobj = self.myfileobj
+            if myfileobj:
+                self.myfileobj = None
+                myfileobj.close()

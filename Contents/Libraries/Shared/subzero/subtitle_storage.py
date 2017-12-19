@@ -595,9 +595,7 @@ class StoredSubtitlesManager(object):
                 try:
                     f.seek(0, os.SEEK_CUR)
                     f.write(json_data)
-                    f.flush(zlib_mode=geezip.Z_FINISH)
-                    #f.seek(0)
-                    os.fsync(f.fileno)
+                    os.fsync(f.fileno())
                 except:
                     logger.error("Something went wrong when writing to: %s: %s", basename, traceback.format_exc())
                 finally:
