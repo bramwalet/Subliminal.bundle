@@ -29,7 +29,9 @@ class SubtitleHistoryItem(object):
         self.rating_key = str(rating_key)
         self.provider_name = subtitle.provider_name
         self.lang_name = str(subtitle.language.name)
-        self.lang_data = str(subtitle.language.alpha3), str(subtitle.language.country), str(subtitle.language.script)
+        self.lang_data = str(subtitle.language.alpha3), \
+                         str(subtitle.language.country) if subtitle.language.country else None, \
+                         str(subtitle.language.script) if subtitle.language.script else None
         self.score = subtitle.score
         self.time = time or datetime.datetime.now()
         self.mode = mode
@@ -41,7 +43,9 @@ class SubtitleHistoryItem(object):
     @property
     def language(self):
         if self.lang_data:
-            return Language(self.lang_data[0], country=self.lang_data[1], script=self.lang_data[2])
+            lang_data = [s if s != "None" else None for s in self.lang_data]
+            if lang_data[0]:
+                return Language(lang_data[0], country=lang_data[1], script=lang_data[2])
 
     @property
     def mode_verbose(self):
