@@ -67,8 +67,8 @@ def refine(video, **kwargs):
             if e.returncode == 1:
                 logger.info(u"%s: Couldn't get filebot original filename", video.name)
             else:
-                logger.error(u"%s: Unexpected error while getting filebot original filename: ", video.name,
-                             traceback.format_exc())
+                logger.error(u"%s: Unexpected error while getting filebot original filename: %s", video.name,
+                              traceback.format_exc())
             return
     else:
         output = args
