@@ -98,6 +98,8 @@ def refine(video, **kwargs):
     else:
         guess_from = REMOVE_CRAP_FROM_FILENAME.sub(r"\2", orig_fn)
 
+        logger.debug(u"Got original filename: %s", guess_from)
+
         # guess
         hints = {
             "single_value": True,
