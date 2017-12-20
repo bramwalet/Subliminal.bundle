@@ -536,9 +536,15 @@ class StoredSubtitlesManager(object):
             try:
                 with self.threadkit.Lock(key="sub_storage_%s" % basename):
                     if sys.platform == "win32":
-                        with open(json_path, 'rb') as f:
-                            portalocker.lock(f, portalocker.LOCK_EX)
-                            s = zlib.decompress(f.read())
+                        try:
+                            with open(json_path, 'rb') as f:
+                                portalocker.lock(f, portalocker.LOCK_EX)
+                                s = zlib.decompress(f.read())
+                        except zlib.error:
+                            # fallback to old gzip win32 implementation
+                            with gzip.open(json_path, 'rb', compresslevel=6) as f:
+                                portalocker.lock(f, portalocker.LOCK_EX)
+                                s = f.read()
 
                     else:
                         with gzip.open(json_path, 'rb', compresslevel=6) as f:
