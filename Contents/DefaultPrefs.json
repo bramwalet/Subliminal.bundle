@@ -209,6 +209,7 @@
     "values": [
       "Sonarr/Radarr (fill api info below)",
       "Filebot",
+      "Sonarr/Radarr/Filebot",
       "I keep the original filenames",
       "none of the above"
     ],
