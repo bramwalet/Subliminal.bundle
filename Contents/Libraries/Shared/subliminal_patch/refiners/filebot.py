@@ -12,6 +12,7 @@ from pipes import quote
 from guessit import guessit
 from subliminal import Episode
 from subliminal_patch.core import REMOVE_CRAP_FROM_FILENAME
+from subzero.lib.which import find_executable
 
 if sys.platform == "win32":
     from pyads import ADS
@@ -28,10 +29,24 @@ def win32_xattr(fn):
     return handler.get_stream_content("net.filebot.filename")
 
 
+def default_xattr(fn):
+    if not default_xattr_bin:
+        raise Exception("Neither getfattr, attr nor filebot were found")
+
+    if "getfattr" in default_xattr_bin:
+        return ["getfattr", "-n", "user.net.filebot.filename", fn]
+
+    elif "attr" in default_xattr_bin:
+        return ["attr", "-g", "net.filebot.filename", fn]
+
+    return ["filebot", "-script", "fn:xattr", fn]
+
+
 XATTR_MAP = {
     "default": (
-        lambda fn: ["getfattr", "-n", "user.net.filebot.filename", fn],
-        lambda result: re.search('(?um)user\.net\.filebot\.filename="(.+)"', result).group(1)
+        default_xattr,
+        lambda result: re.search('(?um)(net\.filebot\.filename(?=="|: )[=:" ]+|Attribute.+:\s)([^"\n\r\0]+)',
+                                 result).group(2)
     ),
     "darwin": {
         lambda fn: ["xattr", "-p", "net.filebot.filename", fn],
@@ -42,6 +57,10 @@ XATTR_MAP = {
         win32_xattr,
     }
 }
+
+if sys.platform not in XATTR_MAP:
+    default_xattr_bin = find_executable("getfattr") or find_executable("attr") or find_executable("filebot")
+    logger.info("Using %s for extended attribute fetching", default_xattr_bin)
 
 
 def refine(video, **kwargs):
