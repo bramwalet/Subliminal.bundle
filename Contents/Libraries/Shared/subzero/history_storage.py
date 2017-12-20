@@ -75,24 +75,27 @@ class SubtitleHistoryItem(object):
 class SubtitleHistory(object):
     size = 100
     storage = None
+    threadkit = None
 
-    def __init__(self, storage, size=100):
+    def __init__(self, storage, threadkit, size=100):
         self.size = size
         self.storage = storage
+        self.threadkit = threadkit
 
     def add(self, item_title, rating_key, section_title=None, subtitle=None, mode="a", time=None):
-        items = self.items
+        with self.threadkit.Lock(key="sub_history_add"):
+            items = self.items
 
-        item = SubtitleHistoryItem(item_title, rating_key, section_title=section_title, subtitle=subtitle, mode=mode, time=time)
+            item = SubtitleHistoryItem(item_title, rating_key, section_title=section_title, subtitle=subtitle, mode=mode, time=time)
 
-        # insert item
-        items.insert(0, item)
+            # insert item
+            items.insert(0, item)
 
-        # clamp item amount
-        items = items[:self.size]
+            # clamp item amount
+            items = items[:self.size]
 
-        # store items
-        self.storage.SaveObject("subtitle_history", items)
+            # store items
+            self.storage.SaveObject("subtitle_history", items)
 
     @property
     def items(self):
@@ -110,6 +113,5 @@ class SubtitleHistory(object):
 
     def destroy(self):
         self.storage = None
-
-
+        self.threadkit = None
 
