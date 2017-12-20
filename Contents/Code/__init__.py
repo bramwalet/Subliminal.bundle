@@ -212,6 +212,7 @@ class SubZeroAgent(object):
                         history = get_history()
                         history.add(item_title, video.id, section_title=video.plexapi_metadata["section"],
                                     subtitle=subtitle)
+                        history.destroy()
             else:
                 # store subtitle info even if we've downloaded none
                 store_subtitle_info(scanned_video_part_map, dict((k, []) for k in scanned_video_part_map.keys()),

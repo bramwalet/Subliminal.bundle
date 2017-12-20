@@ -28,8 +28,8 @@ class SubtitleHistoryItem(object):
         self.section_title = section_title
         self.rating_key = str(rating_key)
         self.provider_name = subtitle.provider_name
-        self.lang_name = subtitle.language.name
-        self.lang_data = subtitle.language.alpha3, subtitle.language.country, subtitle.language.script
+        self.lang_name = str(subtitle.language.name)
+        self.lang_data = str(subtitle.language.alpha3), str(subtitle.language.country), str(subtitle.language.script)
         self.score = subtitle.score
         self.time = time or datetime.datetime.now()
         self.mode = mode
@@ -70,31 +70,42 @@ class SubtitleHistoryItem(object):
 
 class SubtitleHistory(object):
     size = 100
-    history_items = None
     storage = None
 
     def __init__(self, storage, size=100):
         self.size = size
         self.storage = storage
-        self.history_items = []
-        try:
-            self.history_items = storage.LoadObject("subtitle_history") or []
-        except:
-            logger.error("Failed to load history storage: %s" % traceback.format_exc())
-        if not isinstance(self.history_items, types.ListType):
-            self.history_items = []
 
     def add(self, item_title, rating_key, section_title=None, subtitle=None, mode="a", time=None):
-        items = self.history_items
+        items = self.items
+
         item = SubtitleHistoryItem(item_title, rating_key, section_title=section_title, subtitle=subtitle, mode=mode, time=time)
 
         # insert item
         items.insert(0, item)
 
         # clamp item amount
-        self.history_items = items[:self.size]
+        items = items[:self.size]
 
         # store items
-        self.storage.SaveObject("subtitle_history", self.history_items)
+        self.storage.SaveObject("subtitle_history", items)
+
+    @property
+    def items(self):
+        try:
+            items = self.storage.LoadObject("subtitle_history") or []
+        except:
+            items = []
+            logger.error("Failed to load history storage: %s" % traceback.format_exc())
+
+        if not isinstance(items, types.ListType):
+            items = []
+        else:
+            items = items[:]
+        return items
+
+    def destroy(self):
+        self.storage = None
+
 
 

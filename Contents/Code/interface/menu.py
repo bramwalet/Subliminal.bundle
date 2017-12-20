@@ -132,7 +132,7 @@ def HistoryMenu():
     history = get_history()
     oc = SubFolderObjectContainer(title2="History", replace_parent=True)
 
-    for item in history.history_items:
+    for item in history.items:
         possible_language = item.language
         language_display = item.lang_name if not possible_language else display_language(possible_language)
 
@@ -143,6 +143,8 @@ def HistoryMenu():
             summary=u"%s in %s (%s, score: %s), %s" % (language_display, item.section_title,
                                                        item.provider_name, item.score, df(item.time))
         ))
+
+    history.destroy()
 
     return oc
 

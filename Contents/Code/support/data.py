@@ -28,6 +28,7 @@ def migrate():
                         time=item.time)
 
         del Dict["history"]
+        history.destroy()
         Dict.Save()
 
     # migrate subtitle storage from Dict to Data

@@ -201,6 +201,7 @@ class DownloadSubtitleMixin(object):
                     history.add(item_title, video.id, section_title=video.plexapi_metadata["section"],
                                 subtitle=subtitle,
                                 mode=mode)
+                    history.destroy()
 
                     # clear missing subtitles menu data
                     if not scheduler.is_task_running("MissingSubtitles"):
@@ -360,100 +361,103 @@ class SearchAllRecentlyAddedMissing(Task):
         Log.Info(u"%s: Searching for subtitles for %s items", self.name, self.items_searching)
 
         # search for subtitles in viable items
-        for fn, stored_subs in viable_items.iteritems():
-            video_id = stored_subs.video_id
+        try:
+            for fn, stored_subs in viable_items.iteritems():
+                video_id = stored_subs.video_id
 
-            if stored_subs.item_type == "episode":
-                min_score = min_score_series
-            else:
-                min_score = min_score_movies
+                if stored_subs.item_type == "episode":
+                    min_score = min_score_series
+                else:
+                    min_score = min_score_movies
 
-            parts = []
-            plex_item = get_item(video_id)
+                parts = []
+                plex_item = get_item(video_id)
 
-            if not plex_item:
-                Log.Info(u"%s: Item %s unknown, skipping", self.name, video_id)
-                continue
-
-            if is_ignored(video_id, item=plex_item):
-                continue
-
-            for media in plex_item.media:
-                parts += media.parts
-
-            downloads_per_video = 0
-            hit_providers = False
-            for part in parts:
-                part_id = part.id
-
-                try:
-                    metadata = get_plex_metadata(video_id, part_id, stored_subs.item_type)
-                except PartUnknownException:
-                    Log.Info(u"%s: Part %s:%s unknown, skipping", self.name, video_id, part_id)
+                if not plex_item:
+                    Log.Info(u"%s: Item %s unknown, skipping", self.name, video_id)
                     continue
 
-                if not metadata:
-                    Log.Info(u"%s: Part %s:%s unknown, skipping", self.name, video_id, part_id)
+                if is_ignored(video_id, item=plex_item):
                     continue
 
-                Log.Debug(u"%s: Looking for missing subtitles: %s:%s", self.name, video_id, part_id)
-                scanned_parts = scan_videos([metadata], kind="series"
-                                            if stored_subs.item_type == "episode" else "movie")
+                for media in plex_item.media:
+                    parts += media.parts
 
-                downloaded_subtitles = download_best_subtitles(scanned_parts, min_score=min_score)
-                hit_providers = downloaded_subtitles is not None
-                download_successful = False
-
-                if downloaded_subtitles:
-                    downloaded_any = any(downloaded_subtitles.values())
-                    if not downloaded_any:
-                        continue
+                downloads_per_video = 0
+                hit_providers = False
+                for part in parts:
+                    part_id = part.id
 
                     try:
-                        save_subtitles(scanned_parts, downloaded_subtitles, mode="a", mods=config.default_mods)
-                        Log.Debug(u"%s: Downloaded subtitle for item with missing subs: %s", self.name, video_id)
-                        download_successful = True
-                        refresh_item(video_id)
-                        track_usage("Subtitle", "manual", "download", 1)
-                    except:
-                        Log.Error(u"%s: Something went wrong when downloading specific subtitle: %s", self.name,
-                                  traceback.format_exc())
-                    finally:
+                        metadata = get_plex_metadata(video_id, part_id, stored_subs.item_type)
+                    except PartUnknownException:
+                        Log.Info(u"%s: Part %s:%s unknown, skipping", self.name, video_id, part_id)
+                        continue
+
+                    if not metadata:
+                        Log.Info(u"%s: Part %s:%s unknown, skipping", self.name, video_id, part_id)
+                        continue
+
+                    Log.Debug(u"%s: Looking for missing subtitles: %s:%s", self.name, video_id, part_id)
+                    scanned_parts = scan_videos([metadata], kind="series"
+                                                if stored_subs.item_type == "episode" else "movie")
+
+                    downloaded_subtitles = download_best_subtitles(scanned_parts, min_score=min_score)
+                    hit_providers = downloaded_subtitles is not None
+                    download_successful = False
+
+                    if downloaded_subtitles:
+                        downloaded_any = any(downloaded_subtitles.values())
+                        if not downloaded_any:
+                            continue
+
                         try:
-                            item_title = get_title_for_video_metadata(metadata, add_section_title=False)
-                            if download_successful:
-                                # store item in history
-                                for video, video_subtitles in downloaded_subtitles.items():
-                                    if not video_subtitles:
-                                        continue
-
-                                    for subtitle in video_subtitles:
-                                        downloads_per_video += 1
-                                        history.add(item_title, video.id, section_title=metadata["section"],
-                                                    subtitle=subtitle,
-                                                    mode="a")
+                            save_subtitles(scanned_parts, downloaded_subtitles, mode="a", mods=config.default_mods)
+                            Log.Debug(u"%s: Downloaded subtitle for item with missing subs: %s", self.name, video_id)
+                            download_successful = True
+                            refresh_item(video_id)
+                            track_usage("Subtitle", "manual", "download", 1)
                         except:
-                            Log.Error(u"%s: DEBUG HIT: %s", self.name, traceback.format_exc())
+                            Log.Error(u"%s: Something went wrong when downloading specific subtitle: %s", self.name,
+                                      traceback.format_exc())
+                        finally:
+                            try:
+                                item_title = get_title_for_video_metadata(metadata, add_section_title=False)
+                                if download_successful:
+                                    # store item in history
+                                    for video, video_subtitles in downloaded_subtitles.items():
+                                        if not video_subtitles:
+                                            continue
 
-                    Log.Debug(u"%s: Waiting %s seconds before continuing", self.name, PROVIDER_SLACK)
-                    time.sleep(PROVIDER_SLACK)
+                                        for subtitle in video_subtitles:
+                                            downloads_per_video += 1
+                                            history.add(item_title, video.id, section_title=metadata["section"],
+                                                        subtitle=subtitle,
+                                                        mode="a")
+                            except:
+                                Log.Error(u"%s: DEBUG HIT: %s", self.name, traceback.format_exc())
 
-            download_count += downloads_per_video
+                        Log.Debug(u"%s: Waiting %s seconds before continuing", self.name, PROVIDER_SLACK)
+                        time.sleep(PROVIDER_SLACK)
 
-            if downloads_per_video:
-                videos_with_downloads += 1
+                download_count += downloads_per_video
 
-            self.items_done = self.items_done + 1
-            self.percentage = int(self.items_done * 100 / self.items_searching)
+                if downloads_per_video:
+                    videos_with_downloads += 1
 
-            if downloads_per_video:
-                Log.Debug(u"%s: Subtitles have been downloaded, "
-                          u"waiting %s seconds before continuing", self.name, DL_PROVIDER_SLACK)
-                time.sleep(DL_PROVIDER_SLACK)
-            else:
-                if hit_providers:
-                    Log.Debug(u"%s: Waiting %s seconds before continuing", self.name, PROVIDER_SLACK)
-                    time.sleep(PROVIDER_SLACK)
+                self.items_done = self.items_done + 1
+                self.percentage = int(self.items_done * 100 / self.items_searching)
+
+                if downloads_per_video:
+                    Log.Debug(u"%s: Subtitles have been downloaded, "
+                              u"waiting %s seconds before continuing", self.name, DL_PROVIDER_SLACK)
+                    time.sleep(DL_PROVIDER_SLACK)
+                else:
+                    if hit_providers:
+                        Log.Debug(u"%s: Waiting %s seconds before continuing", self.name, PROVIDER_SLACK)
+                        time.sleep(PROVIDER_SLACK)
+        finally:
+            history.destroy()
 
         if download_count:
             Log.Debug(u"%s: done. Missing subtitles found for %s/%s items (%s subs downloaded)", self.name,
