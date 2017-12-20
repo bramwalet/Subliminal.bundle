@@ -159,7 +159,7 @@ class Subtitle(Subtitle_):
                 elif self.language.script == "Cyrl":
                     encodings.extend(['windows-1251', 'iso-8859-5'])
                 else:
-                    encodings.extend(['windows-1251', 'windows-1250', 'iso-8859-5', 'iso-8859-2'])
+                    encodings.extend(['windows-1250', 'windows-1251', 'iso-8859-2', 'iso-8859-5'])
 
         else:
             # Western European (windows-1252) / Northern European
