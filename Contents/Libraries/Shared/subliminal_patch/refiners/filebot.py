@@ -60,7 +60,6 @@ XATTR_MAP = {
 
 if sys.platform not in XATTR_MAP:
     default_xattr_bin = find_executable("getfattr") or find_executable("attr") or find_executable("filebot")
-    logger.info("Using %s for extended attribute fetching", default_xattr_bin)
 
 
 def refine(video, **kwargs):
@@ -74,7 +73,7 @@ def refine(video, **kwargs):
     if sys.platform in XATTR_MAP:
         logger.debug("Using native xattr calls for %s", sys.platform)
     else:
-        logger.debug("Using default xattr calls for %s", sys.platform)
+        logger.debug("Using %s for %s", default_xattr_bin, sys.platform)
 
     args_func, match_func = XATTR_MAP.get(sys.platform, XATTR_MAP["default"])
 
