@@ -637,6 +637,10 @@ class Config(object):
                 }
                 self.exact_filenames = True
 
+        if cast_bool(Prefs['use_sz_meta_file']):
+            self.refiner_settings["sz_meta_file"] = True
+            self.exact_filenames = True
+
     def init_subliminal_patches(self):
         # configure custom subtitle destination folders for scanning pre-existing subs
         Log.Debug("Patching subliminal ...")

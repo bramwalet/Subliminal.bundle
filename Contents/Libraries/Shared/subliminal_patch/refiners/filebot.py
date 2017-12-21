@@ -6,13 +6,10 @@ import logging
 import re
 import binascii
 import types
-import os
 
 from pipes import quote
-from guessit import guessit
-from subliminal import Episode
-from subliminal_patch.core import REMOVE_CRAP_FROM_FILENAME
 from subzero.lib.which import find_executable
+from common import update_video
 
 if sys.platform == "win32":
     from pyads import ADS
@@ -96,22 +93,4 @@ def refine(video, **kwargs):
     except:
         logger.info(u"%s: Couldn't get filebot original filename" % video.name)
     else:
-        guess_from = REMOVE_CRAP_FROM_FILENAME.sub(r"\2", orig_fn)
-
-        logger.debug(u"Got original filename: %s", guess_from)
-
-        # guess
-        hints = {
-            "single_value": True,
-            "type": "episode" if isinstance(video, Episode) else "movie",
-        }
-
-        guess = guessit(guess_from, options=hints)
-
-        for attr in ("release_group", "format",):
-            if attr in guess:
-                value = guess.get(attr)
-                logger.debug(u"%s: Filling attribute %s: %s", video.name, attr, value)
-                setattr(video, attr, value)
-
-        video.original_name = os.path.basename(guess_from)
+        update_video(video, orig_fn)

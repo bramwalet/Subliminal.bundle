@@ -216,6 +216,12 @@
     "default": "I keep the original filenames"
   },
   {
+    "id": "use_sz_meta_file",
+    "label": "Retrieve original filename from .sz_meta/sz_meta index files (see wiki)",
+    "type": "bool",
+    "default": "false"
+  },
+  {
     "id": "drone_api.sonarr.url",
     "label": "Sonarr URL (add URL base if configured)",
     "type": "text",
