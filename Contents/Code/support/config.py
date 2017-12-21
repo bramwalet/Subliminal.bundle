@@ -610,7 +610,7 @@ class Config(object):
             return fn
 
     def parse_rename_mode(self):
-        mode = Prefs["media_rename"]
+        mode = str(Prefs["media_rename"])
         self.refiner_settings = {}
 
         if mode == "none of the above":
