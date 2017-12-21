@@ -619,10 +619,10 @@ class Config(object):
         elif mode == "I keep the original filenames":
             self.exact_filenames = True
 
-        elif mode in ("Filebot", "Sonarr/Radarr/Filebot"):
+        if mode in ("Filebot", "Sonarr/Radarr/Filebot"):
             self.refiner_settings["filebot"] = True
 
-        elif mode in ("Sonarr/Radarr (fill api info below)", "Sonarr/Radarr/Filebot"):
+        if mode in ("Sonarr/Radarr (fill api info below)", "Sonarr/Radarr/Filebot"):
             if Prefs["drone_api.sonarr.url"] and Prefs["drone_api.sonarr.api_key"]:
                 self.refiner_settings["sonarr"] = {
                     "base_url": Prefs["drone_api.sonarr.url"],
