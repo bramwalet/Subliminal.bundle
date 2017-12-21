@@ -157,6 +157,15 @@ def RefreshMissing(randomize=None):
     return fatality(header=header, replace_parent=True)
 
 
+def replace_item(obj, key, replace_value):
+    for k, v in obj.items():
+        if isinstance(v, dict):
+            obj[k] = replace_item(v, key, replace_value)
+    if key in obj:
+        obj[key] = replace_value
+    return obj
+
+
 @route(PREFIX + '/ValidatePrefs', enforce_route=True)
 def ValidatePrefs():
     Core.log.setLevel(logging.DEBUG)
@@ -212,8 +221,16 @@ def ValidatePrefs():
     for attr in [
             "app_support_path", "data_path", "data_items_path", "enable_agent",
             "enable_channel", "permissions_ok", "missing_permissions", "fs_encoding",
-            "subtitle_destination_folder", "dbm_supported", "lang_list", "providers", "plex_transcoder"]:
-        Log.Debug("config.%s: %s", attr, getattr(config, attr))
+            "subtitle_destination_folder", "dbm_supported", "lang_list", "providers", "plex_transcoder",
+            "refiner_settings"]:
+
+        value = getattr(config, attr)
+        if isinstance(value, dict):
+            d = replace_item(value.copy(), "api_key", "xxxxxxxxxxxxxxxxxxxxxxxxx")
+            Log.Debug("config.%s: %s", attr, d)
+            continue
+
+        Log.Debug("config.%s: %s", attr, value)
 
     for attr in ["plugin_log_path", "server_log_path"]:
         value = getattr(config, attr)
