@@ -149,7 +149,7 @@ class SubZeroAgent(object):
                 wait = self.debounce - (now - last_call).seconds
                 if wait >= 1:
                     Log.Debug("Waiting %s seconds until continuing", wait)
-                    time.sleep(wait)
+                    Thread.Sleep(wait)
         Dict["last_call"] = now
 
         item_ids = []
