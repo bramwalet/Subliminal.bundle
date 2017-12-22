@@ -543,7 +543,6 @@ class StoredSubtitlesManager(object):
                         except zlib.error:
                             # fallback to old gzip win32 implementation
                             with gzip.open(json_path, 'rb', compresslevel=6) as f:
-                                portalocker.lock(f, portalocker.LOCK_EX)
                                 s = f.read()
 
                     else:
