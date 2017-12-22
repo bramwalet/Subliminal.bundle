@@ -1,0 +1,4 @@
+[submodule "Contents/Libraries/Shared/libfilebot"]
+	path = Contents/Libraries/Shared/libfilebot
+	url = https://github.com/pannal/libfilebot
+	branch = master
