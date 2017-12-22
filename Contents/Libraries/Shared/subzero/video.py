@@ -42,10 +42,10 @@ def parse_video(fn, video_info, hints, external_subtitles=False, embedded_subtit
         refine_kwargs["episode_refiners"].insert(0, "filebot")
         refine_kwargs["movie_refiners"].insert(0, "filebot")
 
-    if "sz_meta_file" in refiner_settings:
-        # sz_meta_file always comes first
-        refine_kwargs["episode_refiners"].insert(0, "sz_meta_file")
-        refine_kwargs["movie_refiners"].insert(0, "sz_meta_file")
+    if "file_info_file" in refiner_settings:
+        # file_info_file always comes first
+        refine_kwargs["episode_refiners"].insert(0, "file_info_file")
+        refine_kwargs["movie_refiners"].insert(0, "file_info_file")
 
     if "sonarr" in refiner_settings:
         # drone always comes last

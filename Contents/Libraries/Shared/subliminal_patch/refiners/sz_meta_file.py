@@ -15,9 +15,9 @@ def refine(video, **kwargs):
     :return:
     """
 
-    check_fns = [".sz_meta", "sz_meta"]
+    check_fns = [".file_info", "file_info"]
 
-    # check for sz_meta on win32 first
+    # check for file_info on win32 first
     if sys.platform == "win32":
         check_fns.reverse()
 

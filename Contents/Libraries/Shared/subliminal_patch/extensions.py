@@ -56,5 +56,5 @@ subliminal.refiner_manager.register('sz_metadata = subliminal_patch.refiners.met
 subliminal.refiner_manager.register('sz_omdb = subliminal_patch.refiners.omdb:refine')
 subliminal.refiner_manager.register('drone = subliminal_patch.refiners.drone:refine')
 subliminal.refiner_manager.register('filebot = subliminal_patch.refiners.filebot:refine')
-subliminal.refiner_manager.register('sz_meta_file = subliminal_patch.refiners.sz_meta_file:refine')
+subliminal.refiner_manager.register('file_info_file = subliminal_patch.refiners.file_info_file:refine')
 

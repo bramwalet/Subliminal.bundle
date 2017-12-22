@@ -637,8 +637,8 @@ class Config(object):
                 }
                 self.exact_filenames = True
 
-        if cast_bool(Prefs['use_sz_meta_file']):
-            self.refiner_settings["sz_meta_file"] = True
+        if cast_bool(Prefs['use_file_info_file']):
+            self.refiner_settings["file_info_file"] = True
             self.exact_filenames = True
 
     def init_subliminal_patches(self):

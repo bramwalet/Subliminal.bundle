@@ -216,8 +216,8 @@
     "default": "I keep the original filenames"
   },
   {
-    "id": "use_sz_meta_file",
-    "label": "Retrieve original filename from .sz_meta/sz_meta index files (see wiki)",
+    "id": "use_file_info_file",
+    "label": "Retrieve original filename from .file_info/file_info index files (see wiki)",
     "type": "bool",
     "default": "false"
   },
