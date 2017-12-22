@@ -4,6 +4,7 @@ import logging
 import os
 import platform
 import logger
+import copy
 
 from item_details import ItemDetailsMenu
 from refresh_item import RefreshItem
@@ -226,7 +227,7 @@ def ValidatePrefs():
 
         value = getattr(config, attr)
         if isinstance(value, dict):
-            d = replace_item(value.copy(), "api_key", "xxxxxxxxxxxxxxxxxxxxxxxxx")
+            d = replace_item(copy.deepcopy(value), "api_key", "xxxxxxxxxxxxxxxxxxxxxxxxx")
             Log.Debug("config.%s: %s", attr, d)
             continue
 
