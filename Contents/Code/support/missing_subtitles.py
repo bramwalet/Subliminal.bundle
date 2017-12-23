@@ -7,7 +7,7 @@ import os
 from babelfish import Language, LanguageReverseError
 
 from support.config import config, TEXT_SUBTITLE_EXTS
-from support.helpers import get_plex_item_display_title, cast_bool
+from support.helpers import get_plex_item_display_title, cast_bool, get_embedded_language
 from support.items import get_item
 from support.lib import Plex
 from support.storage import get_subtitle_storage
@@ -99,11 +99,8 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
                     else:
                         # parse with internal language parser first
                         try:
-                            lang = Locale.Language.Match(stream.language_code)
-                            if lang and lang != "xx":
-                                #Log.Debug("Found language: %r", lang)
-                                lang = Language.fromietf(lang)
-                            elif lang == "xx" and config.treat_und_as_first:
+                            lang = get_embedded_language(stream.language_code)
+                            if not lang and config.treat_und_as_first:
                                 lang = Language.fromietf(str(list(config.lang_list)[0]))
                             else:
                                 continue

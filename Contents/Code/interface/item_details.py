@@ -15,7 +15,7 @@ from refresh_item import RefreshItem
 from subliminal_patch.subtitle import ModifiedSubtitle
 from subzero.constants import PREFIX
 from support.config import config
-from support.helpers import timestamp, df, get_language, display_language, quote_args
+from support.helpers import timestamp, df, get_language, display_language, quote_args, get_embedded_language
 from support.items import get_item_kind_from_rating_key, get_item, get_current_sub, get_item_title, refresh_item
 from support.plex_media import get_plex_metadata
 from support.scanning import scan_videos
@@ -118,8 +118,10 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                     # fixme: add support for unknown language
                     if stream.stream_type == 3 and not stream.stream_key and stream.codec == "srt" \
                             and stream.language_code: #("srt", "ass", "ssa"):
-                        embedded_langs.append(Language.fromietf(stream.language_code))
-                        embedded_count += 1
+                        lang = get_embedded_language(stream.language_code)
+                        if lang:
+                            embedded_langs.append(lang)
+                            embedded_count += 1
 
                 if embedded_count:
                     oc.add(DirectoryObject(
@@ -521,23 +523,23 @@ def ListEmbeddedSubsForItemMenu(**kwargs):
         for stream in part.streams:
             # subtitle stream
             if stream.stream_type == 3 and not stream.stream_key and stream.codec in ("srt", "ass", "ssa"):
-                lang_code = stream.language_code
-                language = Language.fromietf(lang_code)
-                forced = stream.forced
-                oc.add(DirectoryObject(
-                    key=Callback(ExtractEmbeddedSubForItemMenu, randomize=timestamp(), stream_index=str(stream.index),
-                                 with_mods=True, **kwargs),
-                    title=u"Extract stream %s, %s%s%s with default mods" % (stream.index, display_language(language),
-                                                                            " (forced)" if forced else "",
-                                                                            " (%s)" % stream.title if stream.title else ""),
-                ))
-                oc.add(DirectoryObject(
-                    key=Callback(ExtractEmbeddedSubForItemMenu, randomize=timestamp(), stream_index=str(stream.index),
-                                 **kwargs),
-                    title=u"Extract stream %s, %s%s%s" % (stream.index, display_language(language),
-                                                          " (forced)" if forced else "",
-                                                          " (%s)" % stream.title if stream.title else ""),
-                ))
+                language = get_embedded_language(stream.language_code)
+                if language:
+                    forced = stream.forced
+                    oc.add(DirectoryObject(
+                        key=Callback(ExtractEmbeddedSubForItemMenu, randomize=timestamp(), stream_index=str(stream.index),
+                                     with_mods=True, **kwargs),
+                        title=u"Extract stream %s, %s%s%s with default mods" % (stream.index, display_language(language),
+                                                                                " (forced)" if forced else "",
+                                                                                " (%s)" % stream.title if stream.title else ""),
+                    ))
+                    oc.add(DirectoryObject(
+                        key=Callback(ExtractEmbeddedSubForItemMenu, randomize=timestamp(), stream_index=str(stream.index),
+                                     **kwargs),
+                        title=u"Extract stream %s, %s%s%s" % (stream.index, display_language(language),
+                                                              " (forced)" if forced else "",
+                                                              " (%s)" % stream.title if stream.title else ""),
+                    ))
     return oc
 
 

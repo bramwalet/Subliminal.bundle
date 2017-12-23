@@ -354,6 +354,13 @@ def dispatch_track_usage(*args, **kwargs):
         Log.Debug("Something went wrong when reporting anonymous user statistics: %s", traceback.format_exc())
 
 
+def get_embedded_language(lang_code):
+    lang = Locale.Language.Match(lang_code)
+    if lang and lang != "xx":
+        # Log.Debug("Found language: %r", lang)
+        return Language.fromietf(lang)
+
+
 def get_language(lang_short):
     return Language.fromietf(lang_short)
 
