@@ -7,6 +7,7 @@ from subliminal.video import Video as Video_
 
 class Video(Video_):
     is_special = False
+    fps = None
 
     def __init__(self, name, format=None, release_group=None, resolution=None, video_codec=None, audio_codec=None,
                  imdb_id=None, hashes=None, size=None, subtitle_languages=None):

@@ -391,8 +391,16 @@ def guess_matches(video, guess, partial=False):
             formats = [formats]
 
         if video.format:
+            video_format = video.format
+            if video_format in ("HDTV", "SDTV", "TV"):
+                video_format = "TV"
+                logger.debug("Treating HDTV/SDTV the same")
+
             for frmt in formats:
-                if frmt.lower() == video.format.lower():
+                if frmt in ("HDTV", "SDTV"):
+                    frmt = "TV"
+
+                if frmt.lower() == video_format.lower():
                     matches.add('format')
                     break
     # video_codec
