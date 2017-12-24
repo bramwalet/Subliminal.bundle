@@ -355,10 +355,11 @@ def dispatch_track_usage(*args, **kwargs):
 
 
 def get_embedded_language(lang_code):
-    lang = Locale.Language.Match(lang_code)
-    if lang and lang != "xx":
-        # Log.Debug("Found language: %r", lang)
-        return Language.fromietf(lang)
+    if lang_code:
+        lang = Locale.Language.Match(lang_code)
+        if lang and lang != "xx":
+            # Log.Debug("Found language: %r", lang)
+            return Language.fromietf(lang)
 
 
 def get_language(lang_short):
