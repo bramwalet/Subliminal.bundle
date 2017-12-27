@@ -209,7 +209,7 @@ def decode_message(s):
 
 
 def timestamp():
-    return int(time.time())
+    return int(time.time()*1000)
 
 
 def df(d):
