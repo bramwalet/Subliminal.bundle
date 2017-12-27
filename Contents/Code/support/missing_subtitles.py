@@ -100,10 +100,11 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
                         # parse with internal language parser first
                         try:
                             lang = get_embedded_language(stream.language_code)
-                            if not lang and config.treat_und_as_first:
-                                lang = Language.fromietf(str(list(config.lang_list)[0]))
-                            else:
-                                continue
+                            if not lang:
+                                if config.treat_und_as_first:
+                                    lang = Language.fromietf(str(list(config.lang_list)[0]))
+                                else:
+                                    continue
 
                         except (ValueError, LanguageReverseError):
                             continue
