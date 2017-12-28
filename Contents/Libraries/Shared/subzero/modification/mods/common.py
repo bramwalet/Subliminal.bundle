@@ -103,6 +103,7 @@ class ReverseRTL(SubtitleModification):
     identifier = "reverse_rtl"
     description = "Reverse punctuation in RTL languages"
     exclusive = True
+    order = 50
 
     processors = [
         NReProcessor(re.compile(ur"(?u)((?=(?<=\b|^)|(?<=\s))([.!?-]+)([^.!?-]+)(?=\b|$|\s))"), r"\3\2",
@@ -112,3 +113,4 @@ class ReverseRTL(SubtitleModification):
 
 registry.register(CommonFixes)
 registry.register(RemoveTags)
+registry.register(ReverseRTL)
