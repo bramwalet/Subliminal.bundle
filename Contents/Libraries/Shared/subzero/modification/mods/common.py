@@ -99,5 +99,16 @@ class RemoveTags(SubtitleModification):
             entry.plaintext = entry.plaintext
 
 
+class ReverseRTL(SubtitleModification):
+    identifier = "reverse_rtl"
+    description = "Reverse punctuation in RTL languages"
+    exclusive = True
+
+    processors = [
+        NReProcessor(re.compile(ur"(?u)((?=(?<=\b|^)|(?<=\s))([.!?-]+)([^.!?-]+)(?=\b|$|\s))"), r"\3\2",
+                     name="CM_RTL_reverse")
+    ]
+
+
 registry.register(CommonFixes)
 registry.register(RemoveTags)
