@@ -89,7 +89,7 @@ def get_filebot_attrs(fn):
 
     try:
         orig_fn = match_func(output)
-        return orig_fn
+        return orig_fn.strip()
     except:
         logger.info(u"%s: Couldn't get filebot original filename" % fn)
 
