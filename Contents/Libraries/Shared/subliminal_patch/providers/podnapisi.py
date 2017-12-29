@@ -2,12 +2,15 @@
 
 import logging
 import re
+import io
 
+from zipfile import ZipFile
 from lxml.etree import XMLSyntaxError
 
 from guessit import guessit
 from subliminal.subtitle import guess_matches
 from subliminal.utils import sanitize
+from subliminal_patch.providers.mixins import ProviderSubtitleArchiveMixin
 
 try:
     from lxml import etree
@@ -30,10 +33,11 @@ class PodnapisiSubtitle(_PodnapisiSubtitle):
     hearing_impaired_verifiable = True
 
     def __init__(self, language, hearing_impaired, page_link, pid, releases, title, season=None, episode=None,
-                 year=None):
+                 year=None, asked_for_release_group=None):
         super(PodnapisiSubtitle, self).__init__(language, hearing_impaired, page_link, pid, releases, title,
                                                 season=season, episode=episode, year=year)
         self.release_info = u", ".join(releases)
+        self.asked_for_release_group = asked_for_release_group
 
     def get_matches(self, video):
         """
@@ -75,7 +79,7 @@ class PodnapisiSubtitle(_PodnapisiSubtitle):
         return matches
 
 
-class PodnapisiProvider(_PodnapisiProvider):
+class PodnapisiProvider(_PodnapisiProvider, ProviderSubtitleArchiveMixin):
     languages = ({Language('por', 'BR'), Language('srp', script='Latn'), Language('srp', script='Cyrl')} |
                  {Language.fromalpha2(l) for l in language_converters['alpha2'].codes})
 
@@ -98,14 +102,14 @@ class PodnapisiProvider(_PodnapisiProvider):
             return []
 
         if isinstance(video, Episode):
-            return [s for l in languages for s in self.query(l, video.series, season=video.season,
+            return [s for l in languages for s in self.query(l, video.series, video, season=video.season,
                                                              episode=video.episode, year=video.year,
                                                              only_foreign=self.only_foreign)]
         elif isinstance(video, Movie):
-            return [s for l in languages for s in self.query(l, video.title, year=video.year,
+            return [s for l in languages for s in self.query(l, video.title, video, year=video.year,
                                                              only_foreign=self.only_foreign)]
 
-    def query(self, language, keyword, season=None, episode=None, year=None, only_foreign=False):
+    def query(self, language, keyword, video, season=None, episode=None, year=None, only_foreign=False):
         search_language = str(language).lower()
 
         # sr-Cyrl specialcase
@@ -168,10 +172,11 @@ class PodnapisiProvider(_PodnapisiProvider):
 
                 if is_episode:
                     subtitle = self.subtitle_class(language, hearing_impaired, page_link, pid, releases, title,
-                                                   season=season, episode=episode, year=year)
+                                                   season=season, episode=episode, year=year,
+                                                   asked_for_release_group=video.release_group)
                 else:
                     subtitle = self.subtitle_class(language, hearing_impaired, page_link, pid, releases, title,
-                                                   year=year)
+                                                   year=year, asked_for_release_group=video.release_group)
 
                 # ignore duplicates, see http://www.podnapisi.net/forum/viewtopic.php?f=62&t=26164&start=10#p213321
                 if pid in pids:
@@ -191,3 +196,13 @@ class PodnapisiProvider(_PodnapisiProvider):
             xml = None
 
         return subtitles
+
+    def download_subtitle(self, subtitle):
+        # download as a zip
+        logger.info('Downloading subtitle %r', subtitle)
+        r = self.session.get(self.server_url + subtitle.pid + '/download', params={'container': 'zip'}, timeout=10)
+        r.raise_for_status()
+
+        # open the zip
+        with ZipFile(io.BytesIO(r.content)) as zf:
+            subtitle.content = self.get_subtitle_from_archive(subtitle, zf)

@@ -4,7 +4,6 @@ import io
 import logging
 import math
 import re
-import types
 
 import rarfile
 
@@ -15,12 +14,13 @@ from babelfish import Language, language_converters, Script
 from requests import Session
 from guessit import guessit
 from subliminal_patch.providers import Provider
+from subliminal_patch.providers.mixins import ProviderSubtitleArchiveMixin
 from subliminal_patch.subtitle import Subtitle
 from subliminal_patch.utils import sanitize, fix_inconsistent_naming as _fix_inconsistent_naming
 from subliminal.exceptions import ProviderError
 from subliminal.score import get_equivalent_release_groups
 from subliminal.utils import sanitize_release_group
-from subliminal.subtitle import fix_line_ending, guess_matches
+from subliminal.subtitle import guess_matches
 from subliminal.video import Episode, Movie
 
 # parsing regex definitions
@@ -122,7 +122,7 @@ class TitloviSubtitle(Subtitle):
         return matches
 
 
-class TitloviProvider(Provider):
+class TitloviProvider(Provider, ProviderSubtitleArchiveMixin):
     subtitle_class = TitloviSubtitle
     languages = {Language.fromtitlovi(l) for l in language_converters['titlovi'].codes} | {Language.fromietf('sr')}
     server_url = 'http://titlovi.com'
@@ -291,57 +291,4 @@ class TitloviProvider(Provider):
         else:
             raise ProviderError('Unidentified archive type')
 
-        # extract subtitle's content
-        subs_in_archive = []
-        for name in archive.namelist():
-            for ext in (".srt", ".sub", ".ssa", ".ass"):
-                if name.endswith(ext):
-                    subs_in_archive.append(name)
-
-        # select the correct subtitle file
-        matching_sub = None
-        if len(subs_in_archive) == 1:
-            matching_sub = subs_in_archive[0]
-        else:
-            for sub_name in subs_in_archive:
-                guess = guessit(sub_name)
-
-                # consider subtitle valid if:
-                # - episode and season match
-                # - format matches (if it was matched before)
-                # - release group matches (and we asked for one and it was matched, or it was not matched)
-                if guess["episode"] == subtitle.episode and guess["season"] == subtitle.season:
-                    format_matches = True
-
-                    if "format" in subtitle.matches:
-                        format_matches = False
-                        releases = subtitle.releases.lower()
-                        formats = guess["format"]
-                        if not isinstance(formats, types.ListType):
-                            formats = [formats]
-
-                        for f in formats:
-                            format_matches = f.lower() in releases
-                            if format_matches:
-                                break
-
-                    release_group_matches = True
-                    if subtitle.asked_for_release_group and "release_group" in subtitle.matches:
-                        asked_for_rlsgrp = subtitle.asked_for_release_group.lower()
-                        release_group_matches = False
-                        release_groups = guess["release_group"]
-                        if not isinstance(release_groups, types.ListType):
-                            release_groups = [release_groups]
-
-                        for release_group in release_groups:
-                            release_group_matches = release_group.lower() == asked_for_rlsgrp
-                            if release_group_matches:
-                                break
-
-                    if release_group_matches and format_matches:
-                        matching_sub = sub_name
-                        break
-
-        if not matching_sub:
-            raise ProviderError("None of expected subtitle found in archive")
-        subtitle.content = fix_line_ending(archive.read(matching_sub))
+        subtitle.content = self.get_subtitle_from_archive(subtitle, archive)
