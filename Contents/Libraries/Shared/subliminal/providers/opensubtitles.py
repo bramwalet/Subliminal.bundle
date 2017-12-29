@@ -218,7 +218,7 @@ class OpenSubtitlesProvider(Provider):
             query = video.title
 
         return self.query(languages, hash=video.hashes.get('opensubtitles'), size=video.size, imdb_id=video.imdb_id,
-                          query=query, season=season, episode=episode, tag=video.original_name)
+                          query=query, season=season, episode=episode, tag=os.path.basename(video.name))
 
     def download_subtitle(self, subtitle):
         logger.info('Downloading subtitle %r', subtitle)

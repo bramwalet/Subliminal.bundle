@@ -188,7 +188,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
             query = video.title
 
         return self.query(languages, hash=video.hashes.get('opensubtitles'), size=video.size, imdb_id=video.imdb_id,
-                          query=query, season=season, episode=episode, tag=os.path.basename(video.name),
+                          query=query, season=season, episode=episode, tag=video.original_name,
                           use_tag_search=self.use_tag_search, only_foreign=self.only_foreign)
 
     def query(self, languages, hash=None, size=None, imdb_id=None, query=None, season=None, episode=None, tag=None,
