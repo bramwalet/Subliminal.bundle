@@ -38,6 +38,7 @@ class PodnapisiSubtitle(_PodnapisiSubtitle):
                                                 season=season, episode=episode, year=year)
         self.release_info = u", ".join(releases)
         self.asked_for_release_group = asked_for_release_group
+        self.matches = None
 
     def get_matches(self, video):
         """
@@ -75,6 +76,8 @@ class PodnapisiSubtitle(_PodnapisiSubtitle):
             # guess
             for release in self.releases:
                 matches |= guess_matches(video, guessit(release, {'type': 'movie', "single_value": True}))
+
+        self.matches = matches
 
         return matches
 
