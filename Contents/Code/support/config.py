@@ -610,6 +610,9 @@ class Config(object):
             return fn
 
     def parse_rename_mode(self):
+        # fixme: exact_filenames should be determined via callback combined with info about the current video
+        # (original_name)
+
         mode = str(Prefs["media_rename"])
         self.refiner_settings = {}
 
