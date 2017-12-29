@@ -613,6 +613,10 @@ class Config(object):
         mode = str(Prefs["media_rename"])
         self.refiner_settings = {}
 
+        if cast_bool(Prefs['use_file_info_file']):
+            self.refiner_settings["file_info_file"] = True
+            self.exact_filenames = True
+
         if mode == "none of the above":
             return
 
@@ -636,10 +640,6 @@ class Config(object):
                     "api_key": Prefs["drone_api.radarr.api_key"]
                 }
                 self.exact_filenames = True
-
-        if cast_bool(Prefs['use_file_info_file']):
-            self.refiner_settings["file_info_file"] = True
-            self.exact_filenames = True
 
     def init_subliminal_patches(self):
         # configure custom subtitle destination folders for scanning pre-existing subs
