@@ -115,4 +115,6 @@ class ProviderSubtitleArchiveMixin(object):
 
         if not matching_sub:
             raise ProviderError("None of expected subtitle found in archive")
+
+        logger.info(u"Using %s from the archive", matching_sub)
         return fix_line_ending(archive.read(matching_sub))
