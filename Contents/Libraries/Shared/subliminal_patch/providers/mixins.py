@@ -52,7 +52,8 @@ class ProviderRetryMixin(object):
 
 class ProviderSubtitleArchiveMixin(object):
     """
-    needs subtitle.matches to work
+    handled ZipFile and RarFile archives
+    needs subtitle.matches and subtitle.releases to work
     """
     def get_subtitle_from_archive(self, subtitle, archive):
         # extract subtitle's content
