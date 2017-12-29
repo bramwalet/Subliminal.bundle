@@ -102,6 +102,10 @@ def parse_video(fn, video_info, hints, external_subtitles=False, embedded_subtit
             refine(video, **refine_kwargs)
 
         # still no match? add our own data
+        if not video.series_tvdb_id or not video.tvdb_id:
+            logger.info(u"Adding PMS year info: %s", video_info.get("year"))
+            video.year = video_info.get("year")
+
         if not video.series_tvdb_id and video_info.get("series_tvdb_id"):
             logger.info(u"Adding PMS series_tvdb_id info: %s", video_info.get("series_tvdb_id"))
             video.series_tvdb_id = video_info.get("series_tvdb_id")
