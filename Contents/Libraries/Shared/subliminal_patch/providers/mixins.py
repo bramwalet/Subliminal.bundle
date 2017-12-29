@@ -51,6 +51,9 @@ class ProviderRetryMixin(object):
 
 
 class ProviderSubtitleArchiveMixin(object):
+    """
+    needs subtitle.matches to work
+    """
     def get_subtitle_from_archive(self, subtitle, archive):
         # extract subtitle's content
         subs_in_archive = []
