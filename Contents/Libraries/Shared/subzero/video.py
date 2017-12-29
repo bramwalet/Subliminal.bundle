@@ -89,6 +89,8 @@ def parse_video(fn, video_info, hints, external_subtitles=False, embedded_subtit
                 logger.info(u"Adding PMS imdb_id info: %s", video.imdb_id)
 
     if hints["type"] == "episode":
+        video.season = video_info.get("season", video.season)
+        video.episode = video_info.get("episode", video.episode)
         if not video.series_tvdb_id and not video.tvdb_id and plex_title:
             # add our title
             logger.info(u"Adding PMS title/original_title info: %s", plex_title)
