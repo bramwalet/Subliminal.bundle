@@ -82,7 +82,11 @@ class ProviderSubtitleArchiveMixin(object):
 
                     if "format" in subtitle.matches:
                         format_matches = False
-                        releases = subtitle.releases.lower()
+                        if isinstance(subtitle.releases, types.ListType):
+                            releases = ",".join(subtitle.releases).lower()
+                        else:
+                            releases = subtitle.releases.lower()
+
                         formats = guess["format"]
                         if not isinstance(formats, types.ListType):
                             formats = [formats]
