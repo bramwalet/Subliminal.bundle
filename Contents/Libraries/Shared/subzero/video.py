@@ -115,8 +115,8 @@ def parse_video(fn, video_info, hints, external_subtitles=False, embedded_subtit
             video.tvdb_id = video_info.get("tvdb_id")
 
     # did it match?
-    if (hints["type"] == "episode" and not video.series_tvdb_id and not video.tvdb_id and
-            not video.series_imdb_id) or (hints["type"] == "movie" and not video.imdb_id):
+    if (hints["type"] == "episode" and not video.series_tvdb_id and not video.tvdb_id) \
+            or (hints["type"] == "movie" and not video.imdb_id):
         logger.warning("Couldn't find corresponding series/movie in online databases, continuing")
 
     # scan for external subtitles
