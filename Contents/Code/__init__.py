@@ -150,7 +150,6 @@ class SubZeroAgent(object):
                 if wait >= 1:
                     Log.Debug("Waiting %s seconds until continuing", wait)
                     Thread.Sleep(wait)
-        Dict["last_call"] = now
 
         item_ids = []
         try:
@@ -195,6 +194,10 @@ class SubZeroAgent(object):
                 # downloaded_subtitles = {subliminal.Video: [subtitle, subtitle, ...]}
                 downloaded_subtitles = download_best_subtitles(scanned_video_part_map, min_score=use_score,
                                                                throttle_time=self.debounce)
+
+                if downloaded_subtitles is not None:
+                    Dict["last_call"] = datetime.datetime.now()
+
                 item_ids = get_media_item_ids(media, kind=self.agent_type)
 
             downloaded_any = False
