@@ -11,7 +11,7 @@ import portalocker
 import zlib
 
 import sys
-from babelfish import Language
+from subzero.language import Language
 
 from json_tricks.nonp import loads#, dumps
 from subzero.lib.json import dumps

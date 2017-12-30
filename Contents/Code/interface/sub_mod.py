@@ -3,7 +3,7 @@
 import traceback
 import types
 
-from babelfish import Language
+from subzero.language import Language
 
 from menu_helpers import debounce, SubFolderObjectContainer, default_thumb, route
 from subzero.modification import registry as mod_registry, SubtitleModifications

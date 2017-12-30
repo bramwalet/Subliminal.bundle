@@ -15,7 +15,7 @@ from collections import OrderedDict
 import chardet
 
 from bs4 import UnicodeDammit
-from babelfish import Language
+from subzero.language import Language
 from subzero.analytics import track_event
 
 mswindows = (sys.platform == "win32")

@@ -3,9 +3,9 @@ import os
 import subprocess
 import traceback
 
-from babelfish import Language
+from subzero.language import Language
 
-from babelfish import Language
+from subzero.language import Language
 
 from sub_mod import SubtitleModificationsMenu
 from menu_helpers import debounce, SubFolderObjectContainer, default_thumb, add_ignore_options, get_item_task_data, \

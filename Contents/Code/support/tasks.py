@@ -9,7 +9,7 @@ from urllib2 import URLError
 from subliminal_patch.score import compute_score
 from subliminal_patch.core import download_subtitles
 from subliminal import list_subtitles as list_all_subtitles
-from babelfish import Language
+from subzero.language import Language
 
 from missing_subtitles import items_get_all_missing_subs, refresh_item
 from scheduler import scheduler

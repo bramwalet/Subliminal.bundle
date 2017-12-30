@@ -3,7 +3,7 @@
 import logging
 
 
-from babelfish import Language
+from subzero.language import Language
 from subliminal.providers import ParserBeautifulSoup
 from subliminal.cache import SHOW_EXPIRATION_TIME, region, EPISODE_EXPIRATION_TIME
 from subliminal.providers.tvsubtitles import TVsubtitlesProvider as _TVsubtitlesProvider, \

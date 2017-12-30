@@ -24,8 +24,10 @@ from extensions import provider_registry
 from subliminal.score import compute_score as default_compute_score
 from subliminal.utils import hash_napiprojekt, hash_opensubtitles, hash_shooter, hash_thesubdb
 from subliminal.video import VIDEO_EXTENSIONS, Video, Episode, Movie
-from subliminal.core import guessit, Language, ProviderPool, io, is_windows_special_path, \
+from subliminal.core import guessit, ProviderPool, io, is_windows_special_path, \
     ThreadPoolExecutor, check_video
+
+from subzero.language import Language
 
 logger = logging.getLogger(__name__)
 

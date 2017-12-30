@@ -4,7 +4,7 @@ import logging
 import os
 
 import dogpile
-from babelfish import Language, language_converters
+from babelfish import language_converters
 from dogpile.cache.api import NO_VALUE
 from subliminal.exceptions import ConfigurationError
 from subliminal.providers.opensubtitles import OpenSubtitlesProvider as _OpenSubtitlesProvider, checked, \
@@ -13,6 +13,7 @@ from subliminal.providers.opensubtitles import OpenSubtitlesProvider as _OpenSub
 from mixins import ProviderRetryMixin
 from subliminal_patch.http import TimeoutSafeTransport, TimeoutTransport
 from subliminal.cache import region
+from subzero.language import Language
 
 logger = logging.getLogger(__name__)
 

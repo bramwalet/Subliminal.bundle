@@ -10,7 +10,7 @@ import rarfile
 from bs4 import BeautifulSoup
 from zipfile import ZipFile, is_zipfile
 from rarfile import RarFile, is_rarfile
-from babelfish import Language, language_converters, Script
+from babelfish import language_converters, Script
 from requests import Session
 from guessit import guessit
 from subliminal_patch.providers import Provider
@@ -22,6 +22,7 @@ from subliminal.score import get_equivalent_release_groups
 from subliminal.utils import sanitize_release_group
 from subliminal.subtitle import guess_matches
 from subliminal.video import Episode, Movie
+from subzero.language import Language
 
 # parsing regex definitions
 title_re = re.compile(r'(?P<title>(?:.+(?= [Aa][Kk][Aa] ))|.+)(?:(?:.+)(?P<altitle>(?<= [Aa][Kk][Aa] ).+))?')

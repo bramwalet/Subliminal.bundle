@@ -19,11 +19,12 @@ except ImportError:
         import xml.etree.cElementTree as etree
     except ImportError:
         import xml.etree.ElementTree as etree
-from babelfish import Language, language_converters
+from babelfish import language_converters
 from subliminal import Episode
 from subliminal import Movie
 from subliminal.providers.podnapisi import PodnapisiProvider as _PodnapisiProvider, \
     PodnapisiSubtitle as _PodnapisiSubtitle
+from subzero.language import Language
 
 logger = logging.getLogger(__name__)
 

@@ -4,7 +4,7 @@ import time
 
 import os
 
-from babelfish import Language, LanguageReverseError
+from babelfish import LanguageReverseError
 
 from support.config import config, TEXT_SUBTITLE_EXTS
 from support.helpers import get_plex_item_display_title, cast_bool, get_language_from_stream
@@ -12,6 +12,7 @@ from support.items import get_item
 from support.lib import Plex
 from support.storage import get_subtitle_storage
 from subzero.video import has_external_subtitle
+from subzero.language import Language
 
 
 def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_title=None, internal=False, external=True, languages=()):

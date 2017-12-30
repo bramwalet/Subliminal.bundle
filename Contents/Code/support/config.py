@@ -15,7 +15,7 @@ import lib
 
 from subliminal_patch.core import is_windows_special_path
 from whichdb import whichdb
-from babelfish import Language
+from subzero.language import Language
 from subliminal.cli import MutexLock
 from subzero.lib.io import FileIO, get_viable_encoding
 from subzero.util import get_root_path

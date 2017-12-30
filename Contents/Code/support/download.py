@@ -1,5 +1,5 @@
 # coding=utf-8
-from babelfish import Language
+from subzero.language import Language
 
 import subliminal_patch as subliminal
 

@@ -4,7 +4,7 @@ import logging
 import os
 
 from babelfish.exceptions import LanguageError
-from babelfish import Language
+from subzero.language import Language
 from subliminal_patch import scan_video, refine, search_external_subtitles
 
 logger = logging.getLogger(__name__)

@@ -7,10 +7,12 @@ from random import randint
 
 from subliminal.exceptions import TooManyRequests, DownloadLimitExceeded
 from subliminal.providers.addic7ed import Addic7edProvider as _Addic7edProvider, \
-    Addic7edSubtitle as _Addic7edSubtitle, ParserBeautifulSoup, Language
+    Addic7edSubtitle as _Addic7edSubtitle, ParserBeautifulSoup
 from subliminal.cache import SHOW_EXPIRATION_TIME, region
 from subliminal.subtitle import fix_line_ending
 from subliminal_patch.utils import sanitize
+
+from subzero.language import Language
 
 logger = logging.getLogger(__name__)
 

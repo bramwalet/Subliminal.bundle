@@ -8,7 +8,7 @@ import urlparse
 
 from zipfile import ZipFile, ZIP_DEFLATED
 
-from babelfish import Language
+from subzero.language import Language
 
 from subzero.lib.io import FileIO
 from subzero.constants import PREFIX, PLUGIN_IDENTIFIER
