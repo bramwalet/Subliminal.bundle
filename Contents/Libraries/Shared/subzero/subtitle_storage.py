@@ -7,7 +7,6 @@ import logging
 import threading
 import traceback
 import types
-import portalocker
 import zlib
 
 import sys
@@ -538,7 +537,6 @@ class StoredSubtitlesManager(object):
                     if sys.platform == "win32":
                         try:
                             with open(json_path, 'rb') as f:
-                                portalocker.lock(f, portalocker.LOCK_EX)
                                 s = zlib.decompress(f.read())
                         except zlib.error:
                             # fallback to old gzip win32 implementation
@@ -547,7 +545,6 @@ class StoredSubtitlesManager(object):
 
                     else:
                         with gzip.open(json_path, 'rb', compresslevel=6) as f:
-                            portalocker.lock(f, portalocker.LOCK_EX)
                             s = f.read()
 
                 data = loads(s)
@@ -609,7 +606,6 @@ class StoredSubtitlesManager(object):
             if sys.platform == "win32":
                 try:
                     f = open(temp_fn, "w+b")
-                    portalocker.lock(f, portalocker.LOCK_EX)
 
                     try:
                         f.seek(0, os.SEEK_CUR)
@@ -624,7 +620,6 @@ class StoredSubtitlesManager(object):
                                  traceback.format_exc())
             else:
                 with gzip.open(temp_fn, "wb", compresslevel=6) as f:
-                    portalocker.lock(f, portalocker.LOCK_EX)
                     f.write(json_data)
 
             os.rename(temp_fn, fn)
