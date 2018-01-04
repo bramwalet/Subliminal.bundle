@@ -27,7 +27,7 @@ from support.storage import get_subtitle_storage, save_subtitles_to_file
 
 @route(PREFIX + '/item/{rating_key}/actions')
 @debounce
-def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, randomize=None):
+def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, randomize=None, header=None):
     """
     displays the item details menu of an item that doesn't contain any deeper tree, such as a movie or an episode
     :param rating_key:
@@ -45,7 +45,7 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
 
     timeout = 30
 
-    oc = SubFolderObjectContainer(title2=title, replace_parent=True)
+    oc = SubFolderObjectContainer(title2=title, replace_parent=True, header=header)
 
     if not item:
         oc.add(DirectoryObject(
@@ -527,14 +527,14 @@ def ListEmbeddedSubsForItemMenu(**kwargs):
                 if language:
                     forced = stream.forced
                     oc.add(DirectoryObject(
-                        key=Callback(ExtractEmbeddedSubForItemMenu, randomize=timestamp(), stream_index=str(stream.index),
+                        key=Callback(TriggerExtractEmbeddedSubForItemMenu, randomize=timestamp(), stream_index=str(stream.index),
                                      with_mods=True, **kwargs),
                         title=u"Extract stream %s, %s%s%s with default mods" % (stream.index, display_language(language),
                                                                                 " (forced)" if forced else "",
                                                                                 " (%s)" % stream.title if stream.title else ""),
                     ))
                     oc.add(DirectoryObject(
-                        key=Callback(ExtractEmbeddedSubForItemMenu, randomize=timestamp(), stream_index=str(stream.index),
+                        key=Callback(TriggerExtractEmbeddedSubForItemMenu, randomize=timestamp(), stream_index=str(stream.index),
                                      **kwargs),
                         title=u"Extract stream %s, %s%s%s" % (stream.index, display_language(language),
                                                               " (forced)" if forced else "",
@@ -545,11 +545,29 @@ def ListEmbeddedSubsForItemMenu(**kwargs):
 
 @route(PREFIX + '/item/extract_embedded/{rating_key}/{part_id}/{stream_index}')
 @debounce
-def ExtractEmbeddedSubForItemMenu(**kwargs):
+def TriggerExtractEmbeddedSubForItemMenu(**kwargs):
+    rating_key = kwargs["rating_key"]
+    part_id = kwargs.get("part_id")
+    stream_index = kwargs.get("stream_index")
+
+    Thread.Create(extract_embedded_sub, **kwargs)
+    header = u"Extracting of embedded subtitle %s of part %s:%s triggered" % (stream_index, rating_key, part_id)
+
+    kwargs.pop("randomize")
+    kwargs.pop("item_type")
+    kwargs.pop("stream_index")
+    kwargs.pop("part_id")
+    kwargs.pop("with_mods", False)
+    kwargs["title"] = kwargs["item_title"]
+    kwargs["header"] = header
+
+    return ItemDetailsMenu(randomize=timestamp(), **kwargs)
+
+
+def extract_embedded_sub(**kwargs):
     rating_key = kwargs["rating_key"]
     part_id = kwargs.pop("part_id")
     stream_index = kwargs.pop("stream_index")
-    item_type = kwargs.pop("item_type")
     with_mods = kwargs.pop("with_mods", False)
 
     plex_item = get_item(rating_key)
@@ -562,9 +580,10 @@ def ExtractEmbeddedSubForItemMenu(**kwargs):
                 lang_code = stream.language_code
                 language = Language.fromietf(lang_code)
                 forced = stream.forced
+                bn = os.path.basename(part.file)
 
-                Log.Info(u"Extracting stream %s (%s) of %s", stream_index, display_language(language),
-                         os.path.basename(part.file))
+                set_refresh_menu_state(u"Extracting subtitle %s of %s" % (stream_index, bn))
+                Log.Info(u"Extracting stream %s (%s) of %s", stream_index, display_language(language), bn)
 
                 args = [
                     config.plex_transcoder, "-i", part.file, "-map", "0:%s" % stream_index, "-f", "srt", "-"
@@ -582,9 +601,6 @@ def ExtractEmbeddedSubForItemMenu(**kwargs):
 
                     # fixme: speedup video; only video.name is needed
                     save_subtitles_to_file({part.file: [subtitle]}, tags=["embedded"], forced_tag=forced)
+                    set_refresh_menu_state(None)
                     refresh_item(rating_key)
 
-    kwargs.pop("randomize")
-    kwargs["title"] = kwargs["item_title"]
-
-    return ItemDetailsMenu(randomize=timestamp(), **kwargs)
