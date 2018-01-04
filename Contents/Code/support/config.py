@@ -608,7 +608,13 @@ class Config(object):
             if bundle_path:
                 base_path = os.path.normpath(os.path.join(bundle_path, "..", ".."))
 
-        fn = os.path.join(base_path, "Plex Transcoder" if not mswindows else "plextranscoder.exe")
+        if sys.platform == "darwin":
+            fn = os.path.join(base_path, "MacOS", "Plex Transcoder")
+        elif mswindows:
+            fn = os.path.join(base_path, "plextranscoder.exe")
+        else:
+            fn = os.path.join(base_path, "Plex Transcoder")
+
         if os.path.isfile(fn):
             return fn
 
