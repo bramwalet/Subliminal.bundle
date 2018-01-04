@@ -606,9 +606,9 @@ class Config(object):
             # fall back to bundled plugins path
             bundle_path = os.environ.get("PLEXBUNDLEDPLUGINSPATH", None)
             if bundle_path:
-                base_path = os.path.join(bundle_path, "..", "..")
+                base_path = os.path.normpath(os.path.join(bundle_path, "..", ".."))
 
-        fn = os.path.join(base_path, "Plex Transcoder" if not mswindows else "Plex Transcoder.exe")
+        fn = os.path.join(base_path, "Plex Transcoder" if not mswindows else "plextranscoder.exe")
         if os.path.isfile(fn):
             return fn
 
