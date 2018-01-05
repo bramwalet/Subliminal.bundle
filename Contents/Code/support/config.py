@@ -505,6 +505,7 @@ class Config(object):
                      'legendastv': cast_bool(Prefs['provider.legendastv.enabled']),
                      'napiprojekt': cast_bool(Prefs['provider.napiprojekt.enabled']),
                      'shooter': cast_bool(Prefs['provider.shooter.enabled']),
+                     'subscene': cast_bool(Prefs['provider.subscene.enabled']),
                      'subscenter': False,
                      }
 

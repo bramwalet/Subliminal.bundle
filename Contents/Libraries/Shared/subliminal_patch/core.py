@@ -130,7 +130,7 @@ class SZProviderPool(ProviderPool):
                     continue
                 if s.id in seen:
                     continue
-                s.plex_media_fps = float(video.fps)
+                s.plex_media_fps = float(video.fps) if video.fps else None
                 out.append(s)
                 seen.append(s.id)
 

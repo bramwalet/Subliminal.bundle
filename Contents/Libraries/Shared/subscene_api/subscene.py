@@ -40,18 +40,21 @@ from bs4 import BeautifulSoup
 
 # constants
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWeb"
-                  "Kit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safa"
-                  "ri/537.36"
 }
 SITE_DOMAIN = "https://subscene.com"
 
+DEFAULT_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWeb"\
+                     "Kit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36"
+
 
 # utils
-def soup_for(url):
+def soup_for(url, session=None, user_agent=DEFAULT_USER_AGENT):
     url = re.sub("\s", "+", url)
-    r = Request(url, data=None, headers=HEADERS)
-    html = urlopen(r).read().decode("utf-8")
+    if not session:
+        r = Request(url, data=None, headers=dict(HEADERS, **{"User-Agent": user_agent}))
+        html = urlopen(r).read().decode("utf-8")
+    else:
+        html = session.get(url).text
     return BeautifulSoup(html, "html.parser")
 
 
@@ -85,13 +88,14 @@ SectionsParts = {
 
 class Subtitle(object):
     def __init__(self, title, url, language, owner_username, owner_url,
-                 description):
+                 description, hearing_impaired):
         self.title = title
         self.url = url
         self.language = language
         self.owner_username = owner_username
         self.owner_url = owner_url
         self.description = description
+        self.hearing_impaired = hearing_impaired
 
         self._zipped_url = None
 
@@ -111,39 +115,45 @@ class Subtitle(object):
     @classmethod
     def from_row(cls, row):
         attrs = AttrDict("title", "url", "language", "owner_username",
-                         "owner_url", "description")
+                         "owner_url", "description", "hearing_impaired")
 
         with suppress(Exception):
             attrs.title = row.find("td", "a1").a.find_all("span")[1].text \
-                    .strip()
+                .strip()
 
         with suppress(Exception):
             attrs.url = SITE_DOMAIN + row.find("td", "a1").a.get("href")
 
         with suppress(Exception):
             attrs.language = row.find("td", "a1").a.find_all("span")[0].text \
-                    .strip()
+                .strip()
 
         with suppress(Exception):
             attrs.owner_username = row.find("td", "a5").a.text.strip()
 
         with suppress(Exception):
             attrs.owner_page = SITE_DOMAIN + row.find("td", "a5").a \
-                    .get("href").strip()
+                .get("href").strip()
 
         with suppress(Exception):
             attrs.description = row.find("td", "a6").div.text.strip()
 
+        with suppress(Exception):
+            attrs.hearing_impaired = bool(row.find("td", "a41"))
+
         return cls(**attrs.to_dict())
+
+    @classmethod
+    def get_zipped_url(cls, url, session=None):
+        soup = soup_for(url, session=session)
+        return SITE_DOMAIN + soup.find("div", "download").a.get("href")
 
     @property
     def zipped_url(self):
         if self._zipped_url:
             return self._zipped_url
 
-        soup = soup_for(self.url)
-        self._zipped_url = SITE_DOMAIN + soup.find("div", "download").a \
-            .get("href")
+        self._zipped_url = Subtitle.get_zipped_url(self.url)
         return self._zipped_url
 
 
@@ -160,8 +170,8 @@ class Film(object):
         return self.title
 
     @classmethod
-    def from_url(cls, url):
-        soup = soup_for(url)
+    def from_url(cls, url, session=None):
+        soup = soup_for(url, session=session)
 
         content = soup.find("div", "subtitles")
         header = content.find("div", "box clearfix")
@@ -197,7 +207,7 @@ def section_exists(soup, section):
     return False
 
 
-def get_first_film(soup, section):
+def get_first_film(soup, section, session=None):
     tag_part = SectionsParts[section]
     tag = None
 
@@ -211,12 +221,11 @@ def get_first_film(soup, section):
         return
 
     url = SITE_DOMAIN + tag.findNext("ul").find("li").div.a.get("href")
-    return Film.from_url(url)
+    return Film.from_url(url, session=session)
 
 
-def search(term, language="", limit_to=SearchTypes.Exact):
-    soup = soup_for("%s/subtitles/title?q=%s&l=%s" % (SITE_DOMAIN, term,
-                                                      language))
+def search(term, session=None, limit_to=SearchTypes.Exact):
+    soup = soup_for("%s/subtitles/title?q=%s" % (SITE_DOMAIN, term), session=session)
 
     if "Subtitle search by" in str(soup):
         rows = soup.find("table").tbody.find_all("tr")

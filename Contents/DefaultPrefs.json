@@ -380,6 +380,12 @@
     "default": "false"
   },
   {
+    "id": "provider.subscene.enabled",
+    "label": "Provider: Enable SubScene",
+    "type": "bool",
+    "default": "true"
+  },
+  {
     "id": "providers.multithreading",
     "label": "Search enabled providers simultaneously (multithreading)",
     "type": "bool",
