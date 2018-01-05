@@ -76,9 +76,12 @@ class ProviderSubtitleArchiveMixin(object):
                 # - format matches (if it was matched before)
                 # - release group matches (and we asked for one and it was matched, or it was not matched)
                 is_episode = subtitle.episode is not None
-                if not is_episode or (is_episode and (guess["episode"] == subtitle.episode or
-                                                      subtitle.is_pack and guess["episode"] == subtitle.asked_for_episode) and
-                                      guess["season"] == subtitle.season):
+                if not is_episode or (
+                        (
+                                guess["episode"] == subtitle.episode
+                                or (subtitle.is_pack and guess["episode"] == subtitle.asked_for_episode)
+                        ) and guess["season"] == subtitle.season):
+
                     format_matches = True
 
                     if "format" in subtitle.matches:
@@ -98,22 +101,20 @@ class ProviderSubtitleArchiveMixin(object):
                                 break
 
                     release_group_matches = True
-                    if subtitle.asked_for_release_group and ("release_group" in subtitle.matches or
-                                                             "hash" in subtitle.matches):
-                        if subtitle.is_pack:
-                            release_group_matches = True
+                    if subtitle.is_pack or (subtitle.asked_for_release_group and
+                                            ("release_group" in subtitle.matches or
+                                             "hash" in subtitle.matches)):
 
-                        else:
-                            asked_for_rlsgrp = subtitle.asked_for_release_group.lower()
-                            release_group_matches = False
-                            release_groups = guess["release_group"]
-                            if not isinstance(release_groups, types.ListType):
-                                release_groups = [release_groups]
+                        asked_for_rlsgrp = subtitle.asked_for_release_group.lower()
+                        release_group_matches = False
+                        release_groups = guess["release_group"]
+                        if not isinstance(release_groups, types.ListType):
+                            release_groups = [release_groups]
 
-                            for release_group in release_groups:
-                                release_group_matches = release_group.lower() == asked_for_rlsgrp
-                                if release_group_matches:
-                                    break
+                        for release_group in release_groups:
+                            release_group_matches = release_group.lower() == asked_for_rlsgrp
+                            if release_group_matches:
+                                break
 
                     if release_group_matches and format_matches:
                         matching_sub = sub_name
