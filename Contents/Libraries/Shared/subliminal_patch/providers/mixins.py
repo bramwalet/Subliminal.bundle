@@ -100,16 +100,20 @@ class ProviderSubtitleArchiveMixin(object):
                     release_group_matches = True
                     if subtitle.asked_for_release_group and ("release_group" in subtitle.matches or
                                                              "hash" in subtitle.matches):
-                        asked_for_rlsgrp = subtitle.asked_for_release_group.lower()
-                        release_group_matches = False
-                        release_groups = guess["release_group"]
-                        if not isinstance(release_groups, types.ListType):
-                            release_groups = [release_groups]
+                        if subtitle.is_pack:
+                            release_group_matches = True
 
-                        for release_group in release_groups:
-                            release_group_matches = release_group.lower() == asked_for_rlsgrp
-                            if release_group_matches:
-                                break
+                        else:
+                            asked_for_rlsgrp = subtitle.asked_for_release_group.lower()
+                            release_group_matches = False
+                            release_groups = guess["release_group"]
+                            if not isinstance(release_groups, types.ListType):
+                                release_groups = [release_groups]
+
+                            for release_group in release_groups:
+                                release_group_matches = release_group.lower() == asked_for_rlsgrp
+                                if release_group_matches:
+                                    break
 
                     if release_group_matches and format_matches:
                         matching_sub = sub_name
