@@ -76,7 +76,8 @@ class ProviderSubtitleArchiveMixin(object):
                 # - format matches (if it was matched before)
                 # - release group matches (and we asked for one and it was matched, or it was not matched)
                 is_episode = subtitle.episode is not None
-                if not is_episode or (is_episode and guess["episode"] == subtitle.episode and
+                if not is_episode or (is_episode and (guess["episode"] == subtitle.episode or
+                                                      subtitle.is_pack and guess["episode"] == subtitle.asked_for_episode) and
                                       guess["season"] == subtitle.season):
                     format_matches = True
 
@@ -97,7 +98,8 @@ class ProviderSubtitleArchiveMixin(object):
                                 break
 
                     release_group_matches = True
-                    if subtitle.asked_for_release_group and "release_group" in subtitle.matches:
+                    if subtitle.asked_for_release_group and ("release_group" in subtitle.matches or
+                                                             "hash" in subtitle.matches):
                         asked_for_rlsgrp = subtitle.asked_for_release_group.lower()
                         release_group_matches = False
                         release_groups = guess["release_group"]

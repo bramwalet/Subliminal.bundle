@@ -38,6 +38,9 @@ class Subtitle(Subtitle_):
     plex_media_fps = None
     skip_wrong_fps = False
     wrong_fps = False
+    is_pack = False
+    asked_for_release_group = None
+    asked_for_episode = None
 
     _guessed_encoding = None
 

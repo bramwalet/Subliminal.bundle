@@ -29,10 +29,13 @@ class SubsceneSubtitle(Subtitle):
     is_pack = False
     page_link = None
 
-    def __init__(self, language, release_info, hearing_impaired=False, page_link=None, encoding=None, mods=None):
+    def __init__(self, language, release_info, hearing_impaired=False, page_link=None, encoding=None, mods=None,
+                 asked_for_release_group=None, asked_for_episode=None):
         super(SubsceneSubtitle, self).__init__(language, hearing_impaired=hearing_impaired, page_link=page_link,
                                                encoding=encoding, mods=mods)
         self.release_info = release_info
+        self.asked_for_episode = asked_for_episode
+        self.asked_for_release_group = asked_for_release_group
 
     @classmethod
     def from_api(cls, s):
@@ -48,6 +51,7 @@ class SubsceneSubtitle(Subtitle):
 
         if self.release_info.strip() == get_video_filename(video):
             logger.debug("Using hash match as the release name is the same")
+            self.matches = {"hash"}
             return {"hash"}
 
         # episode
@@ -138,6 +142,10 @@ class SubsceneProvider(Provider, ProviderSubtitleArchiveMixin):
             if film.subtitles:
                 for s in film.subtitles:
                     subtitle = SubsceneSubtitle.from_api(s)
+                    subtitle.asked_for_release_group = video.release_group
+                    if isinstance(video, Episode):
+                        subtitle.asked_for_episode = video.episode
+
                     subtitles.append(subtitle)
                     logger.debug('Found subtitle %r', subtitle)
 
