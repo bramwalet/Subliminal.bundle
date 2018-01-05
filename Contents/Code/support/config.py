@@ -20,8 +20,12 @@ from subliminal.cli import MutexLock
 from subzero.lib.io import FileIO, get_viable_encoding
 from subzero.util import get_root_path
 from subzero.constants import PLUGIN_NAME, PLUGIN_IDENTIFIER, MOVIE, SHOW, MEDIA_TYPE_TO_STRING
+from dogpile.cache.region import register_backend as register_cache_backend
 from lib import Plex
 from helpers import check_write_permissions, cast_bool, cast_int, mswindows
+
+register_cache_backend(
+    "subzero.cache.file", "subzero.cache_backends.file", "SZFileBackend")
 
 SUBTITLE_EXTS = ['utf', 'utf8', 'utf-8', 'srt', 'smi', 'rt', 'ssa', 'aqt', 'jss', 'ass', 'idx', 'sub', 'txt', 'psb',
                  'vtt']
@@ -62,6 +66,7 @@ class Config(object):
     dbm_supported = False
     pms_request_timeout = 15
     low_impact_mode = False
+    new_style_cache = False
 
     enable_channel = True
     enable_agent = True
@@ -130,6 +135,7 @@ class Config(object):
         subzero.constants.DEFAULT_TIMEOUT = lib.DEFAULT_TIMEOUT = self.pms_request_timeout = \
             min(cast_int(Prefs['pms_request_timeout'], 15), 45)
         self.low_impact_mode = cast_bool(Prefs['low_impact_mode'])
+        self.new_style_cache = cast_bool(Prefs['new_style_cache'])
 
         os.environ["SZ_USER_AGENT"] = self.get_user_agent()
 
@@ -182,6 +188,13 @@ class Config(object):
             Log.Info("Using UnRAR from: %s", custom_unrar)
 
     def init_cache(self):
+        if self.new_style_cache:
+            subliminal.region.configure('subzero.cache.file', expiration_time=datetime.timedelta(days=30),
+                                        arguments={'appname': "sz_cache",
+                                                   'app_cache_dir': self.data_path})
+            Log.Info("Using new style file based cache!")
+            return
+
         names = ['dbhash', 'gdbm', 'dbm']
         dbfn = None
         self.dbm_supported = False
@@ -226,6 +239,11 @@ class Config(object):
 
         Log.Warn("Not using file based cache!")
         subliminal.region.configure('dogpile.cache.memory')
+
+    def sync_cache(self):
+        if not self.new_style_cache:
+            return
+        subliminal.region.backend.sync()
 
     def set_log_paths(self):
         # find log handler

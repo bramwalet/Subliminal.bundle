@@ -222,8 +222,8 @@ def ValidatePrefs():
     for attr in [
             "app_support_path", "data_path", "data_items_path", "enable_agent",
             "enable_channel", "permissions_ok", "missing_permissions", "fs_encoding",
-            "subtitle_destination_folder", "dbm_supported", "lang_list", "providers", "plex_transcoder",
-            "refiner_settings"]:
+            "subtitle_destination_folder", "new_style_cache", "dbm_supported", "lang_list", "providers",
+            "plex_transcoder", "refiner_settings"]:
 
         value = getattr(config, attr)
         if isinstance(value, dict):

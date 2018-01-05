@@ -236,6 +236,10 @@ class SubZeroAgent(object):
 
             Dict.Save()
 
+            # fsync cache
+            if config.new_style_cache:
+                config.sync_cache()
+
 
 class SubZeroSubtitlesAgentMovies(SubZeroAgent, Agent.Movies):
     contributes_to = ['com.plexapp.agents.imdb', 'com.plexapp.agents.xbmcnfo', 'com.plexapp.agents.themoviedb', 'com.plexapp.agents.hama']

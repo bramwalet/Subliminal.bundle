@@ -707,6 +707,12 @@
     "default": "true"
   },
   {
+    "id": "new_style_cache",
+    "label": "Use new style caching (for subliminal)",
+    "type": "bool",
+    "default": "true"
+  },
+  {
     "id": "low_impact_mode",
     "label": "Low impact mode (for remote filesystems)",
     "type": "bool",

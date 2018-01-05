@@ -300,7 +300,10 @@ def DownloadLogs():
 @debounce
 def InvalidateCache(randomize=None):
     from subliminal.cache import region
-    region.invalidate()
+    if config.new_style_cache:
+        region.backend.clear()
+    else:
+        region.invalidate()
     return AdvancedMenu(
         randomize=timestamp(),
         header='Success',
