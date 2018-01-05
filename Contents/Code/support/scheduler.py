@@ -4,6 +4,7 @@ import datetime
 import logging
 import traceback
 
+from config import config
 
 def parse_frequency(s):
     if s == "never" or s is None:
@@ -135,6 +136,7 @@ class DefaultScheduler(object):
             except:
                 Log.Error("Scheduler: task.post_run failed for %s: %s", name, traceback.format_exc())
             Dict.Save()
+            config.sync_cache()
 
     def dispatch_task(self, *args, **kwargs):
         if "queue" not in Dict["tasks"]:

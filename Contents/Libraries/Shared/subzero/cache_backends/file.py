@@ -36,7 +36,7 @@ class SZFileBackend(CacheBackend):
             self._cache.pop(key, None)
 
     def sync(self, force=False):
-        if (hasattr(self._cache, "buffer") and self._cache._buffer) or force:
+        if (hasattr(self._cache, "_buffer") and self._cache._buffer) or force:
             self._cache.sync()
 
     def clear(self):

@@ -438,7 +438,7 @@ class SearchAllRecentlyAddedMissing(Task):
                                 Log.Error(u"%s: DEBUG HIT: %s", self.name, traceback.format_exc())
 
                         Log.Debug(u"%s: Waiting %s seconds before continuing", self.name, PROVIDER_SLACK)
-                        time.sleep(PROVIDER_SLACK)
+                        Thread.Sleep(PROVIDER_SLACK)
 
                 download_count += downloads_per_video
 
@@ -451,11 +451,11 @@ class SearchAllRecentlyAddedMissing(Task):
                 if downloads_per_video:
                     Log.Debug(u"%s: Subtitles have been downloaded, "
                               u"waiting %s seconds before continuing", self.name, DL_PROVIDER_SLACK)
-                    time.sleep(DL_PROVIDER_SLACK)
+                    Thread.Sleep(DL_PROVIDER_SLACK)
                 else:
                     if hit_providers:
                         Log.Debug(u"%s: Waiting %s seconds before continuing", self.name, PROVIDER_SLACK)
-                        time.sleep(PROVIDER_SLACK)
+                        Thread.Sleep(PROVIDER_SLACK)
         finally:
             history.destroy()
 
@@ -552,10 +552,10 @@ class LegacySearchAllRecentlyAddedMissing(Task):
                     except URLError:
                         pass
                     search_started = datetime.datetime.now()
-                    time.sleep(1)
-                time.sleep(0.1)
+                    Thread.Sleep(1)
+                Thread.Sleep(0.1)
             # we can't hammer the PMS, otherwise requests will be stalled
-            time.sleep(5)
+            Thread.Sleep(5)
 
         Log.Debug("Task: %s, done (%s%%, %s/%s). Failed items: %s", self.name, self.percentage,
                   items_done_count, missing_count, self.items_failed)
@@ -694,7 +694,7 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
                                               u"Continuing to the next one", self.name)
                                     Log.Debug(u"%s: Waiting %s seconds before continuing",
                                               self.name, DL_PROVIDER_SLACK)
-                                    time.sleep(DL_PROVIDER_SLACK)
+                                    Thread.Sleep(DL_PROVIDER_SLACK)
                             better_visited += 1
 
                         if better_tried_download and not better_downloaded:
@@ -706,16 +706,16 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
 
                         if better_tried_download or better_downloaded:
                             Log.Debug(u"%s: Waiting %s seconds before continuing", self.name, DL_PROVIDER_SLACK)
-                            time.sleep(DL_PROVIDER_SLACK)
+                            Thread.Sleep(DL_PROVIDER_SLACK)
 
                         elif better_visited:
                             Log.Debug(u"%s: Waiting %s seconds before continuing", self.name, PROVIDER_SLACK)
-                            time.sleep(PROVIDER_SLACK)
+                            Thread.Sleep(PROVIDER_SLACK)
 
                     elif hit_providers:
                         # hit the providers but didn't try downloading? wait.
                         Log.Debug(u"%s: Waiting %s seconds before continuing", self.name, PROVIDER_SLACK)
-                        time.sleep(PROVIDER_SLACK)
+                        Thread.Sleep(PROVIDER_SLACK)
 
             if ditch_parts:
                 for part_id in ditch_parts:
@@ -725,7 +725,7 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
                         pass
                 subtitle_storage.save(stored_subs)
 
-            time.sleep(1)
+            Thread.Sleep(1)
 
         subtitle_storage.destroy()
 

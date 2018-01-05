@@ -243,6 +243,7 @@ class Config(object):
     def sync_cache(self):
         if not self.new_style_cache:
             return
+        Log.Debug("Syncing cache")
         subliminal.region.backend.sync()
 
     def set_log_paths(self):
