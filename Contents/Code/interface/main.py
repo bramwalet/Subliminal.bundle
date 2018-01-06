@@ -159,7 +159,7 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
         if "provider_throttle" in Dict and Dict["provider_throttle"].keys():
             summary_data = []
             for provider, data in Dict["provider_throttle"].iteritems():
-                reason, until, hours = data
+                reason, until, desc = data
                 summary_data.append("%s until %s (%s)" % (provider, until.strftime("%y/%m/%d %H:%M"), reason))
 
             oc.add(DirectoryObject(

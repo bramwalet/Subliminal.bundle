@@ -56,15 +56,15 @@ VALID_THROTTLE_EXCEPTIONS = (TooManyRequests, DownloadLimitExceeded)
 PROVIDER_THROTTLE_MAP = {
     # values are hours
     "default": {
-        TooManyRequests: 1,
-        DownloadLimitExceeded: 3,
+        TooManyRequests: (datetime.timedelta(hours=1), "1 hour"),
+        DownloadLimitExceeded: (datetime.timedelta(hours=3), "3 hours"),
     },
     "opensubtitles": {
-        TooManyRequests: 3,
-        DownloadLimitExceeded: 6,
+        TooManyRequests: (datetime.timedelta(hours=3), "3 hours"),
+        DownloadLimitExceeded: (datetime.timedelta(hours=6), "6 hours"),
     },
     "addic7ed": {
-        DownloadLimitExceeded: 24,
+        DownloadLimitExceeded: (datetime.timedelta(hours=24), "24 hours"),
     }
 }
 
@@ -539,14 +539,14 @@ class Config(object):
 
         changed = False
         for provider, enabled in dict(providers).iteritems():
-            reason, until, throttle_hours = Dict["provider_throttle"].get(provider, (None, None, None))
+            reason, until, throttle_desc = Dict["provider_throttle"].get(provider, (None, None, None))
             if reason:
                 now = datetime.datetime.now()
                 if now < until:
                     Log.Info("Not using %s until %s, because of: %s", provider, until, reason)
                     providers[provider] = False
                 else:
-                    Log.Info("Using %s again after %s hours, (disabled because: %s)", provider, throttle_hours, reason)
+                    Log.Info("Using %s again after %s, (disabled because: %s)", provider, throttle_desc, reason)
                     del Dict["provider_throttle"][provider]
                     changed = True
 
@@ -596,17 +596,20 @@ class Config(object):
                 if isinstance(cls, valid_cls):
                     cls = valid_cls
 
-        throttle_hours = PROVIDER_THROTTLE_MAP.get(name, PROVIDER_THROTTLE_MAP["default"]).get(cls, None)
-        if not throttle_hours:
+        throttle_data = PROVIDER_THROTTLE_MAP.get(name, PROVIDER_THROTTLE_MAP["default"]).get(cls, None)
+        if not throttle_data:
             return
+
+        throttle_delta, throttle_description = throttle_data
 
         if "provider_throttle" not in Dict:
             Dict["provider_throttle"] = {}
 
-        throttle_until = datetime.datetime.now() + datetime.timedelta(hours=throttle_hours)
-        Dict["provider_throttle"][name] = (cls_name, throttle_until, throttle_hours)
+        throttle_until = datetime.datetime.now() + throttle_delta
+        Dict["provider_throttle"][name] = (cls_name, throttle_until, throttle_description)
 
-        Log.Info("Throttling %s for %s hours, until %s, because of: %s", name, throttle_hours, throttle_until, cls_name)
+        Log.Info("Throttling %s for %s hours, until %s, because of: %s", name, throttle_description, throttle_until,
+                 cls_name)
         Dict.Save()
 
     @property
