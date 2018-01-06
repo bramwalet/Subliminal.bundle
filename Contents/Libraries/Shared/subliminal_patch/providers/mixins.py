@@ -8,8 +8,10 @@ import types
 
 from guessit import guessit
 from subliminal import ProviderError
+from subliminal.exceptions import TooManyRequests, DownloadLimitExceeded
 from subliminal.providers.opensubtitles import Unauthorized
 from subliminal.subtitle import fix_line_ending
+from subliminal_patch.exceptions import ServiceUnavailable
 
 logger = logging.getLogger(__name__)
 
@@ -40,10 +42,12 @@ class ProviderRetryMixin(object):
         while i <= amount:
             try:
                 return f()
+            except (Unauthorized, ServiceUnavailable, TooManyRequests, DownloadLimitExceeded):
+                raise
             except exc:
                 formatted_exc = traceback.format_exc()
                 i += 1
-                if i == amount or isinstance(exc, Unauthorized):
+                if i == amount:
                     raise
 
             logger.debug(u"Retrying %s, try: %i/%i, exception: %s" % (self.__class__.__name__, i, amount, formatted_exc))

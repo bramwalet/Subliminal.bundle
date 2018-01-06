@@ -16,6 +16,8 @@ from subliminal.exceptions import TooManyRequests, DownloadLimitExceeded
 
 from subliminal_patch.core import is_windows_special_path
 from whichdb import whichdb
+
+from subliminal_patch.exceptions import ServiceUnavailable
 from subzero.language import Language
 from subliminal.cli import MutexLock
 from subzero.lib.io import FileIO, get_viable_encoding
@@ -51,13 +53,14 @@ def int_or_default(s, default):
         return default
 
 
-VALID_THROTTLE_EXCEPTIONS = (TooManyRequests, DownloadLimitExceeded)
+VALID_THROTTLE_EXCEPTIONS = (TooManyRequests, DownloadLimitExceeded, ServiceUnavailable)
 
 PROVIDER_THROTTLE_MAP = {
     # values are hours
     "default": {
         TooManyRequests: (datetime.timedelta(hours=1), "1 hour"),
         DownloadLimitExceeded: (datetime.timedelta(hours=3), "3 hours"),
+        ServiceUnavailable: (datetime.timedelta(minutes=20), "20 minutes"),
     },
     "opensubtitles": {
         TooManyRequests: (datetime.timedelta(hours=3), "3 hours"),
@@ -596,7 +599,9 @@ class Config(object):
                 if isinstance(cls, valid_cls):
                     cls = valid_cls
 
-        throttle_data = PROVIDER_THROTTLE_MAP.get(name, PROVIDER_THROTTLE_MAP["default"]).get(cls, None)
+        throttle_data = PROVIDER_THROTTLE_MAP.get(name, PROVIDER_THROTTLE_MAP["default"]).get(cls, None) or \
+            PROVIDER_THROTTLE_MAP["default"].get(cls, None)
+
         if not throttle_data:
             return
 
@@ -608,8 +613,8 @@ class Config(object):
         throttle_until = datetime.datetime.now() + throttle_delta
         Dict["provider_throttle"][name] = (cls_name, throttle_until, throttle_description)
 
-        Log.Info("Throttling %s for %s hours, until %s, because of: %s", name, throttle_description, throttle_until,
-                 cls_name)
+        Log.Info("Throttling %s for %s, until %s, because of: %s", name, throttle_description,
+                 throttle_until.strftime("%y/%m/%d %H:%M"), cls_name)
         Dict.Save()
 
     @property

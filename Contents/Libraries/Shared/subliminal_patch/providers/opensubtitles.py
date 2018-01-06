@@ -8,11 +8,13 @@ from dogpile.cache.api import NO_VALUE
 from subliminal.exceptions import ConfigurationError, TooManyRequests
 from subliminal.providers.opensubtitles import OpenSubtitlesProvider as _OpenSubtitlesProvider,\
     OpenSubtitlesSubtitle as _OpenSubtitlesSubtitle, Episode, ServerProxy, Unauthorized, NoSession, \
-    DownloadLimitReached, InvalidImdbid, UnknownUserAgent, DisabledUserAgent, ServiceUnavailable, OpenSubtitlesError
+    DownloadLimitReached, InvalidImdbid, UnknownUserAgent, DisabledUserAgent, OpenSubtitlesError
 from mixins import ProviderRetryMixin
 from subliminal_patch.http import TimeoutSafeTransport, TimeoutTransport
 from subliminal.cache import region
 from subzero.language import Language
+
+from ..exceptions import ServiceUnavailable
 
 logger = logging.getLogger(__name__)
 
