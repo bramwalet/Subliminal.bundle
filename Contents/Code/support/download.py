@@ -70,5 +70,6 @@ def download_best_subtitles(video_part_map, min_score=0, throttle_time=None):
 
         return subliminal.download_best_subtitles(video_part_map.keys(), languages, min_score, hearing_impaired, providers=config.providers,
                                                   provider_configs=config.provider_settings, pool_class=config.provider_pool,
-                                                  compute_score=compute_score, throttle_time=throttle_time, blacklist=blacklist)
+                                                  compute_score=compute_score, throttle_time=throttle_time, blacklist=blacklist,
+                                                  throttle_callback=config.provider_throttle)
     Log.Debug("All languages for all requested videos exist. Doing nothing.")

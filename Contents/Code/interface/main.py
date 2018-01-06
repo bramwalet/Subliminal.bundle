@@ -156,6 +156,19 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
         ))
 
     if not only_refresh:
+        if "provider_throttle" in Dict and Dict["provider_throttle"].keys():
+            summary_data = []
+            for provider, data in Dict["provider_throttle"].iteritems():
+                reason, until, hours = data
+                summary_data.append("%s until %s (%s)" % (provider, until.strftime("%y/%m/%d %H:%M"), reason))
+
+            oc.add(DirectoryObject(
+                key=Callback(fatality, force_title=" ", randomize=timestamp()),
+                title=pad_title("Throttled providers: %s" % ", ".join(Dict["provider_throttle"].keys())),
+                summary=", ".join(summary_data),
+                thumb=R("icon-throttled.jpg")
+            ))
+
         oc.add(DirectoryObject(
             key=Callback(AdvancedMenu),
             title=pad_title("Advanced functions"),

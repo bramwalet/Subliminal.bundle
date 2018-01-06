@@ -133,7 +133,8 @@ class SubtitleListingMixin(object):
         available_subs = list_all_subtitles(scanned_parts, languages,
                                             providers=config.providers,
                                             provider_configs=provider_settings,
-                                            pool_class=config.provider_pool)
+                                            pool_class=config.provider_pool,
+                                            throttle_callback=config.provider_throttle)
 
         use_hearing_impaired = Prefs['subtitles.search.hearingImpaired'] in ("prefer", "force HI")
 
@@ -177,7 +178,7 @@ class DownloadSubtitleMixin(object):
 
         # downloaded_subtitles = {subliminal.Video: [subtitle, subtitle, ...]}
         download_subtitles([subtitle], providers=config.providers, provider_configs=config.provider_settings,
-                           pool_class=config.provider_pool)
+                           pool_class=config.provider_pool, throttle_callback=config.provider_throttle)
         download_successful = False
 
         if subtitle.content:

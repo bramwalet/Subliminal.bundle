@@ -89,6 +89,10 @@ def AdvancedMenu(randomize=None, header=None, message=None):
         key=Callback(InvalidateCache, randomize=timestamp()),
         title=pad_title("Invalidate Sub-Zero metadata caches (subliminal)"),
     ))
+    oc.add(DirectoryObject(
+        key=Callback(ResetProviderThrottle, randomize=timestamp()),
+        title=pad_title("Reset provider throttle states"),
+    ))
     return oc
 
 
@@ -341,3 +345,14 @@ def ClearPin(randomize=None):
     Dict["pin_correct_time"] = None
     config.locked = True
     return fatality(force_title="Menu locked", header=" ", no_history=True)
+
+
+@route(PREFIX + '/reset_throttle')
+def ResetProviderThrottle(randomize=None):
+    Dict["provider_throttle"] = {}
+    Dict.Save()
+    return AdvancedMenu(
+        randomize=timestamp(),
+        header='Success',
+        message='Provider throttles reset'
+    )

@@ -21,6 +21,7 @@ from guessit.jsonutils import GuessitEncoder
 from subliminal import ProviderError, refiner_manager
 
 from extensions import provider_registry
+from subliminal.exceptions import TooManyRequests, DownloadLimitExceeded
 from subliminal.score import compute_score as default_compute_score
 from subliminal.utils import hash_napiprojekt, hash_opensubtitles, hash_shooter, hash_thesubdb
 from subliminal.video import VIDEO_EXTENSIONS, Video, Episode, Movie
@@ -45,7 +46,7 @@ SUBTITLE_EXTENSIONS = ('.srt', '.sub', '.smi', '.txt', '.ssa', '.ass', '.mpl', '
 
 
 class SZProviderPool(ProviderPool):
-    def __init__(self, providers=None, provider_configs=None, blacklist=None):
+    def __init__(self, providers=None, provider_configs=None, blacklist=None, throttle_callback=None):
         #: Name of providers to use
         self.providers = providers or provider_registry.names()
 
@@ -59,6 +60,11 @@ class SZProviderPool(ProviderPool):
         self.discarded_providers = set()
 
         self.blacklist = blacklist or []
+
+        self.throttle_callback = throttle_callback
+
+        if not self.throttle_callback:
+            self.throttle_callback = lambda x, y: x
 
     def __enter__(self):
         return self
@@ -138,6 +144,11 @@ class SZProviderPool(ProviderPool):
 
         except (requests.Timeout, socket.timeout):
             logger.error('Provider %r timed out', provider)
+
+        except (TooManyRequests, DownloadLimitExceeded), e:
+            self.throttle_callback(provider, e)
+            return
+
         except:
             logger.exception('Unexpected error in provider %r: %s', provider, traceback.format_exc())
 
@@ -213,6 +224,11 @@ class SZProviderPool(ProviderPool):
 
             except rarfile.BadRarFile:
                 logger.error('Malformed RAR file from provider %r, skipping subtitle.', subtitle.provider_name)
+                return False
+
+            except (TooManyRequests, DownloadLimitExceeded), e:
+                self.throttle_callback(subtitle.provider_name, e)
+                self.discarded_providers.add(subtitle.provider_name)
                 return False
 
             except:

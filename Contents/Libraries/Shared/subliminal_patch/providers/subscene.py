@@ -92,6 +92,10 @@ class SubsceneProvider(Provider, ProviderSubtitleArchiveMixin):
     session = None
     skip_wrong_fps = False
     hearing_impaired_verifiable = True
+    only_foreign = False
+
+    def __init__(self, only_foreign=False):
+        self.only_foreign = only_foreign
 
     def initialize(self):
         logger.info("Creating session")
@@ -104,7 +108,7 @@ class SubsceneProvider(Provider, ProviderSubtitleArchiveMixin):
         self.session.close()
 
     def _create_filters(self, languages):
-        self.filters = dict(ForeignOnly="False", HearingImpaired="2")
+        self.filters = dict(ForeignOnly=str(self.only_foreign), HearingImpaired="2")
 
         self.filters["LanguageFilter"] = ",".join((str(language_ids[l.alpha3]) for l in languages
                                                    if l.alpha3 in language_ids))

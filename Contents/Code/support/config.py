@@ -12,6 +12,7 @@ import subliminal
 import subliminal_patch
 import subzero.constants
 import lib
+from subliminal.exceptions import TooManyRequests, DownloadLimitExceeded
 
 from subliminal_patch.core import is_windows_special_path
 from whichdb import whichdb
@@ -50,6 +51,24 @@ def int_or_default(s, default):
         return default
 
 
+VALID_THROTTLE_EXCEPTIONS = (TooManyRequests, DownloadLimitExceeded)
+
+PROVIDER_THROTTLE_MAP = {
+    # values are hours
+    "default": {
+        TooManyRequests: 1,
+        DownloadLimitExceeded: 3,
+    },
+    "opensubtitles": {
+        TooManyRequests: 3,
+        DownloadLimitExceeded: 6,
+    },
+    "addic7ed": {
+        DownloadLimitExceeded: 24,
+    }
+}
+
+
 class Config(object):
     libraries_root = None
     plugin_info = ""
@@ -78,7 +97,6 @@ class Config(object):
     lang_list = None
     subtitle_destination_folder = None
     subtitle_formats = None
-    providers = None
     provider_settings = None
     max_recent_items_per_library = 200
     permissions_ok = False
@@ -138,8 +156,6 @@ class Config(object):
         self.new_style_cache = cast_bool(Prefs['new_style_cache'])
 
         os.environ["SZ_USER_AGENT"] = self.get_user_agent()
-
-        self.providers = self.get_providers()
 
         self.set_plugin_mode()
         self.set_plugin_lock()
@@ -517,11 +533,32 @@ class Config(object):
             providers["napiprojekt"] = False
             providers["shooter"] = False
             providers["titlovi"] = False
-            providers["subscenter"] = False
+
+        if "provider_throttle" not in Dict:
+            Dict["provider_throttle"] = {}
+
+        changed = False
+        for provider, enabled in dict(providers).iteritems():
+            reason, until, throttle_hours = Dict["provider_throttle"].get(provider, (None, None, None))
+            if reason:
+                now = datetime.datetime.now()
+                if now < until:
+                    Log.Info("Not using %s until %s, because of: %s", provider, until, reason)
+                    providers[provider] = False
+                else:
+                    Log.Info("Using %s again after %s hours, (disabled because: %s)", provider, throttle_hours, reason)
+                    del Dict["provider_throttle"][provider]
+                    changed = True
+
+        if changed:
+            Dict.Save()
 
         return filter(lambda prov: providers[prov], providers)
 
+    providers = property(get_providers)
+
     def get_provider_settings(self):
+        only_foreign = cast_bool(Prefs['subtitles.only_foreign'])
         provider_settings = {'addic7ed': {'username': Prefs['provider.addic7ed.username'],
                                           'password': Prefs['provider.addic7ed.password'],
                                           'use_random_agents': cast_bool(Prefs['provider.addic7ed.use_random_agents']),
@@ -529,18 +566,48 @@ class Config(object):
                              'opensubtitles': {'username': Prefs['provider.opensubtitles.username'],
                                                'password': Prefs['provider.opensubtitles.password'],
                                                'use_tag_search': self.exact_filenames,
-                                               'only_foreign': cast_bool(Prefs['subtitles.only_foreign']),
+                                               'only_foreign': only_foreign,
                                                'is_vip': cast_bool(Prefs['provider.opensubtitles.is_vip'])
                                                },
                              'podnapisi': {
-                                 'only_foreign': cast_bool(Prefs['subtitles.only_foreign'])
+                                 'only_foreign': only_foreign,
                              },
                              'legendastv': {'username': Prefs['provider.legendastv.username'],
                                             'password': Prefs['provider.legendastv.password'],
                                             },
+                             'subscene': {
+                                 'only_foreign': only_foreign,
+                             }
                              }
 
         return provider_settings
+
+    def provider_throttle(self, name, exception):
+        """
+        throttle a provider :name: for X hours based on the :exception: type
+        :param name:
+        :param exception:
+        :return:
+        """
+        cls = getattr(exception, "__class__")
+        cls_name = getattr(cls, "__name__")
+        if cls not in VALID_THROTTLE_EXCEPTIONS:
+            for valid_cls in VALID_THROTTLE_EXCEPTIONS:
+                if isinstance(cls, valid_cls):
+                    cls = valid_cls
+
+        throttle_hours = PROVIDER_THROTTLE_MAP.get(name, PROVIDER_THROTTLE_MAP["default"]).get(cls, None)
+        if not throttle_hours:
+            return
+
+        if "provider_throttle" not in Dict:
+            Dict["provider_throttle"] = {}
+
+        throttle_until = datetime.datetime.now() + datetime.timedelta(hours=throttle_hours)
+        Dict["provider_throttle"][name] = (cls_name, throttle_until, throttle_hours)
+
+        Log.Info("Throttling %s for %s hours, until %s, because of: %s", name, throttle_hours, throttle_until, cls_name)
+        Dict.Save()
 
     @property
     def provider_pool(self):

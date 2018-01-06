@@ -3,13 +3,12 @@
 import logging
 import os
 
-import dogpile
 from babelfish import language_converters
 from dogpile.cache.api import NO_VALUE
-from subliminal.exceptions import ConfigurationError
-from subliminal.providers.opensubtitles import OpenSubtitlesProvider as _OpenSubtitlesProvider, checked, \
-    __short_version__, \
-    OpenSubtitlesSubtitle as _OpenSubtitlesSubtitle, Episode, ServerProxy, Unauthorized
+from subliminal.exceptions import ConfigurationError, TooManyRequests
+from subliminal.providers.opensubtitles import OpenSubtitlesProvider as _OpenSubtitlesProvider,\
+    OpenSubtitlesSubtitle as _OpenSubtitlesSubtitle, Episode, ServerProxy, Unauthorized, NoSession, \
+    DownloadLimitReached, InvalidImdbid, UnknownUserAgent, DisabledUserAgent, ServiceUnavailable, OpenSubtitlesError
 from mixins import ProviderRetryMixin
 from subliminal_patch.http import TimeoutSafeTransport, TimeoutTransport
 from subliminal.cache import region
@@ -66,7 +65,7 @@ class OpenSubtitlesSubtitle(_OpenSubtitlesSubtitle):
 
 
 class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
-    only_foreign = True
+    only_foreign = False
     subtitle_class = OpenSubtitlesSubtitle
     hash_verifiable = True
     hearing_impaired_verifiable = True
@@ -269,3 +268,34 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
 
     def download_subtitle(self, subtitle):
         return self.use_token_or_login(lambda: super(OpenSubtitlesProvider, self).download_subtitle(subtitle))
+
+
+def checked(response):
+    """Check a response status before returning it.
+
+    :param response: a response from a XMLRPC call to OpenSubtitles.
+    :return: the response.
+    :raise: :class:`OpenSubtitlesError`
+
+    """
+    status_code = int(response['status'][:3])
+    if status_code == 401:
+        raise Unauthorized
+    if status_code == 406:
+        raise NoSession
+    if status_code == 407:
+        raise DownloadLimitReached
+    if status_code == 413:
+        raise InvalidImdbid
+    if status_code == 414:
+        raise UnknownUserAgent
+    if status_code == 415:
+        raise DisabledUserAgent
+    if status_code == 429:
+        raise TooManyRequests
+    if status_code == 503:
+        raise ServiceUnavailable
+    if status_code != 200:
+        raise OpenSubtitlesError(response['status'])
+
+    return response
