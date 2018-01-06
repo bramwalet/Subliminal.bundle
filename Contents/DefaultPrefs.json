@@ -393,13 +393,13 @@
   },
   {
     "id": "subtitles.scan.embedded",
-    "label": "Don't search for subtitles if there are embedded subtitles inside the media file (MKV/MP4)?",
+    "label": "Don't search for subtitles of a language if there are embedded subtitles inside the media file (MKV/MP4)?",
     "type": "bool",
     "default": "false"
   },
   {
     "id": "subtitles.scan.external",
-    "label": "Don't search for subtitles if they already exist on the filesystem (metadata/filesystem)?",
+    "label": "Don't search for subtitles of a language if they already exist on the filesystem (metadata/filesystem)?",
     "type": "bool",
     "default": "true"
   },
@@ -416,7 +416,7 @@
   },
   {
     "id": "subtitles.scan.exotic_ext",
-    "label": "Include \"exotic\" subtitle formats (anything else than .srt/.ssa/.ass/.vtt; embedded or external) in the above?",
+    "label": "Include non-text subtitle formats (anything else than .srt/.ssa/.ass/.vtt; embedded or external) in the above?",
     "type": "bool",
     "default": "false"
   },
