@@ -546,7 +546,8 @@ class Config(object):
             if reason:
                 now = datetime.datetime.now()
                 if now < until:
-                    Log.Info("Not using %s until %s, because of: %s", provider, until, reason)
+                    Log.Info("Not using %s until %s, because of: %s", provider,
+                             until.strftime("%y/%m/%d %H:%M"), reason)
                     providers[provider] = False
                 else:
                     Log.Info("Using %s again after %s, (disabled because: %s)", provider, throttle_desc, reason)
