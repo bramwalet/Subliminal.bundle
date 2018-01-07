@@ -68,7 +68,7 @@ class SubsceneSubtitle(Subtitle):
             guess = guessit(self.release_info, {'type': 'movie'})
             matches |= guess_matches(video, guess)
 
-        if "release_group" not in matches:
+        if "release_group" not in matches and "release_group" in guess:
             if sanitize_release_group(video.release_group) in sanitize_release_group(guess["release_group"]):
                 matches.add("release_group")
 
