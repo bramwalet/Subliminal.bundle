@@ -37,6 +37,7 @@ class RetryingSession(Session):
 
     def retry_method(self, method, *args, **kwargs):
         if self.proxies:
+            # fixme: may be a little loud
             logger.debug("Using proxy %s for: %s", self.proxies["http"], args[0])
 
         return retry_call(getattr(super(RetryingSession, self), method), fargs=args, fkwargs=kwargs, tries=3, delay=5,
