@@ -69,11 +69,11 @@ class SubZeroTransport(SafeTransport):
         self.proxy = None
         self.scheme = url.split('://', 1)[0]
         self.https = url.startswith('https')
+        self.proxy = os.environ.get('SZ_HTTP_PROXY')
+
         if self.https:
-            self.proxy = os.environ.get('SZ_HTTPS_PROXY')
             self.context = default_ssl_context
-        else:
-            self.proxy = os.environ.get('SZ_HTTP_PROXY')
+
         if self.proxy:
             logger.debug("Using proxy: %s", self.proxy)
             self.https = self.proxy.startswith('https')

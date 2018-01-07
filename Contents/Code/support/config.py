@@ -160,6 +160,7 @@ class Config(object):
 
         os.environ["SZ_USER_AGENT"] = self.get_user_agent()
 
+        self.setup_proxies()
         self.set_plugin_mode()
         self.set_plugin_lock()
         self.set_activity_modes()
@@ -679,6 +680,12 @@ class Config(object):
             mods.append("color(name=%s)" % self.colors)
 
         return mods
+
+    def setup_proxies(self):
+        proxy = Prefs["proxy"]
+        if proxy:
+            os.environ["SZ_HTTP_PROXY"] = proxy.strip()
+            Log.Debug("Using HTTP Proxy: %s", proxy)
 
     def set_activity_modes(self):
         val = Prefs["activity.on_playback"]
