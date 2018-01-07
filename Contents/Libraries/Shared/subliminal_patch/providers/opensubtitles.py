@@ -10,7 +10,7 @@ from subliminal.providers.opensubtitles import OpenSubtitlesProvider as _OpenSub
     OpenSubtitlesSubtitle as _OpenSubtitlesSubtitle, Episode, ServerProxy, Unauthorized, NoSession, \
     DownloadLimitReached, InvalidImdbid, UnknownUserAgent, DisabledUserAgent, OpenSubtitlesError
 from mixins import ProviderRetryMixin
-from subliminal_patch.http import TimeoutSafeTransport, TimeoutTransport
+from subliminal_patch.http import SubZeroTransport
 from subliminal.cache import region
 from subzero.language import Language
 
@@ -106,8 +106,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
             logger.info("Only searching for foreign/forced subtitles")
 
     def get_server_proxy(self, url, timeout=10):
-        transport = TimeoutSafeTransport if url.startswith("https") else TimeoutTransport
-        return ServerProxy(url, transport(timeout))
+        return ServerProxy(url, SubZeroTransport(timeout, url))
 
     def log_in(self, server_url=None):
         if server_url:
