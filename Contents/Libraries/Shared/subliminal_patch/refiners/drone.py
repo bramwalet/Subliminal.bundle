@@ -133,7 +133,7 @@ class SonarrClient(DroneAPIClient):
         :return:
         """
         ext = os.path.splitext(video.name)[1]
-        guess_from = REMOVE_CRAP_FROM_FILENAME.sub(r"\2", scene_name + ext)
+        guess_from = REMOVE_CRAP_FROM_FILENAME.sub("", scene_name + ext)
 
         # guess
         hints = {
@@ -186,7 +186,7 @@ class RadarrClient(DroneAPIClient):
         :return:
         """
         ext = os.path.splitext(video.name)[1]
-        guess_from = REMOVE_CRAP_FROM_FILENAME.sub(r"\2", scene_name + ext)
+        guess_from = REMOVE_CRAP_FROM_FILENAME.sub("", scene_name + ext)
 
         # guess
         hints = {
@@ -231,4 +231,4 @@ def refine(video, **kwargs):
             client.update_video(video, additional_data["scene_name"])
 
         if "release_group" in additional_data and not video.release_group:
-            video.release_group = REMOVE_CRAP_FROM_FILENAME.sub(r"\2", additional_data["release_group"])
+            video.release_group = REMOVE_CRAP_FROM_FILENAME.sub("", additional_data["release_group"])

@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 def update_video(video, fn):
-    guess_from = REMOVE_CRAP_FROM_FILENAME.sub(r"\2", fn)
+    guess_from = REMOVE_CRAP_FROM_FILENAME.sub("", fn)
 
     logger.debug(u"Got original filename: %s", guess_from)
 

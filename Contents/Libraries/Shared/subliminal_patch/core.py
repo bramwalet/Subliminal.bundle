@@ -426,15 +426,15 @@ def scan_video(path, dont_use_actual_file=False, hints=None):
     # remove crap from folder names
     if video_type == "episode":
         if len(split_path) > 2:
-            split_path[-3] = REMOVE_CRAP_FROM_FILENAME.sub(r"\2", split_path[-3])
+            split_path[-3] = REMOVE_CRAP_FROM_FILENAME.sub("", split_path[-3])
     else:
         if len(split_path) > 1:
-            split_path[-2] = REMOVE_CRAP_FROM_FILENAME.sub(r"\2", split_path[-2])
+            split_path[-2] = REMOVE_CRAP_FROM_FILENAME.sub("", split_path[-2])
 
     guess_from = os.path.join(*split_path)
 
     # remove crap from file name
-    guess_from = REMOVE_CRAP_FROM_FILENAME.sub(r"\2", guess_from)
+    guess_from = REMOVE_CRAP_FROM_FILENAME.sub("", guess_from)
 
     # guess
     hints["single_value"] = True
