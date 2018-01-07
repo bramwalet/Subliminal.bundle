@@ -40,8 +40,9 @@ INCLUDE_EXOTIC_SUBS = True
 DOWNLOAD_TRIES = 0
 DOWNLOAD_RETRY_SLEEP = 6
 
-REMOVE_CRAP_FROM_FILENAME = re.compile(r"(?i)[\s_-]+(obfuscated|scrambled|nzbgeek|chamele0n"
-                                       r"|buymore|xpost|postbot|asrequested)(\.\w+|$)$")
+# fixme: this may be overkill
+REMOVE_CRAP_FROM_FILENAME = re.compile(r"(?i)((?:[\s_-]+(?:obfuscated|scrambled|nzbgeek|chamele0n|buymore|xpost"
+                                       r"|postbot|asrequested))?(?:(?<=(?=[\s_-]*.+?))\[.*?\])?)(?:\.\w+|$)$")
 
 SUBTITLE_EXTENSIONS = ('.srt', '.sub', '.smi', '.txt', '.ssa', '.ass', '.mpl', '.vtt')
 
