@@ -109,7 +109,7 @@ def SubtitleFPSModMenu(**kwargs):
 
     target_fps = plex_part.fps
 
-    for fps in ["23.976", "24.000", "25.000", "29.970", "30.000", "50.000", "59.940", "60.000"]:
+    for fps in ["23.980", "23.976", "24.000", "25.000", "29.970", "30.000", "50.000", "59.940", "60.000"]:
         if float(fps) == float(target_fps):
             continue
 
