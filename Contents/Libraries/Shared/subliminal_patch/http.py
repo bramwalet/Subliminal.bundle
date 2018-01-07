@@ -28,7 +28,17 @@ class RetryingSession(Session):
         super(RetryingSession, self).__init__()
         self.verify = pem_file
 
+        proxy = os.environ.get('SZ_HTTP_PROXY')
+        if proxy:
+            self.proxies = {
+                "http": proxy,
+                "https": proxy
+            }
+
     def retry_method(self, method, *args, **kwargs):
+        if self.proxies:
+            logger.debug("Using proxy %s for: %s", self.proxies["http"], args[0])
+
         return retry_call(getattr(super(RetryingSession, self), method), fargs=args, fkwargs=kwargs, tries=3, delay=5,
                           exceptions=(exceptions.ConnectionError,
                                       exceptions.ProxyError,
@@ -75,7 +85,7 @@ class SubZeroTransport(SafeTransport):
             self.context = default_ssl_context
 
         if self.proxy:
-            logger.debug("Using proxy: %s", self.proxy)
+            logger.debug("Using proxy %s for: %s", self.proxy, url)
             self.https = self.proxy.startswith('https')
 
     def make_connection(self, host):
