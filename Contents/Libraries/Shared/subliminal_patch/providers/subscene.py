@@ -68,6 +68,7 @@ class SubsceneSubtitle(Subtitle):
             if "season" in matches and "episode" not in guess:
                 # pack
                 matches.add("episode")
+                logger.debug("%r is a pack", self)
                 self.is_pack = True
 
         # movie
