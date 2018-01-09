@@ -193,8 +193,11 @@ class SubZeroAgent(object):
 
             else:
                 # downloaded_subtitles = {subliminal.Video: [subtitle, subtitle, ...]}
-                downloaded_subtitles = download_best_subtitles(scanned_video_part_map, min_score=use_score,
-                                                               throttle_time=self.debounce)
+                try:
+                    downloaded_subtitles = download_best_subtitles(scanned_video_part_map, min_score=use_score,
+                                                                   throttle_time=self.debounce)
+                except:
+                    Log.Exception("Something went wrong when downloading subtitles")
 
                 if downloaded_subtitles is not None:
                     Dict["last_call"] = datetime.datetime.now()
