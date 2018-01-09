@@ -212,21 +212,28 @@ class SubZeroAgent(object):
                 downloaded_any = any(downloaded_subtitles.values())
 
             if downloaded_any:
-                save_successful = save_subtitles(scanned_video_part_map, downloaded_subtitles, mods=config.default_mods)
+                save_successful = False
+                try:
+                    save_successful = save_subtitles(scanned_video_part_map, downloaded_subtitles,
+                                                     mods=config.default_mods)
+                except:
+                    Log.Exception("Something went wrong when saving subtitles")
+
                 track_usage("Subtitle", "refreshed", "download", 1)
 
                 # store SZ meta info even if download wasn't successful
                 if not save_successful:
                     self.store_blank_subtitle_metadata(scanned_video_part_map)
 
-                for video, video_subtitles in downloaded_subtitles.items():
-                    # store item(s) in history
-                    for subtitle in video_subtitles:
-                        item_title = get_title_for_video_metadata(video.plexapi_metadata, add_section_title=False)
-                        history = get_history()
-                        history.add(item_title, video.id, section_title=video.plexapi_metadata["section"],
-                                    subtitle=subtitle)
-                        history.destroy()
+                else:
+                    for video, video_subtitles in downloaded_subtitles.items():
+                        # store item(s) in history
+                        for subtitle in video_subtitles:
+                            item_title = get_title_for_video_metadata(video.plexapi_metadata, add_section_title=False)
+                            history = get_history()
+                            history.add(item_title, video.id, section_title=video.plexapi_metadata["section"],
+                                        subtitle=subtitle)
+                            history.destroy()
             else:
                 # store SZ meta info even if we've downloaded none
                 self.store_blank_subtitle_metadata(scanned_video_part_map)
