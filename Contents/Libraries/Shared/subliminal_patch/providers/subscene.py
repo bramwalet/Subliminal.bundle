@@ -28,6 +28,8 @@ class SubsceneSubtitle(Subtitle):
     hearing_impaired_verifiable = True
     is_pack = False
     page_link = None
+    season = None
+    episode = None
 
     def __init__(self, language, release_info, hearing_impaired=False, page_link=None, encoding=None, mods=None,
                  asked_for_release_group=None, asked_for_episode=None):
@@ -36,6 +38,8 @@ class SubsceneSubtitle(Subtitle):
         self.release_info = release_info
         self.asked_for_episode = asked_for_episode
         self.asked_for_release_group = asked_for_release_group
+        self.season = None
+        self.episode = None
 
     @classmethod
     def from_api(cls, s):
@@ -49,14 +53,17 @@ class SubsceneSubtitle(Subtitle):
     def get_matches(self, video):
         matches = set()
 
+        hash_matched = False
         if self.release_info.strip() == get_video_filename(video):
             logger.debug("Using hash match as the release name is the same")
-            self.matches = {"hash"}
-            return {"hash"}
+            hash_matched = True
 
         # episode
         if isinstance(video, Episode):
             guess = guessit(self.release_info, {'type': 'episode'})
+            self.season = guess.get("season")
+            self.episode = guess.get("episode")
+
             matches |= guess_matches(video, guess)
             if "season" in matches and "episode" not in guess:
                 # pack
@@ -71,6 +78,10 @@ class SubsceneSubtitle(Subtitle):
         if "release_group" not in matches and "release_group" in guess:
             if sanitize_release_group(video.release_group) in sanitize_release_group(guess["release_group"]):
                 matches.add("release_group")
+
+        if hash_matched:
+            self.matches = {"hash"}
+            return {"hash"}
 
         return matches
 
