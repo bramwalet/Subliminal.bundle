@@ -15,7 +15,7 @@ from missing_subtitles import items_get_all_missing_subs, refresh_item
 from scheduler import scheduler
 from storage import save_subtitles, get_subtitle_storage
 from support.config import config
-from support.items import get_recent_items, get_item, is_ignored
+from support.items import get_recent_items, get_item, is_ignored, get_item_title
 from support.helpers import track_usage, get_title_for_video_metadata, cast_bool, PartUnknownException
 from support.plex_media import get_plex_metadata
 from support.scanning import scan_videos
@@ -344,13 +344,12 @@ class SearchAllRecentlyAddedMissing(Task):
 
         # determine viable items
         for fn in recent_sub_fns:
-            # added_date <= max_search_days?
             stored_subs = subtitle_storage.load(filename=fn)
-            if not stored_subs:
-                continue
 
-            if stored_subs.added_at + datetime.timedelta(days=max_search_days) <= now:
-                continue
+            if stored_subs:
+                # added_date <= max_search_days?
+                if stored_subs.added_at + datetime.timedelta(days=max_search_days) <= now:
+                    continue
 
             viable_items[fn] = stored_subs
 
@@ -403,7 +402,7 @@ class SearchAllRecentlyAddedMissing(Task):
                         Log.Info(u"%s: Part %s:%s unknown, skipping", self.name, video_id, part_id)
                         continue
 
-                    Log.Debug(u"%s: Looking for missing subtitles: %s:%s", self.name, video_id, part_id)
+                    Log.Debug(u"%s: Looking for missing subtitles: %s", self.name, get_item_title(plex_item))
                     scanned_parts = scan_videos([metadata], kind="series"
                                                 if stored_subs.item_type == "episode" else "movie")
 
