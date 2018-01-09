@@ -148,6 +148,10 @@ class SubtitleListingMixin(object):
                 Log.Error(u"%s: Match computation failed for %s: %s", self.name, s, traceback.format_exc())
                 continue
 
+            # skip wrong season/episodes
+            if item_type == "episode" and "season" not in matches or "episode" not in matches:
+                continue
+
             unsorted_subtitles.append(
                 (s, compute_score(matches, s, video, hearing_impaired=use_hearing_impaired), matches))
         scored_subtitles = sorted(unsorted_subtitles, key=operator.itemgetter(1), reverse=True)
