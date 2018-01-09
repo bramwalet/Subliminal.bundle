@@ -133,6 +133,9 @@ class SubZeroAgent(object):
         Log.Debug("Sub-Zero %s, %s search" % (config.version, self.agent_type))
         results.Append(MetadataSearchResult(id='null', score=100))
 
+    def store_blank_subtitle_metadata(self, video_part_map):
+        store_subtitle_info(video_part_map, dict((k, []) for k in video_part_map.keys()), None, mode="a")
+
     def update(self, metadata, media, lang):
         Log.Debug("Sub-Zero %s, %s update called" % (config.version, self.agent_type))
         intent = get_intent()
@@ -214,8 +217,7 @@ class SubZeroAgent(object):
 
                 # store SZ meta info even if download wasn't successful
                 if not save_successful:
-                    store_subtitle_info(scanned_video_part_map, dict((k, []) for k in scanned_video_part_map.keys()),
-                                        None, mode="a")
+                    self.store_blank_subtitle_metadata(scanned_video_part_map)
 
                 for video, video_subtitles in downloaded_subtitles.items():
                     # store item(s) in history
@@ -227,8 +229,7 @@ class SubZeroAgent(object):
                         history.destroy()
             else:
                 # store SZ meta info even if we've downloaded none
-                store_subtitle_info(scanned_video_part_map, dict((k, []) for k in scanned_video_part_map.keys()),
-                                    None, mode="a")
+                self.store_blank_subtitle_metadata(scanned_video_part_map)
 
             update_local_media(metadata, media, media_type=self.agent_type)
 
