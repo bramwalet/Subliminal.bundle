@@ -456,7 +456,11 @@ def scan_video(path, dont_use_actual_file=False, hints=None):
         video.hashes['opensubtitles'] = hash_opensubtitles(path)
         video.hashes['shooter'] = hash_shooter(path)
         video.hashes['thesubdb'] = hash_thesubdb(path)
-        video.hashes['napiprojekt'] = hash_napiprojekt(path)
+        try:
+            video.hashes['napiprojekt'] = hash_napiprojekt(path)
+        except MemoryError:
+            logger.warning(u"Couldn't compute napiprojekt hash for %s", path)
+
         logger.debug('Computed hashes %r', video.hashes)
     else:
         logger.warning('Size is lower than 10MB: hashes not computed')
