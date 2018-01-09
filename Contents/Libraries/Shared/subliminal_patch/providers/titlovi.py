@@ -229,6 +229,8 @@ class TitloviProvider(Provider, ProviderSubtitleArchiveMixin):
                     if is_episode:
                         # season and episode info
                         sxe = sub.select_one('.s0xe0y').string
+                        r_season = None
+                        r_episode = None
                         if sxe:
                             match = season_re.search(sxe)
                             if match:
