@@ -56,7 +56,6 @@ def int_or_default(s, default):
 VALID_THROTTLE_EXCEPTIONS = (TooManyRequests, DownloadLimitExceeded, ServiceUnavailable)
 
 PROVIDER_THROTTLE_MAP = {
-    # values are hours
     "default": {
         TooManyRequests: (datetime.timedelta(hours=1), "1 hour"),
         DownloadLimitExceeded: (datetime.timedelta(hours=3), "3 hours"),
