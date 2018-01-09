@@ -189,6 +189,7 @@ class SubZeroAgent(object):
             downloaded_subtitles = None
             if not config.enable_agent:
                 Log.Debug("Skipping Sub-Zero agent(s)")
+                return
 
             else:
                 # downloaded_subtitles = {subliminal.Video: [subtitle, subtitle, ...]}
@@ -205,8 +206,13 @@ class SubZeroAgent(object):
                 downloaded_any = any(downloaded_subtitles.values())
 
             if downloaded_any:
-                save_subtitles(scanned_video_part_map, downloaded_subtitles, mods=config.default_mods)
+                save_successful = save_subtitles(scanned_video_part_map, downloaded_subtitles, mods=config.default_mods)
                 track_usage("Subtitle", "refreshed", "download", 1)
+
+                # store SZ meta info even if download wasn't successful
+                if not save_successful:
+                    store_subtitle_info(scanned_video_part_map, dict((k, []) for k in scanned_video_part_map.keys()),
+                                        None, mode="a")
 
                 for video, video_subtitles in downloaded_subtitles.items():
                     # store item(s) in history
@@ -217,7 +223,7 @@ class SubZeroAgent(object):
                                     subtitle=subtitle)
                         history.destroy()
             else:
-                # store subtitle info even if we've downloaded none
+                # store SZ meta info even if we've downloaded none
                 store_subtitle_info(scanned_video_part_map, dict((k, []) for k in scanned_video_part_map.keys()),
                                     None, mode="a")
 

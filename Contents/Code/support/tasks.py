@@ -348,10 +348,12 @@ class SearchAllRecentlyAddedMissing(Task):
         for fn in recent_sub_fns:
             stored_subs = subtitle_storage.load(filename=fn)
 
-            if stored_subs:
-                # added_date <= max_search_days?
-                if stored_subs.added_at + datetime.timedelta(days=max_search_days) <= now:
-                    continue
+            if not stored_subs:
+                continue
+
+            # added_date <= max_search_days?
+            if stored_subs.added_at + datetime.timedelta(days=max_search_days) <= now:
+                continue
 
             viable_items[fn] = stored_subs
 
