@@ -56,7 +56,7 @@ class SubsceneSubtitle(Subtitle):
 
         if self.release_info.strip() == get_video_filename(video):
             logger.debug("Using hash match as the release name is the same")
-            self.matches |= {"hash"}
+            matches |= {"hash"}
 
         # episode
         if isinstance(video, Episode):
@@ -79,6 +79,8 @@ class SubsceneSubtitle(Subtitle):
         if video.release_group and "release_group" not in matches and "release_group" in guess:
             if sanitize_release_group(video.release_group) in sanitize_release_group(guess["release_group"]):
                 matches.add("release_group")
+
+        self.matches = matches
 
         return matches
 
