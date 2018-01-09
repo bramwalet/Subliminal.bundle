@@ -4,6 +4,7 @@ import os
 import pickle
 import shutil
 import tempfile
+import traceback
 
 import appdirs
 
@@ -180,7 +181,11 @@ class FileCache(MutableMapping):
         self._sync = True
         for ekey in self._buffer:
             filename = self._key_to_filename(ekey)
-            self._write_to_file(filename, self._buffer[ekey])
+            try:
+                self._write_to_file(filename, self._buffer[ekey])
+            except:
+                logger.error("Couldn't write content from %r to cache file: %r: %s", ekey, filename,
+                             traceback.format_exc())
         self._buffer.clear()
         self._sync = False
 
