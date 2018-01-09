@@ -34,11 +34,12 @@ class PodnapisiSubtitle(_PodnapisiSubtitle):
     hearing_impaired_verifiable = True
 
     def __init__(self, language, hearing_impaired, page_link, pid, releases, title, season=None, episode=None,
-                 year=None, asked_for_release_group=None):
+                 year=None, asked_for_release_group=None, asked_for_episode=None):
         super(PodnapisiSubtitle, self).__init__(language, hearing_impaired, page_link, pid, releases, title,
                                                 season=season, episode=episode, year=year)
         self.release_info = u", ".join(releases)
         self.asked_for_release_group = asked_for_release_group
+        self.asked_for_episode = asked_for_episode
         self.matches = None
 
     def get_matches(self, video):
@@ -170,17 +171,18 @@ class PodnapisiProvider(_PodnapisiProvider, ProviderSubtitleArchiveMixin):
                     for release in subtitle_xml.find('release').text.split():
                         releases.append(re.sub(r'\.+$', '', release))  # remove trailing dots
                 title = subtitle_xml.find('title').text
-                season = int(subtitle_xml.find('tvSeason').text)
-                episode = int(subtitle_xml.find('tvEpisode').text)
-                year = int(subtitle_xml.find('year').text)
+                r_season = int(subtitle_xml.find('tvSeason').text)
+                r_episode = int(subtitle_xml.find('tvEpisode').text)
+                r_year = int(subtitle_xml.find('year').text)
 
                 if is_episode:
                     subtitle = self.subtitle_class(language, hearing_impaired, page_link, pid, releases, title,
-                                                   season=season, episode=episode, year=year,
-                                                   asked_for_release_group=video.release_group)
+                                                   season=r_season, episode=r_episode, year=r_year,
+                                                   asked_for_release_group=video.release_group,
+                                                   asked_for_episode=episode)
                 else:
                     subtitle = self.subtitle_class(language, hearing_impaired, page_link, pid, releases, title,
-                                                   year=year, asked_for_release_group=video.release_group)
+                                                   year=r_year, asked_for_release_group=video.release_group)
 
                 # ignore duplicates, see http://www.podnapisi.net/forum/viewtopic.php?f=62&t=26164&start=10#p213321
                 if pid in pids:

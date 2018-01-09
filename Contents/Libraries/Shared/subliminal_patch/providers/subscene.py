@@ -30,12 +30,13 @@ class SubsceneSubtitle(Subtitle):
     page_link = None
     season = None
     episode = None
+    releases = None
 
     def __init__(self, language, release_info, hearing_impaired=False, page_link=None, encoding=None, mods=None,
                  asked_for_release_group=None, asked_for_episode=None):
         super(SubsceneSubtitle, self).__init__(language, hearing_impaired=hearing_impaired, page_link=page_link,
                                                encoding=encoding, mods=mods)
-        self.release_info = release_info
+        self.release_info = self.releases = release_info
         self.asked_for_episode = asked_for_episode
         self.asked_for_release_group = asked_for_release_group
         self.season = None

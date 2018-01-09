@@ -79,7 +79,7 @@ class ProviderSubtitleArchiveMixin(object):
                 # - episode and season match
                 # - format matches (if it was matched before)
                 # - release group matches (and we asked for one and it was matched, or it was not matched)
-                is_episode = subtitle.episode is not None
+                is_episode = subtitle.asked_for_episode
                 if not is_episode or (
                         (
                                 guess["episode"] == subtitle.episode

@@ -56,7 +56,7 @@ class TitloviSubtitle(Subtitle):
     provider_name = 'titlovi'
 
     def __init__(self, language, page_link, download_link, sid, releases, title, alt_title=None, season=None,
-                 episode=None, year=None, fps=None, asked_for_release_group=None):
+                 episode=None, year=None, fps=None, asked_for_release_group=None, asked_for_episode=None):
         super(TitloviSubtitle, self).__init__(language, page_link=page_link)
         self.sid = sid
         self.releases = self.release_info = releases
@@ -69,6 +69,7 @@ class TitloviSubtitle(Subtitle):
         self.fps = fps
         self.matches = None
         self.asked_for_release_group = asked_for_release_group
+        self.asked_for_episode = asked_for_episode
 
     @property
     def id(self):
@@ -216,7 +217,7 @@ class TitloviProvider(Provider, ProviderSubtitleArchiveMixin):
                     # relase year or series start year
                     match = year_re.search(sub.find(attrs={'data-id': True}).parent.i.string)
                     if match:
-                        year = int(match.group('year'))
+                        r_year = int(match.group('year'))
                     # fps
                     match = fps_re.search(sub.select_one('.fps').string)
                     if match:
@@ -231,17 +232,19 @@ class TitloviProvider(Provider, ProviderSubtitleArchiveMixin):
                         if sxe:
                             match = season_re.search(sxe)
                             if match:
-                                season = int(match.group('season'))
+                                r_season = int(match.group('season'))
                             match = episode_re.search(sxe)
                             if match:
-                                episode = int(match.group('episode'))
+                                r_episode = int(match.group('episode'))
 
                         subtitle = self.subtitle_class(lang, page_link, download_link, sid, releases, _title,
-                                                       alt_title=alt_title, season=season, episode=episode, year=year,
-                                                       fps=fps, asked_for_release_group=video.release_group)
+                                                       alt_title=alt_title, season=r_season, episode=r_episode,
+                                                       year=r_year, fps=fps,
+                                                       asked_for_release_group=video.release_group,
+                                                       asked_for_episode=episode)
                     else:
                         subtitle = self.subtitle_class(lang, page_link, download_link, sid, releases, _title,
-                                                       alt_title=alt_title, year=year, fps=fps,
+                                                       alt_title=alt_title, year=r_year, fps=fps,
                                                        asked_for_release_group=video.release_group)
                     logger.debug('Found subtitle %r', subtitle)
 
