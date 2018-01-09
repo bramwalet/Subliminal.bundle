@@ -149,7 +149,8 @@ class SubtitleListingMixin(object):
                 continue
 
             # skip wrong season/episodes
-            if item_type == "episode" and "season" not in matches or "episode" not in matches:
+            if item_type == "episode" and \
+                    "series" not in matches or "season" not in matches or "episode" not in matches:
                 continue
 
             unsorted_subtitles.append(
