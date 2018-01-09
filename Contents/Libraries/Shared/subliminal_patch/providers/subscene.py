@@ -54,10 +54,9 @@ class SubsceneSubtitle(Subtitle):
     def get_matches(self, video):
         matches = set()
 
-        hash_matched = False
         if self.release_info.strip() == get_video_filename(video):
             logger.debug("Using hash match as the release name is the same")
-            hash_matched = True
+            self.matches |= {"hash"}
 
         # episode
         if isinstance(video, Episode):
@@ -80,10 +79,6 @@ class SubsceneSubtitle(Subtitle):
         if "release_group" not in matches and "release_group" in guess:
             if sanitize_release_group(video.release_group) in sanitize_release_group(guess["release_group"]):
                 matches.add("release_group")
-
-        if hash_matched:
-            self.matches = {"hash"}
-            return {"hash"}
 
         return matches
 
@@ -151,20 +146,35 @@ class SubsceneProvider(Provider, ProviderSubtitleArchiveMixin):
 
         subtitle.content = self.get_subtitle_from_archive(subtitle, archive)
 
+    def parse_results(self, video, film):
+        subtitles = []
+        for s in film.subtitles:
+            subtitle = SubsceneSubtitle.from_api(s)
+            subtitle.asked_for_release_group = video.release_group
+            if isinstance(video, Episode):
+                subtitle.asked_for_episode = video.episode
+
+            subtitles.append(subtitle)
+            logger.debug('Found subtitle %r', subtitle)
+
+        return subtitles
+
     def query(self, video):
-        film = search(get_video_filename(video), session=self.session)
+        vfn = get_video_filename(video)
+        logger.debug(u"Searching for: %s", vfn)
+        film = search(vfn, session=self.session)
 
         subtitles = []
-        if film:
-            if film.subtitles:
-                for s in film.subtitles:
-                    subtitle = SubsceneSubtitle.from_api(s)
-                    subtitle.asked_for_release_group = video.release_group
-                    if isinstance(video, Episode):
-                        subtitle.asked_for_episode = video.episode
+        if film and film.subtitles:
+            subtitles = self.parse_results(video, film)
 
-                    subtitles.append(subtitle)
-                    logger.debug('Found subtitle %r', subtitle)
+        # re-search for episodes without explicit release name
+        if isinstance(video, Episode):
+            term = u"%s S%02iE%02i" % (video.series, video.season, video.episode)
+            logger.debug('Searching for alternative results: %s', term)
+            film = search(term, session=self.session)
+            if film and film.subtitles:
+                subtitles = self.parse_results(video, film)
 
         logger.info("%s subtitles found" % len(subtitles))
         return subtitles
