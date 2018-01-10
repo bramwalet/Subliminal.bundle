@@ -61,3 +61,6 @@ class LegendasTVProvider(_LegendasTVProvider):
     def download_subtitle(self, subtitle):
         super(LegendasTVProvider, self).download_subtitle(subtitle)
         subtitle.archive.content = None
+
+    def get_archives(self, title_id, language_code):
+        return super(LegendasTVProvider, self).get_archives.original(self, title_id, language_code)
