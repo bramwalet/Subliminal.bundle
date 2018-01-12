@@ -578,10 +578,7 @@ class Config(object):
                              },
                              'legendastv': {'username': Prefs['provider.legendastv.username'],
                                             'password': Prefs['provider.legendastv.password'],
-                                            },
-                             'subscene': {
-                                 'only_foreign': only_foreign,
-                             }
+                                            }
                              }
 
         return provider_settings
