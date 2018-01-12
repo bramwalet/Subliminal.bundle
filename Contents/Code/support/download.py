@@ -10,7 +10,7 @@ from subliminal_patch import compute_score
 from support.plex_media import get_blacklist_from_part_map
 
 
-def download_best_subtitles(video_part_map, min_score=0, throttle_time=None):
+def download_best_subtitles(video_part_map, min_score=0, throttle_time=None, providers=None):
     hearing_impaired = Prefs['subtitles.search.hearingImpaired']
     ietf_as_alpha3 = cast_bool(Prefs["subtitles.language.ietf_normalize"])
     languages = set([Language.fromietf(str(l)) for l in config.lang_list])
@@ -68,7 +68,7 @@ def download_best_subtitles(video_part_map, min_score=0, throttle_time=None):
         # prepare blacklist
         blacklist = get_blacklist_from_part_map(video_part_map, languages)
 
-        return subliminal.download_best_subtitles(video_part_map.keys(), languages, min_score, hearing_impaired, providers=config.providers,
+        return subliminal.download_best_subtitles(video_part_map.keys(), languages, min_score, hearing_impaired, providers=providers or config.providers,
                                                   provider_configs=config.provider_settings, pool_class=config.provider_pool,
                                                   compute_score=compute_score, throttle_time=throttle_time, blacklist=blacklist,
                                                   throttle_callback=config.provider_throttle)

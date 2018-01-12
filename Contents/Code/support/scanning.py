@@ -9,7 +9,7 @@ from support.config import config, TEXT_SUBTITLE_EXTS
 from subzero.video import parse_video
 
 
-def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, no_refining=False):
+def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, no_refining=False, providers=None):
     """
     returnes a subliminal/guessit-refined parsed video
     :param pms_video_info:
@@ -71,7 +71,7 @@ def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, no
         video = parse_video(plex_part.file, pms_video_info, hints, external_subtitles=external_subtitles,
                             embedded_subtitles=embedded_subtitles, known_embedded=known_embedded,
                             forced_only=config.forced_only, no_refining=no_refining, ignore_all=ignore_all,
-                            stored_subs=stored_subs, refiner_settings=config.refiner_settings)
+                            stored_subs=stored_subs, refiner_settings=config.refiner_settings, providers=providers)
 
         # add video fps info
         video.fps = plex_part.fps
@@ -81,7 +81,7 @@ def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, no
         Log.Warn("File could not be guessed by subliminal: %s" % plex_part.file)
 
 
-def scan_videos(videos, kind="series", ignore_all=False, no_refining=False):
+def scan_videos(videos, kind="series", ignore_all=False, no_refining=False, providers=None):
     """
     receives a list of videos containing dictionaries returned by media_to_videos
     :param videos:
@@ -98,7 +98,8 @@ def scan_videos(videos, kind="series", ignore_all=False, no_refining=False):
         hints = helpers.get_item_hints(video)
         video["plex_part"].fps = get_stream_fps(video["plex_part"].streams)
         scanned_video = scan_video(video, ignore_all=force_refresh or ignore_all, hints=hints,
-                                   rating_key=video["id"], no_refining=no_refining)
+                                   rating_key=video["id"], no_refining=no_refining,
+                                   providers=providers or config.providers)
 
         if not scanned_video:
             continue

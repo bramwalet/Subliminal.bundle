@@ -183,7 +183,8 @@ class SubZeroAgent(object):
             set_refresh_menu_state(media, media_type=self.agent_type)
 
             # scanned_video_part_map = {subliminal.Video: plex_part, ...}
-            scanned_video_part_map = scan_videos(videos, kind=self.agent_type)
+            providers = config.providers
+            scanned_video_part_map = scan_videos(videos, kind=self.agent_type, providers=providers)
 
             # clear missing subtitles menu data
             if not scheduler.is_task_running("MissingSubtitles"):
@@ -198,7 +199,7 @@ class SubZeroAgent(object):
                 # downloaded_subtitles = {subliminal.Video: [subtitle, subtitle, ...]}
                 try:
                     downloaded_subtitles = download_best_subtitles(scanned_video_part_map, min_score=use_score,
-                                                                   throttle_time=self.debounce)
+                                                                   throttle_time=self.debounce, providers=providers)
                 except:
                     Log.Exception("Something went wrong when downloading subtitles")
 

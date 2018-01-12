@@ -391,7 +391,7 @@ if is_windows_special_path:
     SZAsyncProviderPool = SZProviderPool
 
 
-def scan_video(path, dont_use_actual_file=False, hints=None):
+def scan_video(path, dont_use_actual_file=False, hints=None, providers=None):
     """Scan a video from a `path`.
 
     patch:
@@ -453,13 +453,20 @@ def scan_video(path, dont_use_actual_file=False, hints=None):
     video.size = os.path.getsize(path)
     if video.size > 10485760:
         logger.debug('Size is %d', video.size)
-        video.hashes['opensubtitles'] = hash_opensubtitles(path)
-        video.hashes['shooter'] = hash_shooter(path)
-        video.hashes['thesubdb'] = hash_thesubdb(path)
-        try:
-            video.hashes['napiprojekt'] = hash_napiprojekt(path)
-        except MemoryError:
-            logger.warning(u"Couldn't compute napiprojekt hash for %s", path)
+        if "opensubtitles" in providers:
+            video.hashes['opensubtitles'] = hash_opensubtitles(path)
+
+        if "shooter" in providers:
+            video.hashes['shooter'] = hash_shooter(path)
+
+        if "thesubdb" in providers:
+            video.hashes['thesubdb'] = hash_thesubdb(path)
+
+        if "napiprojekt" in providers:
+            try:
+                video.hashes['napiprojekt'] = hash_napiprojekt(path)
+            except MemoryError:
+                logger.warning(u"Couldn't compute napiprojekt hash for %s", path)
 
         logger.debug('Computed hashes %r', video.hashes)
     else:

@@ -107,8 +107,10 @@ class SubtitleListingMixin(object):
         if not metadata:
             return
 
+        providers = config.providers
         if not scanned_parts:
-            scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
+            scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie",
+                                        ignore_all=True, providers=providers)
             if not scanned_parts:
                 Log.Error(u"%s: Couldn't list available subtitles for %s", self.name, rating_key)
                 return
@@ -131,7 +133,7 @@ class SubtitleListingMixin(object):
         languages = {Language.fromietf(language)}
 
         available_subs = list_all_subtitles(scanned_parts, languages,
-                                            providers=config.providers,
+                                            providers=providers or config.providers,
                                             provider_configs=provider_settings,
                                             pool_class=config.provider_pool,
                                             throttle_callback=config.provider_throttle)
@@ -179,11 +181,14 @@ class DownloadSubtitleMixin(object):
         item_type = subtitle.item_type
         part_id = subtitle.part_id
         metadata = get_plex_metadata(rating_key, part_id, item_type)
-        scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
+        providers = config.providers
+        scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True,
+                                    providers=providers)
         video, plex_part = scanned_parts.items()[0]
 
         # downloaded_subtitles = {subliminal.Video: [subtitle, subtitle, ...]}
-        download_subtitles([subtitle], providers=config.providers, provider_configs=config.provider_settings,
+        download_subtitles([subtitle], providers=providers or config.providers,
+                           provider_configs=config.provider_settings,
                            pool_class=config.provider_pool, throttle_callback=config.provider_throttle)
         download_successful = False
 
@@ -330,6 +335,7 @@ class SearchAllRecentlyAddedMissing(Task):
         now = datetime.datetime.now()
         min_score_series = int(Prefs["subtitles.search.minimumTVScore2"].strip())
         min_score_movies = int(Prefs["subtitles.search.minimumMovieScore2"].strip())
+        providers = config.providers
 
         is_recent_str = Prefs["scheduler.item_is_recent_age"]
         num, ident = is_recent_str.split()
@@ -408,9 +414,11 @@ class SearchAllRecentlyAddedMissing(Task):
 
                     Log.Debug(u"%s: Looking for missing subtitles: %s", self.name, get_item_title(plex_item))
                     scanned_parts = scan_videos([metadata], kind="series"
-                                                if stored_subs.item_type == "episode" else "movie")
+                                                if stored_subs.item_type == "episode" else "movie",
+                                                providers=providers)
 
-                    downloaded_subtitles = download_best_subtitles(scanned_parts, min_score=min_score)
+                    downloaded_subtitles = download_best_subtitles(scanned_parts, min_score=min_score,
+                                                                   providers=providers)
                     hit_providers = downloaded_subtitles is not None
                     download_successful = False
 
