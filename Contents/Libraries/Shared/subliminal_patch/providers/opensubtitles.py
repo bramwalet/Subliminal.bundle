@@ -127,6 +127,9 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         region.set("os_token", self.token)
 
     def use_token_or_login(self, func):
+        if not self.token:
+            self.log_in()
+            return func()
         try:
             return func()
         except Unauthorized:
@@ -153,6 +156,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
             if self.is_vip:
                 logger.info("VIP server login failed, falling back")
                 self.log_in(self.default_url)
+            logger.info("Login failed, please check your credentials")
                 
     def terminate(self):
         try:
