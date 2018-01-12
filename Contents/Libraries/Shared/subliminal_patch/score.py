@@ -59,6 +59,7 @@ def compute_score(matches, subtitle, video, hearing_impaired=None):
                     matches -= {"hash"}
     elif 'hash' in matches:
         logger.debug('%r: Hash not verifiable for this provider. Keeping it', subtitle)
+        matches &= {'hash'}
 
     # handle equivalent matches
     if is_episode:
