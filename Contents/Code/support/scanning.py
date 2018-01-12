@@ -1,6 +1,7 @@
 # coding=utf-8
-
+import traceback
 import helpers
+
 from support.lib import Plex, get_intent
 from support.plex_media import get_stream_fps
 from support.storage import get_subtitle_storage
@@ -79,7 +80,7 @@ def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, no
         return video
 
     except ValueError:
-        Log.Warn("File could not be guessed by subliminal: %s" % plex_part.file)
+        Log.Warn("File could not be guessed by subliminal: %s: %s", plex_part.file, traceback.format_exc())
 
 
 def scan_videos(videos, kind="series", ignore_all=False, no_refining=False, providers=None):
