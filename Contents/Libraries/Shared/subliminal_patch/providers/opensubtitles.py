@@ -156,7 +156,10 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
             if self.is_vip:
                 logger.info("VIP server login failed, falling back")
                 self.log_in(self.default_url)
-            logger.info("Login failed, please check your credentials")
+                if self.token:
+                    return
+
+            logger.error("Login failed, please check your credentials")
                 
     def terminate(self):
         try:
