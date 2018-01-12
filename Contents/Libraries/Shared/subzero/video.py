@@ -18,10 +18,11 @@ def has_external_subtitle(part_id, stored_subs, language):
 
 def parse_video(fn, video_info, hints, external_subtitles=False, embedded_subtitles=False, known_embedded=None,
                 forced_only=False, no_refining=False, dry_run=False, ignore_all=False, stored_subs=None,
-                refiner_settings=None, providers=None):
+                refiner_settings=None, providers=None, skip_hashing=False):
 
     logger.debug("Parsing video: %s, hints: %s", os.path.basename(fn), hints)
-    video = scan_video(fn, hints=hints, dont_use_actual_file=dry_run or no_refining, providers=providers)
+    video = scan_video(fn, hints=hints, dont_use_actual_file=dry_run or no_refining, providers=providers,
+                       skip_hashing=skip_hashing)
 
     refiner_settings = refiner_settings or {}
 
