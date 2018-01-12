@@ -562,7 +562,6 @@ class Config(object):
     providers = property(get_providers)
 
     def get_provider_settings(self):
-        only_foreign = cast_bool(Prefs['subtitles.only_foreign'])
         provider_settings = {'addic7ed': {'username': Prefs['provider.addic7ed.username'],
                                           'password': Prefs['provider.addic7ed.password'],
                                           'use_random_agents': cast_bool(Prefs['provider.addic7ed.use_random_agents']),
@@ -570,11 +569,11 @@ class Config(object):
                              'opensubtitles': {'username': Prefs['provider.opensubtitles.username'],
                                                'password': Prefs['provider.opensubtitles.password'],
                                                'use_tag_search': self.exact_filenames,
-                                               'only_foreign': only_foreign,
+                                               'only_foreign': self.forced_only,
                                                'is_vip': cast_bool(Prefs['provider.opensubtitles.is_vip'])
                                                },
                              'podnapisi': {
-                                 'only_foreign': only_foreign,
+                                 'only_foreign': self.forced_only,
                              },
                              'legendastv': {'username': Prefs['provider.legendastv.username'],
                                             'password': Prefs['provider.legendastv.password'],
