@@ -499,28 +499,6 @@ class StoredSubtitlesManager(object):
         subs_for_video.version = 3
         return True
 
-    def migrate_legacy_data(self, from_fn, to_fn):
-        try:
-            subs_for_video = self.storage.LoadObject(from_fn)
-        except:
-            logger.error("Failed to load item \"%s\": %s" % (from_fn, traceback.format_exc()))
-
-            # delete
-            return
-
-        if not subs_for_video or not hasattr(subs_for_video, "version"):
-            self.legacy_delete(from_fn)
-
-        # migrate to our new json format
-        new_subs_for_video = JSONStoredVideoSubtitles()
-        new_subs_for_video.deserialize(subs_for_video.__dict__)
-        subs_for_video = None
-        self.save(new_subs_for_video)
-
-        self.legacy_delete(from_fn)
-
-        return new_subs_for_video
-
     def load(self, video_id=None, filename=None):
         subs_for_video = None
         bare_fn = self.get_storage_filename(video_id) if video_id else filename
@@ -554,10 +532,6 @@ class StoredSubtitlesManager(object):
 
             subs_for_video.deserialize(data)
             data = None
-
-        elif not bare_fn.endswith(".json.gz") and os.path.exists(os.path.join(self.dataitems_path, bare_fn)):
-            logger.info("Migrating legacy data for: %s", bare_fn)
-            subs_for_video = self.migrate_legacy_data(bare_fn, json_path)
 
         if not subs_for_video:
             return
@@ -626,13 +600,6 @@ class StoredSubtitlesManager(object):
 
     def delete(self, filename):
         os.remove(filename)
-
-    def legacy_save(self, subs_for_video):
-        fn = self.get_storage_filename(subs_for_video.video_id)
-        try:
-            self.storage.SaveObject(fn, subs_for_video)
-        except:
-            logger.error("Failed to save item %s: %s" % (fn, traceback.format_exc()))
 
     def legacy_delete(self, filename):
         try:
