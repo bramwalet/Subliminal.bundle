@@ -358,6 +358,9 @@ class Config(object):
                 if isinstance(path_str, unicode):
                     path_str = path_str.encode(self.fs_encoding)
 
+                if not os.path.exists(path_str):
+                    continue
+
                 if use_ignore_fs:
                     # check whether we've got an ignore file inside the section path
                     if self.is_physically_ignored(path_str):
