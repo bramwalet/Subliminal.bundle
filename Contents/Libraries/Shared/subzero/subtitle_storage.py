@@ -484,6 +484,9 @@ class StoredSubtitlesManager(object):
 
                 if changed_any:
                     self.save(stored_subs)
+                stored_subs = None
+                missing_parts = None
+                missing_languages = None
 
         return deleted
 
