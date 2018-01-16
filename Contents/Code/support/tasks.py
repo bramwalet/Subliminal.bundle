@@ -347,25 +347,9 @@ class SearchAllRecentlyAddedMissing(Task):
             max_search_days = int(num) * 7
 
         subtitle_storage = get_subtitle_storage()
-        recent_sub_fns = subtitle_storage.get_recent_files(age_days=max_search_days)
-        viable_items = {}
+        recent_files = subtitle_storage.get_recent_files(age_days=max_search_days)
 
-        # determine viable items
-        for fn in recent_sub_fns:
-            stored_subs = subtitle_storage.load(filename=fn)
-
-            if not stored_subs:
-                continue
-
-            # added_date <= max_search_days?
-            if stored_subs.added_at + datetime.timedelta(days=max_search_days) <= now:
-                continue
-
-            viable_items[fn] = stored_subs
-
-        subtitle_storage.destroy()
-
-        self.items_searching = len(viable_items)
+        self.items_searching = len(recent_files)
 
         download_count = 0
         videos_with_downloads = 0
@@ -376,8 +360,17 @@ class SearchAllRecentlyAddedMissing(Task):
 
         # search for subtitles in viable items
         try:
-            for fn, stored_subs in viable_items.iteritems():
+            for fn in recent_files:
+                stored_subs = subtitle_storage.load(filename=fn)
                 video_id = stored_subs.video_id
+                if not stored_subs:
+                    Log.Debug("Skipping item %s because storage is empty", video_id)
+                    continue
+
+                # added_date <= max_search_days?
+                if stored_subs.added_at + datetime.timedelta(days=max_search_days) <= now:
+                    Log.Debug("Skipping item %s because it's too old", video_id)
+                    continue
 
                 if stored_subs.item_type == "episode":
                     min_score = min_score_series
@@ -437,6 +430,7 @@ class SearchAllRecentlyAddedMissing(Task):
                             Log.Error(u"%s: Something went wrong when downloading specific subtitle: %s", self.name,
                                       traceback.format_exc())
                         finally:
+                            scanned_parts = None
                             try:
                                 item_title = get_title_for_video_metadata(metadata, add_section_title=False)
                                 if download_successful:
@@ -450,6 +444,8 @@ class SearchAllRecentlyAddedMissing(Task):
                                             history.add(item_title, video.id, section_title=metadata["section"],
                                                         subtitle=subtitle,
                                                         mode="a")
+
+                                    downloaded_subtitles = None
                             except:
                                 Log.Error(u"%s: DEBUG HIT: %s", self.name, traceback.format_exc())
 
@@ -464,6 +460,8 @@ class SearchAllRecentlyAddedMissing(Task):
                 self.items_done = self.items_done + 1
                 self.percentage = int(self.items_done * 100 / self.items_searching)
 
+                stored_subs = None
+
                 if downloads_per_video:
                     Log.Debug(u"%s: Subtitles have been downloaded, "
                               u"waiting %s seconds before continuing", self.name, DL_PROVIDER_SLACK)
@@ -473,6 +471,7 @@ class SearchAllRecentlyAddedMissing(Task):
                         Log.Debug(u"%s: Waiting %s seconds before continuing", self.name, PROVIDER_SLACK)
                         Thread.Sleep(PROVIDER_SLACK)
         finally:
+            subtitle_storage.destroy()
             history.destroy()
 
         if download_count:
@@ -621,129 +620,138 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
             Prefs["scheduler.tasks.FindBetterSubtitles.overwrite_manually_selected"])
 
         subtitle_storage = get_subtitle_storage()
-        recent_subs = subtitle_storage.load_recent_files(age_days=max_search_days)
         viable_item_count = 0
 
-        for fn, stored_subs in recent_subs.iteritems():
-            video_id = stored_subs.video_id
+        try:
+            for fn in subtitle_storage.get_recent_files(age_days=max_search_days):
+                stored_subs = subtitle_storage.load(filename=fn)
+                if not stored_subs:
+                    continue
 
-            if stored_subs.item_type == "episode":
-                cutoff = self.series_cutoff
-                min_score = min_score_series
-            else:
-                cutoff = self.movies_cutoff
-                min_score = min_score_movies
+                video_id = stored_subs.video_id
 
-            # don't search for better subtitles until at least 30 minutes have passed
-            if stored_subs.added_at + datetime.timedelta(minutes=30) > now:
-                Log.Debug(u"%s: Item %s too new, skipping", self.name, video_id)
-                continue
+                if stored_subs.item_type == "episode":
+                    cutoff = self.series_cutoff
+                    min_score = min_score_series
+                else:
+                    cutoff = self.movies_cutoff
+                    min_score = min_score_movies
 
-            # added_date <= max_search_days?
-            if stored_subs.added_at + datetime.timedelta(days=max_search_days) <= now:
-                continue
+                # don't search for better subtitles until at least 30 minutes have passed
+                if stored_subs.added_at + datetime.timedelta(minutes=30) > now:
+                    Log.Debug(u"%s: Item %s too new, skipping", self.name, video_id)
+                    continue
 
-            viable_item_count += 1
-            ditch_parts = []
+                # added_date <= max_search_days?
+                if stored_subs.added_at + datetime.timedelta(days=max_search_days) <= now:
+                    continue
 
-            # look through all stored subtitle data
-            for part_id, languages in stored_subs.parts.iteritems():
-                part_id = str(part_id)
+                viable_item_count += 1
+                ditch_parts = []
 
-                # all languages
-                for language, current_subs in languages.iteritems():
-                    current_key = current_subs.get("current")
-                    current = current_subs.get(current_key)
+                # look through all stored subtitle data
+                for part_id, languages in stored_subs.parts.iteritems():
+                    part_id = str(part_id)
 
-                    # currently got subtitle?
-                    # fixme: check for existence
-                    if not current:
-                        continue
-                    current_score = current.score
-                    current_mode = current.mode
+                    # all languages
+                    for language, current_subs in languages.iteritems():
+                        current_key = current_subs.get("current")
+                        current = current_subs.get(current_key)
 
-                    # late cutoff met? skip
-                    if current_score >= cutoff:
-                        Log.Debug(u"%s: Skipping finding better subs, "
-                                  u"cutoff met (current: %s, cutoff: %s): %s (%s)",
-                                  self.name, current_score, cutoff, stored_subs.title, video_id)
-                        continue
+                        # currently got subtitle?
+                        # fixme: check for existence
+                        if not current:
+                            continue
+                        current_score = current.score
+                        current_mode = current.mode
 
-                    # got manual subtitle but don't want to touch those?
-                    if current_mode == "m" and not overwrite_manually_selected:
-                        Log.Debug(u"%s: Skipping finding better subs, "
-                                  u"had manual: %s (%s)", self.name, stored_subs.title, video_id)
-                        continue
+                        # late cutoff met? skip
+                        if current_score >= cutoff:
+                            Log.Debug(u"%s: Skipping finding better subs, "
+                                      u"cutoff met (current: %s, cutoff: %s): %s (%s)",
+                                      self.name, current_score, cutoff, stored_subs.title, video_id)
+                            continue
 
-                    # subtitle modifications different from default
-                    if not overwrite_manually_modified and current.mods \
-                            and set(current.mods).difference(set(config.default_mods)):
-                        Log.Debug(u"%s: Skipping finding better subs, it has manual modifications: %s (%s)",
-                                  self.name, stored_subs.title, video_id)
-                        continue
+                        # got manual subtitle but don't want to touch those?
+                        if current_mode == "m" and not overwrite_manually_selected:
+                            Log.Debug(u"%s: Skipping finding better subs, "
+                                      u"had manual: %s (%s)", self.name, stored_subs.title, video_id)
+                            continue
 
-                    try:
-                        subs = self.list_subtitles(video_id, stored_subs.item_type, part_id, language)
-                    except PartUnknownException:
-                        Log.Info(u"%s: Part %s unknown/gone; ditching subtitle info", self.name, part_id)
-                        ditch_parts.append(part_id)
-                        continue
+                        # subtitle modifications different from default
+                        if not overwrite_manually_modified and current.mods \
+                                and set(current.mods).difference(set(config.default_mods)):
+                            Log.Debug(u"%s: Skipping finding better subs, it has manual modifications: %s (%s)",
+                                      self.name, stored_subs.title, video_id)
+                            continue
 
-                    hit_providers = subs is not None
+                        try:
+                            subs = self.list_subtitles(video_id, stored_subs.item_type, part_id, language)
+                        except PartUnknownException:
+                            Log.Info(u"%s: Part %s unknown/gone; ditching subtitle info", self.name, part_id)
+                            ditch_parts.append(part_id)
+                            continue
 
-                    if subs:
-                        # subs are already sorted by score
-                        better_downloaded = False
-                        better_tried_download = 0
-                        better_visited = 0
-                        for sub in subs:
-                            if sub.score > current_score and sub.score > min_score:
-                                Log.Debug(u"%s: Better subtitle found for %s, downloading", self.name, video_id)
-                                better_tried_download += 1
-                                ret = self.download_subtitle(sub, video_id, mode="b")
-                                if ret:
-                                    better_found += 1
-                                    better_downloaded = True
-                                    break
-                                else:
-                                    Log.Debug(u"%s: Couldn't download/save subtitle. "
-                                              u"Continuing to the next one", self.name)
-                                    Log.Debug(u"%s: Waiting %s seconds before continuing",
-                                              self.name, DL_PROVIDER_SLACK)
-                                    Thread.Sleep(DL_PROVIDER_SLACK)
-                            better_visited += 1
+                        hit_providers = subs is not None
 
-                        if better_tried_download and not better_downloaded:
-                            Log.Debug(u"%s: Tried downloading better subtitle for %s, "
-                                      u"but every try failed.", self.name, video_id)
+                        if subs:
+                            # subs are already sorted by score
+                            better_downloaded = False
+                            better_tried_download = 0
+                            better_visited = 0
+                            for sub in subs:
+                                if sub.score > current_score and sub.score > min_score:
+                                    Log.Debug(u"%s: Better subtitle found for %s, downloading", self.name, video_id)
+                                    better_tried_download += 1
+                                    ret = self.download_subtitle(sub, video_id, mode="b")
+                                    if ret:
+                                        better_found += 1
+                                        better_downloaded = True
+                                        break
+                                    else:
+                                        Log.Debug(u"%s: Couldn't download/save subtitle. "
+                                                  u"Continuing to the next one", self.name)
+                                        Log.Debug(u"%s: Waiting %s seconds before continuing",
+                                                  self.name, DL_PROVIDER_SLACK)
+                                        Thread.Sleep(DL_PROVIDER_SLACK)
+                                better_visited += 1
 
-                        elif better_downloaded:
-                            Log.Debug(u"%s: Better subtitle downloaded for %s", self.name, video_id)
+                            if better_tried_download and not better_downloaded:
+                                Log.Debug(u"%s: Tried downloading better subtitle for %s, "
+                                          u"but every try failed.", self.name, video_id)
 
-                        if better_tried_download or better_downloaded:
-                            Log.Debug(u"%s: Waiting %s seconds before continuing", self.name, DL_PROVIDER_SLACK)
-                            Thread.Sleep(DL_PROVIDER_SLACK)
+                            elif better_downloaded:
+                                Log.Debug(u"%s: Better subtitle downloaded for %s", self.name, video_id)
 
-                        elif better_visited:
+                            if better_tried_download or better_downloaded:
+                                Log.Debug(u"%s: Waiting %s seconds before continuing", self.name, DL_PROVIDER_SLACK)
+                                Thread.Sleep(DL_PROVIDER_SLACK)
+
+                            elif better_visited:
+                                Log.Debug(u"%s: Waiting %s seconds before continuing", self.name, PROVIDER_SLACK)
+                                Thread.Sleep(PROVIDER_SLACK)
+
+                            subs = None
+
+                        elif hit_providers:
+                            # hit the providers but didn't try downloading? wait.
                             Log.Debug(u"%s: Waiting %s seconds before continuing", self.name, PROVIDER_SLACK)
                             Thread.Sleep(PROVIDER_SLACK)
 
-                    elif hit_providers:
-                        # hit the providers but didn't try downloading? wait.
-                        Log.Debug(u"%s: Waiting %s seconds before continuing", self.name, PROVIDER_SLACK)
-                        Thread.Sleep(PROVIDER_SLACK)
+                if ditch_parts:
+                    for part_id in ditch_parts:
+                        try:
+                            del stored_subs.parts[part_id]
+                        except KeyError:
+                            pass
+                    subtitle_storage.save(stored_subs)
+                    ditch_parts = None
 
-            if ditch_parts:
-                for part_id in ditch_parts:
-                    try:
-                        del stored_subs.parts[part_id]
-                    except KeyError:
-                        pass
-                subtitle_storage.save(stored_subs)
+                stored_subs = None
 
-            Thread.Sleep(1)
-
-        subtitle_storage.destroy()
+                Thread.Sleep(1)
+        finally:
+            subtitle_storage.destroy()
 
         if better_found:
             Log.Debug(u"%s: done. Better subtitles found for %s/%s items", self.name, better_found,

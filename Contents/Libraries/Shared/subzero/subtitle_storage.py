@@ -383,6 +383,7 @@ class StoredSubtitlesManager(object):
     def destroy(self):
         self.storage = None
         self.get_item = None
+        self.threadkit = None
 
     def get_storage_filename(self, video_id):
         return "subs_%s" % video_id
