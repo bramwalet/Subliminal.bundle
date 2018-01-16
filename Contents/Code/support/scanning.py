@@ -59,7 +59,7 @@ def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, no
                                 lang_code = list(config.lang_list)[0].alpha3
 
                             if lang_code:
-                                known_embedded.append(lang_code)
+                                known_embedded.append(lang_code.alpha3)
     else:
         Log.Warn("Part %s missing of %s, not able to scan internal streams", plex_part.id, rating_key)
 
