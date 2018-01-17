@@ -602,7 +602,7 @@ def extract_embedded_sub(**kwargs):
                     subtitle = ModifiedSubtitle(language, mods=config.default_mods if with_mods else None)
                     subtitle.content = output
                     subtitle.provider_name = "embedded"
-                    subtitle.id = stream_index
+                    subtitle.id = "stream_%s" % stream_index
                     subtitle.score = 0
                     subtitle.set_encoding("utf-8")
 
