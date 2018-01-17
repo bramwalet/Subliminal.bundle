@@ -359,6 +359,10 @@ class SearchAllRecentlyAddedMissing(Task):
 
         Log.Info(u"%s: Searching for subtitles for %s items", self.name, self.items_searching)
 
+        def skip_item():
+            self.items_searching = self.items_searching - 1
+            self.percentage = int(self.items_done * 100 / self.items_searching)
+
         # search for subtitles in viable items
         try:
             for fn in recent_files:
@@ -366,11 +370,13 @@ class SearchAllRecentlyAddedMissing(Task):
                 video_id = stored_subs.video_id
                 if not stored_subs:
                     Log.Debug("Skipping item %s because storage is empty", video_id)
+                    skip_item()
                     continue
 
                 # added_date <= max_search_days?
                 if stored_subs.added_at + datetime.timedelta(days=max_search_days) <= now:
                     Log.Debug("Skipping item %s because it's too old", video_id)
+                    skip_item()
                     continue
 
                 if stored_subs.item_type == "episode":
@@ -383,9 +389,11 @@ class SearchAllRecentlyAddedMissing(Task):
 
                 if not plex_item:
                     Log.Info(u"%s: Item %s unknown, skipping", self.name, video_id)
+                    skip_item()
                     continue
 
                 if is_ignored(video_id, item=plex_item):
+                    skip_item()
                     continue
 
                 for media in plex_item.media:
