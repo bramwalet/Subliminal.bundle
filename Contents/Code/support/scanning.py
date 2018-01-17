@@ -52,14 +52,14 @@ def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, pr
                     # fixme: tap into external subtitles here instead of scanning for ourselves later?
                     if not stream.stream_key and stream.codec:
                         if config.exotic_ext or stream.codec.lower() in TEXT_SUBTITLE_EXTS:
-                            lang_code = helpers.get_language_from_stream(stream.language_code)
+                            lang = helpers.get_language_from_stream(stream.language_code)
 
                             # treat unknown language as lang1?
-                            if not lang_code and config.treat_und_as_first:
-                                lang_code = list(config.lang_list)[0].alpha3
+                            if not lang and config.treat_und_as_first:
+                                lang = list(config.lang_list)[0]
 
-                            if lang_code:
-                                known_embedded.append(lang_code.alpha3)
+                            if lang:
+                                known_embedded.append(lang.alpha3)
     else:
         Log.Warn("Part %s missing of %s, not able to scan internal streams", plex_part.id, rating_key)
 
