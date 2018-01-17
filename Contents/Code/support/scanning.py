@@ -10,7 +10,7 @@ from support.config import config, TEXT_SUBTITLE_EXTS
 from subzero.video import parse_video, set_existing_languages
 
 
-def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, providers=None):
+def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, providers=None, skip_hashing=False):
     """
     returnes a subliminal/guessit-refined parsed video
     :param pms_video_info:
@@ -74,7 +74,8 @@ def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, pr
         #                     forced_only=config.forced_only, no_refining=no_refining, ignore_all=ignore_all,
         #                     stored_subs=stored_subs, refiner_settings=config.refiner_settings, providers=providers,
         #                     skip_hashing=config.low_impact_mode)
-        video = parse_video(plex_part.file, hints, skip_hashing=config.low_impact_mode, providers=providers)
+        video = parse_video(plex_part.file, hints, skip_hashing=config.low_impact_mode or skip_hashing,
+                            providers=providers)
 
         if not ignore_all:
             set_existing_languages(video, pms_video_info, external_subtitles=external_subtitles,
@@ -89,7 +90,7 @@ def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, pr
         Log.Warn("File could not be guessed: %s: %s", plex_part.file, traceback.format_exc())
 
 
-def scan_videos(videos, ignore_all=False, providers=None):
+def scan_videos(videos, ignore_all=False, providers=None, skip_hashing=False):
     """
     receives a list of videos containing dictionaries returned by media_to_videos
     :param videos:
@@ -106,7 +107,8 @@ def scan_videos(videos, ignore_all=False, providers=None):
         hints = helpers.get_item_hints(video)
         video["plex_part"].fps = get_stream_fps(video["plex_part"].streams)
         scanned_video = scan_video(video, ignore_all=force_refresh or ignore_all, hints=hints,
-                                   rating_key=video["id"], providers=providers or config.providers)
+                                   rating_key=video["id"], providers=providers or config.providers,
+                                   skip_hashing=skip_hashing)
 
         if not scanned_video:
             continue
