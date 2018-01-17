@@ -33,14 +33,19 @@ def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_ty
         title = get_title_for_video_metadata(metadata)
 
         subtitle_storage = get_subtitle_storage()
-        stored_subs = subtitle_storage.load_or_new(plex_item)
+        stored_subs = subtitle_storage.load(plex_item)
+        is_new = False
+        if not stored_subs:
+            is_new = True
+            stored_subs = subtitle_storage.new(plex_item)
 
         for subtitle in video_subtitles:
             lang = str(subtitle.language)
             subtitle.normalize()
             Log.Debug(u"Adding subtitle to storage: %s, %s, %s, %s, %s" % (video_id, part_id, lang, title,
                                                                            subtitle.guess_encoding()))
-            ret_val = stored_subs.add(part_id, lang, subtitle, storage_type, mode=mode)
+            last_mod = datetime.datetime.fromtimestamp(os.path.getmtime(subtitle.storage_path))
+            ret_val = stored_subs.add(part_id, lang, subtitle, storage_type, mode=mode, last_mod=last_mod)
 
             if ret_val:
                 Log.Debug("Subtitle stored")
@@ -48,8 +53,10 @@ def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_ty
             else:
                 Log.Debug("Subtitle already existing in storage")
 
-        Log.Debug("Saving subtitle storage for %s" % video_id)
-        subtitle_storage.save(stored_subs)
+        if is_new or video_subtitles:
+            Log.Debug("Saving subtitle storage for %s" % video_id)
+            subtitle_storage.save(stored_subs)
+
         subtitle_storage.destroy()
 
 

@@ -8,6 +8,8 @@ import os
 
 import time
 
+import datetime
+
 from ignore import ignore_list
 from helpers import is_recent, get_plex_item_display_title, query_plex, PartUnknownException
 from lib import Plex, get_intent
@@ -396,8 +398,6 @@ def set_mods_for_part(rating_key, part_id, language, item_type, mods, mode="add"
             current_sub.encoding = "utf-8"
             storage.save(stored_subs)
 
-    storage.destroy()
-
     subtitle.plex_media_fps = plex_part.fps
     subtitle.page_link = "modify subtitles with: %s" % (", ".join(current_sub.mods) if current_sub.mods else "none")
     subtitle.language = language
@@ -409,3 +409,8 @@ def set_mods_for_part(rating_key, part_id, language, item_type, mods, mode="add"
                   ", ".join(current_sub.mods) if current_sub.mods else "none")
     except:
         Log.Error("Something went wrong when modifying subtitle: %s", traceback.format_exc())
+
+    current_sub.last_mod = datetime.datetime.fromtimestamp(os.path.getmtime(subtitle.storage_path))
+    storage.save(stored_subs)
+
+    storage.destroy()

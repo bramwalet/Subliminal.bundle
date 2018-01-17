@@ -4,7 +4,6 @@ import gzip
 import hashlib
 import os
 import logging
-import threading
 import traceback
 import types
 import zlib
@@ -14,54 +13,12 @@ from subzero.language import Language
 
 from json_tricks.nonp import loads#, dumps
 from subzero.lib.json import dumps
-from subzero.lib import geezip
 
 
 from constants import mode_map
 from subliminal_patch.subtitle import ModifiedSubtitle
 
 logger = logging.getLogger(__name__)
-
-storage_lock = threading.Lock()
-
-
-class StoredSubtitle(object):
-    """
-    legacy class used for PMS LoadObject/SaveObject
-    """
-    score = None
-    storage_type = None
-    hash = None
-    provider_name = None
-    id = None
-    date_added = None
-    mode = "a"  # auto/manual/auto-better (a/m/b)
-    content = None
-    mods = None
-
-    def __init__(self, score, storage_type, hash, provider_name, id, date_added=None, mode="a", content=None,
-                 mods=None):
-        self.score = int(score)
-        self.storage_type = storage_type
-        self.hash = hash
-        self.provider_name = provider_name
-        self.id = id
-        self.date_added = date_added or datetime.datetime.now()
-        self.mode = mode
-        self.content = content
-        self.mods = mods or []
-
-    def add_mod(self, identifier):
-        self.mods = self.mods or []
-        if identifier is None:
-            self.mods = []
-            return
-
-        self.mods.append(identifier)
-
-    @property
-    def mode_verbose(self):
-        return mode_map.get(self.mode, "Unknown")
 
 
 class JSONStoredSubtitle(object):
@@ -75,9 +32,10 @@ class JSONStoredSubtitle(object):
     content = None
     mods = None
     encoding = None
+    last_mod = None  # file modification
 
     def initialize(self, score, storage_type, hash, provider_name, id, date_added=None, mode="a", content=None,
-                 mods=None, encoding=None):
+                 mods=None, encoding=None, last_mod=None):
         self.score = int(score)
         self.storage_type = storage_type
         self.hash = hash
@@ -88,6 +46,7 @@ class JSONStoredSubtitle(object):
         self.content = content
         self.mods = mods or []
         self.encoding = encoding
+        self.last_mod = last_mod
 
     def add_mod(self, identifier):
         self.mods = self.mods or []
@@ -106,16 +65,6 @@ class JSONStoredSubtitle(object):
         return self.get_mode_verbose(self.mode)
 
     def serialize(self):
-        # if self.content:
-        #     # content is always stored in unicode (gets converted to string with escaped unicode chars by json)
-        #     try:
-        #         self.content = self.content.decode(self.encoding)
-        #     except UnicodeDecodeError:
-        #         try:
-        #             self.content = self.content.decode("utf-8")
-        #         except UnicodeDecodeError:
-        #             logger.error("Couldn't decode %s:%s (%s), ditching it", self.provider_name, self.id, self.encoding)
-        #             return
         return self.__dict__
 
     def deserialize(self, data):
@@ -129,73 +78,6 @@ class JSONStoredSubtitle(object):
     @property
     def key(self):
         return self.provider_name, self.id
-
-
-class StoredVideoSubtitles(object):
-    """
-    legacy class
-    manages stored subtitles for video_id per media_part/language combination
-    """
-    video_id = None  # rating_key
-    title = None
-    parts = None
-    version = None
-    item_type = None  # movie / episode
-    added_at = None
-
-    def __init__(self, plex_item, version=None):
-        self.video_id = str(plex_item.rating_key)
-
-        self.title = plex_item.title
-        self.parts = {}
-        self.version = version
-        self.item_type = plex_item.type
-        self.added_at = datetime.datetime.fromtimestamp(plex_item.added_at)
-
-    def add(self, part_id, lang, subtitle, storage_type, date_added=None, mode="a"):
-        part_id = str(part_id)
-        part = self.parts.get(part_id)
-        if not part:
-            self.parts[part_id] = {}
-            part = self.parts[part_id]
-
-        subs = part.get(lang)
-        if not subs:
-            part[lang] = {}
-            subs = part[lang]
-
-        sub_key = self.get_sub_key(subtitle.provider_name, subtitle.id)
-        subs[sub_key] = StoredSubtitle(subtitle.score, storage_type, hashlib.md5(subtitle.content).hexdigest(),
-                                       subtitle.provider_name, subtitle.id, date_added=date_added, mode=mode,
-                                       content=subtitle.content, mods=subtitle.mods)
-        subs["current"] = sub_key
-
-        return True
-
-    def get_any(self, part_id, lang):
-        part_id = str(part_id)
-        part = self.parts.get(part_id)
-        if not part:
-            return
-
-        subs = part.get(lang)
-        if not subs:
-            return
-
-        if "current" in subs and subs["current"]:
-            return subs.get(subs["current"])
-
-    def get_sub_key(self, provider_name, id):
-        return provider_name, str(id)
-
-    def __repr__(self):
-        return unicode(self)
-
-    def __unicode__(self):
-        return u"%s (%s)" % (self.title, self.video_id)
-
-    def __str__(self):
-        return str(self.video_id)
 
 
 class JSONStoredVideoSubtitles(object):
@@ -240,22 +122,6 @@ class JSONStoredVideoSubtitles(object):
                         else:
                             sub = JSONStoredSubtitle()
 
-                            # legacy subtitle storage instance
-                            if isinstance(subtitle_data, StoredSubtitle):
-                                # subtitle_data = subtitle_data.__dict__
-                                #
-                                # try:
-                                #     lang = Language.fromietf(language)
-                                #     subtitle = ModifiedSubtitle(lang)
-                                #     subtitle.content = subtitle_data["content"]
-                                #     subtitle.set_encoding("utf-8")
-                                #     subtitle_data["content"] = subtitle.content
-                                #     subtitle_data["encoding"] = "utf-8"
-                                # except:
-                                #     logger.error("Legacy subtitle data could not be converted to new storage format")
-                                #     continue
-                                continue
-
                             sub.initialize(**subtitle_data)
                             if not isinstance(sub_key, tuple):
                                 sub_key = tuple(sub_key.split("__"))
@@ -289,7 +155,7 @@ class JSONStoredVideoSubtitles(object):
 
         return data
 
-    def add(self, part_id, lang, subtitle, storage_type, date_added=None, mode="a"):
+    def add(self, part_id, lang, subtitle, storage_type, date_added=None, mode="a", last_mod=None):
         part_id = str(part_id)
         part = self.parts.get(part_id)
         if not part:
@@ -305,7 +171,8 @@ class JSONStoredVideoSubtitles(object):
         subs[sub_key] = JSONStoredSubtitle()
         subs[sub_key].initialize(subtitle.score, storage_type, hashlib.md5(subtitle.content).hexdigest(),
                                  subtitle.provider_name, subtitle.id, date_added=date_added, mode=mode,
-                                 content=subtitle.content, mods=subtitle.mods, encoding="utf-8")
+                                 content=subtitle.content, mods=subtitle.mods, encoding="utf-8",
+                                 last_mod=last_mod)
         subs["current"] = sub_key
 
         return True
@@ -405,8 +272,8 @@ class StoredSubtitlesManager(object):
         root = self.dataitems_path
         recent_dt = datetime.datetime.now() - datetime.timedelta(days=age_days)
         for fn in self.get_all_files():
-            finfo = os.stat(os.path.join(root, fn))
-            created = datetime.datetime.fromtimestamp(finfo.st_ctime)
+            ctime = os.path.getctime(os.path.join(root, fn))
+            created = datetime.datetime.fromtimestamp(ctime)
             if created > recent_dt:
                 fl.append(fn)
         return fl
@@ -564,12 +431,16 @@ class StoredSubtitlesManager(object):
 
         return subs_for_video
 
+    def new(self, plex_item):
+        subs_for_video = JSONStoredVideoSubtitles()
+        subs_for_video.initialize(plex_item, version=self.version)
+        return subs_for_video
+
     def load_or_new(self, plex_item, save=False):
         subs_for_video = self.load(plex_item.rating_key)
         if not subs_for_video:
             logger.info("Creating new subtitle storage for: %s", plex_item.rating_key)
-            subs_for_video = JSONStoredVideoSubtitles()
-            subs_for_video.initialize(plex_item, version=self.version)
+            subs_for_video = self.new(plex_item)
             if save:
                 self.save(subs_for_video)
         return subs_for_video
