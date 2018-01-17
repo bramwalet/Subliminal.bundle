@@ -24,6 +24,7 @@ def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_ty
     """
     stores information about downloaded subtitles in plex's Dict()
     """
+    subtitle_storage = get_subtitle_storage()
     for video, video_subtitles in downloaded_subtitles.items():
         part = scanned_video_part_map[video]
         part_id = str(part.id)
@@ -32,11 +33,11 @@ def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_ty
         metadata = video.plexapi_metadata
         title = get_title_for_video_metadata(metadata)
 
-        subtitle_storage = get_subtitle_storage()
-        stored_subs = subtitle_storage.load(plex_item)
+        stored_subs = subtitle_storage.load(video_id)
         is_new = False
         if not stored_subs:
             is_new = True
+            Log.Debug(u"Creating new subtitle storage: %s, %s", video_id, part_id)
             stored_subs = subtitle_storage.new(plex_item)
 
         for subtitle in video_subtitles:
@@ -44,7 +45,11 @@ def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_ty
             subtitle.normalize()
             Log.Debug(u"Adding subtitle to storage: %s, %s, %s, %s, %s" % (video_id, part_id, lang, title,
                                                                            subtitle.guess_encoding()))
-            last_mod = datetime.datetime.fromtimestamp(os.path.getmtime(subtitle.storage_path))
+
+            last_mod = None
+            if subtitle.storage_path:
+                last_mod = datetime.datetime.fromtimestamp(os.path.getmtime(subtitle.storage_path))
+
             ret_val = stored_subs.add(part_id, lang, subtitle, storage_type, mode=mode, last_mod=last_mod)
 
             if ret_val:
@@ -57,7 +62,7 @@ def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_ty
             Log.Debug("Saving subtitle storage for %s" % video_id)
             subtitle_storage.save(stored_subs)
 
-        subtitle_storage.destroy()
+    subtitle_storage.destroy()
 
 
 def reset_storage(key):

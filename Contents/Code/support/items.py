@@ -410,7 +410,8 @@ def set_mods_for_part(rating_key, part_id, language, item_type, mods, mode="add"
     except:
         Log.Error("Something went wrong when modifying subtitle: %s", traceback.format_exc())
 
-    current_sub.last_mod = datetime.datetime.fromtimestamp(os.path.getmtime(subtitle.storage_path))
-    storage.save(stored_subs)
+    if subtitle.storage_path:
+        current_sub.last_mod = datetime.datetime.fromtimestamp(os.path.getmtime(subtitle.storage_path))
+        storage.save(stored_subs)
 
     storage.destroy()

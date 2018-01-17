@@ -16,11 +16,12 @@ from subliminal_patch.subtitle import ModifiedSubtitle
 from subzero.constants import PREFIX
 from support.config import config
 from support.helpers import timestamp, df, get_language, display_language, quote_args, get_language_from_stream
-from support.items import get_item_kind_from_rating_key, get_item, get_current_sub, get_item_title, refresh_item
+from support.items import get_item_kind_from_rating_key, get_item, get_current_sub, get_item_title, refresh_item, \
+    get_item_kind_from_item
 from support.plex_media import get_plex_metadata
 from support.scanning import scan_videos
 from support.scheduler import scheduler
-from support.storage import get_subtitle_storage, save_subtitles_to_file
+from support.storage import get_subtitle_storage, save_subtitles
 
 
 # fixme: needs kwargs cleanup
@@ -571,9 +572,12 @@ def extract_embedded_sub(**kwargs):
     with_mods = kwargs.pop("with_mods", False)
 
     plex_item = get_item(rating_key)
+    item_type = get_item_kind_from_item(plex_item)
     part = get_part(plex_item, part_id)
 
     if part:
+        metadata = get_plex_metadata(rating_key, part_id, item_type, plex_item=plex_item)
+        scanned_parts = scan_videos([metadata], ignore_all=True, skip_hashing=True)
         for stream in part.streams:
             # subtitle stream
             if str(stream.index) == stream_index:
@@ -597,10 +601,15 @@ def extract_embedded_sub(**kwargs):
                 if output:
                     subtitle = ModifiedSubtitle(language, mods=config.default_mods if with_mods else None)
                     subtitle.content = output
+                    subtitle.provider_name = "embedded"
+                    subtitle.id = stream_index
+                    subtitle.score = 0
                     subtitle.set_encoding("utf-8")
 
                     # fixme: speedup video; only video.name is needed
-                    save_subtitles_to_file({part.file: [subtitle]}, tags=["embedded"], forced_tag=forced)
+                    save_successful = save_subtitles(scanned_parts, {scanned_parts.keys()[0]: [subtitle]}, mode="m")
                     set_refresh_menu_state(None)
-                    refresh_item(rating_key)
+
+                    if save_successful:
+                        refresh_item(rating_key)
 
