@@ -509,7 +509,7 @@ class StoredSubtitlesManager(object):
         json_path = self.get_json_data_path(bare_fn)
         basename = os.path.basename(json_path)
 
-        logger.debug("Loading subtitle storage data file: %s", basename)
+        #logger.debug("Loading subtitle storage data file: %s", basename)
 
         if os.path.exists(json_path):
             # new style data
