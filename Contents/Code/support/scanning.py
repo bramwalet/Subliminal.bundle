@@ -7,10 +7,10 @@ from support.plex_media import get_stream_fps
 from support.storage import get_subtitle_storage
 from support.config import config, TEXT_SUBTITLE_EXTS
 
-from subzero.video import parse_video
+from subzero.video import parse_video, set_existing_languages
 
 
-def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, no_refining=False, providers=None):
+def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, providers=None):
     """
     returnes a subliminal/guessit-refined parsed video
     :param pms_video_info:
@@ -69,21 +69,27 @@ def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, no
 
     try:
         # get basic video info scan (filename)
-        video = parse_video(plex_part.file, pms_video_info, hints, external_subtitles=external_subtitles,
-                            embedded_subtitles=embedded_subtitles, known_embedded=known_embedded,
-                            forced_only=config.forced_only, no_refining=no_refining, ignore_all=ignore_all,
-                            stored_subs=stored_subs, refiner_settings=config.refiner_settings, providers=providers,
-                            skip_hashing=config.low_impact_mode)
+        # video = parse_video(plex_part.file, pms_video_info, hints, external_subtitles=external_subtitles,
+        #                     embedded_subtitles=embedded_subtitles, known_embedded=known_embedded,
+        #                     forced_only=config.forced_only, no_refining=no_refining, ignore_all=ignore_all,
+        #                     stored_subs=stored_subs, refiner_settings=config.refiner_settings, providers=providers,
+        #                     skip_hashing=config.low_impact_mode)
+        video = parse_video(plex_part.file, hints, skip_hashing=config.low_impact_mode, providers=providers)
+
+        if not ignore_all:
+            set_existing_languages(video, pms_video_info, external_subtitles=external_subtitles,
+                                   embedded_subtitles=embedded_subtitles, known_embedded=known_embedded,
+                                   forced_only=config.forced_only, stored_subs=stored_subs)
 
         # add video fps info
         video.fps = plex_part.fps
         return video
 
     except ValueError:
-        Log.Warn("File could not be guessed by subliminal: %s: %s", plex_part.file, traceback.format_exc())
+        Log.Warn("File could not be guessed: %s: %s", plex_part.file, traceback.format_exc())
 
 
-def scan_videos(videos, kind="series", ignore_all=False, no_refining=False, providers=None):
+def scan_videos(videos, ignore_all=False, providers=None):
     """
     receives a list of videos containing dictionaries returned by media_to_videos
     :param videos:
@@ -100,8 +106,7 @@ def scan_videos(videos, kind="series", ignore_all=False, no_refining=False, prov
         hints = helpers.get_item_hints(video)
         video["plex_part"].fps = get_stream_fps(video["plex_part"].streams)
         scanned_video = scan_video(video, ignore_all=force_refresh or ignore_all, hints=hints,
-                                   rating_key=video["id"], no_refining=no_refining,
-                                   providers=providers or config.providers)
+                                   rating_key=video["id"], providers=providers or config.providers)
 
         if not scanned_video:
             continue
@@ -110,5 +115,6 @@ def scan_videos(videos, kind="series", ignore_all=False, no_refining=False, prov
         part_metadata = video.copy()
         del part_metadata["plex_part"]
         scanned_video.plexapi_metadata = part_metadata
+        scanned_video.hints = hints
         ret[scanned_video] = video["plex_part"]
     return ret

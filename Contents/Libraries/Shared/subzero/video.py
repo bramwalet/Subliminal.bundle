@@ -16,15 +16,52 @@ def has_external_subtitle(part_id, stored_subs, language):
         return True
 
 
-def parse_video(fn, video_info, hints, external_subtitles=False, embedded_subtitles=False, known_embedded=None,
-                forced_only=False, no_refining=False, dry_run=False, ignore_all=False, stored_subs=None,
-                refiner_settings=None, providers=None, skip_hashing=False):
+def set_existing_languages(video, video_info, external_subtitles=False, embedded_subtitles=False, known_embedded=None,
+                           forced_only=False, stored_subs=None):
+    logger.debug(u"Determining existing subtitles for %s", video.name)
 
+    # scan for external subtitles
+    external_langs_found = set(search_external_subtitles(video.name, forced_tag=forced_only).values())
+
+    # found external subtitles should be considered?
+    if external_subtitles:
+        # |= is update, thanks plex
+        video.subtitle_languages.update(external_langs_found)
+
+    else:
+        # did we already download subtitles for this?
+        if stored_subs and external_langs_found:
+            for lang in external_langs_found:
+                if has_external_subtitle(video_info["plex_part"].id, stored_subs, lang):
+                    logger.info("Not re-downloading subtitle for language %s, it already exists on the filesystem",
+                                lang)
+                    video.subtitle_languages.add(lang)
+
+    # add known embedded subtitles
+    if embedded_subtitles and known_embedded:
+        embedded_subtitle_languages = set()
+        # mp4 and stuff, check burned in
+        for language in known_embedded:
+            try:
+                embedded_subtitle_languages.add(Language.fromalpha3b(language))
+            except LanguageError:
+                logger.error('Embedded subtitle track language %r is not a valid language', language)
+                embedded_subtitle_languages.add(Language('und'))
+
+            logger.debug('Found embedded subtitle %r', embedded_subtitle_languages)
+            video.subtitle_languages.update(embedded_subtitle_languages)
+
+
+def parse_video(fn, hints, skip_hashing=False, dry_run=False, providers=None):
     logger.debug("Parsing video: %s, hints: %s", os.path.basename(fn), hints)
-    video = scan_video(fn, hints=hints, dont_use_actual_file=dry_run or no_refining, providers=providers,
-                       skip_hashing=skip_hashing)
+    return scan_video(fn, hints=hints, dont_use_actual_file=dry_run, providers=providers,
+                      skip_hashing=skip_hashing)
 
+
+def refine_video(video, no_refining=False, refiner_settings=None):
     refiner_settings = refiner_settings or {}
+    video_info = video.plexapi_metadata
+    hints = video.hints
 
     if no_refining:
         logger.debug("Taking parse_video shortcut")
@@ -120,44 +157,13 @@ def parse_video(fn, video_info, hints, external_subtitles=False, embedded_subtit
             or (hints["type"] == "movie" and not video.imdb_id):
         logger.warning("Couldn't find corresponding series/movie in online databases, continuing")
 
-    # scan for external subtitles
-    external_langs_found = set(search_external_subtitles(video.name, forced_tag=forced_only).values())
-
-    # found external subtitles should be considered?
-    if external_subtitles:
-        # |= is update, thanks plex
-        video.subtitle_languages.update(external_langs_found)
-
-    else:
-        # did we already download subtitles for this?
-        if not ignore_all and stored_subs and external_langs_found:
-            for lang in external_langs_found:
-                if has_external_subtitle(video_info["plex_part"].id, stored_subs, lang):
-                    logger.info("Not re-downloading subtitle for language %s, it already exists on the filesystem",
-                                lang)
-                    video.subtitle_languages.add(lang)
-
-    # add known embedded subtitles
-    if embedded_subtitles and known_embedded:
-        embedded_subtitle_languages = set()
-        # mp4 and stuff, check burned in
-        for language in known_embedded:
-            try:
-                embedded_subtitle_languages.add(Language.fromalpha3b(language))
-            except LanguageError:
-                logger.error('Embedded subtitle track language %r is not a valid language', language)
-                embedded_subtitle_languages.add(Language('und'))
-
-            logger.debug('Found embedded subtitle %r', embedded_subtitle_languages)
-            video.subtitle_languages.update(embedded_subtitle_languages)
-
     # guess special
     if hints["type"] == "episode":
         if video.season == 0 or video.episode == 0:
             video.is_special = True
         else:
             # check parent folder name
-            if os.path.dirname(fn).split(os.path.sep)[-1].lower() in ("specials", "season 00"):
+            if os.path.dirname(video.name).split(os.path.sep)[-1].lower() in ("specials", "season 00"):
                 video.is_special = True
 
     return video

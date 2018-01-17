@@ -382,7 +382,7 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
     metadata = get_plex_metadata(rating_key, part_id, item_type)
     plex_part = None
     if not config.low_impact_mode:
-        scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
+        scanned_parts = scan_videos([metadata], ignore_all=True)
 
         if not scanned_parts:
             Log.Error("Couldn't list available subtitles for %s", rating_key)

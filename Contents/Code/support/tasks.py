@@ -10,6 +10,7 @@ from subliminal_patch.score import compute_score
 from subliminal_patch.core import download_subtitles
 from subliminal import list_subtitles as list_all_subtitles
 from subzero.language import Language
+from subzero.video import refine_video
 
 from missing_subtitles import items_get_all_missing_subs, refresh_item
 from scheduler import scheduler
@@ -109,13 +110,14 @@ class SubtitleListingMixin(object):
 
         providers = config.providers
         if not scanned_parts:
-            scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie",
-                                        ignore_all=True, providers=providers)
+            scanned_parts = scan_videos([metadata], ignore_all=True, providers=providers)
             if not scanned_parts:
                 Log.Error(u"%s: Couldn't list available subtitles for %s", self.name, rating_key)
                 return
 
         video, plex_part = scanned_parts.items()[0]
+        refine_video(video, refiner_settings=config.refiner_settings)
+
         config.init_subliminal_patches()
 
         provider_settings = config.provider_settings.copy()
@@ -132,7 +134,7 @@ class SubtitleListingMixin(object):
 
         languages = {Language.fromietf(language)}
 
-        available_subs = list_all_subtitles(scanned_parts, languages,
+        available_subs = list_all_subtitles([video], languages,
                                             providers=providers or config.providers,
                                             provider_configs=provider_settings,
                                             pool_class=config.provider_pool,
@@ -182,8 +184,7 @@ class DownloadSubtitleMixin(object):
         part_id = subtitle.part_id
         metadata = get_plex_metadata(rating_key, part_id, item_type)
         providers = config.providers
-        scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True,
-                                    providers=providers)
+        scanned_parts = scan_videos([metadata], ignore_all=True, providers=providers)
         video, plex_part = scanned_parts.items()[0]
 
         # downloaded_subtitles = {subliminal.Video: [subtitle, subtitle, ...]}
@@ -406,9 +407,7 @@ class SearchAllRecentlyAddedMissing(Task):
                         continue
 
                     Log.Debug(u"%s: Looking for missing subtitles: %s", self.name, get_item_title(plex_item))
-                    scanned_parts = scan_videos([metadata], kind="series"
-                                                if stored_subs.item_type == "episode" else "movie",
-                                                providers=providers)
+                    scanned_parts = scan_videos([metadata], providers=providers)
 
                     downloaded_subtitles = download_best_subtitles(scanned_parts, min_score=min_score,
                                                                    providers=providers)

@@ -104,7 +104,7 @@ def SubtitleFPSModMenu(**kwargs):
     ))
 
     metadata = get_plex_metadata(rating_key, part_id, item_type)
-    scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
+    scanned_parts = scan_videos([metadata], ignore_all=True)
     video, plex_part = scanned_parts.items()[0]
 
     target_fps = plex_part.fps
