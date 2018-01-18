@@ -164,7 +164,8 @@ class SubtitleModifications(object):
 
             t = entry.text.strip()
             if not t:
-                logger.debug(u"Skipping empty line: %s", index)
+                if self.debug:
+                    logger.debug(u"Skipping empty line: %s", index)
                 continue
 
             skip_entry = False
