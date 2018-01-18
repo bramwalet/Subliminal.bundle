@@ -68,12 +68,11 @@ def dig_tree(oc, items, menu_callback, menu_determination_callback=None, force_r
 
         # force details view for show/season
         summary = " " if kind in ("show", "season") else None
-        title = pad_title(title) if kind in ("show", "season") else title
 
         oc.add(DirectoryObject(
             key=Callback(menu_callback or menu_determination_callback(kind, item, pass_kwargs=pass_kwargs), title=title,
                          rating_key=force_rating_key or key, **add_kwargs),
-            title=title, thumb=thumb, summary=summary
+            title=pad_title(title) if kind in ("show", "season") else title, thumb=thumb, summary=summary
         ))
     return oc
 
