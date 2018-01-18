@@ -36,9 +36,6 @@ class SubripFormat(FormatBase):
         following_lines = [] # contains lists of lines following each timestamp
 
         for line in fp:
-            if not line.strip():
-                continue
-
             stamps = TIMESTAMP.findall(line)
             if len(stamps) == 2: # timestamp line
                 start, end = map(timestamp_to_ms, stamps)
@@ -50,7 +47,7 @@ class SubripFormat(FormatBase):
 
         def prepare_text(lines):
             s = "".join(lines).strip()
-            s = re.sub(r"\n+ *\d+ *$", "", s) # strip number of next subtitle
+            s = re.sub(r"\n* *\d+ *$", "", s) # strip number of next subtitle
             s = re.sub(r"< *i *>", r"{\i1}", s)
             s = re.sub(r"< */ *i *>", r"{\i0}", s)
             s = re.sub(r"< *s *>", r"{\s1}", s)
