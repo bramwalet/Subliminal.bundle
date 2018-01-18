@@ -26,6 +26,7 @@ ObjectContainer.no_cache = True
 
 # default thumb for DirectoryObjects
 DirectoryObject.thumb = default_thumb
+Plugin.AddViewGroup("full_details", viewMode="InfoList", mediaType="items", type="list", summary=2)
 
 
 @route(PREFIX + '/section/firstLetter/key', deeper=bool)
@@ -66,7 +67,7 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
     title = unicode(title)
     item_title = title
     title = base_title + " > " + title
-    oc = SubFolderObjectContainer(title2=title, no_cache=True, no_history=True)
+    oc = SubFolderObjectContainer(title2=title, no_cache=True, no_history=True, view_group="full_details")
 
     current_kind = get_item_kind_from_rating_key(rating_key)
 

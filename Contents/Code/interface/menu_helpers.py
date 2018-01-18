@@ -4,7 +4,7 @@ import datetime
 
 from func import enable_channel_wrapper
 from support.items import get_kind, get_item_thumb
-from support.helpers import get_video_display_title
+from support.helpers import get_video_display_title, pad_title
 from support.ignore import ignore_list
 from support.lib import get_intent
 from support.config import config
@@ -68,6 +68,7 @@ def dig_tree(oc, items, menu_callback, menu_determination_callback=None, force_r
 
         # force details view for show/season
         summary = " " if kind in ("show", "season") else None
+        title = pad_title(title) if kind in ("show", "season") else title
 
         oc.add(DirectoryObject(
             key=Callback(menu_callback or menu_determination_callback(kind, item, pass_kwargs=pass_kwargs), title=title,
