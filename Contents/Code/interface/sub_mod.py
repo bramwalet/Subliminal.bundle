@@ -76,6 +76,11 @@ def SubtitleModificationsMenu(**kwargs):
             title=pad_title("Manage applied mods"),
             summary=u"Currently applied mods: %s" % (", ".join(current_mods))
         ))
+        oc.add(DirectoryObject(
+            key=Callback(SubtitleReapplyMods, randomize=timestamp(), **kwargs),
+            title=pad_title("Reapply applied mods"),
+            summary=u"Currently applied mods: %s" % (", ".join(current_mods) if current_mods else "none")
+        ))
 
     oc.add(DirectoryObject(
         key=Callback(SubtitleSetMods, mods=None, mode="clear", randomize=timestamp(), **kwargs),
@@ -223,6 +228,22 @@ def SubtitleSetMods(mods=None, mode=None, **kwargs):
     language = Language.fromietf(lang_a2)
 
     set_mods_for_part(rating_key, part_id, language, item_type, mods, mode=mode)
+
+    kwargs.pop("randomize")
+    return SubtitleModificationsMenu(randomize=timestamp(), **kwargs)
+
+
+@route(PREFIX + '/item/sub_reapply_mods/{rating_key}/{part_id}', force=bool)
+@debounce
+def SubtitleReapplyMods(**kwargs):
+    rating_key = kwargs["rating_key"]
+    part_id = kwargs["part_id"]
+    lang_a2 = kwargs["language"]
+    item_type = kwargs["item_type"]
+
+    language = Language.fromietf(lang_a2)
+
+    set_mods_for_part(rating_key, part_id, language, item_type, [], mode="add")
 
     kwargs.pop("randomize")
     return SubtitleModificationsMenu(randomize=timestamp(), **kwargs)
