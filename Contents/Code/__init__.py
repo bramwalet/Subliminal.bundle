@@ -137,22 +137,16 @@ class SubZeroAgent(object):
         store_subtitle_info(video_part_map, dict((k, []) for k in video_part_map.keys()), None, mode="a")
 
     def update(self, metadata, media, lang):
+        if not config.enable_agent:
+            Log.Debug("Skipping Sub-Zero agent(s)")
+            return
+
         Log.Debug("Sub-Zero %s, %s update called" % (config.version, self.agent_type))
         intent = get_intent()
 
         if not media:
             Log.Error("Called with empty media, something is really wrong with your setup!")
             return
-
-        # debounce for self.debounce seconds
-        now = datetime.datetime.now()
-        if "last_call" in Dict:
-            last_call = Dict["last_call"]
-            if last_call + datetime.timedelta(seconds=self.debounce) > now:
-                wait = self.debounce - (now - last_call).seconds
-                if wait >= 1:
-                    Log.Debug("Waiting %s seconds until continuing", wait)
-                    Thread.Sleep(wait)
 
         item_ids = []
         try:
@@ -191,9 +185,16 @@ class SubZeroAgent(object):
                 scheduler.clear_task_data("MissingSubtitles")
 
             downloaded_subtitles = None
-            if not config.enable_agent:
-                Log.Debug("Skipping Sub-Zero agent(s)")
-                return
+
+            # debounce for self.debounce seconds
+            now = datetime.datetime.now()
+            if "last_call" in Dict:
+                last_call = Dict["last_call"]
+                if last_call + datetime.timedelta(seconds=self.debounce) > now:
+                    wait = self.debounce - (now - last_call).seconds
+                    if wait >= 1:
+                        Log.Debug("Waiting %s seconds until continuing", wait)
+                        Thread.Sleep(wait)
 
             else:
                 # downloaded_subtitles = {subliminal.Video: [subtitle, subtitle, ...]}
