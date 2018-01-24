@@ -3,6 +3,8 @@
 import io
 import logging
 import os
+import time
+
 from random import randint
 from zipfile import ZipFile
 
@@ -104,6 +106,8 @@ class SubsceneProvider(Provider, ProviderSubtitleArchiveMixin):
     hearing_impaired_verifiable = True
     only_foreign = False
 
+    search_throttle = 2  # seconds
+
     def __init__(self, only_foreign=False):
         self.only_foreign = only_foreign
 
@@ -173,10 +177,19 @@ class SubsceneProvider(Provider, ProviderSubtitleArchiveMixin):
         # re-search for episodes without explicit release name
         if isinstance(video, Episode):
             term = u"%s S%02iE%02i" % (video.series, video.season, video.episode)
+            time.sleep(self.search_throttle)
             logger.debug('Searching for alternative results: %s', term)
             film = search(term, session=self.session)
             if film and film.subtitles:
-                subtitles = self.parse_results(video, film)
+                subtitles += self.parse_results(video, film)
+
+            # packs
+            term = u"%s S%02i" % (video.series, video.season)
+            logger.debug('Searching for packs: %s', term)
+            time.sleep(self.search_throttle)
+            film = search(term, session=self.session)
+            if film and film.subtitles:
+                subtitles += self.parse_results(video, film)
 
         logger.info("%s subtitles found" % len(subtitles))
         return subtitles
