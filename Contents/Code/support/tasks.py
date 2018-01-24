@@ -154,7 +154,8 @@ class SubtitleListingMixin(object):
 
             # skip wrong season/episodes
             if item_type == "episode" and \
-                    ("series" not in matches or "season" not in matches or "episode" not in matches):
+                    ("series" not in matches or "season" not in matches or "episode" not in matches) and \
+                    (("series" not in matches or "season" not in matches) and s.is_pack):
                 Log.Debug(u"%s: Skipping %s, because it doesn't match our series/episode", self.name, s)
                 continue
 
