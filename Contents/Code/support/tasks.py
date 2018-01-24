@@ -185,20 +185,20 @@ class DownloadSubtitleMixin(object):
         scanned_parts = scan_videos([metadata], ignore_all=True, providers=providers)
         video, plex_part = scanned_parts.items()[0]
 
-        # downloaded_subtitles = {subliminal.Video: [subtitle, subtitle, ...]}
-        had_cached_pack = False
         if subtitle.is_pack:
-            # try retrieving the subtitle from a cached version
+            # try retrieving the subtitle from a cached pack archive
             pack_data = get_pack_data(subtitle)
             if pack_data:
                 subtitle.pack_data = pack_data
-                had_cached_pack = True
 
+        # downloaded_subtitles = {subliminal.Video: [subtitle, subtitle, ...]}
         download_subtitles([subtitle], providers=providers or config.providers,
                            provider_configs=config.provider_settings,
                            pool_class=config.provider_pool, throttle_callback=config.provider_throttle)
 
-        if subtitle.is_pack and not had_cached_pack:
+        # if a new pack was downloaded, store it in the cache; providers' download method is responsible for
+        # setting subtitle.pack_data to None in case the cached pack data we provided was successfully used
+        if subtitle.is_pack and subtitle.pack_data:
             # store pack data in cache
             store_pack_data(subtitle, subtitle.pack_data)
 

@@ -11,7 +11,7 @@ from zipfile import ZipFile
 from babelfish import language_converters
 from guessit import guessit
 from requests import Session
-from subliminal import Episode
+from subliminal import Episode, ProviderError
 from subliminal.utils import sanitize_release_group
 from subliminal_patch.providers import Provider
 from subliminal_patch.providers.mixins import ProviderSubtitleArchiveMixin
@@ -147,21 +147,27 @@ class SubsceneProvider(Provider, ProviderSubtitleArchiveMixin):
         return [s for s in self.query(video) if s.language in languages]
 
     def download_subtitle(self, subtitle):
-        # open the archive
-        if not subtitle.pack_data:
-            r = self.session.get(subtitle.get_download_link(self.session), timeout=10)
-            r.raise_for_status()
-            archive_stream = io.BytesIO(r.content)
-            archive = ZipFile(archive_stream)
-
-            # store archive as pack_data for later caching
-            subtitle.pack_data = r.content
-        else:
+        if subtitle.pack_data:
             logger.info("Using previously downloaded pack data")
             archive = ZipFile(io.BytesIO(subtitle.pack_data))
             subtitle.pack_data = None
 
+            try:
+                subtitle.content = self.get_subtitle_from_archive(subtitle, archive)
+                return
+            except ProviderError:
+                pass
+
+        # open the archive
+        r = self.session.get(subtitle.get_download_link(self.session), timeout=10)
+        r.raise_for_status()
+        archive_stream = io.BytesIO(r.content)
+        archive = ZipFile(archive_stream)
+
         subtitle.content = self.get_subtitle_from_archive(subtitle, archive)
+
+        # store archive as pack_data for later caching
+        subtitle.pack_data = r.content
 
     def parse_results(self, video, film):
         subtitles = []
