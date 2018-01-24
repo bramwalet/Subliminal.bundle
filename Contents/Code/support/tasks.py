@@ -153,8 +153,7 @@ class SubtitleListingMixin(object):
                 continue
 
             # skip wrong season/episodes
-            if item_type == "episode" and \
-                    (not {"series", "season"}.issubset(matches) or ("episode" not in matches and not s.is_pack)):
+            if item_type == "episode" and not {"series", "season", "episode"}.issubset(matches):
                 Log.Debug(u"%s: Skipping %s, because it doesn't match our series/episode", self.name, s)
                 continue
 
