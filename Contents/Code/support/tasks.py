@@ -1,7 +1,6 @@
 # coding=utf-8
 
 import datetime
-import time
 import operator
 import traceback
 from urllib2 import URLError
@@ -14,7 +13,7 @@ from subzero.video import refine_video
 
 from missing_subtitles import items_get_all_missing_subs, refresh_item
 from scheduler import scheduler
-from storage import save_subtitles, get_subtitle_storage
+from storage import save_subtitles, get_subtitle_storage, get_pack_data, store_pack_data
 from support.config import config
 from support.items import get_recent_items, get_item, is_ignored, get_item_title
 from support.helpers import track_usage, get_title_for_video_metadata, cast_bool, PartUnknownException
@@ -187,9 +186,25 @@ class DownloadSubtitleMixin(object):
         video, plex_part = scanned_parts.items()[0]
 
         # downloaded_subtitles = {subliminal.Video: [subtitle, subtitle, ...]}
+        had_cached_pack = False
+        if subtitle.is_pack:
+            # try retrieving the subtitle from a cached version
+            pack_data = get_pack_data(subtitle)
+            if pack_data:
+                subtitle.pack_data = pack_data
+                had_cached_pack = True
+
         download_subtitles([subtitle], providers=providers or config.providers,
                            provider_configs=config.provider_settings,
                            pool_class=config.provider_pool, throttle_callback=config.provider_throttle)
+
+        if subtitle.is_pack and not had_cached_pack:
+            # store pack data in cache
+            store_pack_data(subtitle, subtitle.pack_data)
+
+        # may be redundant
+        subtitle.pack_data = None
+
         download_successful = False
 
         if subtitle.content:

@@ -4,10 +4,12 @@ import datetime
 import os
 import pprint
 import copy
+import traceback
 import types
 
 from subliminal_patch.core import save_subtitles as subliminal_save_subtitles
 from subzero.subtitle_storage import StoredSubtitlesManager
+from subzero.lib.io import FileIO
 
 from subtitlehelpers import force_utf8
 from config import config
@@ -195,3 +197,52 @@ def save_subtitles(scanned_video_part_map, downloaded_subtitles, mode="a", bare_
         store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage, mode=mode)
 
     return save_successful
+
+
+def get_pack_cache_dir():
+    pack_cache_dir = os.path.join(config.data_path, "pack_cache")
+    existed = True
+    if not os.path.isdir(pack_cache_dir):
+        os.makedirs(pack_cache_dir)
+        existed = False
+
+    return pack_cache_dir, existed
+
+
+def get_pack_id(subtitle):
+    return "%s_%s" % (subtitle.provider_name, subtitle.numeric_id)
+
+
+def get_pack_data(subtitle):
+    pack_cache_dir, existed = get_pack_cache_dir()
+    if not existed:
+        return
+
+    subtitle_id = get_pack_id(subtitle)
+
+    archive = os.path.join(pack_cache_dir, subtitle_id + ".archive")
+    if os.path.isfile(archive):
+        Log.Info("Loading archive from pack cache: %s", subtitle_id)
+        try:
+            data = FileIO.read(archive, 'rb')
+
+            return data
+        except:
+            Log.Error("Couldn't load archive from pack cache: %s: %s", subtitle_id, traceback.format_exc())
+
+
+def store_pack_data(subtitle, data):
+    pack_cache_dir, existed = get_pack_cache_dir()
+    if not existed:
+        return
+
+    subtitle_id = get_pack_id(subtitle)
+
+    archive = os.path.join(pack_cache_dir, subtitle_id + ".archive")
+
+    Log.Info("Storing archive in pack cache: %s", subtitle_id)
+    try:
+        FileIO.write(archive, data, 'wb')
+
+    except:
+        Log.Error("Couldn't store archive in pack cache: %s: %s", subtitle_id, traceback.format_exc())

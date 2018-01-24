@@ -53,6 +53,10 @@ class SubsceneSubtitle(Subtitle):
     def id(self):
         return self.page_link
 
+    @property
+    def numeric_id(self):
+        return self.page_link.split("/")[-1]
+
     def get_matches(self, video):
         matches = set()
 
@@ -143,12 +147,19 @@ class SubsceneProvider(Provider, ProviderSubtitleArchiveMixin):
         return [s for s in self.query(video) if s.language in languages]
 
     def download_subtitle(self, subtitle):
-        r = self.session.get(subtitle.get_download_link(self.session), timeout=10)
-        r.raise_for_status()
-
         # open the archive
-        archive_stream = io.BytesIO(r.content)
-        archive = ZipFile(archive_stream)
+        if not subtitle.pack_data:
+            r = self.session.get(subtitle.get_download_link(self.session), timeout=10)
+            r.raise_for_status()
+            archive_stream = io.BytesIO(r.content)
+            archive = ZipFile(archive_stream)
+
+            # store archive as pack_data for later caching
+            subtitle.pack_data = r.content
+        else:
+            logger.info("Using previously downloaded pack data")
+            archive = ZipFile(io.BytesIO(subtitle.pack_data))
+            subtitle.pack_data = None
 
         subtitle.content = self.get_subtitle_from_archive(subtitle, archive)
 
