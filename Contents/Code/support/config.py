@@ -88,6 +88,7 @@ class Config(object):
     pms_request_timeout = 15
     low_impact_mode = False
     new_style_cache = False
+    pack_cache_dir = None
 
     enable_channel = True
     enable_agent = True
@@ -156,6 +157,7 @@ class Config(object):
             min(cast_int(Prefs['pms_request_timeout'], 15), 45)
         self.low_impact_mode = cast_bool(Prefs['low_impact_mode'])
         self.new_style_cache = cast_bool(Prefs['new_style_cache'])
+        self.pack_cache_dir = self.get_pack_cache_dir()
 
         os.environ["SZ_USER_AGENT"] = self.get_user_agent()
 
@@ -264,6 +266,13 @@ class Config(object):
             return
         Log.Debug("Syncing cache")
         subliminal.region.backend.sync()
+
+    def get_pack_cache_dir(self):
+        pack_cache_dir = os.path.join(config.data_path, "pack_cache")
+        if not os.path.isdir(pack_cache_dir):
+            os.makedirs(pack_cache_dir)
+
+        return pack_cache_dir
 
     def set_log_paths(self):
         # find log handler

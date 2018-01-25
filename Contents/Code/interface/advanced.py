@@ -58,6 +58,10 @@ def AdvancedMenu(randomize=None, header=None, message=None):
         title=pad_title("Trigger subtitle storage migration (expensive)"),
     ))
     oc.add(DirectoryObject(
+        key=Callback(TriggerCacheMaintenance, randomize=timestamp()),
+        title=pad_title("Trigger cache maintenance (refiners, providers and packs/archives)"),
+    ))
+    oc.add(DirectoryObject(
         key=Callback(ApplyDefaultMods, randomize=timestamp()),
         title=pad_title("Apply configured default subtitle mods to all (active) stored subtitles"),
     ))
@@ -181,6 +185,17 @@ def TriggerStorageMigration(randomize=None):
         randomize=timestamp(),
         header='Success',
         message='MigrateSubtitleStorage triggered'
+    )
+
+
+@route(PREFIX + '/triggercachemaintenance')
+@debounce
+def TriggerCacheMaintenance(randomize=None):
+    scheduler.dispatch_task("CacheMaintenance")
+    return AdvancedMenu(
+        randomize=timestamp(),
+        header='Success',
+        message='TriggerCacheMaintenance triggered'
     )
 
 

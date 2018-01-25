@@ -35,6 +35,10 @@ class SZFileBackend(CacheBackend):
         for key in keys:
             self._cache.pop(key, None)
 
+    @property
+    def all_filenames(self):
+        return self._cache._all_filenames()
+
     def sync(self, force=False):
         if (hasattr(self._cache, "_buffer") and self._cache._buffer) or force:
             self._cache.sync()

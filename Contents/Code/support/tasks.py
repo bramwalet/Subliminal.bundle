@@ -1,5 +1,6 @@
 # coding=utf-8
-
+import glob
+import os
 import datetime
 import operator
 import traceback
@@ -7,7 +8,7 @@ from urllib2 import URLError
 
 from subliminal_patch.score import compute_score
 from subliminal_patch.core import download_subtitles
-from subliminal import list_subtitles as list_all_subtitles
+from subliminal import list_subtitles as list_all_subtitles, region as subliminal_cache_region
 from subzero.language import Language
 from subzero.video import refine_video
 
@@ -828,6 +829,37 @@ class MigrateSubtitleStorage(Task):
         storage.destroy()
 
 
+class CacheMaintenance(Task):
+    periodic = True
+    frequency = "every 1 days"
+
+    main_cache_validity = 14  # days
+    pack_cache_validity = 4  # days
+
+    def run(self):
+        super(CacheMaintenance, self).run()
+        self.running = True
+        Log.Info(u"%s: Running cache maintenance", self.name)
+        now = datetime.datetime.now()
+
+        def remove_expired(path, expiry):
+            mtime = datetime.datetime.fromtimestamp(os.path.getmtime(path))
+            if mtime + datetime.timedelta(days=expiry) < now:
+                try:
+                    os.remove(path)
+                except (IOError, OSError):
+                    Log.Debug("Couldn't remove cache file: %s", os.path.basename(path))
+
+        # main cache
+        if config.new_style_cache:
+            for fn in subliminal_cache_region.backend.all_filenames:
+                remove_expired(fn, self.main_cache_validity)
+
+        # archive cache
+        for fn in glob.iglob(os.path.join(config.pack_cache_dir, "*.archive")):
+            remove_expired(fn, self.pack_cache_validity)
+
+
 scheduler.register(LegacySearchAllRecentlyAddedMissing)
 scheduler.register(SearchAllRecentlyAddedMissing)
 scheduler.register(AvailableSubsForItem)
@@ -837,3 +869,4 @@ scheduler.register(FindBetterSubtitles)
 scheduler.register(SubtitleStorageMaintenance)
 scheduler.register(MigrateSubtitleStorage)
 scheduler.register(MenuHistoryMaintenance)
+scheduler.register(CacheMaintenance)
