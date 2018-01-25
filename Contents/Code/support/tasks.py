@@ -13,14 +13,13 @@ from subzero.video import refine_video
 
 from missing_subtitles import items_get_all_missing_subs, refresh_item
 from scheduler import scheduler
-from storage import save_subtitles, get_subtitle_storage, get_pack_data, store_pack_data
+from storage import save_subtitles, get_subtitle_storage
 from support.config import config
 from support.items import get_recent_items, get_item, is_ignored, get_item_title
 from support.helpers import track_usage, get_title_for_video_metadata, cast_bool, PartUnknownException
 from support.plex_media import get_plex_metadata
 from support.scanning import scan_videos
-from download import download_best_subtitles
-
+from download import download_best_subtitles, pre_download_hook, post_download_hook
 
 PROVIDER_SLACK = 30
 DL_PROVIDER_SLACK = 30
@@ -185,22 +184,14 @@ class DownloadSubtitleMixin(object):
         scanned_parts = scan_videos([metadata], ignore_all=True, providers=providers)
         video, plex_part = scanned_parts.items()[0]
 
-        if subtitle.is_pack:
-            # try retrieving the subtitle from a cached pack archive
-            pack_data = get_pack_data(subtitle)
-            if pack_data:
-                subtitle.pack_data = pack_data
+        pre_download_hook(subtitle)
 
         # downloaded_subtitles = {subliminal.Video: [subtitle, subtitle, ...]}
         download_subtitles([subtitle], providers=providers or config.providers,
                            provider_configs=config.provider_settings,
                            pool_class=config.provider_pool, throttle_callback=config.provider_throttle)
 
-        # if a new pack was downloaded, store it in the cache; providers' download method is responsible for
-        # setting subtitle.pack_data to None in case the cached pack data we provided was successfully used
-        if subtitle.is_pack and subtitle.pack_data:
-            # store pack data in cache
-            store_pack_data(subtitle, subtitle.pack_data)
+        post_download_hook(subtitle)
 
         # may be redundant
         subtitle.pack_data = None

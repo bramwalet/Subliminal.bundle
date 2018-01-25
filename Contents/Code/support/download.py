@@ -11,6 +11,7 @@ from subtitlehelpers import get_subtitles_from_metadata
 from subliminal_patch import compute_score
 from support.plex_media import get_blacklist_from_part_map
 from subzero.video import refine_video
+from support.storage import get_pack_data, store_pack_data
 
 
 def get_missing_languages(video, part):
@@ -60,6 +61,25 @@ def get_missing_languages(video, part):
     return missing_languages
 
 
+def pre_download_hook(subtitle):
+    if subtitle.is_pack:
+        # try retrieving the subtitle from a cached pack archive
+        pack_data = get_pack_data(subtitle)
+        if pack_data:
+            subtitle.pack_data = pack_data
+
+
+def post_download_hook(subtitle):
+    # if a new pack was downloaded, store it in the cache; providers' download method is responsible for
+    # setting subtitle.pack_data to None in case the cached pack data we provided was successfully used
+    if subtitle.is_pack and subtitle.pack_data:
+        # store pack data in cache
+        store_pack_data(subtitle, subtitle.pack_data)
+
+    # may be redundant
+    subtitle.pack_data = None
+
+
 def download_best_subtitles(video_part_map, min_score=0, throttle_time=None, providers=None):
     hearing_impaired = Prefs['subtitles.search.hearingImpaired']
     languages = set([Language.fromietf(str(l)) for l in config.lang_list])
@@ -68,7 +88,11 @@ def download_best_subtitles(video_part_map, min_score=0, throttle_time=None, pro
 
     use_videos = []
     for video, part in video_part_map.iteritems():
-        missing_languages = get_missing_languages(video, part)
+        if not video.ignore_all:
+            missing_languages = get_missing_languages(video, part)
+        else:
+            missing_languages = languages
+
         if missing_languages:
             Log.Info(u"%s has missing languages: %s", os.path.basename(video.name), missing_languages)
             refine_video(video, refiner_settings=config.refiner_settings)
@@ -81,10 +105,12 @@ def download_best_subtitles(video_part_map, min_score=0, throttle_time=None, pro
         Log.Debug("Download best subtitles using settings: min_score: %s, hearing_impaired: %s, languages: %s" %
                   (min_score, hearing_impaired, languages))
 
-        return subliminal.download_best_subtitles(use_videos, languages, min_score, hearing_impaired,
+        return subliminal.download_best_subtitles(set(use_videos), languages, min_score, hearing_impaired,
                                                   providers=providers or config.providers,
                                                   provider_configs=config.provider_settings,
                                                   pool_class=config.provider_pool,
                                                   compute_score=compute_score, throttle_time=throttle_time,
-                                                  blacklist=blacklist, throttle_callback=config.provider_throttle)
+                                                  blacklist=blacklist, throttle_callback=config.provider_throttle,
+                                                  pre_download_hook=pre_download_hook,
+                                                  post_download_hook=post_download_hook)
     Log.Debug("All languages for all requested videos exist. Doing nothing.")

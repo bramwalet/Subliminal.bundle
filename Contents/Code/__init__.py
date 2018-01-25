@@ -196,18 +196,17 @@ class SubZeroAgent(object):
                         Log.Debug("Waiting %s seconds until continuing", wait)
                         Thread.Sleep(wait)
 
-            else:
-                # downloaded_subtitles = {subliminal.Video: [subtitle, subtitle, ...]}
-                try:
-                    downloaded_subtitles = download_best_subtitles(scanned_video_part_map, min_score=use_score,
-                                                                   throttle_time=self.debounce, providers=providers)
-                except:
-                    Log.Exception("Something went wrong when downloading subtitles")
+            # downloaded_subtitles = {subliminal.Video: [subtitle, subtitle, ...]}
+            try:
+                downloaded_subtitles = download_best_subtitles(scanned_video_part_map, min_score=use_score,
+                                                               throttle_time=self.debounce, providers=providers)
+            except:
+                Log.Exception("Something went wrong when downloading subtitles")
 
-                if downloaded_subtitles is not None:
-                    Dict["last_call"] = datetime.datetime.now()
+            if downloaded_subtitles is not None:
+                Dict["last_call"] = datetime.datetime.now()
 
-                item_ids = get_media_item_ids(media, kind=self.agent_type)
+            item_ids = get_media_item_ids(media, kind=self.agent_type)
 
             downloaded_any = False
             if downloaded_subtitles:

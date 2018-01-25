@@ -48,7 +48,8 @@ SUBTITLE_EXTENSIONS = ('.srt', '.sub', '.smi', '.txt', '.ssa', '.ass', '.mpl', '
 
 
 class SZProviderPool(ProviderPool):
-    def __init__(self, providers=None, provider_configs=None, blacklist=None, throttle_callback=None):
+    def __init__(self, providers=None, provider_configs=None, blacklist=None, throttle_callback=None,
+                 pre_download_hook=None, post_download_hook=None):
         #: Name of providers to use
         self.providers = providers or provider_registry.names()
 
@@ -64,6 +65,9 @@ class SZProviderPool(ProviderPool):
         self.blacklist = blacklist or []
 
         self.throttle_callback = throttle_callback
+
+        self.pre_download_hook = pre_download_hook
+        self.post_download_hook = post_download_hook
 
         if not self.throttle_callback:
             self.throttle_callback = lambda x, y: x
@@ -215,7 +219,13 @@ class SZProviderPool(ProviderPool):
         while True:
             tries += 1
             try:
+                if self.pre_download_hook:
+                    self.pre_download_hook(subtitle)
+
                 self[subtitle.provider_name].download_subtitle(subtitle)
+                if self.post_download_hook:
+                    self.post_download_hook(subtitle)
+
                 break
             except (requests.ConnectionError,
                     requests.exceptions.ProxyError,
