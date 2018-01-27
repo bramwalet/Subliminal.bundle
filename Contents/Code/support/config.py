@@ -584,13 +584,14 @@ class Config(object):
             Dict.Save()
 
         # advanced settings
-        for provider, data in self.advanced.providers.iteritems():
-            if provider not in providers:
-                continue
+        if media_type:
+            for provider, data in self.advanced.providers.iteritems():
+                if provider not in providers:
+                    continue
 
-            if data["enabled_for"] is not None and media_type not in data["enabled_for"]:
-                providers[provider] = False
-                #Log.Debug("Disabling provider %s because of advanced settings", provider)
+                if data["enabled_for"] is not None and media_type not in data["enabled_for"]:
+                    providers[provider] = False
+                    #Log.Debug("Disabling provider %s because of advanced settings", provider)
 
         return filter(lambda prov: providers[prov], providers)
 
