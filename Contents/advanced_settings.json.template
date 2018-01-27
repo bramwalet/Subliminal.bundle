@@ -1,0 +1,35 @@
+{
+    // per-provider-config
+    "providers": {
+        "addic7ed": {
+            "enabled_for": ["series"],
+        },
+        "legendastv": {
+            "enabled_for": ["series", "movies"],
+        },
+        "napiprojekt": {
+            "enabled_for": ["series", "movies"],
+        },
+        "opensubtitles": {
+            "enabled_for": ["series", "movies"],
+        },
+        "podnapisi": {
+            "enabled_for": ["series", "movies"],
+        },
+        "shooter": {
+            "enabled_for": ["series", "movies"],
+        },
+        "subscene": {
+            "enabled_for": ["series", "movies"],
+        },
+        "subscenter": {
+            "enabled_for": ["series", "movies"],
+        },
+        "titlovi": {
+            "enabled_for": ["series", "movies"],
+        },
+        "tvsubtitles": {
+            "enabled_for": ["series"],
+        },
+    }
+}

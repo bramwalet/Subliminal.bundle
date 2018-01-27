@@ -5,7 +5,7 @@ import re
 import inspect
 import sys
 import rarfile
-
+import jstyleson
 import datetime
 
 import subliminal
@@ -21,6 +21,7 @@ from subliminal_patch.exceptions import ServiceUnavailable
 from subzero.language import Language
 from subliminal.cli import MutexLock
 from subzero.lib.io import FileIO, get_viable_encoding
+from subzero.lib.dict import Dicked
 from subzero.util import get_root_path
 from subzero.constants import PLUGIN_NAME, PLUGIN_IDENTIFIER, MOVIE, SHOW, MEDIA_TYPE_TO_STRING
 from dogpile.cache.region import register_backend as register_cache_backend
@@ -89,6 +90,7 @@ class Config(object):
     low_impact_mode = False
     new_style_cache = False
     pack_cache_dir = None
+    advanced = None
 
     enable_channel = True
     enable_agent = True
@@ -158,6 +160,9 @@ class Config(object):
         self.low_impact_mode = cast_bool(Prefs['low_impact_mode'])
         self.new_style_cache = cast_bool(Prefs['new_style_cache'])
         self.pack_cache_dir = self.get_pack_cache_dir()
+        self.advanced = self.get_advanced_config()
+
+        print self.advanced
 
         os.environ["SZ_USER_AGENT"] = self.get_user_agent()
 
@@ -273,6 +278,15 @@ class Config(object):
             os.makedirs(pack_cache_dir)
 
         return pack_cache_dir
+
+    def get_advanced_config(self):
+        path = os.path.join(config.data_path, "advanced_settings.json")
+        if os.path.isfile(path):
+            data = FileIO.read(path, "r")
+
+            return Dicked(**jstyleson.loads(data))
+
+        return Dicked()
 
     def set_log_paths(self):
         # find log handler
@@ -526,7 +540,7 @@ class Config(object):
             out.append("vtt")
         return out
 
-    def get_providers(self):
+    def get_providers(self, media_type="series"):
         providers = {'opensubtitles': cast_bool(Prefs['provider.opensubtitles.enabled']),
                      # 'thesubdb': Prefs['provider.thesubdb.enabled'],
                      'podnapisi': cast_bool(Prefs['provider.podnapisi.enabled']),
@@ -568,6 +582,15 @@ class Config(object):
 
         if changed:
             Dict.Save()
+
+        # advanced settings
+        for provider, data in self.advanced.providers.iteritems():
+            if provider not in providers:
+                continue
+
+            if data["enabled_for"] is not None and media_type not in data["enabled_for"]:
+                providers[provider] = False
+                Log.Debug("Disabling provider %s because of advanced settings", provider)
 
         return filter(lambda prov: providers[prov], providers)
 

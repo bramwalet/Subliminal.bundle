@@ -106,8 +106,9 @@ def scan_videos(videos, ignore_all=False, providers=None, skip_hashing=False):
 
         hints = helpers.get_item_hints(video)
         video["plex_part"].fps = get_stream_fps(video["plex_part"].streams)
+        p = providers or config.get_providers(media_type="series" if video["type"] == "episode" else "movies")
         scanned_video = scan_video(video, ignore_all=force_refresh or ignore_all, hints=hints,
-                                   rating_key=video["id"], providers=providers or config.providers,
+                                   rating_key=video["id"], providers=p,
                                    skip_hashing=skip_hashing)
 
         if not scanned_video:

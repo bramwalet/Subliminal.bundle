@@ -177,7 +177,7 @@ class SubZeroAgent(object):
             set_refresh_menu_state(media, media_type=self.agent_type)
 
             # scanned_video_part_map = {subliminal.Video: plex_part, ...}
-            providers = config.providers
+            providers = config.get_providers(media_type=self.agent_type)
             scanned_video_part_map = scan_videos(videos, providers=providers)
 
             # clear missing subtitles menu data

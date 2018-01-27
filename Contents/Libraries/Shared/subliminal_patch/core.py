@@ -365,7 +365,7 @@ class SZAsyncProviderPool(SZProviderPool):
 
         #: Maximum number of threads to use
         self.max_workers = max_workers or len(self.providers)
-        logger.info("Using %d threads for %d providers", self.max_workers, len(self.providers))
+        logger.info("Using %d threads for %d providers (%s)", self.max_workers, len(self.providers), self.providers)
 
     def list_subtitles_provider(self, provider, video, languages):
         # list subtitles

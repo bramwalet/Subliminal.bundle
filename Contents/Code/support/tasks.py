@@ -107,7 +107,7 @@ class SubtitleListingMixin(object):
         if not metadata:
             return
 
-        providers = config.providers
+        providers = config.get_providers(media_type="series" if item_type == "episode" else "movies")
         if not scanned_parts:
             scanned_parts = scan_videos([metadata], ignore_all=True, providers=providers)
             if not scanned_parts:
@@ -134,7 +134,7 @@ class SubtitleListingMixin(object):
         languages = {Language.fromietf(language)}
 
         available_subs = list_all_subtitles([video], languages,
-                                            providers=providers or config.providers,
+                                            providers=providers,
                                             provider_configs=provider_settings,
                                             pool_class=config.provider_pool,
                                             throttle_callback=config.provider_throttle)
@@ -181,14 +181,14 @@ class DownloadSubtitleMixin(object):
         item_type = subtitle.item_type
         part_id = subtitle.part_id
         metadata = get_plex_metadata(rating_key, part_id, item_type)
-        providers = config.providers
+        providers = config.get_providers(media_type="series" if item_type == "episode" else "movies")
         scanned_parts = scan_videos([metadata], ignore_all=True, providers=providers)
         video, plex_part = scanned_parts.items()[0]
 
         pre_download_hook(subtitle)
 
         # downloaded_subtitles = {subliminal.Video: [subtitle, subtitle, ...]}
-        download_subtitles([subtitle], providers=providers or config.providers,
+        download_subtitles([subtitle], providers=providers,
                            provider_configs=config.provider_settings,
                            pool_class=config.provider_pool, throttle_callback=config.provider_throttle)
 
@@ -342,7 +342,8 @@ class SearchAllRecentlyAddedMissing(Task):
         now = datetime.datetime.now()
         min_score_series = int(Prefs["subtitles.search.minimumTVScore2"].strip())
         min_score_movies = int(Prefs["subtitles.search.minimumMovieScore2"].strip())
-        providers = config.providers
+        series_providers = config.get_providers(media_type="series")
+        movie_providers = config.get_providers(media_type="movies")
 
         is_recent_str = Prefs["scheduler.item_is_recent_age"]
         num, ident = is_recent_str.split()
@@ -387,8 +388,10 @@ class SearchAllRecentlyAddedMissing(Task):
 
                 if stored_subs.item_type == "episode":
                     min_score = min_score_series
+                    providers = series_providers
                 else:
                     min_score = min_score_movies
+                    providers = movie_providers
 
                 parts = []
                 plex_item = get_item(video_id)
