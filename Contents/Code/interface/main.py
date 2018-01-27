@@ -110,9 +110,11 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
         if task.ready_for_display:
             task_state = "Running: %s/%s (%s%%)" % (task.items_done, task.items_searching, task.percentage)
         else:
-            task_state = "Last scheduler run: %s; Next scheduled run: %s; Last runtime: %s" % (
-                df(scheduler.last_run(task_name)) or "never",
-                df(scheduler.next_run(task_name)) or "never",
+            lr = scheduler.last_run(task_name)
+            nr = scheduler.next_run(task_name)
+            task_state = "Last run: %s; Next scheduled run: %s; Last runtime: %s" % (
+                df(scheduler.last_run(task_name)) if lr else "never",
+                df(scheduler.next_run(task_name)) if nr else "never",
                 str(task.last_run_time).split(".")[0])
 
         oc.add(DirectoryObject(
