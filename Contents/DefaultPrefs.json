@@ -374,12 +374,6 @@
     "default": "false"
   },
   {
-    "id": "provider.shooter.enabled",
-    "label": "Provider: Enable Shooter.cn (Chinese)",
-    "type": "bool",
-    "default": "false"
-  },
-  {
     "id": "provider.subscene.enabled",
     "label": "Provider: Enable SubScene",
     "type": "bool",
