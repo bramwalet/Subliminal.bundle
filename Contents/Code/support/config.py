@@ -582,7 +582,7 @@ class Config(object):
             Dict.Save()
 
         # advanced settings
-        if media_type:
+        if media_type and self.advanced.providers:
             for provider, data in self.advanced.providers.iteritems():
                 if provider not in providers or not providers[provider]:
                     continue
