@@ -1,3 +1,9 @@
+/*
+Copy this to "Library/Application Support/Plex Media Server/Plug-in Support/Data/com.plexapp.agents.subzero"
+and remove the ".template" suffix. Restart the plugin or the PMS.
+
+Don't expect support if you mess this up.
+*/
 {
     // per-provider-config
     "providers": {
