@@ -590,7 +590,7 @@ class Config(object):
 
             if data["enabled_for"] is not None and media_type not in data["enabled_for"]:
                 providers[provider] = False
-                Log.Debug("Disabling provider %s because of advanced settings", provider)
+                #Log.Debug("Disabling provider %s because of advanced settings", provider)
 
         return filter(lambda prov: providers[prov], providers)
 
