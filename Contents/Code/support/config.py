@@ -586,7 +586,7 @@ class Config(object):
         # advanced settings
         if media_type:
             for provider, data in self.advanced.providers.iteritems():
-                if provider not in providers:
+                if provider not in providers or not providers[provider]:
                     continue
 
                 if data["enabled_for"] is not None and media_type not in data["enabled_for"]:
