@@ -1,5 +1,5 @@
 # coding=utf-8
-
+import copy
 import os
 import re
 import inspect
@@ -552,6 +552,12 @@ class Config(object):
                      'subscenter': False,
                      }
 
+        global_provider_settings = copy.deepcopy(providers)
+
+        # disable subscene for movies by default
+        if media_type == "movies":
+            providers["subscene"] = False
+
         # ditch non-forced-subtitles-reporting providers
         if self.forced_only:
             providers["addic7ed"] = False
@@ -560,6 +566,15 @@ class Config(object):
             providers["napiprojekt"] = False
             providers["shooter"] = False
             providers["titlovi"] = False
+
+        # advanced settings
+        if media_type and self.advanced.providers:
+            for provider, data in self.advanced.providers.iteritems():
+                if provider not in providers or not global_provider_settings[provider]:
+                    continue
+
+                if data["enabled_for"] is not None:
+                    providers[provider] = media_type in data["enabled_for"]
 
         if "provider_throttle" not in Dict:
             Dict["provider_throttle"] = {}
@@ -580,16 +595,6 @@ class Config(object):
 
         if changed:
             Dict.Save()
-
-        # advanced settings
-        if media_type and self.advanced.providers:
-            for provider, data in self.advanced.providers.iteritems():
-                if provider not in providers or not providers[provider]:
-                    continue
-
-                if data["enabled_for"] is not None and media_type not in data["enabled_for"]:
-                    providers[provider] = False
-                    #Log.Debug("Disabling provider %s because of advanced settings", provider)
 
         return filter(lambda prov: providers[prov], providers)
 
