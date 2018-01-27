@@ -7,7 +7,7 @@ Don't expect support if you mess this up.
 {
     // per-provider-config
     "providers": {
-        // enabled_for: specifies which media type to enabled the provider for. does not override global/throttled
+        // enabled_for: specifies which media type to enable the provider for. does not override global/throttled
         "addic7ed": {
             "enabled_for": ["series"],
         },
