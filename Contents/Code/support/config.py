@@ -162,8 +162,6 @@ class Config(object):
         self.pack_cache_dir = self.get_pack_cache_dir()
         self.advanced = self.get_advanced_config()
 
-        print self.advanced
-
         os.environ["SZ_USER_AGENT"] = self.get_user_agent()
 
         self.setup_proxies()
