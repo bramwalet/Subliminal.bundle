@@ -138,10 +138,10 @@ class ProviderSubtitleArchiveMixin(object):
             matching_sub = subs_unsure[0]
 
         try:
-            matching_sub_unicode = matching_sub.decode("cp437")
+            matching_sub_unicode = matching_sub.decode("utf-8")
         except UnicodeDecodeError:
             try:
-                matching_sub_unicode = matching_sub.decode("utf-8")
+                matching_sub_unicode = matching_sub.decode("cp437")
             except UnicodeDecodeError:
                 matching_sub_unicode = matching_sub.decode("utf-8", errors='replace')
 
