@@ -145,6 +145,9 @@ class Dicked(object):
     def __len__(self):
         return len(self.__digged__)
 
+    def __nonzero__(self):
+        return bool(self.__digged__)
+
     def __iter__(self):
         return iter(self.__digged__)
 
