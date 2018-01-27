@@ -744,6 +744,12 @@
     "default": "WARNING"
   },
   {
+    "id": "log_rotate_keep",
+    "label": "How many log backups to keep?",
+    "type": "text",
+    "default": "5"
+  },
+  {
     "id": "log_debug_mods",
     "label": "Log subtitle modification (debug)",
     "type": "bool",

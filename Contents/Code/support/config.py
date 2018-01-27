@@ -289,9 +289,12 @@ class Config(object):
     def set_log_paths(self):
         # find log handler
         for handler in Core.log.handlers:
-            if getattr(getattr(handler, "__class__"), "__name__") in (
-                    'FileHandler', 'RotatingFileHandler', 'TimedRotatingFileHandler'):
+            cls_name = getattr(getattr(handler, "__class__"), "__name__")
+            if cls_name in ('FileHandler', 'RotatingFileHandler', 'TimedRotatingFileHandler'):
                 plugin_log_file = handler.baseFilename
+                if cls_name in ("RotatingFileHandler", "TimedRotatingFileHandler"):
+                    handler.backupCount = int_or_default(Prefs['log_rotate_keep'], 5)
+
                 if os.path.isfile(os.path.realpath(plugin_log_file)):
                     self.plugin_log_path = plugin_log_file
 
