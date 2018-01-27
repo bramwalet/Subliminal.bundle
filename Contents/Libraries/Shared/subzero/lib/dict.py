@@ -142,6 +142,9 @@ class Dicked(object):
     def __digged__(self):
         return {key: value for key, value in self.__dict__.iteritems() if key != "_entries"}
 
+    def __len__(self):
+        return len(self.__digged__)
+
     def __iter__(self):
         return iter(self.__digged__)
 
