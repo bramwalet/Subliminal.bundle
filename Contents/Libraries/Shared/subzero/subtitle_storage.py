@@ -265,6 +265,7 @@ class StoredSubtitlesManager(object):
         return os.path.join(self.dataitems_path, bare_fn)
 
     def get_all_files(self):
+        # fixme: use os.scandir?
         return [fn for fn in os.listdir(self.dataitems_path) if fn.startswith("subs_")]
 
     def get_recent_files(self, age_days=30):
