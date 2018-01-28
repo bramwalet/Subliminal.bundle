@@ -32,11 +32,13 @@ class HearingImpaired(SubtitleTextModification):
                                   name="HI_brackets_full"),
 
         # brackets (only remove if at least 3 chars in brackets)
-        NReProcessor(re.compile(ur'(?sux)-?\s*[([].+?(?=[A-zÀ-ž"\']{3,})[^([)\]]+[)\]][\s:]*'), "", name="HI_brackets"),
+        NReProcessor(re.compile(ur'(?sux)-?\s*[([][^([)\]]+?(?=[A-zÀ-ž"\']{3,})[^([)\]]+[)\]][\s:]*'), "",
+                     name="HI_brackets"),
 
         NReProcessor(re.compile(ur'(?sux)-?\s*[([]\s*(?=[A-zÀ-ž"\']{3,})[^([)\]]+$'), "", name="HI_bracket_open_start"),
 
-        NReProcessor(re.compile(ur'(?sux)-?\s*(?=[A-zÀ-ž"\']{3,})[^([)\]]+[)\]][\s:]*'), "", name="HI_bracket_open_end"),
+        NReProcessor(re.compile(ur'(?sux)-?\s*(?=[A-zÀ-ž"\']{3,})[^([)\]]+[)\]][\s:]*'), "",
+                     name="HI_bracket_open_end"),
 
         # text before colon (and possible dash in front), max 11 chars after the first whitespace (if any)
         # NReProcessor(re.compile(r'(?u)(^[A-z\-\'"_]+[\w\s]{0,11}:[^0-9{2}][\s]*)'), "", name="HI_before_colon"),
