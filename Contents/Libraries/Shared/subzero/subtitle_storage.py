@@ -263,7 +263,7 @@ class StoredSubtitlesManager(object):
 
     def get_all_files(self):
         for entry in scandir(self.dataitems_path):
-            if entry.isfile(follow_symlinks=False) and \
+            if entry.is_file(follow_symlinks=False) and \
                     entry.name.startswith("subs_") and \
                     entry.name.endswith(self.extension):
                 yield entry.name
