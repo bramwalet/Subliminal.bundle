@@ -9,14 +9,11 @@ import types
 import zlib
 
 import sys
-from subzero.language import Language
 
-from json_tricks.nonp import loads#, dumps
+from json_tricks.nonp import loads
 from subzero.lib.json import dumps
-
-
+from scandir import scandir
 from constants import mode_map
-from subliminal_patch.subtitle import ModifiedSubtitle
 
 logger = logging.getLogger(__name__)
 
@@ -265,8 +262,11 @@ class StoredSubtitlesManager(object):
         return os.path.join(self.dataitems_path, bare_fn)
 
     def get_all_files(self):
-        # fixme: use os.scandir?
-        return [fn for fn in os.listdir(self.dataitems_path) if fn.startswith("subs_")]
+        for entry in scandir(self.dataitems_path):
+            if entry.isfile(follow_symlinks=False) and \
+                    entry.name.startswith("subs_") and \
+                    entry.name.endswith(self.extension):
+                yield entry.name
 
     def get_recent_files(self, age_days=30):
         fl = []
@@ -292,7 +292,7 @@ class StoredSubtitlesManager(object):
         deleted = []
 
         def delete_fn(filename):
-            if filename.endswith(".json.gz"):
+            if filename.endswith(self.extension):
                 self.delete(self.get_json_data_path(filename))
             else:
                 self.legacy_delete(filename)

@@ -18,6 +18,7 @@ from collections import defaultdict
 from bs4 import UnicodeDammit
 from babelfish import LanguageReverseError
 from guessit.jsonutils import GuessitEncoder
+from scandir import scandir
 from subliminal import ProviderError, refiner_manager
 
 from extensions import provider_registry
@@ -491,7 +492,12 @@ def _search_external_subtitles(path, forced_tag=False):
     dirpath = dirpath or '.'
     fileroot, fileext = os.path.splitext(filename)
     subtitles = {}
-    for p in os.listdir(dirpath):
+    for entry in scandir(dirpath):
+        if not entry.is_file(follow_symlinks=False):
+            continue
+
+        p = entry.name
+
         # keep only valid subtitle filenames
         if not p.startswith(fileroot) or not p.endswith(SUBTITLE_EXTENSIONS):
             continue
