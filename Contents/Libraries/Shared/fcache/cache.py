@@ -8,6 +8,8 @@ import traceback
 
 import appdirs
 
+from scandir import scandir
+
 try:
     from collections.abc import MutableMapping
     unicode = str
@@ -233,10 +235,11 @@ class FileCache(MutableMapping):
     def _all_filenames(self):
         """Return a list of absolute cache filenames"""
         try:
-            return [os.path.join(self.cache_dir, filename) for filename in
-                    os.listdir(self.cache_dir)]
+            for entry in scandir(self.cache_dir):
+                if entry.is_file(follow_symlinks=False):
+                    yield os.path.join(self.cache_dir, entry.name)
         except (FileNotFoundError, OSError):
-            return []
+            raise StopIteration
 
     def _all_keys(self):
         """Return a list of all encoded key names."""
