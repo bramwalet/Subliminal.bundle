@@ -70,6 +70,7 @@ class ProviderSubtitleArchiveMixin(object):
         # select the correct subtitle file
         matching_sub = None
         subs_unsure = []
+        subs_fallback = []
         if len(subs_in_archive) == 1:
             matching_sub = subs_in_archive[0]
         else:
@@ -130,12 +131,17 @@ class ProviderSubtitleArchiveMixin(object):
 
                     elif release_group_matches and wanted_format_but_not_found:
                         subs_unsure.append(sub_name)
+                    else:
+                        subs_fallback.append(sub_name)
 
-        if not matching_sub and not subs_unsure:
+        if not matching_sub and not subs_unsure and not subs_fallback:
             raise ProviderError("None of expected subtitle found in archive")
 
         elif subs_unsure:
             matching_sub = subs_unsure[0]
+
+        elif subs_fallback:
+            matching_sub = subs_fallback[0]
 
         try:
             matching_sub_unicode = matching_sub.decode("utf-8")
