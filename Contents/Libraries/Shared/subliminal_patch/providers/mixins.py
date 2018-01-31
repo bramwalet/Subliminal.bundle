@@ -84,10 +84,14 @@ class ProviderSubtitleArchiveMixin(object):
                 # - release group matches (and we asked for one and it was matched, or it was not matched)
                 is_episode = subtitle.asked_for_episode
 
+                episodes = guess["episode"]
+                if is_episode and episodes and not isinstance(episodes, list):
+                    episodes = [episodes]
+
                 if not is_episode or (
                         (
-                                guess["episode"] == subtitle.episode
-                                or (subtitle.is_pack and guess["episode"] == subtitle.asked_for_episode)
+                                subtitle.episode in episodes
+                                or (subtitle.is_pack and subtitle.asked_for_episode in episodes)
                         ) and guess["season"] == subtitle.season):
 
                     format_matches = True
