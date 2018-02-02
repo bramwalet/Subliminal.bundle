@@ -1,6 +1,20 @@
 # -*- coding: utf-8 -*-
 from collections import defaultdict
-from concurrent.futures import ThreadPoolExecutor
+
+import platform
+is_windows_special_path = False
+
+if platform.system() == "Windows":
+    try:
+        __file__.decode("ascii")
+    except UnicodeDecodeError:
+        is_windows_special_path = True
+
+if not is_windows_special_path:
+    from concurrent.futures import ThreadPoolExecutor
+else:
+    ThreadPoolExecutor = object
+
 from datetime import datetime
 import io
 import itertools
