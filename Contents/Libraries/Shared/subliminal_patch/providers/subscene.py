@@ -201,12 +201,15 @@ class SubsceneProvider(Provider, ProviderSubtitleArchiveMixin):
                 subtitles += self.parse_results(video, film)
 
             # packs
-            term = u"%s S%02i" % (video.series, video.season)
-            logger.debug('Searching for packs: %s', term)
-            time.sleep(self.search_throttle)
-            film = search(term, session=self.session)
-            if film and film.subtitles:
-                subtitles += self.parse_results(video, film)
+            if video.season_fully_aired:
+                term = u"%s S%02i" % (video.series, video.season)
+                logger.debug('Searching for packs: %s', term)
+                time.sleep(self.search_throttle)
+                film = search(term, session=self.session)
+                if film and film.subtitles:
+                    subtitles += self.parse_results(video, film)
+            else:
+                logger.debug("Not searching for packs, because the season hasn't fully aired")
 
         logger.info("%s subtitles found" % len(subtitles))
         return subtitles
