@@ -118,7 +118,7 @@ class PodnapisiProvider(_PodnapisiProvider, ProviderSubtitleArchiveMixin):
 
         for title in titles:
             subtitles = [s for l in languages for s in
-                         self.query(l, title, season=season, episode=episode, year=video.year,
+                         self.query(l, title, video, season=season, episode=episode, year=video.year,
                                     only_foreign=self.only_foreign)]
             if subtitles:
                 return subtitles
