@@ -2,6 +2,6 @@
 from subliminal import ProviderError
 
 
-class ServiceUnavailable(ProviderError):
-    """Exception raised by providers when download limit is exceeded."""
+class TooManyRequests(ProviderError):
+    """Exception raised by providers when too many requests are made."""
     pass

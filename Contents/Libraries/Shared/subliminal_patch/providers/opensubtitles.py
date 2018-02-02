@@ -5,7 +5,7 @@ import os
 
 from babelfish import language_converters
 from dogpile.cache.api import NO_VALUE
-from subliminal.exceptions import ConfigurationError, TooManyRequests
+from subliminal.exceptions import ConfigurationError, ServiceUnavailable
 from subliminal.providers.opensubtitles import OpenSubtitlesProvider as _OpenSubtitlesProvider,\
     OpenSubtitlesSubtitle as _OpenSubtitlesSubtitle, Episode, ServerProxy, Unauthorized, NoSession, \
     DownloadLimitReached, InvalidImdbid, UnknownUserAgent, DisabledUserAgent, OpenSubtitlesError
@@ -14,7 +14,7 @@ from subliminal_patch.http import SubZeroTransport
 from subliminal.cache import region
 from subzero.language import Language
 
-from ..exceptions import ServiceUnavailable
+from ..exceptions import TooManyRequests
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +82,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
 
     def __init__(self, username=None, password=None, use_tag_search=False, only_foreign=False, skip_wrong_fps=True,
                  is_vip=False):
-        if username is not None and password is None or username is None and password is not None:
+        if any((username, password)) and not all((username, password)):
             raise ConfigurationError('Username and password must be specified')
 
         self.username = username or ''
@@ -183,7 +183,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         if isinstance(video, Episode):
             query = video.series
             season = video.season
-            episode = video.episode
+            episode = episode = min(video.episode) if isinstance(video.episode, list) else video.episode
 
             if video.is_special:
                 season = None
@@ -208,7 +208,10 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         if use_tag_search and tag:
             criteria.append({'tag': tag})
         if imdb_id:
-            criteria.append({'imdbid': imdb_id[2:]})
+            if season and episode:
+                criteria.append({'imdbid': imdb_id[2:], 'season': season, 'episode': episode})
+            else:
+                criteria.append({'imdbid': imdb_id[2:]})
         if query and season and episode:
             criteria.append({'query': query.replace('\'', ''), 'season': season, 'episode': episode})
         elif query:

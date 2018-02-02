@@ -8,10 +8,10 @@ import types
 
 from guessit import guessit
 from subliminal import ProviderError
-from subliminal.exceptions import TooManyRequests, DownloadLimitExceeded
+from subliminal.exceptions import ServiceUnavailable, DownloadLimitExceeded
 from subliminal.providers.opensubtitles import Unauthorized
 from subliminal.subtitle import fix_line_ending
-from subliminal_patch.exceptions import ServiceUnavailable
+from subliminal_patch.exceptions import TooManyRequests
 
 logger = logging.getLogger(__name__)
 

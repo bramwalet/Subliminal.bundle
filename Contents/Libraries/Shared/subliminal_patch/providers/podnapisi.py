@@ -53,7 +53,8 @@ class PodnapisiSubtitle(_PodnapisiSubtitle):
         # episode
         if isinstance(video, Episode):
             # series
-            if video.series and sanitize(self.title) == sanitize(video.series):
+            if video.series and (sanitize(self.title) in (
+                    sanitize(name) for name in [video.series] + video.alternative_series)):
                 matches.add('series')
             # year
             if video.original_series and self.year is None or video.year and video.year == self.year:
@@ -70,7 +71,8 @@ class PodnapisiSubtitle(_PodnapisiSubtitle):
         # movie
         elif isinstance(video, Movie):
             # title
-            if video.title and sanitize(self.title) == sanitize(video.title):
+            if video.title and (sanitize(self.title) in (
+                    sanitize(name) for name in [video.title] + video.alternative_titles)):
                 matches.add('title')
             # year
             if video.year and self.year == video.year:
@@ -106,13 +108,22 @@ class PodnapisiProvider(_PodnapisiProvider, ProviderSubtitleArchiveMixin):
             logger.info("%s can't search for specials right now, skipping", self)
             return []
 
+        season = episode = None
         if isinstance(video, Episode):
-            return [s for l in languages for s in self.query(l, video.series, video, season=video.season,
-                                                             episode=video.episode, year=video.year,
-                                                             only_foreign=self.only_foreign)]
-        elif isinstance(video, Movie):
-            return [s for l in languages for s in self.query(l, video.title, video, year=video.year,
-                                                             only_foreign=self.only_foreign)]
+            titles = [video.series] + video.alternative_series
+            season = video.season
+            episode = video.episode
+        else:
+            titles = [video.title] + video.alternative_titles
+
+        for title in titles:
+            subtitles = [s for l in languages for s in
+                         self.query(l, title, season=season, episode=episode, year=video.year,
+                                    only_foreign=self.only_foreign)]
+            if subtitles:
+                return subtitles
+
+        return []
 
     def query(self, language, keyword, video, season=None, episode=None, year=None, only_foreign=False):
         search_language = str(language).lower()
@@ -155,6 +166,11 @@ class PodnapisiProvider(_PodnapisiProvider, ProviderSubtitleArchiveMixin):
             # loop over subtitles
             for subtitle_xml in xml.findall('subtitle'):
                 # read xml elements
+                pid = subtitle_xml.find('pid').text
+                # ignore duplicates, see http://www.podnapisi.net/forum/viewtopic.php?f=62&t=26164&start=10#p213321
+                if pid in pids:
+                    continue
+
                 language = Language.fromietf(subtitle_xml.find('language').text)
                 hearing_impaired = 'n' in (subtitle_xml.find('flags').text or '')
                 foreign = 'f' in (subtitle_xml.find('flags').text or '')
@@ -165,7 +181,6 @@ class PodnapisiProvider(_PodnapisiProvider, ProviderSubtitleArchiveMixin):
                     continue
 
                 page_link = subtitle_xml.find('url').text
-                pid = subtitle_xml.find('pid').text
                 releases = []
                 if subtitle_xml.find('release').text:
                     for release in subtitle_xml.find('release').text.split():
@@ -184,9 +199,6 @@ class PodnapisiProvider(_PodnapisiProvider, ProviderSubtitleArchiveMixin):
                     subtitle = self.subtitle_class(language, hearing_impaired, page_link, pid, releases, title,
                                                    year=r_year, asked_for_release_group=video.release_group)
 
-                # ignore duplicates, see http://www.podnapisi.net/forum/viewtopic.php?f=62&t=26164&start=10#p213321
-                if pid in pids:
-                    continue
 
                 logger.debug('Found subtitle %r', subtitle)
                 subtitles.append(subtitle)

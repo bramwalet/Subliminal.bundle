@@ -22,13 +22,13 @@ from scandir import scandir
 from subliminal import ProviderError, refiner_manager
 
 from extensions import provider_registry
-from subliminal.exceptions import TooManyRequests, DownloadLimitExceeded
+from subliminal.exceptions import ServiceUnavailable, DownloadLimitExceeded
 from subliminal.score import compute_score as default_compute_score
 from subliminal.utils import hash_napiprojekt, hash_opensubtitles, hash_shooter, hash_thesubdb
 from subliminal.video import VIDEO_EXTENSIONS, Video, Episode, Movie
 from subliminal.core import guessit, ProviderPool, io, is_windows_special_path, \
     ThreadPoolExecutor, check_video
-from subliminal_patch.exceptions import ServiceUnavailable
+from subliminal_patch.exceptions import TooManyRequests
 
 from subzero.language import Language
 
@@ -387,6 +387,9 @@ class SZAsyncProviderPool(SZProviderPool):
         return provider, provider_subtitles
 
     def list_subtitles(self, video, languages, blacklist=None):
+        if is_windows_special_path:
+            return super(SZAsyncProviderPool, self).list_subtitles(video, languages)
+
         subtitles = []
 
         with ThreadPoolExecutor(self.max_workers) as executor:
