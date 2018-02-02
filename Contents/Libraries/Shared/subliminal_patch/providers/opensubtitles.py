@@ -12,6 +12,7 @@ from subliminal.providers.opensubtitles import OpenSubtitlesProvider as _OpenSub
 from mixins import ProviderRetryMixin
 from subliminal_patch.http import SubZeroTransport
 from subliminal.cache import region
+from subliminal_patch.score import framerate_equal
 from subzero.language import Language
 
 from ..exceptions import TooManyRequests
@@ -46,7 +47,7 @@ class OpenSubtitlesSubtitle(_OpenSubtitlesSubtitle):
             pass
 
         # video has fps info, sub also, and sub's fps is greater than 0
-        if video.fps and sub_fps and (video.fps != self.fps):
+        if video.fps and sub_fps and not framerate_equal(video.fps, self.fps):
             self.wrong_fps = True
 
             if self.skip_wrong_fps:
