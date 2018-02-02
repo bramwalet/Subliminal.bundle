@@ -457,6 +457,8 @@ def scan_video(path, dont_use_actual_file=False, hints=None, providers=None, ski
     if video_type == "movie" and hints.get("expected_title"):
         video.title = hints.get("expected_title")[0]
 
+    video.hints = hints
+
     if dont_use_actual_file:
         return video
 
