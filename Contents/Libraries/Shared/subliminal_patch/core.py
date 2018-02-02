@@ -296,6 +296,8 @@ class SZProviderPool(ProviderPool):
         compute_score = compute_score or default_compute_score
         use_hearing_impaired = hearing_impaired in ("prefer", "force HI")
 
+        is_episode = isinstance(video, Episode)
+
         # sort subtitles by score
         unsorted_subtitles = []
 
@@ -337,6 +339,11 @@ class SZProviderPool(ProviderPool):
                             hearing_impaired in ("force HI", "force non-HI"):
                 logger.debug('%r: Skipping subtitle with score %d because hearing-impaired set to %s', subtitle,
                              score, hearing_impaired)
+                continue
+
+            if is_episode and not {"series", "season", "episode"}.issubset(matches):
+                logger.debug("%r: Skipping subtitle with score %d, because it doesn't match our series/episode",
+                             subtitle, score)
                 continue
 
             # download
