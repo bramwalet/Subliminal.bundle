@@ -54,6 +54,7 @@ babelfish.language_converters.register('addic7ed = subliminal_patch.language:Pat
 babelfish.language_converters.register('szopensubtitles = subliminal_patch.language:PatchedOpenSubtitlesConverter')
 subliminal.refiner_manager.register('sz_metadata = subliminal_patch.refiners.metadata:refine')
 subliminal.refiner_manager.register('sz_omdb = subliminal_patch.refiners.omdb:refine')
+subliminal.refiner_manager.register('sz_tvdb = subliminal_patch.refiners.tvdb:refine')
 subliminal.refiner_manager.register('drone = subliminal_patch.refiners.drone:refine')
 subliminal.refiner_manager.register('filebot = subliminal_patch.refiners.filebot:refine')
 subliminal.refiner_manager.register('file_info_file = subliminal_patch.refiners.file_info_file:refine')

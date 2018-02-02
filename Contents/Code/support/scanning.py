@@ -118,7 +118,6 @@ def scan_videos(videos, ignore_all=False, providers=None, skip_hashing=False):
         part_metadata = video.copy()
         del part_metadata["plex_part"]
         scanned_video.plexapi_metadata = part_metadata
-        scanned_video.hints = hints
         scanned_video.ignore_all = force_refresh
         ret[scanned_video] = video["plex_part"]
     return ret

@@ -69,7 +69,7 @@ def refine_video(video, no_refining=False, refiner_settings=None):
 
     # refiners
     refine_kwargs = {
-        "episode_refiners": ['tvdb', 'sz_omdb',],
+        "episode_refiners": ['sz_tvdb', 'sz_omdb',],
         "movie_refiners": ['sz_omdb',],
         "embedded_subtitles": False,
     }
