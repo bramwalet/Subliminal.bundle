@@ -15,6 +15,9 @@ FPS_EQUALITY.update({value: key for key, value in FPS_EQUALITY.iteritems()})
 
 
 def framerate_equal(source, check):
+    if source == check:
+        return True
+
     source = float(source)
     check = float(check)
     if source == check:
