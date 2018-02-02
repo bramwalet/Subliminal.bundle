@@ -12,12 +12,12 @@ import subliminal
 import subliminal_patch
 import subzero.constants
 import lib
-from subliminal.exceptions import TooManyRequests, DownloadLimitExceeded
+from subliminal.exceptions import ServiceUnavailable, DownloadLimitExceeded
 
 from subliminal_patch.core import is_windows_special_path
 from whichdb import whichdb
 
-from subliminal_patch.exceptions import ServiceUnavailable
+from subliminal_patch.exceptions import TooManyRequests
 from subzero.language import Language
 from subliminal.cli import MutexLock
 from subzero.lib.io import FileIO, get_viable_encoding
