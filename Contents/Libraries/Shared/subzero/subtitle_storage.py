@@ -187,6 +187,30 @@ class JSONStoredVideoSubtitles(object):
         if "current" in subs and subs["current"]:
             return subs.get(subs["current"])
 
+    def get(self, part_id, lang, sub_key):
+        subs = self.get_all(part_id, lang)
+        if not subs:
+            return
+
+        return subs.get(sub_key)
+
+    def get_all(self, part_id, lang):
+        part_id = str(part_id)
+        part = self.parts.get(part_id)
+        if not part:
+            return
+
+        return part.get(str(lang))
+
+    def count(self, part_id, lang):
+        part_id = str(part_id)
+        part = self.parts.get(part_id)
+        if not part:
+            return 0
+
+        subs = part.get(str(lang))
+        return len(filter(lambda key: key != "current", subs.keys()))
+
     def get_sub_key(self, provider_name, id):
         return provider_name, str(id)
 
