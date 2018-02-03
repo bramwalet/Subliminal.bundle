@@ -120,6 +120,8 @@ def refine_video(video, no_refining=False, refiner_settings=None):
             logger.info(u"Re-refining with movie title: '%s' instead of '%s'", plex_title, old_title)
             refine(video, **refine_kwargs)
 
+            video.alternative_titles.append(old_title)
+
         # still no match? add our own data
         if not video.imdb_id:
             video.imdb_id = video_info.get("imdb_id")
@@ -138,6 +140,8 @@ def refine_video(video, no_refining=False, refiner_settings=None):
             # re-refine with new info
             logger.info(u"Re-refining with series title: '%s' instead of '%s'", plex_title, old_title)
             refine(video, **refine_kwargs)
+
+            video.alternative_series.append(old_title)
 
         # still no match? add our own data
         if not video.series_tvdb_id or not video.tvdb_id:
