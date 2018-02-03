@@ -249,10 +249,8 @@ def ListStoredSubsForItemMenu(**kwargs):
     all_subs = stored_subs.get_all(part_id, language)
     kwargs.pop("randomize")
 
-    for key, subtitle in all_subs.iteritems():
-        if key == "current":
-            continue
-
+    for key, subtitle in sorted(filter(lambda x: x[0] != "current", all_subs.items()),
+                                key=lambda x: x[1].date_added, reverse=True):
         is_current = key == all_subs["current"]
 
         summary = u"added: %s, %s, Language: %s, Score: %i, Storage: %s" % \
