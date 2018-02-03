@@ -204,7 +204,7 @@ def SubtitleOptionsMenu(**kwargs):
     if subs_count:
         oc.add(DirectoryObject(
             key=Callback(ListStoredSubsForItemMenu, randomize=timestamp(), **kwargs),
-            title=u"Select %s subtitle" % kwargs["language_name"],
+            title=u"Select stored %s subtitle" % kwargs["language_name"],
             summary=u"%d subtitles in storage" % subs_count
         ))
 

@@ -99,7 +99,7 @@ class Task(object):
 
 class SubtitleListingMixin(object):
     def list_subtitles(self, rating_key, item_type, part_id, language, skip_wrong_fps=True, metadata=None,
-                       scanned_parts=None):
+                       scanned_parts=None, air_date_cutoff=None):
 
         if not metadata:
             metadata = get_plex_metadata(rating_key, part_id, item_type)
@@ -116,6 +116,12 @@ class SubtitleListingMixin(object):
 
         video, plex_part = scanned_parts.items()[0]
         refine_video(video, refiner_settings=config.refiner_settings)
+
+        if air_date_cutoff is not None and metadata["item"].year and \
+            metadata["item"].year + air_date_cutoff < datetime.date.today().year:
+            Log.Debug("Skipping searching for subtitles: %s, it aired over %s year(s) ago.", rating_key,
+                      air_date_cutoff)
+            return
 
         config.init_subliminal_patches()
 
@@ -634,6 +640,12 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
         overwrite_manually_selected = cast_bool(
             Prefs["scheduler.tasks.FindBetterSubtitles.overwrite_manually_selected"])
 
+        air_date_cutoff_pref = Prefs["scheduler.tasks.FindBetterSubtitles.air_date_cutoff"]
+        if air_date_cutoff_pref == "don't limit":
+            air_date_cutoff = None
+        else:
+            air_date_cutoff = int(air_date_cutoff_pref.split()[0])
+
         subtitle_storage = get_subtitle_storage()
         viable_item_count = 0
 
@@ -701,7 +713,8 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
                             continue
 
                         try:
-                            subs = self.list_subtitles(video_id, stored_subs.item_type, part_id, language)
+                            subs = self.list_subtitles(video_id, stored_subs.item_type, part_id, language,
+                                                       air_date_cutoff=air_date_cutoff)
                         except PartUnknownException:
                             Log.Info(u"%s: Part %s unknown/gone; ditching subtitle info", self.name, part_id)
                             ditch_parts.append(part_id)

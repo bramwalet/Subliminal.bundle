@@ -610,6 +610,25 @@
     "default": "7"
   },
   {
+    "id": "scheduler.tasks.FindBetterSubtitles.air_date_cutoff",
+    "label": "Scheduler: Don't search for better subtitles if the item's air date is older than",
+    "type": "enum",
+    "values": [
+      "don't limit",
+      "1 year",
+      "2 years",
+      "3 years",
+      "4 years",
+      "5 years",
+      "6 years",
+      "7 years",
+      "8 years",
+      "9 years",
+      "10 years"
+    ],
+    "default": "1 year"
+  },
+  {
     "id": "scheduler.tasks.FindBetterSubtitles.overwrite_manually_selected",
     "label": "Scheduler: Overwrite manually selected subtitles when better found",
     "type": "bool",
