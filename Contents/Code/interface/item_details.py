@@ -5,8 +5,6 @@ import traceback
 
 from subzero.language import Language
 
-from subzero.language import Language
-
 from sub_mod import SubtitleModificationsMenu
 from menu_helpers import debounce, SubFolderObjectContainer, default_thumb, add_ignore_options, get_item_task_data, \
     set_refresh_menu_state, route
@@ -17,7 +15,7 @@ from subzero.constants import PREFIX
 from support.config import config, TEXT_SUBTITLE_EXTS
 from support.helpers import timestamp, df, get_language, display_language, quote_args, get_language_from_stream
 from support.items import get_item_kind_from_rating_key, get_item, get_current_sub, get_item_title, refresh_item, \
-    get_item_kind_from_item
+    get_item_kind_from_item, save_stored_sub
 from support.plex_media import get_plex_metadata
 from support.scanning import scan_videos
 from support.scheduler import scheduler
@@ -184,15 +182,16 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
 
 
 @route(PREFIX + '/item/current_sub/{rating_key}/{part_id}')
-@debounce
 def SubtitleOptionsMenu(**kwargs):
-    oc = SubFolderObjectContainer(title2=unicode(kwargs["title"]), replace_parent=True)
+    oc = SubFolderObjectContainer(title2=unicode(kwargs["title"]), replace_parent=True, header=kwargs.get("header"),
+                                  message=kwargs.get("message"))
     rating_key = kwargs["rating_key"]
     part_id = kwargs["part_id"]
     language = kwargs["language"]
     current_data = kwargs["current_data"]
 
     current_sub, stored_subs, storage = get_current_sub(rating_key, part_id, language)
+    subs_count = stored_subs.count(part_id, language)
     kwargs.pop("randomize")
 
     oc.add(DirectoryObject(
@@ -202,6 +201,13 @@ def SubtitleOptionsMenu(**kwargs):
         summary=kwargs["current_data"],
         thumb=default_thumb
     ))
+    if subs_count:
+        oc.add(DirectoryObject(
+            key=Callback(ListStoredSubsForItemMenu, randomize=timestamp(), **kwargs),
+            title=u"Select %s subtitle" % kwargs["language_name"],
+            summary=u"%d subtitles in storage" % subs_count
+        ))
+
     oc.add(DirectoryObject(
         key=Callback(ListAvailableSubsForItemMenu, randomize=timestamp(), **kwargs),
         title=u"List %s subtitles" % kwargs["language_name"],
@@ -230,6 +236,73 @@ def SubtitleOptionsMenu(**kwargs):
 
     storage.destroy()
     return oc
+
+
+@route(PREFIX + '/item/list_stored_subs/{rating_key}/{part_id}')
+def ListStoredSubsForItemMenu(**kwargs):
+    oc = SubFolderObjectContainer(title2=unicode(kwargs["title"]), replace_parent=True)
+    rating_key = kwargs["rating_key"]
+    part_id = kwargs["part_id"]
+    language = Language.fromietf(kwargs["language"])
+
+    current_sub, stored_subs, storage = get_current_sub(rating_key, part_id, language)
+    all_subs = stored_subs.get_all(part_id, language)
+    kwargs.pop("randomize")
+
+    for key, subtitle in all_subs.iteritems():
+        if key == "current":
+            continue
+
+        is_current = key == all_subs["current"]
+
+        summary = u"added: %s, %s, Language: %s, Score: %i, Storage: %s" % \
+                  (df(subtitle.date_added),
+                   subtitle.mode_verbose, display_language(language), subtitle.score,
+                   subtitle.storage_type)
+
+        sub_name = subtitle.provider_name
+        if sub_name == "embedded":
+            sub_name += " (%s)" % subtitle.id
+
+        oc.add(DirectoryObject(
+            key=Callback(SelectStoredSubForItemMenu, randomize=timestamp(), sub_key="__".join(key), **kwargs),
+            title=u"%s%s, Score: %s" % ("Current: " if is_current else "Stored: ", sub_name,
+                                        subtitle.score),
+            summary=summary
+        ))
+
+    return oc
+
+
+@route(PREFIX + '/item/set_current_sub/{rating_key}/{part_id}')
+@debounce
+def SelectStoredSubForItemMenu(**kwargs):
+    rating_key = kwargs["rating_key"]
+    part_id = kwargs["part_id"]
+    language = Language.fromietf(kwargs["language"])
+    item_type = kwargs["item_type"]
+    sub_key = tuple(kwargs.pop("sub_key").split("__"))
+
+    plex_item = get_item(rating_key)
+    storage = get_subtitle_storage()
+    stored_subs = storage.load(plex_item.rating_key)
+
+    subtitles = stored_subs.get_all(part_id, language)
+    subtitle = subtitles[sub_key]
+
+    subtitles["current"] = sub_key
+
+    save_stored_sub(subtitle, rating_key, part_id, language, item_type, plex_item=plex_item, storage=storage,
+                    stored_subs=stored_subs)
+
+    storage.destroy()
+
+    kwargs.pop("randomize")
+
+    kwargs["header"] = 'Success',
+    kwargs["message"] = 'Subtitle saved to disk'
+
+    return SubtitleOptionsMenu(randomize=timestamp(), **kwargs)
 
 
 @route(PREFIX + '/item/blacklist_recent/{language}')
