@@ -131,7 +131,7 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                                      randomize=timestamp()),
                         title=u"%sEmbedded subtitles (%s)" % (part_index_addon, ", ".join(display_language(l) for l in
                                                                                           set(embedded_langs))),
-                        summary=u"Manage (extract) embedded subtitle streams"
+                        summary=u"Extract and activate embedded subtitle streams"
                     ))
 
             # iterate through all configured languages
@@ -160,7 +160,7 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                                      item_type=plex_item.type, filename=filename, current_data=summary,
                                      randomize=timestamp(), current_provider=current_sub_provider_name,
                                      current_score=current_score),
-                        title=u"%sActions for %s subtitle" % (part_index_addon, display_language(lang)),
+                        title=u"%sManage %s subtitle" % (part_index_addon, display_language(lang)),
                         summary=summary
                     ))
                 else:
@@ -204,25 +204,25 @@ def SubtitleOptionsMenu(**kwargs):
     if subs_count:
         oc.add(DirectoryObject(
             key=Callback(ListStoredSubsForItemMenu, randomize=timestamp(), **kwargs),
-            title=u"Select stored %s subtitle" % kwargs["language_name"],
+            title=u"Select active %s subtitle" % kwargs["language_name"],
             summary=u"%d subtitles in storage" % subs_count
         ))
 
     oc.add(DirectoryObject(
         key=Callback(ListAvailableSubsForItemMenu, randomize=timestamp(), **kwargs),
-        title=u"List %s subtitles" % kwargs["language_name"],
+        title=u"List available %s subtitles" % kwargs["language_name"],
         summary=kwargs["current_data"]
     ))
     if current_sub:
         oc.add(DirectoryObject(
             key=Callback(SubtitleModificationsMenu, randomize=timestamp(), **kwargs),
-            title=u"Modify %s subtitle" % kwargs["language_name"],
+            title=u"Modify current %s subtitle" % kwargs["language_name"],
             summary=u"Currently applied mods: %s" % (", ".join(current_sub.mods) if current_sub.mods else "none")
         ))
 
         oc.add(DirectoryObject(
             key=Callback(BlacklistSubtitleMenu, randomize=timestamp(), **kwargs),
-            title=u"Blacklist %s subtitle and search for a new one" % kwargs["language_name"],
+            title=u"Blacklist current %s subtitle and search for a new one" % kwargs["language_name"],
             summary=current_data
         ))
 
