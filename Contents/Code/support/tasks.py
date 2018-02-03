@@ -4,6 +4,7 @@ import os
 import datetime
 import operator
 import traceback
+import copy
 from urllib2 import URLError
 
 from subliminal_patch.score import compute_score
@@ -119,9 +120,8 @@ class SubtitleListingMixin(object):
 
         config.init_subliminal_patches()
 
-        provider_settings = config.provider_settings.copy()
+        provider_settings = copy.deepcopy(config.provider_settings)
         if not skip_wrong_fps:
-            provider_settings = config.provider_settings.copy()
             provider_settings["opensubtitles"]["skip_wrong_fps"] = False
 
         if item_type == "episode":
