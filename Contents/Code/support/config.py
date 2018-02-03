@@ -102,7 +102,6 @@ class Config(object):
     lang_list = None
     subtitle_destination_folder = None
     subtitle_formats = None
-    provider_settings = None
     max_recent_items_per_library = 200
     permissions_ok = False
     missing_permissions = None
@@ -174,7 +173,6 @@ class Config(object):
         self.subtitle_destination_folder = self.get_subtitle_destination_folder()
         self.subtitle_formats = self.get_subtitle_formats()
         self.forced_only = cast_bool(Prefs["subtitles.only_foreign"])
-        self.provider_settings = self.get_provider_settings()
         self.max_recent_items_per_library = int_or_default(Prefs["scheduler.max_recent_items_per_library"], 2000)
         self.sections = list(Plex["library"].sections())
         self.missing_permissions = []
@@ -555,7 +553,7 @@ class Config(object):
                      'subscenter': False,
                      }
 
-        global_provider_settings = copy.deepcopy(providers)
+        providers_by_prefs = copy.deepcopy(providers)
 
         # disable subscene for movies by default
         if media_type == "movies":
@@ -573,7 +571,7 @@ class Config(object):
         # advanced settings
         if media_type and self.advanced.providers:
             for provider, data in self.advanced.providers.iteritems():
-                if provider not in providers or not global_provider_settings[provider]:
+                if provider not in providers or not providers_by_prefs[provider]:
                     continue
 
                 if data["enabled_for"] is not None:
@@ -623,6 +621,8 @@ class Config(object):
                              }
 
         return provider_settings
+
+    provider_settings = property(get_provider_settings)
 
     def provider_throttle(self, name, exception):
         """
