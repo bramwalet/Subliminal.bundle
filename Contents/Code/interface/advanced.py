@@ -50,6 +50,10 @@ def AdvancedMenu(randomize=None, header=None, message=None):
         title=pad_title("Trigger find better subtitles"),
     ))
     oc.add(DirectoryObject(
+        key=Callback(SkipFindBetterSubtitles, randomize=timestamp()),
+        title=pad_title("Skip next find better subtitles (sets last run to now)"),
+    ))
+    oc.add(DirectoryObject(
         key=Callback(TriggerStorageMaintenance, randomize=timestamp()),
         title=pad_title("Trigger subtitle storage maintenance"),
     ))
@@ -163,6 +167,20 @@ def TriggerBetterSubtitles(randomize=None):
         randomize=timestamp(),
         header='Success',
         message='FindBetterSubtitles triggered'
+    )
+
+
+
+@route(PREFIX + '/skipbetter')
+@debounce
+def SkipFindBetterSubtitles(randomize=None):
+    task = scheduler.task("FindBetterSubtitles")
+    task.last_run = datetime.datetime.now()
+
+    return AdvancedMenu(
+        randomize=timestamp(),
+        header='Success',
+        message='FindBetterSubtitles skipped'
     )
 
 
