@@ -76,7 +76,7 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
 
         # add back to series for season
         if current_kind == "season":
-            timeout = 360
+            timeout = 720
 
             show = get_item(previous_rating_key)
             oc.add(DirectoryObject(
@@ -86,7 +86,7 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
                 thumb=show.thumb or default_thumb
             ))
         elif current_kind == "series":
-            timeout = 1800
+            timeout = 3600
 
         items = get_all_items(key="children", value=rating_key, base="library/metadata")
         kind, deeper = get_items_info(items)
