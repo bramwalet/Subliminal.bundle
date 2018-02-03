@@ -14,7 +14,7 @@ from menu_helpers import debounce, SubFolderObjectContainer, default_thumb, add_
 from refresh_item import RefreshItem
 from subliminal_patch.subtitle import ModifiedSubtitle
 from subzero.constants import PREFIX
-from support.config import config
+from support.config import config, TEXT_SUBTITLE_EXTS
 from support.helpers import timestamp, df, get_language, display_language, quote_args, get_language_from_stream
 from support.items import get_item_kind_from_rating_key, get_item, get_current_sub, get_item_title, refresh_item, \
     get_item_kind_from_item
@@ -116,10 +116,12 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                 embedded_langs = []
                 for stream in part.streams:
                     # subtitle stream
-                    # fixme: add support for unknown language
-                    if stream.stream_type == 3 and not stream.stream_key and stream.codec == "srt" \
-                            and stream.language_code: #("srt", "ass", "ssa"):
+                    if stream.stream_type == 3 and not stream.stream_key and stream.codec in TEXT_SUBTITLE_EXTS:
                         lang = get_language_from_stream(stream.language_code)
+
+                        if not lang and config.treat_und_as_first:
+                            lang = list(config.lang_list)[0]
+
                         if lang:
                             embedded_langs.append(lang)
                             embedded_count += 1
@@ -130,7 +132,7 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                                      item_type=plex_item.type, item_title=item_title, base_title=base_title,
                                      randomize=timestamp()),
                         title=u"%sEmbedded subtitles (%s)" % (part_index_addon, ", ".join(display_language(l) for l in
-                                                                                          embedded_langs)),
+                                                                                          set(embedded_langs))),
                         summary=u"Manage (extract) embedded subtitle streams"
                     ))
 
@@ -523,23 +525,32 @@ def ListEmbeddedSubsForItemMenu(**kwargs):
     if part:
         for stream in part.streams:
             # subtitle stream
-            if stream.stream_type == 3 and not stream.stream_key and stream.codec in ("srt", "ass", "ssa"):
+            if stream.stream_type == 3 and not stream.stream_key and stream.codec in TEXT_SUBTITLE_EXTS:
                 language = get_language_from_stream(stream.language_code)
+                is_unknown = False
+
+                if not language and config.treat_und_as_first:
+                    language = list(config.lang_list)[0]
+                    is_unknown = True
+
                 if language:
                     forced = stream.forced
                     oc.add(DirectoryObject(
-                        key=Callback(TriggerExtractEmbeddedSubForItemMenu, randomize=timestamp(), stream_index=str(stream.index),
-                                     with_mods=True, **kwargs),
-                        title=u"Extract stream %s, %s%s%s with default mods" % (stream.index, display_language(language),
-                                                                                " (forced)" if forced else "",
-                                                                                " (%s)" % stream.title if stream.title else ""),
+                        key=Callback(TriggerExtractEmbeddedSubForItemMenu, randomize=timestamp(),
+                                     stream_index=str(stream.index), language=language, with_mods=True, **kwargs),
+                        title=u"Extract stream %s, "
+                              u"%s%s%s%s with default mods" % (stream.index, display_language(language),
+                                                               " (unknown)" if is_unknown else "",
+                                                               " (forced)" if forced else "",
+                                                               " (\"%s\")" % stream.title if stream.title else ""),
                     ))
                     oc.add(DirectoryObject(
-                        key=Callback(TriggerExtractEmbeddedSubForItemMenu, randomize=timestamp(), stream_index=str(stream.index),
-                                     **kwargs),
-                        title=u"Extract stream %s, %s%s%s" % (stream.index, display_language(language),
-                                                              " (forced)" if forced else "",
-                                                              " (%s)" % stream.title if stream.title else ""),
+                        key=Callback(TriggerExtractEmbeddedSubForItemMenu, randomize=timestamp(),
+                                     stream_index=str(stream.index), language=language, **kwargs),
+                        title=u"Extract stream %s, %s%s%s%s" % (stream.index, display_language(language),
+                                                                " (unknown)" if is_unknown else "",
+                                                                " (forced)" if forced else "",
+                                                                " (\"%s\")" % stream.title if stream.title else ""),
                     ))
     return oc
 
@@ -559,6 +570,7 @@ def TriggerExtractEmbeddedSubForItemMenu(**kwargs):
     kwargs.pop("stream_index")
     kwargs.pop("part_id")
     kwargs.pop("with_mods", False)
+    kwargs.pop("language")
     kwargs["title"] = kwargs["item_title"]
     kwargs["header"] = header
 
@@ -570,6 +582,7 @@ def extract_embedded_sub(**kwargs):
     part_id = kwargs.pop("part_id")
     stream_index = kwargs.pop("stream_index")
     with_mods = kwargs.pop("with_mods", False)
+    language = Language.fromietf(kwargs.pop("language"))
 
     plex_item = get_item(rating_key)
     item_type = get_item_kind_from_item(plex_item)
@@ -581,8 +594,6 @@ def extract_embedded_sub(**kwargs):
         for stream in part.streams:
             # subtitle stream
             if str(stream.index) == stream_index:
-                lang_code = stream.language_code
-                language = Language.fromietf(lang_code)
                 forced = stream.forced
                 bn = os.path.basename(part.file)
 
