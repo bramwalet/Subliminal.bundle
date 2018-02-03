@@ -325,7 +325,7 @@ def refresh_item(rating_key, force=False, timeout=8000, refresh_kind=None, paren
         Log.Info("%s item %s", "Refreshing" if not force else "Forced-refreshing", key)
         Plex["library/metadata"].refresh(key)
         if multiple:
-            time.sleep(10)
+            Thread.Sleep(10.0)
 
 
 def get_current_sub(rating_key, part_id, language, plex_item=None):
