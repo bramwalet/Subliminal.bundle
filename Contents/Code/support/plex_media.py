@@ -152,10 +152,9 @@ def get_stream_fps(streams):
 
 
 def get_media_item_ids(media, kind="series"):
-    ids = []
-    if kind == "movies":
-        ids.append(media.id)
-    else:
+    # fixme: does this work correctly for full series force-refreshes and its intents?
+    ids = [media.id]
+    if kind == "series":
         for season in media.seasons:
             for episode in media.seasons[season].episodes:
                 ids.append(media.seasons[season].episodes[episode].id)

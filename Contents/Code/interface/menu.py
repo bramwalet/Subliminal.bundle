@@ -86,6 +86,7 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
                 thumb=show.thumb or default_thumb
             ))
         elif current_kind == "series":
+            # it shouldn't take more than 6 minutes to scan all of a series' files and determine the force refresh
             timeout = 3600
 
         items = get_all_items(key="children", value=rating_key, base="library/metadata")
