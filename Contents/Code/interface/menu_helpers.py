@@ -88,12 +88,10 @@ def set_refresh_menu_state(state_or_media, media_type="movies"):
         # store it in last state and remove the current
         Dict["last_refresh_state"] = Dict["current_refresh_state"]
         Dict["current_refresh_state"] = None
-        Dict.Save()
         return
 
     if isinstance(state_or_media, types.StringTypes):
         Dict["current_refresh_state"] = state_or_media
-        Dict.Save()
         return
 
     media = state_or_media
@@ -112,7 +110,6 @@ def set_refresh_menu_state(state_or_media, media_type="movies"):
     force_refresh = intent.get("force", media_id)
 
     Dict["current_refresh_state"] = u"%sRefreshing %s" % ("Force-" if force_refresh else "", unicode(title))
-    Dict.Save()
 
 
 def get_item_task_data(task_name, rating_key, language):
