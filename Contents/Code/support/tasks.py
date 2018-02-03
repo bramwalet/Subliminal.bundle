@@ -207,10 +207,15 @@ class DownloadSubtitleMixin(object):
         if subtitle.content:
             try:
                 save_subtitles(scanned_parts, {video: [subtitle]}, mode=mode, mods=config.default_mods)
-                Log.Debug(u"%s: Manually downloaded subtitle for: %s", self.name, rating_key)
+                if mode == "m":
+                    Log.Debug(u"%s: Manually downloaded subtitle for: %s", self.name, rating_key)
+                    track_usage("Subtitle", "manual", "download", 1)
+                elif mode == "b":
+                    Log.Debug(u"%s: Downloaded better subtitle for: %s", self.name, rating_key)
+                    track_usage("Subtitle", "better", "download", 1)
                 download_successful = True
                 refresh_item(rating_key)
-                track_usage("Subtitle", "manual", "download", 1)
+
             except:
                 Log.Error(u"%s: Something went wrong when downloading specific subtitle: %s",
                           self.name, traceback.format_exc())
