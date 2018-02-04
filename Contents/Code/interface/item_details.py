@@ -108,32 +108,6 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                 part_index_addon = u"File %s: " % part_index
                 part_summary_addon = "%s " % filename
 
-            if config.plex_transcoder:
-                # embedded subtitles
-                embedded_count = 0
-                embedded_langs = []
-                for stream in part.streams:
-                    # subtitle stream
-                    if stream.stream_type == 3 and not stream.stream_key and stream.codec in TEXT_SUBTITLE_EXTS:
-                        lang = get_language_from_stream(stream.language_code)
-
-                        if not lang and config.treat_und_as_first:
-                            lang = list(config.lang_list)[0]
-
-                        if lang:
-                            embedded_langs.append(lang)
-                            embedded_count += 1
-
-                if embedded_count:
-                    oc.add(DirectoryObject(
-                        key=Callback(ListEmbeddedSubsForItemMenu, rating_key=rating_key, part_id=part_id, title=title,
-                                     item_type=plex_item.type, item_title=item_title, base_title=base_title,
-                                     randomize=timestamp()),
-                        title=u"%sEmbedded subtitles (%s)" % (part_index_addon, ", ".join(display_language(l) for l in
-                                                                                          set(embedded_langs))),
-                        summary=u"Extract and activate embedded subtitle streams"
-                    ))
-
             # iterate through all configured languages
             for lang in config.lang_list:
                 # get corresponding stored subtitle data for that media part (physical media item), for language
@@ -173,6 +147,32 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                                      current_score=current_score),
                         title=u"%sList %s subtitles" % (part_index_addon, display_language(lang)),
                         summary=summary
+                    ))
+
+            if config.plex_transcoder:
+                # embedded subtitles
+                embedded_count = 0
+                embedded_langs = []
+                for stream in part.streams:
+                    # subtitle stream
+                    if stream.stream_type == 3 and not stream.stream_key and stream.codec in TEXT_SUBTITLE_EXTS:
+                        lang = get_language_from_stream(stream.language_code)
+
+                        if not lang and config.treat_und_as_first:
+                            lang = list(config.lang_list)[0]
+
+                        if lang:
+                            embedded_langs.append(lang)
+                            embedded_count += 1
+
+                if embedded_count:
+                    oc.add(DirectoryObject(
+                        key=Callback(ListEmbeddedSubsForItemMenu, rating_key=rating_key, part_id=part_id, title=title,
+                                     item_type=plex_item.type, item_title=item_title, base_title=base_title,
+                                     randomize=timestamp()),
+                        title=u"%sEmbedded subtitles (%s)" % (part_index_addon, ", ".join(display_language(l) for l in
+                                                                                          set(embedded_langs))),
+                        summary=u"Extract and activate embedded subtitle streams"
                     ))
 
     add_ignore_options(oc, "videos", title=item_title, rating_key=rating_key, callback_menu=IgnoreMenu)
