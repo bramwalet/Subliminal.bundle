@@ -24,9 +24,10 @@ def is_season_fully_aired(series_id, season):
     now = datetime.date.today()
     if result:
         for data in result['data']:
-            aired_at = datetime.datetime.strptime(data['firstAired'], '%Y-%m-%d').date()
-            if aired_at > now:
-                return False
+            if data['firstAired']:
+                aired_at = datetime.datetime.strptime(data['firstAired'], '%Y-%m-%d').date()
+                if aired_at > now:
+                    return False
     else:
         return
     return True
