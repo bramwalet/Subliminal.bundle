@@ -44,8 +44,13 @@ class HearingImpaired(SubtitleTextModification):
         # NReProcessor(re.compile(r'(?u)(^[A-z\-\'"_]+[\w\s]{0,11}:[^0-9{2}][\s]*)'), "", name="HI_before_colon"),
 
         # starting text before colon (at least 3 chars)
-        NReProcessor(re.compile(ur'(?u)(^[\s-]*(?=[A-zÀ-ž-_\s0-9"\']{3,})[A-zÀ-ž-_\s0-9"\']+:\s*)'), "",
-                     name="HI_before_colon"),
+        #NReProcessor(re.compile(ur'(?u)(\b|^)([\s-]*(?=[A-zÀ-ž-_0-9"\']{3,})[A-zÀ-ž-_0-9"\']+:\s*)'), "",
+        #             name="HI_before_colon"),
+
+        # text before colon (at least 3 chars); at start or after a sentence, possibly with a dash in front
+        NReProcessor(re.compile(ur'(?u)(?:(?<=^)|(?<=[.\-!?\"\']))'
+                                ur'([\s-]*(?=[A-zÀ-ž-_0-9\s\"\']{3,})[A-zÀ-ž-_0-9\s\"\']+:\s*)(?![0-9])'), "",
+                     name="HI_before_colon_universal"),
 
         # text in brackets at start, after optional dash, before colon or at end of line
         # fixme: may be too aggressive
