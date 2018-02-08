@@ -3,9 +3,12 @@ import locale
 import logging
 import os
 import platform
+import traceback
+
 import logger
 import copy
 
+from requests import HTTPError
 from item_details import ItemDetailsMenu
 from refresh_item import RefreshItem
 from menu_helpers import add_ignore_options, dig_tree, set_refresh_menu_state, \
@@ -254,11 +257,33 @@ def ValidatePrefs():
             "subtitles.save.filesystem", ]:
         Log.Debug("Pref.%s: %s", attr, Prefs[attr])
 
+    # debug drone
+    if "sonarr" in config.refiner_settings or "radarr" in config.refiner_settings:
+        Log.Debug("----- Connections -----")
+        from subliminal_patch.refiners.drone import SonarrClient, RadarrClient
+        for key, cls in [("sonarr", SonarrClient), ("radarr", RadarrClient)]:
+            if key in config.refiner_settings:
+                cname = key.capitalize()
+                try:
+                    status = cls(**config.refiner_settings[key]).status()
+                except HTTPError, e:
+                    if e.response.status_code == 401:
+                        Log.Debug("%s: NOT WORKING - BAD API KEY", cname)
+                    else:
+                        Log.Debug("%s: NOT WORKING - %s", cname, traceback.format_exc())
+                except:
+                    Log.Debug("%s: NOT WORKING - %s", cname, traceback.format_exc())
+                else:
+                    if status["version"]:
+                        Log.Debug("%s: OK - %s", cname, status["version"])
+                    else:
+                        Log.Debug("%s: NOT WORKING - %s", cname)
+
     # fixme: check existance of and os access of logs
+    Log.Debug("----- Environment -----")
     Log.Debug("Platform: %s", Core.runtime.platform)
     Log.Debug("OS: %s", Core.runtime.os)
     Log.Debug("Python: %s", platform.python_version())
-    Log.Debug("----- Environment -----")
     for key, value in os.environ.iteritems():
         if key.startswith("PLEX") or key.startswith("SZ_"):
             if "TOKEN" in key:

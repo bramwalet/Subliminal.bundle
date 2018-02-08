@@ -71,6 +71,9 @@ class DroneAPIClient(object):
             return j
         return []
 
+    def status(self):
+        return self.get("system/status")
+
     def update_video(self, video, scene_name):
         """
         update video attributes based on scene_name
