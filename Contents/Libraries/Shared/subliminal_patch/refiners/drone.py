@@ -7,7 +7,7 @@ import requests
 
 from guessit import guessit
 from requests.compat import urljoin, quote, urlsplit
-from subliminal import Episode, Movie
+from subliminal import Episode, Movie, region
 from subliminal_patch.core import REMOVE_CRAP_FROM_FILENAME
 
 logger = logging.getLogger(__name__)
@@ -88,6 +88,12 @@ class DroneAPIClient(object):
         video.original_name = scene_fn
 
 
+def sonarr_series_cache_key(namespace, fn, **kw):
+    def generate_key(*arg):
+        return "sonarr_series"
+    return generate_key
+
+
 class SonarrClient(DroneAPIClient):
     needs_attrs_to_work = ("series", "season", "episode",)
     _fill_attrs = ("release_group", "format",)
@@ -96,18 +102,32 @@ class SonarrClient(DroneAPIClient):
     def __init__(self, base_url="http://127.0.0.1:8989/", **kwargs):
         super(SonarrClient, self).__init__(base_url=base_url, **kwargs)
 
+    @region.cache_on_arguments(should_cache_fn=lambda x: bool(x),
+                               function_key_generator=sonarr_series_cache_key)
+    def get_all_series(self):
+        return self.get("series")
+
+    def get_show_id(self, video):
+        def is_correct_show(s):
+            return s["title"] == video.series or (video.series_tvdb_id and "tvdbId" in s and
+                                                  s["tvdbId"] == video.series_tvdb_id)
+
+        for show in self.get_all_series():
+            if is_correct_show(show):
+                return show["id"]
+
+        logger.debug(u"%s: Show not found, refreshing cache: %s", video.name, video.series)
+        for show in self.get_all_series.refresh():
+            if is_correct_show(show):
+                return show["id"]
+
     def get_additional_data(self, video):
         for attr in self.needs_attrs_to_work:
             if getattr(video, attr, None) is None:
                 logger.debug(u"%s: Not enough data available for Sonarr", video.name)
                 return
 
-        found_show_id = None
-        for show in self.get("series"):
-            if show["title"] == video.series or (video.series_tvdb_id and "tvdbId" in show and
-                                                 show["tvdbId"] == video.series_tvdb_id):
-                found_show_id = show["id"]
-                break
+        found_show_id = self.get_show_id(video)
 
         if not found_show_id:
             logger.debug(u"%s: Show not found in Sonarr: %s", video.name, video.series)
@@ -144,6 +164,12 @@ class SonarrClient(DroneAPIClient):
         return guess_from, guessit(guess_from, options=hints)
 
 
+def radarr_movies_cache_key(namespace, fn, **kw):
+    def generate_key(*arg):
+        return "radarr_movies"
+    return generate_key
+
+
 class RadarrClient(DroneAPIClient):
     needs_attrs_to_work = ("title",)
     _fill_attrs = ("release_group", "format",)
@@ -152,31 +178,53 @@ class RadarrClient(DroneAPIClient):
     def __init__(self, base_url="http://127.0.0.1:7878/", **kwargs):
         super(RadarrClient, self).__init__(base_url=base_url, **kwargs)
 
+    @region.cache_on_arguments(should_cache_fn=lambda x: bool(x), function_key_generator=radarr_movies_cache_key)
+    def get_all_movies(self):
+        return self.get("movie")
+
+    def get_movie(self, video):
+        def is_correct_movie(m):
+            movie_file = movie.get("movieFile", {})
+            if m["title"] == video.title or (video.imdb_id and "imdbId" in m and
+                                             m["imdbId"] == video.imdb_id) \
+                    or movie_file.get("relativePath") == movie_fn:
+                return m
+
+        movie_fn = os.path.basename(video.name)
+        for movie in self.get_all_movies():
+            if is_correct_movie(movie):
+                return movie
+
+        logger.debug(u"%s: Movie not found, refreshing cache", video.name)
+        for movie in self.get_all_movies.refresh():
+            if is_correct_movie(movie):
+                return movie
+
     def get_additional_data(self, video):
         for attr in self.needs_attrs_to_work:
             if getattr(video, attr, None) is None:
                 logger.debug(u"%s: Not enough data available for Radarr")
                 return
 
-        movie_fn = os.path.basename(video.name)
-        for movie in self.get("movie"):
+        movie = self.get_movie(video)
+        if not movie:
+            logger.debug(u"%s: Movie not found", video.name)
+
+        else:
             movie_file = movie.get("movieFile", {})
-            if movie["title"] == video.title or (video.imdb_id and "imdbId" in movie and
-                                                 movie["imdbId"] == video.imdb_id)\
-                    or movie_file.get("relativePath") == movie_fn:
-                scene_name = movie_file.get("sceneName")
-                release_group = movie_file.get("releaseGroup")
+            scene_name = movie_file.get("sceneName")
+            release_group = movie_file.get("releaseGroup")
 
-                additional_data = {}
-                if scene_name:
-                    logger.debug(u"%s: Got original filename from Radarr: %s", movie_fn, scene_name)
-                    additional_data["scene_name"] = scene_name
+            additional_data = {}
+            if scene_name:
+                logger.debug(u"%s: Got original filename from Radarr: %s", video.name, scene_name)
+                additional_data["scene_name"] = scene_name
 
-                if release_group:
-                    logger.debug(u"%s: Got release group from Radarr: %s", movie_fn, release_group)
-                    additional_data["release_group"] = release_group
+            if release_group:
+                logger.debug(u"%s: Got release group from Radarr: %s", video.name, release_group)
+                additional_data["release_group"] = release_group
 
-                return additional_data
+            return additional_data
 
     def get_guess(self, video, scene_name):
         """
