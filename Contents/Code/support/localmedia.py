@@ -17,6 +17,11 @@ def find_subtitles(part):
     part_filename = helpers.unicodize(part.file)
     part_basename = os.path.splitext(os.path.basename(part_filename))[0]
     use_filesystem = helpers.cast_bool(Prefs["subtitles.save.filesystem"])
+    sub_dir_custom = Prefs["subtitles.save.subFolder.Custom"].strip() \
+        if Prefs["subtitles.save.subFolder.Custom"] else None
+
+    use_sub_subfolder = Prefs["subtitles.save.subFolder"] != "current folder" and not sub_dir_custom
+    sub_subfolder = None
     paths = [os.path.dirname(part_filename)] if use_filesystem else []
 
     global_subtitle_folder = None
@@ -29,12 +34,11 @@ def find_subtitles(part):
 
         sub_dir_list = []
 
-        if Prefs["subtitles.save.subFolder"] != "current folder":
+        if use_sub_subfolder:
             # got selected subfolder
-            sub_dir_list.append(os.path.join(sub_dir_base, Prefs["subtitles.save.subFolder"]))
-
-        sub_dir_custom = Prefs["subtitles.save.subFolder.Custom"].strip() \
-            if Prefs["subtitles.save.subFolder.Custom"] else None
+            sub_subfolder = os.path.join(sub_dir_base, Prefs["subtitles.save.subFolder"])
+            sub_dir_list.append(sub_subfolder)
+            sub_subfolder = os.path.normpath(helpers.unicodize(sub_subfolder))
 
         if sub_dir_custom:
             # got custom subfolder
@@ -87,8 +91,12 @@ def find_subtitles(part):
                 media_files.append(root)
 
     # cleanup any leftover subtitle if no associated media file was found
-    if helpers.cast_bool(Prefs["subtitles.autoclean"]):
+    if use_filesystem and helpers.cast_bool(Prefs["subtitles.autoclean"]):
         for path in paths:
+            # only housekeep in sub_subfolder if sub_subfolder is used
+            if use_sub_subfolder and path != sub_subfolder:
+                continue
+
             # we can't housekeep the global subtitle folders as we don't know about *all* media files
             # in a library; skip them
             skip_path = False
