@@ -50,9 +50,13 @@ class RetryingSession(Session):
                                       socket.timeout))
 
     def get(self, *args, **kwargs):
+        if self.proxies and "timeout" in kwargs and kwargs["timeout"]:
+            kwargs["timeout"] = kwargs["timeout"] * 3
         return self.retry_method("get", *args, **kwargs)
 
     def post(self, *args, **kwargs):
+        if self.proxies and "timeout" in kwargs and kwargs["timeout"]:
+            kwargs["timeout"] = kwargs["timeout"] * 3
         return self.retry_method("post", *args, **kwargs)
 
 
@@ -88,6 +92,9 @@ class SubZeroTransport(SafeTransport):
         if self.proxy:
             logger.debug("Using proxy %s for: %s", self.proxy, url)
             self.https = self.proxy.startswith('https')
+
+            if self.timeout:
+                self.timeout = self.timeout * 3
 
     def make_connection(self, host):
         self.host = host
