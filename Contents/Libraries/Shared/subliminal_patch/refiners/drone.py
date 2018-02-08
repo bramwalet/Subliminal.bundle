@@ -79,10 +79,11 @@ class DroneAPIClient(object):
         :return:
         """
         scene_fn, guess = self.get_guess(video, scene_name)
+        video_fn = os.path.basename(video.name)
         for attr in self._fill_attrs:
             if attr in guess:
                 value = guess.get(attr)
-                logger.debug(u"%s: Filling attribute %s: %s", video.name, attr, value)
+                logger.debug(u"%s: Filling attribute %s: %s", video_fn, attr, value)
                 setattr(video, attr, value)
 
         video.original_name = scene_fn
@@ -133,17 +134,20 @@ class SonarrClient(DroneAPIClient):
             logger.debug(u"%s: Show not found in Sonarr: %s", video.name, video.series)
             return
 
+        episode_fn = os.path.basename(video.name)
+
         for episode in self.get("episode", series_id=found_show_id):
-            if episode["seasonNumber"] == video.season and episode["episodeNumber"] == video.episode:
-                scene_name = episode.get("episodeFile", {}).get("sceneName")
+            episode_file = episode.get("episodeFile", {})
+            if os.path.basename(episode_file.get("relativePath", "")) == episode_fn:
+                scene_name = episode_file.get("sceneName")
                 if scene_name:
-                    logger.debug(u"%s: Got original filename from Sonarr: %s", video.name, scene_name)
+                    logger.debug(u"%s: Got original filename from Sonarr: %s", episode_fn, scene_name)
                     return {"scene_name": scene_name}
 
-                logger.debug(u"%s: Can't get original filename, sceneName-attribute not set", video.name)
+                logger.debug(u"%s: Can't get original filename, sceneName-attribute not set", episode_fn)
                 return
 
-        logger.debug(u"%s: Episode not found in Sonarr: S%02dE%02d", video.name, video.season, video.episode)
+        logger.debug(u"%s: Episode not found in Sonarr: S%02dE%02d", episode_fn, video.season, video.episode)
 
     def get_guess(self, video, scene_name):
         """
@@ -182,20 +186,17 @@ class RadarrClient(DroneAPIClient):
     def get_all_movies(self):
         return self.get("movie")
 
-    def get_movie(self, video):
+    def get_movie(self, movie_fn):
         def is_correct_movie(m):
             movie_file = movie.get("movieFile", {})
-            if m["title"] == video.title or (video.imdb_id and "imdbId" in m and
-                                             m["imdbId"] == video.imdb_id) \
-                    or movie_file.get("relativePath") == movie_fn:
+            if os.path.basename(movie_file.get("relativePath", "")) == movie_fn:
                 return m
 
-        movie_fn = os.path.basename(video.name)
         for movie in self.get_all_movies():
             if is_correct_movie(movie):
                 return movie
 
-        logger.debug(u"%s: Movie not found, refreshing cache", video.name)
+        logger.debug(u"%s: Movie not found, refreshing cache", movie_fn)
         for movie in self.get_all_movies.refresh():
             if is_correct_movie(movie):
                 return movie
@@ -205,10 +206,11 @@ class RadarrClient(DroneAPIClient):
             if getattr(video, attr, None) is None:
                 logger.debug(u"%s: Not enough data available for Radarr")
                 return
+        movie_fn = os.path.basename(video.name)
 
-        movie = self.get_movie(video)
+        movie = self.get_movie(movie_fn)
         if not movie:
-            logger.debug(u"%s: Movie not found", video.name)
+            logger.debug(u"%s: Movie not found", movie_fn)
 
         else:
             movie_file = movie.get("movieFile", {})
@@ -217,11 +219,11 @@ class RadarrClient(DroneAPIClient):
 
             additional_data = {}
             if scene_name:
-                logger.debug(u"%s: Got original filename from Radarr: %s", video.name, scene_name)
+                logger.debug(u"%s: Got original filename from Radarr: %s", movie_fn, scene_name)
                 additional_data["scene_name"] = scene_name
 
             if release_group:
-                logger.debug(u"%s: Got release group from Radarr: %s", video.name, release_group)
+                logger.debug(u"%s: Got release group from Radarr: %s", movie_fn, release_group)
                 additional_data["release_group"] = release_group
 
             return additional_data
