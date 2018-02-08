@@ -140,9 +140,19 @@ class SonarrClient(DroneAPIClient):
             episode_file = episode.get("episodeFile", {})
             if os.path.basename(episode_file.get("relativePath", "")) == episode_fn:
                 scene_name = episode_file.get("sceneName")
+                original_filepath = episode_file.get("originalFilePath")
+
+                data = {}
                 if scene_name:
-                    logger.debug(u"%s: Got original filename from Sonarr: %s", episode_fn, scene_name)
-                    return {"scene_name": scene_name}
+                    logger.debug(u"%s: Got scene filename from Sonarr: %s", episode_fn, scene_name)
+                    data["scene_name"] = scene_name
+
+                if original_filepath:
+                    logger.debug(u"%s: Got original file path from Sonarr: %s", episode_fn, original_filepath)
+                    data["original_filepath"] = original_filepath
+
+                if data:
+                    return data
 
                 logger.debug(u"%s: Can't get original filename, sceneName-attribute not set", episode_fn)
                 return
@@ -219,7 +229,7 @@ class RadarrClient(DroneAPIClient):
 
             additional_data = {}
             if scene_name:
-                logger.debug(u"%s: Got original filename from Radarr: %s", movie_fn, scene_name)
+                logger.debug(u"%s: Got scene filename from Radarr: %s", movie_fn, scene_name)
                 additional_data["scene_name"] = scene_name
 
             if release_group:
@@ -279,6 +289,9 @@ def refine(video, **kwargs):
     if additional_data:
         if "scene_name" in additional_data:
             client.update_video(video, additional_data["scene_name"])
+
+        elif "original_filepath" in additional_data:
+            client.update_video(video, os.path.splitext(additional_data["original_filepath"])[0])
 
         if "release_group" in additional_data and not video.release_group:
             video.release_group = REMOVE_CRAP_FROM_FILENAME.sub("", additional_data["release_group"])
