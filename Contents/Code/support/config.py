@@ -776,6 +776,7 @@ class Config(object):
 
         elif mode == "I keep the original filenames":
             self.exact_filenames = True
+            return
 
         if mode in ("Filebot", "Sonarr/Radarr/Filebot"):
             self.refiner_settings["filebot"] = True
