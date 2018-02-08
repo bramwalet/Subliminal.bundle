@@ -32,7 +32,8 @@ SZ_FIX_DATA = {
             u"at/on": u"ation",
             u"l/an": u"lian",
             u"lljust": u"ll just",
-            u". L ": u". I ",
+            u" L ": u" I ",
+            u" l ": u" I ",
         },
         "WholeWords": {
             u"I'11": u"I'll",
@@ -67,13 +68,22 @@ SZ_FIX_DATA = {
             u"L want": u"I want",
             u"L was": u"I was",
             u"L am": u"I am",
+            u"L will": u"I will",
             u"L suggest": u"I suggest",
             u"L think": u"I think",
             u"L reckon": u"I reckon",
             u"L like": u"I like",
             u"L love": u"I love",
             u"L don't": u"I don't",
+            u"L didn't": u"I didn't",
+            u"L wasn't": u"I wasnt't",
+            u"L haven't": u"I haven't",
+            u"L couldn't": u"I couldn't",
             u"L won't": u"I won't",
+        },
+        "BeginLines": {
+            u"l ": u"I ",
+            u"L ": u"I ",
         }
     },
     "nld": {

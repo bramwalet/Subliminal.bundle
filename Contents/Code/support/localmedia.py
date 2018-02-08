@@ -11,6 +11,7 @@ from config import config as sz_config
 
 SECONDARY_TAGS = ['forced', 'normal', 'default', 'embedded', 'embedded-forced', 'custom', 'hi', 'cc', 'sdh']
 
+
 def find_subtitles(part):
     lang_sub_map = {}
     part_filename = helpers.unicodize(part.file)
