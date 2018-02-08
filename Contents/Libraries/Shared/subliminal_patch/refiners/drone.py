@@ -3,10 +3,11 @@
 import logging
 import types
 import os
+import datetime
 import requests
 
 from guessit import guessit
-from requests.compat import urljoin, quote, urlsplit
+from requests.compat import urljoin, quote
 from subliminal import Episode, Movie, region
 from subliminal_patch.core import REMOVE_CRAP_FROM_FILENAME
 
@@ -121,7 +122,7 @@ class SonarrClient(DroneAPIClient):
                 return show["id"]
 
         logger.debug(u"%s: Show not found, refreshing cache: %s", video.name, video.series)
-        for show in self.get_all_series.refresh():
+        for show in self.get_all_series.refresh(self):
             if is_correct_show(show):
                 return show["id"]
 
@@ -195,22 +196,32 @@ class RadarrClient(DroneAPIClient):
     def __init__(self, base_url="http://127.0.0.1:7878/", **kwargs):
         super(RadarrClient, self).__init__(base_url=base_url, **kwargs)
 
-    @region.cache_on_arguments(should_cache_fn=lambda x: bool(x), function_key_generator=radarr_movies_cache_key)
+    @region.cache_on_arguments(should_cache_fn=lambda x: bool(x["data"]), function_key_generator=radarr_movies_cache_key)
     def get_all_movies(self):
-        return self.get("movie")
+        return {"d": datetime.datetime.now(), "data": self.get("movie")}
 
-    def get_movie(self, movie_fn):
+    def get_movie(self, movie_fn, movie_path):
         def is_correct_movie(m):
             movie_file = movie.get("movieFile", {})
             if os.path.basename(movie_file.get("relativePath", "")) == movie_fn:
                 return m
 
-        for movie in self.get_all_movies():
-            if is_correct_movie(movie):
-                return movie
+        res = self.get_all_movies()
+        try:
+            # get creation date of movie_path to see whether our cache is still valid
+            ctime = os.path.getctime(movie_path)
+            created = datetime.datetime.fromtimestamp(ctime)
+            if created < res["d"]:
+                for movie in res["data"]:
+                    if is_correct_movie(movie):
+                        return movie
+        except TypeError:
+            # legacy cache data
+            pass
 
         logger.debug(u"%s: Movie not found, refreshing cache", movie_fn)
-        for movie in self.get_all_movies.refresh():
+        res = self.get_all_movies.refresh(self)
+        for movie in res["data"]:
             if is_correct_movie(movie):
                 return movie
 
@@ -221,7 +232,7 @@ class RadarrClient(DroneAPIClient):
                 return
         movie_fn = os.path.basename(video.name)
 
-        movie = self.get_movie(movie_fn)
+        movie = self.get_movie(movie_fn, video.name)
         if not movie:
             logger.debug(u"%s: Movie not found", movie_fn)
 
