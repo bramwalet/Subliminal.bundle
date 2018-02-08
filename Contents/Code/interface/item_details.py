@@ -220,11 +220,12 @@ def SubtitleOptionsMenu(**kwargs):
             summary=u"Currently applied mods: %s" % (", ".join(current_sub.mods) if current_sub.mods else "none")
         ))
 
-        oc.add(DirectoryObject(
-            key=Callback(BlacklistSubtitleMenu, randomize=timestamp(), **kwargs),
-            title=u"Blacklist current %s subtitle and search for a new one" % kwargs["language_name"],
-            summary=current_data
-        ))
+        if current_sub.provider_name != "embedded":
+            oc.add(DirectoryObject(
+                key=Callback(BlacklistSubtitleMenu, randomize=timestamp(), **kwargs),
+                title=u"Blacklist current %s subtitle and search for a new one" % kwargs["language_name"],
+                summary=current_data
+            ))
 
         current_bl, subs = stored_subs.get_blacklist(part_id, language)
         if current_bl:
