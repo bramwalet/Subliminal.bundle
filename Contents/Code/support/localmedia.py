@@ -24,14 +24,11 @@ def find_subtitles(part):
     sub_subfolder = None
     paths = [os.path.dirname(part_filename)] if use_filesystem else []
 
-    global_subtitle_folder = None
-
     global_folders = []
 
     if use_filesystem:
         # Check for local subtitles subdirectory
         sub_dir_base = paths[0]
-
         sub_dir_list = []
 
         if use_sub_subfolder:
