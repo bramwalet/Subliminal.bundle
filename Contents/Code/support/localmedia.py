@@ -9,6 +9,8 @@ import subtitlehelpers
 from config import config as sz_config
 
 
+SECONDARY_TAGS = ['forced', 'normal', 'default', 'embedded', 'embedded-forced', 'custom', 'hi', 'cc', 'sdh']
+
 def find_subtitles(part):
     lang_sub_map = {}
     part_filename = helpers.unicodize(part.file)
@@ -105,11 +107,10 @@ def find_subtitles(part):
                 if os.path.isfile(enc_fn):
                     (root, ext) = os.path.splitext(file_path_listing)
                     # it's a subtitle file
-                    if ext.lower()[1:] in config.SUBTITLE_EXTS:
+                    if ext.lower()[1:] in config.SUBTITLE_EXTS_BASE:
                         # get fn without forced/default/normal tag
                         split_tag = root.rsplit(".", 1)
-                        if len(split_tag) > 1 and split_tag[1].lower() in ['forced', 'normal', 'default', 'embedded',
-                                                                           'embedded-forced', 'custom']:
+                        if len(split_tag) > 1 and split_tag[1].lower() in SECONDARY_TAGS:
                             root = split_tag[0]
 
                         # get associated media file name without language
@@ -135,8 +136,7 @@ def find_subtitles(part):
         # get fn without forced/default/normal tag
         split_tag = local_basename.rsplit(".", 1)
         has_additional_tag = False
-        if len(split_tag) > 1 and split_tag[1].lower() in ['forced', 'normal', 'default', 'embedded', 'embedded-forced',
-                                                           'custom']:
+        if len(split_tag) > 1 and split_tag[1].lower() in SECONDARY_TAGS:
             local_basename = split_tag[0]
             has_additional_tag = True
 

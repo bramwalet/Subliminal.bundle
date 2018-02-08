@@ -31,8 +31,10 @@ from helpers import check_write_permissions, cast_bool, cast_int, mswindows
 register_cache_backend(
     "subzero.cache.file", "subzero.cache_backends.file", "SZFileBackend")
 
-SUBTITLE_EXTS = ['utf', 'utf8', 'utf-8', 'srt', 'smi', 'rt', 'ssa', 'aqt', 'jss', 'ass', 'idx', 'sub', 'txt', 'psb',
-                 'vtt']
+SUBTITLE_EXTS_BASE = ['utf', 'utf8', 'utf-8', 'srt', 'smi', 'rt', 'ssa', 'aqt', 'jss', 'ass', 'idx', 'sub', 'psb',
+                      'vtt']
+SUBTITLE_EXTS = SUBTITLE_EXTS_BASE + ["txt"]
+
 TEXT_SUBTITLE_EXTS = ("srt", "ass", "ssa", "vtt")
 VIDEO_EXTS = ['3g2', '3gp', 'asf', 'asx', 'avc', 'avi', 'avs', 'bivx', 'bup', 'divx', 'dv', 'dvr-ms', 'evo', 'fli',
               'flv',
