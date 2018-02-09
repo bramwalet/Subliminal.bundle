@@ -5,6 +5,11 @@ and remove the ".template" suffix. Restart the plugin or the PMS.
 Don't expect support if you mess this up.
 */
 {
+    // core config
+
+    // true: in case of a configured subtitle sub-folder, also clean up the folder containing the media item
+    "thorough_cleaning": false,
+
     // per-provider-config
     "providers": {
         // enabled_for: specifies which media type to enable the provider for. does not override global/throttled

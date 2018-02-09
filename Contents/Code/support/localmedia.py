@@ -91,7 +91,7 @@ def find_subtitles(part):
     if use_filesystem and helpers.cast_bool(Prefs["subtitles.autoclean"]):
         for path in paths:
             # only housekeep in sub_subfolder if sub_subfolder is used
-            if use_sub_subfolder and path != sub_subfolder:
+            if use_sub_subfolder and path != sub_subfolder and not sz_config.advanced.thorough_cleaning:
                 continue
 
             # we can't housekeep the global subtitle folders as we don't know about *all* media files
