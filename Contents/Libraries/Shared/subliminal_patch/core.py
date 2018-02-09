@@ -131,7 +131,8 @@ class SZProviderPool(ProviderPool):
         # check whether we want to search this provider for the languages
         use_languages = languages_search_base & languages
         if not use_languages:
-            logger.info('Skipping provider %r: no language to search for (advanced)', provider)
+            logger.info('Skipping provider %r: no language to search for (advanced: %r, got: %r)', provider,
+                        languages_search_base, languages)
             return []
 
         # check supported languages
