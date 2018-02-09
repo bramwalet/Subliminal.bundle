@@ -80,7 +80,8 @@ def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, pr
         if not ignore_all:
             set_existing_languages(video, pms_video_info, external_subtitles=external_subtitles,
                                    embedded_subtitles=embedded_subtitles, known_embedded=known_embedded,
-                                   forced_only=config.forced_only, stored_subs=stored_subs)
+                                   forced_only=config.forced_only, stored_subs=stored_subs, languages=config.lang_list,
+                                   unknown_as_first=config.treat_und_as_first)
 
         # add video fps info
         video.fps = plex_part.fps

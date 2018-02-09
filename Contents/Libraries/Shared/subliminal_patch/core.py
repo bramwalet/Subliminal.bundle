@@ -509,7 +509,7 @@ def scan_video(path, dont_use_actual_file=False, hints=None, providers=None, ski
     return video
 
 
-def _search_external_subtitles(path, forced_tag=False):
+def _search_external_subtitles(path, forced_tag=False, languages=None, unknown_as_first=False):
     dirpath, filename = os.path.split(path)
     dirpath = dirpath or '.'
     fileroot, fileext = os.path.splitext(filename)
@@ -556,6 +556,9 @@ def _search_external_subtitles(path, forced_tag=False):
             except ValueError:
                 logger.error('Cannot parse language code %r', language_code)
 
+        if not language and unknown_as_first:
+            language = list(languages)[0]
+
         subtitles[p] = language
 
     logger.debug('Found subtitles %r', subtitles)
@@ -563,7 +566,7 @@ def _search_external_subtitles(path, forced_tag=False):
     return subtitles
 
 
-def search_external_subtitles(path, forced_tag=False):
+def search_external_subtitles(path, forced_tag=False, languages=None, unknown_as_first=False):
     """
     wrap original search_external_subtitles function to search multiple paths for one given video
     # todo: cleanup and merge with _search_external_subtitles
@@ -582,7 +585,8 @@ def search_external_subtitles(path, forced_tag=False):
         logger.debug("external subs: scanning path %s", abspath)
 
         if os.path.isdir(os.path.dirname(abspath)):
-            subtitles.update(_search_external_subtitles(abspath, forced_tag=forced_tag))
+            subtitles.update(_search_external_subtitles(abspath, forced_tag=forced_tag, languages=languages,
+                                                        unknown_as_first=unknown_as_first))
     logger.debug("external subs: found %s", subtitles)
     return subtitles
 
