@@ -136,7 +136,7 @@ class DefaultSubtitleHelper(SubtitleHelper):
         lang_part = match_ietf_language(file)
         if lang_part != file:
             language = Locale.Language.Match(lang_part)
-        elif config.treat_und_as_first:
+        elif config.only_one:
             language = Locale.Language.Match(list(config.lang_list)[0].alpha2)
         else:
             language = Locale.Language.Match("xx")

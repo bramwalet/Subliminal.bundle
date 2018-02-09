@@ -131,6 +131,7 @@ class Config(object):
     plex_transcoder = None
     refiner_settings = None
     exact_filenames = False
+    only_one = False
 
     store_recently_played_amount = 40
 
@@ -195,6 +196,7 @@ class Config(object):
         self.debug_mods = cast_bool(Prefs['log_debug_mods'])
         self.no_refresh = os.environ.get("SZ_NO_REFRESH", False)
         self.plex_transcoder = self.get_plex_transcoder()
+        self.only_one = cast_bool(Prefs['subtitles.only_one'])
         self.initialized = True
 
     def init_libraries(self):
