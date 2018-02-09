@@ -504,7 +504,10 @@ class Config(object):
                         except:
                             continue
                     adv_out.update({real_lang})
-                return adv_out
+
+                # fallback to default languages if no valid language was found in advanced settings
+                if adv_out:
+                    return adv_out
 
         l = {Language.fromietf(Prefs["langPref1a"])}
         lang_custom = Prefs["langPrefCustom"].strip()
