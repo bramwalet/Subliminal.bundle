@@ -62,4 +62,5 @@ subliminal.refiner_manager.register('sz_tvdb = subliminal_patch.refiners.tvdb:re
 subliminal.refiner_manager.register('drone = subliminal_patch.refiners.drone:refine')
 subliminal.refiner_manager.register('filebot = subliminal_patch.refiners.filebot:refine')
 subliminal.refiner_manager.register('file_info_file = subliminal_patch.refiners.file_info_file:refine')
+subliminal.refiner_manager.register('symlinks = subliminal_patch.refiners.symlinks:refine')
 

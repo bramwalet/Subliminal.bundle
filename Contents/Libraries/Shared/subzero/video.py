@@ -85,6 +85,10 @@ def refine_video(video, no_refining=False, refiner_settings=None):
         refine_kwargs["episode_refiners"].insert(0, "file_info_file")
         refine_kwargs["movie_refiners"].insert(0, "file_info_file")
 
+    if "symlinks" in refiner_settings:
+        refine_kwargs["episode_refiners"].insert(0, "symlinks")
+        refine_kwargs["movie_refiners"].insert(0, "symlinks")
+
     if "sonarr" in refiner_settings:
         # drone always comes last
         refine_kwargs["episode_refiners"].append("drone")

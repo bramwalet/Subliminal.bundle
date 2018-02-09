@@ -784,7 +784,7 @@ class Config(object):
         # fixme: exact_filenames should be determined via callback combined with info about the current video
         # (original_name)
 
-        mode = str(Prefs["media_rename"])
+        mode = str(Prefs["media_rename1"])
         self.refiner_settings = {}
 
         if cast_bool(Prefs['use_file_info_file']):
@@ -792,6 +792,11 @@ class Config(object):
             self.exact_filenames = True
 
         if mode == "none of the above":
+            return
+
+        elif mode == "Symlink to original file":
+            self.refiner_settings["symlinks"] = True
+            self.exact_filenames = True
             return
 
         elif mode == "I keep the original filenames":
