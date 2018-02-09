@@ -34,6 +34,9 @@ class CommonFixes(SubtitleTextModification):
         # no space after ellipsis
         NReProcessor(re.compile(r'(?u)\.\.\.(?![\s.,!?\'"])(?!$)'), "... ", name="CM_ellipsis_no_space"),
 
+        # no space before spaced ellipsis
+        NReProcessor(re.compile(r'(?u)(?<=[^\s])(?<!\s)\. \. \.'), " . . .", name="CM_ellipsis_no_space2"),
+
         # multiple spaces
         NReProcessor(re.compile(r'(?u)[\s]{2,}'), " ", name="CM_multiple_spaces"),
 
@@ -63,7 +66,7 @@ class CommonFixes(SubtitleTextModification):
         # fix spaces in numbers (allows for punctuation: ,.:' (comma/dot only fixed if after space, those may be
         # countdowns otherwise); don't break up ellipses
         NReProcessor(
-            re.compile(r'(?u)([0-9]+[0-9:\']*(?<!\.\.)\s+(?!\.\.)[0-9,.:\']*(?=[0-9]+)[0-9,.:\'\s]+)(?=\s|$)'),
+            re.compile(r'(?u)(\b[0-9]+[0-9:\']*(?<!\.\.)\s+(?!\.\.)[0-9,.:\']*(?=[0-9]+)[0-9,.:\'\s]+)'),
             lambda match: match.group(1).replace(" ", ""),
             name="CM_spaces_in_numbers"),
 
@@ -76,8 +79,8 @@ class CommonFixes(SubtitleTextModification):
                      lambda match: match.group(1).strip() + (" " if match.group(2).endswith(" ") else ""),
                      name="CM_double_interpunct"),
 
-        # remove spaces before punctuation
-        NReProcessor(re.compile(r'(?u)(?:(?<=^)|(?<=\w)) +([!?.,](?![!?.,]))'), r"\1", name="CM_punctuation_space"),
+        # remove spaces before punctuation; don't break spaced ellipses
+        NReProcessor(re.compile(r'(?u)(?:(?<=^)|(?<=\w)) +([!?.,](?![!?.,]| \.))'), r"\1", name="CM_punctuation_space"),
     ]
 
     post_processors = empty_line_post_processors
