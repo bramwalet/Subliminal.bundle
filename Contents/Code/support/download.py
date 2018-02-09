@@ -80,6 +80,10 @@ def post_download_hook(subtitle):
     subtitle.pack_data = None
 
 
+def language_hook(provider):
+    return config.get_lang_list(provider=provider)
+
+
 def download_best_subtitles(video_part_map, min_score=0, throttle_time=None, providers=None):
     hearing_impaired = Prefs['subtitles.search.hearingImpaired']
     languages = set([Language.fromietf(str(l)) for l in config.lang_list])
@@ -112,5 +116,6 @@ def download_best_subtitles(video_part_map, min_score=0, throttle_time=None, pro
                                                   compute_score=compute_score, throttle_time=throttle_time,
                                                   blacklist=blacklist, throttle_callback=config.provider_throttle,
                                                   pre_download_hook=pre_download_hook,
-                                                  post_download_hook=post_download_hook)
+                                                  post_download_hook=post_download_hook,
+                                                  language_hook=language_hook)
     Log.Debug("All languages for all requested videos exist. Doing nothing.")

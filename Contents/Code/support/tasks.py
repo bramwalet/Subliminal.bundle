@@ -20,7 +20,7 @@ from support.items import get_recent_items, get_item, is_ignored, get_item_title
 from support.helpers import track_usage, get_title_for_video_metadata, cast_bool, PartUnknownException
 from support.plex_media import get_plex_metadata
 from support.scanning import scan_videos
-from download import download_best_subtitles, pre_download_hook, post_download_hook
+from download import download_best_subtitles, pre_download_hook, post_download_hook, language_hook
 
 PROVIDER_SLACK = 30
 DL_PROVIDER_SLACK = 30
@@ -142,7 +142,8 @@ class SubtitleListingMixin(object):
                                             providers=providers,
                                             provider_configs=provider_settings,
                                             pool_class=config.provider_pool,
-                                            throttle_callback=config.provider_throttle)
+                                            throttle_callback=config.provider_throttle,
+                                            language_hook=language_hook)
 
         use_hearing_impaired = Prefs['subtitles.search.hearingImpaired'] in ("prefer", "force HI")
 

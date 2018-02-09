@@ -50,7 +50,7 @@ SUBTITLE_EXTENSIONS = ('.srt', '.sub', '.smi', '.txt', '.ssa', '.ass', '.mpl', '
 
 class SZProviderPool(ProviderPool):
     def __init__(self, providers=None, provider_configs=None, blacklist=None, throttle_callback=None,
-                 pre_download_hook=None, post_download_hook=None):
+                 pre_download_hook=None, post_download_hook=None, language_hook=None):
         #: Name of providers to use
         self.providers = providers or provider_registry.names()
 
@@ -69,6 +69,7 @@ class SZProviderPool(ProviderPool):
 
         self.pre_download_hook = pre_download_hook
         self.post_download_hook = post_download_hook
+        self.language_hook = language_hook
 
         if not self.throttle_callback:
             self.throttle_callback = lambda x, y: x
@@ -120,9 +121,17 @@ class SZProviderPool(ProviderPool):
         :rtype: list of :class:`~subliminal.subtitle.Subtitle` or None
 
         """
+        languages_search_base = self.language_hook(provider)
+
         # check video validity
         if not provider_registry[provider].check(video):
             logger.info('Skipping provider %r: not a valid video', provider)
+            return []
+
+        # check whether we want to search this provider for the languages
+        languages = languages_search_base & languages
+        if not languages:
+            logger.info('Skipping provider %r: no language to search for (advanced)', provider)
             return []
 
         # check supported languages

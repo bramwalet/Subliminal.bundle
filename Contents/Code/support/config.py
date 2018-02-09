@@ -101,7 +101,6 @@ class Config(object):
     lock_advanced_menu = False
     locked = False
     pin_valid_minutes = 10
-    lang_list = None
     subtitle_destination_folder = None
     subtitle_formats = None
     max_recent_items_per_library = 200
@@ -171,7 +170,6 @@ class Config(object):
         self.set_activity_modes()
         self.parse_rename_mode()
 
-        self.lang_list = self.get_lang_list()
         self.subtitle_destination_folder = self.get_subtitle_destination_folder()
         self.subtitle_formats = self.get_subtitle_formats()
         self.forced_only = cast_bool(Prefs["subtitles.only_foreign"])
@@ -490,7 +488,24 @@ class Config(object):
         return enabled_sections
 
     # Prepare a list of languages we want subs for
-    def get_lang_list(self):
+    def get_lang_list(self, provider=None):
+        # advanced settings
+        if provider and self.advanced.providers and provider in self.advanced.providers:
+            adv_languages = self.advanced.providers[provider].get("languages", None)
+            if adv_languages:
+                adv_out = set()
+                for adv_lang in adv_languages:
+                    adv_lang = adv_lang.strip()
+                    try:
+                        real_lang = Language.fromietf(adv_lang)
+                    except:
+                        try:
+                            real_lang = Language.fromname(adv_lang)
+                        except:
+                            continue
+                    adv_out.update({real_lang})
+                return adv_out
+
         l = {Language.fromietf(Prefs["langPref1a"])}
         lang_custom = Prefs["langPrefCustom"].strip()
 
@@ -522,6 +537,8 @@ class Config(object):
                 l.update({real_lang})
 
         return l
+
+    lang_list = property(get_lang_list)
 
     def get_subtitle_destination_folder(self):
         if not Prefs["subtitles.save.filesystem"]:
