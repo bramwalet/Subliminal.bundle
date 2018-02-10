@@ -66,7 +66,7 @@ class CommonFixes(SubtitleTextModification):
         # fix spaces in numbers (allows for punctuation: ,.:' (comma/dot only fixed if after space, those may be
         # countdowns otherwise); don't break up ellipses
         NReProcessor(
-            re.compile(r'(?u)(\b[0-9]+[0-9:\']*(?<!\.\.)\s+(?!\.\.)[0-9,.:\']*(?=[0-9]+)[0-9,.:\'\s]+)'),
+            re.compile(r'(?u)(\b[0-9]+[0-9:\']*(?<!\.\.)\s+(?!\.\.)[0-9,.:\'\s]*(?=[0-9]+)[0-9,.:\'])'),
             lambda match: match.group(1).replace(" ", ""),
             name="CM_spaces_in_numbers"),
 
