@@ -202,6 +202,20 @@ class JSONStoredVideoSubtitles(object):
 
         return part.get(str(lang))
 
+    def get_by_provider(self, part_id, lang, provider_name):
+        out = []
+        all_subs = self.get_all(part_id, lang)
+        if not all_subs:
+            return out
+
+        for key, subtitle in all_subs.iteritems():
+            if key == "current":
+                continue
+
+            if subtitle.provider_name == provider_name:
+                out.append(subtitle)
+        return out
+
     def count(self, part_id, lang):
         part_id = str(part_id)
         part = self.parts.get(part_id)

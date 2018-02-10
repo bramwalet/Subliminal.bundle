@@ -12,16 +12,18 @@ from requests import HTTPError
 from item_details import ItemDetailsMenu
 from refresh_item import RefreshItem
 from menu_helpers import add_ignore_options, dig_tree, set_refresh_menu_state, \
-    should_display_ignore, default_thumb, debounce, ObjectContainer, SubFolderObjectContainer, route
+    should_display_ignore, default_thumb, debounce, ObjectContainer, SubFolderObjectContainer, route, \
+    extract_embedded_sub
 from main import fatality, IgnoreMenu
 from advanced import DispatchRestart
 from subzero.constants import ART, PREFIX, DEPENDENCY_MODULE_NAMES
+from support.plex_media import get_all_parts, get_embedded_subtitle_streams
 from support.scheduler import scheduler
 from support.config import config
 from support.helpers import timestamp, df, display_language
 from support.ignore import ignore_list
-from support.items import get_all_items, get_items_info, \
-    get_item_kind_from_rating_key, get_item
+from support.items import get_all_items, get_items_info, get_item_kind_from_rating_key, get_item, MI_KEY
+from support.storage import get_subtitle_storage
 
 # init GUI
 ObjectContainer.art = R(ART)
@@ -56,7 +58,7 @@ def FirstLetterMetadataMenu(rating_key, key, title=None, base_title=None, displa
 
 @route(PREFIX + '/section/contents', display_items=bool)
 def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, previous_item_type=None,
-                 previous_rating_key=None, randomize=None):
+                 previous_rating_key=None, header=None, randomize=None):
     """
     displays the contents of a section based on whether it has a deeper tree or not (movies->movie (item) list; series->series list)
     :param rating_key:
@@ -70,12 +72,14 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
     title = unicode(title)
     item_title = title
     title = base_title + " > " + title
-    oc = SubFolderObjectContainer(title2=title, no_cache=True, no_history=True, view_group="full_details")
+    oc = SubFolderObjectContainer(title2=title, no_cache=True, no_history=True, header=header,
+                                  view_group="full_details")
 
     current_kind = get_item_kind_from_rating_key(rating_key)
 
     if display_items:
         timeout = 30
+        show = None
 
         # add back to series for season
         if current_kind == "season":
@@ -101,6 +105,29 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
         if should_display_ignore(items, previous=previous_item_type):
             add_ignore_options(oc, "series", title=item_title, rating_key=rating_key, callback_menu=IgnoreMenu)
 
+        # mass-extract embedded
+        if current_kind == "season" and config.plex_transcoder:
+            for lang in config.lang_list:
+                oc.add(DirectoryObject(
+                    key=Callback(SeasonExtractEmbedded, rating_key=rating_key, language=lang,
+                                 base_title=show.section.title, display_items=display_items, item_title=item_title,
+                                 title=title,
+                                 previous_item_type=previous_item_type, with_mods=True,
+                                 previous_rating_key=previous_rating_key, randomize=timestamp()),
+                    title=u"Extract missing %s embedded subtitles with default mods" % display_language(lang),
+                    summary="Extracts the not yet extracted embedded subtitles of all episodes for the current season "
+                            "with all configured default modifications"
+                ))
+                oc.add(DirectoryObject(
+                    key=Callback(SeasonExtractEmbedded, rating_key=rating_key, language=lang,
+                                 base_title=show.section.title, display_items=display_items, item_title=item_title,
+                                 title=title,
+                                 previous_item_type=previous_item_type, with_mods=False,
+                                 previous_rating_key=previous_rating_key, randomize=timestamp()),
+                    title=u"Extract missing %s embedded subtitles" % display_language(lang),
+                    summary="Extracts the not yet extracted embedded subtitles of all episodes for the current season"
+                ))
+
         # add refresh
         oc.add(DirectoryObject(
             key=Callback(RefreshItem, rating_key=rating_key, item_title=title, refresh_kind=current_kind,
@@ -119,6 +146,45 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
         return ItemDetailsMenu(rating_key=rating_key, title=title, item_title=item_title)
 
     return oc
+
+
+@route(PREFIX + '/season/extract_embedded/{rating_key}/{language}')
+def SeasonExtractEmbedded(**kwargs):
+    rating_key = kwargs.get("rating_key")
+    requested_language = kwargs.pop("language")
+    with_mods = kwargs.pop("with_mods")
+    item_title = kwargs.pop("item_title")
+    title = kwargs.pop("title")
+
+    Thread.Create(season_extract_embedded, **{"rating_key": rating_key, "requested_language": requested_language,
+                                              "with_mods": with_mods})
+
+    kwargs["header"] = u"Extracting of embedded subtitles for %s triggered" % title
+
+    kwargs.pop("randomize")
+    return MetadataMenu(randomize=timestamp(), title=item_title, **kwargs)
+
+
+def season_extract_embedded(rating_key, requested_language, with_mods=False):
+    # get stored subtitle info for item id
+    subtitle_storage = get_subtitle_storage()
+
+    try:
+        for data in get_all_items(key="children", value=rating_key, base="library/metadata"):
+            item = get_item(data[MI_KEY])
+            if item:
+                stored_subs = subtitle_storage.load_or_new(item)
+                for part in get_all_parts(item):
+                    embedded_subs = stored_subs.get_by_provider(part.id, requested_language, "embedded")
+                    if not embedded_subs:
+                        for stream_data in get_embedded_subtitle_streams(part):
+                            stream = stream_data["stream"]
+
+                            extract_embedded_sub(rating_key=item.rating_key, part_id=part.id,
+                                                 stream_index=str(stream.index),
+                                                 language=requested_language, with_mods=with_mods)
+    finally:
+        subtitle_storage.destroy()
 
 
 @route(PREFIX + '/ignore_list')

@@ -5,6 +5,7 @@ import os
 import helpers
 from items import get_item
 from lib import Plex
+from support.config import TEXT_SUBTITLE_EXTS, config
 
 
 def get_metadata_dict(item, part, add):
@@ -160,6 +161,30 @@ def get_media_item_ids(media, kind="series"):
                 ids.append(media.seasons[season].episodes[episode].id)
 
     return ids
+
+
+def get_all_parts(plex_item):
+    parts = []
+    for media in plex_item.media:
+        parts += media.parts
+
+    return parts
+
+
+def get_embedded_subtitle_streams(part):
+    streams = []
+    for stream in part.streams:
+        # subtitle stream
+        if stream.stream_type == 3 and not stream.stream_key and stream.codec in TEXT_SUBTITLE_EXTS:
+            language = helpers.get_language_from_stream(stream.language_code)
+            is_unknown = False
+
+            if not language and config.treat_und_as_first:
+                language = list(config.lang_list)[0]
+                is_unknown = True
+
+            streams.append({"stream": stream, "is_unknown": is_unknown, "language": language})
+    return streams
 
 
 def get_part(plex_item, part_id):
