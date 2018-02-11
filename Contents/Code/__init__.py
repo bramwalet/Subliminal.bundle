@@ -126,8 +126,10 @@ def agent_extract_embedded(videos):
                 for requested_language in config.lang_list:
                     embedded_subs = stored_subs.get_by_provider(part.id, requested_language, "embedded")
                     if not embedded_subs:
-                        for stream_data in get_embedded_subtitle_streams(part):
-                            stream = stream_data["stream"]
+                        stream_data = get_embedded_subtitle_streams(part, requested_language=requested_language)
+
+                        if stream_data:
+                            stream = stream_data[0]["stream"]
 
                             extract_embedded_sub(rating_key=item.rating_key, part_id=part.id,
                                                  stream_index=str(stream.index),

@@ -586,7 +586,7 @@ def ListEmbeddedSubsForItemMenu(**kwargs):
     part = get_part(plex_item, part_id)
 
     if part:
-        for stream_data in get_embedded_subtitle_streams(part):
+        for stream_data in get_embedded_subtitle_streams(part, skip_duplicate_unknown=False):
             language = stream_data["language"]
             is_unknown = stream_data["is_unknown"]
             stream = stream_data["stream"]

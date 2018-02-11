@@ -15,12 +15,11 @@ from support.storage import get_pack_data, store_pack_data
 
 
 def get_missing_languages(video, part):
-    ietf_as_alpha3 = cast_bool(Prefs["subtitles.language.ietf_normalize"])
     languages = set([Language.fromietf(str(l)) for l in config.lang_list])
 
     # should we treat IETF as alpha3? (ditch the country part)
     alpha3_map = {}
-    if ietf_as_alpha3:
+    if config.ietf_as_alpha3:
         for language in languages:
             if language.country:
                 alpha3_map[language.alpha3] = language.country
@@ -35,7 +34,7 @@ def get_missing_languages(video, part):
                 Log.Debug("Found metadata subtitle %s for %s", language, video)
 
     have_languages = video.subtitle_languages.copy()
-    if ietf_as_alpha3:
+    if config.ietf_as_alpha3:
         for language in have_languages:
             if language.country:
                 alpha3_map[language.alpha3] = language.country
@@ -54,7 +53,7 @@ def get_missing_languages(video, part):
         return False
 
     # re-add country codes to the missing languages, in case we've removed them above
-    if ietf_as_alpha3:
+    if config.ietf_as_alpha3:
         for language in languages:
             language.country = alpha3_map.get(language.alpha3, None)
 

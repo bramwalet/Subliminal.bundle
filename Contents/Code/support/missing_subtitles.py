@@ -30,8 +30,6 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
 
     subtitle_target_dir, tdir_is_absolute = config.subtitle_sub_dir
 
-    ietf_as_alpha3 = cast_bool(Prefs["subtitles.language.ietf_normalize"])
-
     missing = set()
     languages_set = set([Language.fromietf(str(l)) for l in languages])
     for media in item.media:
@@ -127,7 +125,7 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
 
             check_languages = set([Language.fromietf(str(l)) for l in languages])
             alpha3_map = {}
-            if ietf_as_alpha3:
+            if config.ietf_as_alpha3:
                 for language in existing_flat:
                     if language.country:
                         alpha3_map[language.alpha3] = language.country
@@ -149,7 +147,7 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
                 continue
 
             missing_from_part = set(Language.fromietf(l) for l in check_languages_str - existing_flat_str)
-            if ietf_as_alpha3:
+            if config.ietf_as_alpha3:
                 for language in missing_from_part:
                     language.country = alpha3_map.get(language.alpha3, None)
 
