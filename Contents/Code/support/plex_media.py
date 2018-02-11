@@ -173,6 +173,7 @@ def get_all_parts(plex_item):
 
 def get_embedded_subtitle_streams(part):
     streams = []
+    has_unknown = False
     for stream in part.streams:
         # subtitle stream
         if stream.stream_type == 3 and not stream.stream_key and stream.codec in TEXT_SUBTITLE_EXTS:
@@ -180,8 +181,13 @@ def get_embedded_subtitle_streams(part):
             is_unknown = False
 
             if not language and config.treat_und_as_first:
+                # only consider first unknown subtitle stream
+                if has_unknown:
+                    continue
+
                 language = list(config.lang_list)[0]
                 is_unknown = True
+                has_unknown = True
 
             streams.append({"stream": stream, "is_unknown": is_unknown, "language": language})
     return streams
