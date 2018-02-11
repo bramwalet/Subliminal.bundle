@@ -165,6 +165,7 @@ def extract_embedded_sub(**kwargs):
     stream_index = kwargs.pop("stream_index")
     with_mods = kwargs.pop("with_mods", False)
     language = Language.fromietf(kwargs.pop("language"))
+    refresh = kwargs.pop("refresh", True)
 
     plex_item = get_item(rating_key)
     item_type = get_item_kind_from_item(plex_item)
@@ -203,7 +204,7 @@ def extract_embedded_sub(**kwargs):
                     save_successful = save_subtitles(scanned_parts, {scanned_parts.keys()[0]: [subtitle]}, mode="m")
                     set_refresh_menu_state(None)
 
-                    if save_successful:
+                    if save_successful and refresh:
                         refresh_item(rating_key)
 
 

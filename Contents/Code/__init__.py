@@ -114,7 +114,7 @@ def update_local_media(metadata, media, media_type="movies"):
             pass
 
 
-def extract_embedded(videos):
+def agent_extract_embedded(videos):
     try:
         subtitle_storage = get_subtitle_storage()
 
@@ -131,7 +131,7 @@ def extract_embedded(videos):
 
                             extract_embedded_sub(rating_key=item.rating_key, part_id=part.id,
                                                  stream_index=str(stream.index),
-                                                 language=str(requested_language), with_mods=True)
+                                                 language=str(requested_language), with_mods=True, refresh=False)
     except:
         Log.Error("Something went wrong when auto-extracting subtitles, continuing: %s", traceback.format_exc())
 
@@ -202,7 +202,7 @@ class SubZeroAgent(object):
 
             # auto extract embedded
             if config.embedded_auto_extract:
-                extract_embedded(videos)
+                agent_extract_embedded(videos)
 
             # clear missing subtitles menu data
             if not scheduler.is_task_running("MissingSubtitles"):
