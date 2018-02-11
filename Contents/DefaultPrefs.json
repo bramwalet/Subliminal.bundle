@@ -378,7 +378,7 @@
     "id": "provider.subscene.enabled",
     "label": "Provider: Enable SubScene",
     "type": "bool",
-    "default": "true"
+    "default": "false"
   },
   {
     "id": "providers.multithreading",
