@@ -1,8 +1,6 @@
 # coding=utf-8
 import sys
 import datetime
-import time
-import os
 
 from subzero.sandbox import restore_builtins
 
@@ -27,7 +25,7 @@ from subzero.constants import OS_PLEX_USERAGENT, PERSONAL_MEDIA_IDENTIFIER
 from interface.menu import *
 from support.plex_media import media_to_videos, get_media_item_ids
 from support.scanning import scan_videos
-from support.storage import save_subtitles, store_subtitle_info
+from support.storage import save_subtitles, store_subtitle_info, get_subtitle_storage
 from support.items import is_ignored
 from support.config import config
 from support.lib import get_intent
@@ -116,6 +114,28 @@ def update_local_media(metadata, media, media_type="movies"):
             pass
 
 
+def extract_embedded(videos):
+    try:
+        subtitle_storage = get_subtitle_storage()
+
+        for video in videos:
+            item = video["item"]
+            stored_subs = subtitle_storage.load_or_new(item)
+
+            for part in get_all_parts(item):
+                for requested_language in config.lang_list:
+                    embedded_subs = stored_subs.get_by_provider(part.id, requested_language, "embedded")
+                    if not embedded_subs:
+                        for stream_data in get_embedded_subtitle_streams(part):
+                            stream = stream_data["stream"]
+
+                            extract_embedded_sub(rating_key=item.rating_key, part_id=part.id,
+                                                 stream_index=str(stream.index),
+                                                 language=str(requested_language), with_mods=True)
+    except:
+        Log.Error("Something went wrong when auto-extracting subtitles, continuing: %s", traceback.format_exc())
+
+
 class SubZeroAgent(object):
     agent_type = None
     agent_type_verbose = None
@@ -179,6 +199,10 @@ class SubZeroAgent(object):
             # scanned_video_part_map = {subliminal.Video: plex_part, ...}
             providers = config.get_providers(media_type=self.agent_type)
             scanned_video_part_map = scan_videos(videos, providers=providers)
+
+            # auto extract embedded
+            if config.embedded_auto_extract:
+                extract_embedded(videos)
 
             # clear missing subtitles menu data
             if not scheduler.is_task_running("MissingSubtitles"):

@@ -132,6 +132,7 @@ class Config(object):
     refiner_settings = None
     exact_filenames = False
     only_one = False
+    embedded_auto_extract = False
 
     store_recently_played_amount = 40
 
@@ -197,6 +198,7 @@ class Config(object):
         self.no_refresh = os.environ.get("SZ_NO_REFRESH", False)
         self.plex_transcoder = self.get_plex_transcoder()
         self.only_one = cast_bool(Prefs['subtitles.only_one'])
+        self.embedded_auto_extract = cast_bool(Prefs["subtitles.embedded.autoextract"])
         self.initialized = True
 
     def init_libraries(self):

@@ -387,6 +387,12 @@
     "default": "true"
   },
   {
+    "id": "subtitles.embedded.autoextract",
+    "label": "Automatically extract and use embedded subtitles upon media addition (with configured default mods)",
+    "type": "bool",
+    "default": "false"
+  },
+  {
     "id": "subtitles.scan.embedded",
     "label": "Don't search for subtitles of a language if there are embedded subtitles inside the media file (MKV/MP4)?",
     "type": "bool",
