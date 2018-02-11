@@ -134,6 +134,9 @@ def agent_extract_embedded(videos):
                             extract_embedded_sub(rating_key=item.rating_key, part_id=part.id,
                                                  stream_index=str(stream.index),
                                                  language=str(requested_language), with_mods=True, refresh=False)
+                    else:
+                        Log.Debug("Skipping embedded subtitle extraction for %s, already got %r from %s",
+                                  item.rating_key, requested_language, embedded_subs[0].id)
     except:
         Log.Error("Something went wrong when auto-extracting subtitles, continuing: %s", traceback.format_exc())
 
