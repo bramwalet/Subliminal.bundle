@@ -296,7 +296,7 @@ def SelectStoredSubForItemMenu(**kwargs):
 
     kwargs.pop("randomize")
 
-    kwargs["header"] = 'Success',
+    kwargs["header"] = 'Success'
     kwargs["message"] = 'Subtitle saved to disk'
 
     return SubtitleOptionsMenu(randomize=timestamp(), **kwargs)

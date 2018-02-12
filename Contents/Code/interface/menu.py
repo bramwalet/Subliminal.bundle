@@ -159,7 +159,8 @@ def SeasonExtractEmbedded(**kwargs):
     Thread.Create(season_extract_embedded, **{"rating_key": rating_key, "requested_language": requested_language,
                                               "with_mods": with_mods})
 
-    kwargs["header"] = u"Extracting of embedded subtitles for %s triggered" % title
+    kwargs["header"] = 'Success'
+    kwargs["message"] = u"Extracting of embedded subtitles for %s triggered" % title
 
     kwargs.pop("randomize")
     return MetadataMenu(randomize=timestamp(), title=item_title, **kwargs)
@@ -177,7 +178,8 @@ def season_extract_embedded(rating_key, requested_language, with_mods=False):
                 for part in get_all_parts(item):
                     embedded_subs = stored_subs.get_by_provider(part.id, requested_language, "embedded")
                     if not embedded_subs:
-                        stream_data = get_embedded_subtitle_streams(part, requested_language=requested_language)
+                        stream_data = get_embedded_subtitle_streams(part, requested_language=requested_language,
+                                                                    get_forced=config.forced_only)
                         if stream_data:
                             stream = stream_data[0]["stream"]
 
