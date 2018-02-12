@@ -22,7 +22,7 @@ def get_subtitle_storage():
     return StoredSubtitlesManager(Data, Thread, get_item)
 
 
-def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_type, mode="a"):
+def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_type, mode="a", set_current=True):
     """
     stores information about downloaded subtitles in plex's Dict()
     """
@@ -52,7 +52,8 @@ def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_ty
             if subtitle.storage_path:
                 last_mod = datetime.datetime.fromtimestamp(os.path.getmtime(subtitle.storage_path))
 
-            ret_val = stored_subs.add(part_id, lang, subtitle, storage_type, mode=mode, last_mod=last_mod)
+            ret_val = stored_subs.add(part_id, lang, subtitle, storage_type, mode=mode, last_mod=last_mod,
+                                      set_current=set_current)
 
             if ret_val:
                 Log.Debug("Subtitle stored")
@@ -142,10 +143,12 @@ def save_subtitles_to_metadata(videos, subtitles):
     return True
 
 
-def save_subtitles(scanned_video_part_map, downloaded_subtitles, mode="a", bare_save=False, mods=None):
+def save_subtitles(scanned_video_part_map, downloaded_subtitles, mode="a", bare_save=False, mods=None,
+                   set_current=True):
     """
      
-    :param scanned_video_part_map: 
+    :param set_current: save the subtitle as the current one
+    :param scanned_video_part_map:
     :param downloaded_subtitles: 
     :param mode: 
     :param bare_save: don't trigger anything; don't store information
@@ -171,30 +174,33 @@ def save_subtitles(scanned_video_part_map, downloaded_subtitles, mode="a", bare_
     save_to_fs = cast_bool(Prefs['subtitles.save.filesystem'])
     if save_to_fs:
         storage = "filesystem"
-        try:
-            Log.Debug("Using filesystem as subtitle storage")
-            save_subtitles_to_file(downloaded_subtitles)
-        except OSError:
-            if cast_bool(Prefs["subtitles.save.metadata_fallback"]):
-                meta_fallback = True
-                storage = "metadata"
+
+    if set_current:
+        if save_to_fs:
+            try:
+                Log.Debug("Using filesystem as subtitle storage")
+                save_subtitles_to_file(downloaded_subtitles)
+            except OSError:
+                if cast_bool(Prefs["subtitles.save.metadata_fallback"]):
+                    meta_fallback = True
+                    storage = "metadata"
+                else:
+                    raise
             else:
-                raise
-        else:
-            save_successful = True
+                save_successful = True
 
-    if not save_to_fs or meta_fallback:
-        if meta_fallback:
-            Log.Debug("Using metadata as subtitle storage, because filesystem storage failed")
-        else:
-            Log.Debug("Using metadata as subtitle storage")
-        save_successful = save_subtitles_to_metadata(scanned_video_part_map, downloaded_subtitles)
+        if not save_to_fs or meta_fallback:
+            if meta_fallback:
+                Log.Debug("Using metadata as subtitle storage, because filesystem storage failed")
+            else:
+                Log.Debug("Using metadata as subtitle storage")
+            save_successful = save_subtitles_to_metadata(scanned_video_part_map, downloaded_subtitles)
 
-    if not bare_save and save_successful and config.notify_executable:
-        notify_executable(config.notify_executable, scanned_video_part_map, downloaded_subtitles, storage)
+        if not bare_save and save_successful and config.notify_executable:
+            notify_executable(config.notify_executable, scanned_video_part_map, downloaded_subtitles, storage)
 
-    if not bare_save and save_successful:
-        store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage, mode=mode)
+    if not bare_save and (save_successful or not set_current):
+        store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage, mode=mode, set_current=set_current)
 
     return save_successful
 

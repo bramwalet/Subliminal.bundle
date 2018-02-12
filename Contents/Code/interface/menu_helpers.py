@@ -166,6 +166,7 @@ def extract_embedded_sub(**kwargs):
     with_mods = kwargs.pop("with_mods", False)
     language = Language.fromietf(kwargs.pop("language"))
     refresh = kwargs.pop("refresh", True)
+    set_current = kwargs.pop("set_current", True)
 
     plex_item = get_item(rating_key)
     item_type = get_item_kind_from_item(plex_item)
@@ -201,7 +202,8 @@ def extract_embedded_sub(**kwargs):
                     subtitle.set_encoding("utf-8")
 
                     # fixme: speedup video; only video.name is needed
-                    save_successful = save_subtitles(scanned_parts, {scanned_parts.keys()[0]: [subtitle]}, mode="m")
+                    save_successful = save_subtitles(scanned_parts, {scanned_parts.keys()[0]: [subtitle]}, mode="m",
+                                                     set_current=set_current)
                     set_refresh_menu_state(None)
 
                     if save_successful and refresh:

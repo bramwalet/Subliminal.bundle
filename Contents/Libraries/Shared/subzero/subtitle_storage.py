@@ -152,7 +152,7 @@ class JSONStoredVideoSubtitles(object):
 
         return data
 
-    def add(self, part_id, lang, subtitle, storage_type, date_added=None, mode="a", last_mod=None):
+    def add(self, part_id, lang, subtitle, storage_type, date_added=None, mode="a", last_mod=None, set_current=True):
         part_id = str(part_id)
         part = self.parts.get(part_id)
         if not part:
@@ -170,7 +170,10 @@ class JSONStoredVideoSubtitles(object):
                                  subtitle.provider_name, subtitle.id, date_added=date_added, mode=mode,
                                  content=subtitle.content, mods=subtitle.mods, encoding="utf-8",
                                  last_mod=last_mod)
-        subs["current"] = sub_key
+
+        if set_current:
+            logger.debug(u"Setting subtitle as current: %r", subtitle)
+            subs["current"] = sub_key
 
         return True
 
