@@ -72,6 +72,7 @@ For further help or manual installation, [please go to the wiki](https://github.
 ## Changelog
 
 2.5.0.2221
+
 refiners: add support for retrieving original filename from
 	- drone derivates: sonarr, radarr
 	- filebot
