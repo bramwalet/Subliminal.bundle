@@ -3,7 +3,7 @@
 import traceback
 import types
 
-from babelfish import Language
+from subzero.language import Language
 
 from menu_helpers import debounce, SubFolderObjectContainer, default_thumb, route
 from subzero.modification import registry as mod_registry, SubtitleModifications
@@ -76,6 +76,11 @@ def SubtitleModificationsMenu(**kwargs):
             title=pad_title("Manage applied mods"),
             summary=u"Currently applied mods: %s" % (", ".join(current_mods))
         ))
+        oc.add(DirectoryObject(
+            key=Callback(SubtitleReapplyMods, randomize=timestamp(), **kwargs),
+            title=pad_title("Reapply applied mods"),
+            summary=u"Currently applied mods: %s" % (", ".join(current_mods) if current_mods else "none")
+        ))
 
     oc.add(DirectoryObject(
         key=Callback(SubtitleSetMods, mods=None, mode="clear", randomize=timestamp(), **kwargs),
@@ -104,12 +109,12 @@ def SubtitleFPSModMenu(**kwargs):
     ))
 
     metadata = get_plex_metadata(rating_key, part_id, item_type)
-    scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
+    scanned_parts = scan_videos([metadata], ignore_all=True, skip_hashing=True)
     video, plex_part = scanned_parts.items()[0]
 
     target_fps = plex_part.fps
 
-    for fps in ["23.976", "24.000", "25.000", "29.970", "30.000", "50.000", "59.940", "60.000"]:
+    for fps in ["23.980", "23.976", "24.000", "25.000", "29.970", "30.000", "50.000", "59.940", "60.000"]:
         if float(fps) == float(target_fps):
             continue
 
@@ -223,6 +228,22 @@ def SubtitleSetMods(mods=None, mode=None, **kwargs):
     language = Language.fromietf(lang_a2)
 
     set_mods_for_part(rating_key, part_id, language, item_type, mods, mode=mode)
+
+    kwargs.pop("randomize")
+    return SubtitleModificationsMenu(randomize=timestamp(), **kwargs)
+
+
+@route(PREFIX + '/item/sub_reapply_mods/{rating_key}/{part_id}', force=bool)
+@debounce
+def SubtitleReapplyMods(**kwargs):
+    rating_key = kwargs["rating_key"]
+    part_id = kwargs["part_id"]
+    lang_a2 = kwargs["language"]
+    item_type = kwargs["item_type"]
+
+    language = Language.fromietf(lang_a2)
+
+    set_mods_for_part(rating_key, part_id, language, item_type, [], mode="add")
 
     kwargs.pop("randomize")
     return SubtitleModificationsMenu(randomize=timestamp(), **kwargs)

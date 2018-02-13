@@ -14,26 +14,16 @@ class FileIO(object):
         os.remove(path)
 
     @staticmethod
-    def read(path):
-        fp = open(path, 'r')
-
-        # Read from file
-        data = fp.read()
-
-        # Close file
-        fp.close()
+    def read(path, mode='r'):
+        with open(path, mode) as fp:
+            data = fp.read()
 
         return data
 
     @staticmethod
-    def write(path, data):
-        fp = open(path, 'w')
-
-        # Write to file
-        fp.write(data)
-
-        # Close file
-        fp.close()
+    def write(path, data, mode='w'):
+        with open(path, mode) as fp:
+            fp.write(data)
 
 
 VALID_ENCODINGS = ("latin1", "utf-8", "mbcs")

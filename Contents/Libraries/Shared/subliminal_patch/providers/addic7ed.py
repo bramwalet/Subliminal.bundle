@@ -5,17 +5,20 @@ import re
 import subliminal
 from random import randint
 
-from subliminal.exceptions import TooManyRequests, DownloadLimitExceeded
+from subliminal.exceptions import ServiceUnavailable, DownloadLimitExceeded
 from subliminal.providers.addic7ed import Addic7edProvider as _Addic7edProvider, \
-    Addic7edSubtitle as _Addic7edSubtitle, ParserBeautifulSoup, Language
+    Addic7edSubtitle as _Addic7edSubtitle, ParserBeautifulSoup, show_cells_re
 from subliminal.cache import SHOW_EXPIRATION_TIME, region
 from subliminal.subtitle import fix_line_ending
 from subliminal_patch.utils import sanitize
+from subliminal_patch.exceptions import TooManyRequests
+
+from subzero.language import Language
 
 logger = logging.getLogger(__name__)
 
 #: Series header parsing regex
-series_year_re = re.compile(r'^(?P<series>[ \w\'.:(),&!?-]+?)(?: \((?P<year>\d{4})\))?$')
+series_year_re = re.compile(r'^(?P<series>[ \w\'.:(),*&!?-]+?)(?: \((?P<year>\d{4})\))?$')
 
 
 class Addic7edSubtitle(_Addic7edSubtitle):
@@ -84,7 +87,16 @@ class Addic7edProvider(_Addic7edProvider):
         logger.info('Getting show ids')
         r = self.session.get(self.server_url + 'shows.php', timeout=10)
         r.raise_for_status()
-        soup = ParserBeautifulSoup(r.content, ['lxml', 'html.parser'])
+
+        # LXML parser seems to fail when parsing Addic7ed.com HTML markup.
+        # Last known version to work properly is 3.6.4 (next version, 3.7.0, fails)
+        # Assuming the site's markup is bad, and stripping it down to only contain what's needed.
+        show_cells = re.findall(show_cells_re, r.content)
+        if show_cells:
+            soup = ParserBeautifulSoup(b''.join(show_cells), ['lxml', 'html.parser'])
+        else:
+            # If RegEx fails, fall back to original r.content and use 'html.parser'
+            soup = ParserBeautifulSoup(r.content, ['html.parser'])
 
         # populate the show ids
         show_ids = {}
@@ -168,6 +180,9 @@ class Addic7edProvider(_Addic7edProvider):
         r = self.session.get(self.server_url + 'show/%d' % show_id, params={'season': season}, timeout=10)
         r.raise_for_status()
 
+        if r.status_code == 304:
+            raise TooManyRequests()
+
         if not r.content:
             # Provider wrongful return a status of 304 Not Modified with an empty content
             # raise_for_status won't raise exception for that status code
@@ -213,6 +228,9 @@ class Addic7edProvider(_Addic7edProvider):
         r = self.session.get(self.server_url + subtitle.download_link, headers={'Referer': subtitle.page_link},
                              timeout=10)
         r.raise_for_status()
+
+        if r.status_code == 304:
+            raise TooManyRequests()
 
         if not r.content:
             # Provider wrongful return a status of 304 Not Modified with an empty content

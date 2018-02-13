@@ -3,16 +3,19 @@
 import logging
 import os
 
-import dogpile
-from babelfish import Language, language_converters
+from babelfish import language_converters
 from dogpile.cache.api import NO_VALUE
-from subliminal.exceptions import ConfigurationError
-from subliminal.providers.opensubtitles import OpenSubtitlesProvider as _OpenSubtitlesProvider, checked, \
-    __short_version__, \
-    OpenSubtitlesSubtitle as _OpenSubtitlesSubtitle, Episode, ServerProxy, Unauthorized
+from subliminal.exceptions import ConfigurationError, ServiceUnavailable
+from subliminal.providers.opensubtitles import OpenSubtitlesProvider as _OpenSubtitlesProvider,\
+    OpenSubtitlesSubtitle as _OpenSubtitlesSubtitle, Episode, ServerProxy, Unauthorized, NoSession, \
+    DownloadLimitReached, InvalidImdbid, UnknownUserAgent, DisabledUserAgent, OpenSubtitlesError
 from mixins import ProviderRetryMixin
-from subliminal_patch.http import TimeoutSafeTransport, TimeoutTransport
+from subliminal_patch.http import SubZeroTransport
 from subliminal.cache import region
+from subliminal_patch.score import framerate_equal
+from subzero.language import Language
+
+from ..exceptions import TooManyRequests
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +47,7 @@ class OpenSubtitlesSubtitle(_OpenSubtitlesSubtitle):
             pass
 
         # video has fps info, sub also, and sub's fps is greater than 0
-        if video.fps and sub_fps and (video.fps != self.fps):
+        if video.fps and sub_fps and not framerate_equal(video.fps, self.fps):
             self.wrong_fps = True
 
             if self.skip_wrong_fps:
@@ -65,7 +68,7 @@ class OpenSubtitlesSubtitle(_OpenSubtitlesSubtitle):
 
 
 class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
-    only_foreign = True
+    only_foreign = False
     subtitle_class = OpenSubtitlesSubtitle
     hash_verifiable = True
     hearing_impaired_verifiable = True
@@ -80,7 +83,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
 
     def __init__(self, username=None, password=None, use_tag_search=False, only_foreign=False, skip_wrong_fps=True,
                  is_vip=False):
-        if username is not None and password is None or username is None and password is not None:
+        if any((username, password)) and not all((username, password)):
             raise ConfigurationError('Username and password must be specified')
 
         self.username = username or ''
@@ -104,8 +107,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
             logger.info("Only searching for foreign/forced subtitles")
 
     def get_server_proxy(self, url, timeout=10):
-        transport = TimeoutSafeTransport if url.startswith("https") else TimeoutTransport
-        return ServerProxy(url, transport(timeout))
+        return ServerProxy(url, SubZeroTransport(timeout, url))
 
     def log_in(self, server_url=None):
         if server_url:
@@ -126,6 +128,9 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         region.set("os_token", self.token)
 
     def use_token_or_login(self, func):
+        if not self.token:
+            self.log_in()
+            return func()
         try:
             return func()
         except Unauthorized:
@@ -152,6 +157,10 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
             if self.is_vip:
                 logger.info("VIP server login failed, falling back")
                 self.log_in(self.default_url)
+                if self.token:
+                    return
+
+            logger.error("Login failed, please check your credentials")
                 
     def terminate(self):
         try:
@@ -175,7 +184,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         if isinstance(video, Episode):
             query = video.series
             season = video.season
-            episode = video.episode
+            episode = episode = min(video.episode) if isinstance(video.episode, list) else video.episode
 
             if video.is_special:
                 season = None
@@ -188,7 +197,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
             query = video.title
 
         return self.query(languages, hash=video.hashes.get('opensubtitles'), size=video.size, imdb_id=video.imdb_id,
-                          query=query, season=season, episode=episode, tag=os.path.basename(video.name),
+                          query=query, season=season, episode=episode, tag=video.original_name,
                           use_tag_search=self.use_tag_search, only_foreign=self.only_foreign)
 
     def query(self, languages, hash=None, size=None, imdb_id=None, query=None, season=None, episode=None, tag=None,
@@ -200,7 +209,10 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         if use_tag_search and tag:
             criteria.append({'tag': tag})
         if imdb_id:
-            criteria.append({'imdbid': imdb_id[2:]})
+            if season and episode:
+                criteria.append({'imdbid': imdb_id[2:], 'season': season, 'episode': episode})
+            else:
+                criteria.append({'imdbid': imdb_id[2:]})
         if query and season and episode:
             criteria.append({'query': query.replace('\'', ''), 'season': season, 'episode': episode})
         elif query:
@@ -268,3 +280,34 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
 
     def download_subtitle(self, subtitle):
         return self.use_token_or_login(lambda: super(OpenSubtitlesProvider, self).download_subtitle(subtitle))
+
+
+def checked(response):
+    """Check a response status before returning it.
+
+    :param response: a response from a XMLRPC call to OpenSubtitles.
+    :return: the response.
+    :raise: :class:`OpenSubtitlesError`
+
+    """
+    status_code = int(response['status'][:3])
+    if status_code == 401:
+        raise Unauthorized
+    if status_code == 406:
+        raise NoSession
+    if status_code == 407:
+        raise DownloadLimitReached
+    if status_code == 413:
+        raise InvalidImdbid
+    if status_code == 414:
+        raise UnknownUserAgent
+    if status_code == 415:
+        raise DisabledUserAgent
+    if status_code == 429:
+        raise TooManyRequests
+    if status_code == 503:
+        raise ServiceUnavailable
+    if status_code != 200:
+        raise OpenSubtitlesError(response['status'])
+
+    return response

@@ -15,7 +15,7 @@ from collections import OrderedDict
 import chardet
 
 from bs4 import UnicodeDammit
-from babelfish import Language
+from subzero.language import Language
 from subzero.analytics import track_event
 
 mswindows = (sys.platform == "win32")
@@ -158,10 +158,11 @@ def get_video_display_title(kind, title, section_title=None, parent_title=None, 
     if add_section_title:
         section_add = ("%s: " % section_title) if section_title else ""
 
-    if kind == "show" and parent_title:
+    if kind in ("season", "show") and parent_title:
         if season and episode:
             return '%s%s S%02dE%02d%s' % (section_add, parent_title, season or 0, episode or 0,
                                           (", %s" % title if title else ""))
+
         return '%s%s%s' % (section_add, parent_title, (", %s" % title if title else ""))
     return "%s%s" % (section_add, title)
 
@@ -209,7 +210,7 @@ def decode_message(s):
 
 
 def timestamp():
-    return int(time.time())
+    return int(time.time()*1000)
 
 
 def df(d):
@@ -352,6 +353,14 @@ def dispatch_track_usage(*args, **kwargs):
         track_event(identifier=identifier, first_use=first_use, add=add, *[str(a) for a in args])
     except:
         Log.Debug("Something went wrong when reporting anonymous user statistics: %s", traceback.format_exc())
+
+
+def get_language_from_stream(lang_code):
+    if lang_code:
+        lang = Locale.Language.Match(lang_code)
+        if lang and lang != "xx":
+            # Log.Debug("Found language: %r", lang)
+            return Language.fromietf(lang)
 
 
 def get_language(lang_short):

@@ -1,30 +1,40 @@
 # coding=utf-8
-
+import copy
 import os
 import re
 import inspect
 import sys
 import rarfile
-
+import jstyleson
 import datetime
 
 import subliminal
 import subliminal_patch
 import subzero.constants
 import lib
+from subliminal.exceptions import ServiceUnavailable, DownloadLimitExceeded
 
 from subliminal_patch.core import is_windows_special_path
 from whichdb import whichdb
-from babelfish import Language
+
+from subliminal_patch.exceptions import TooManyRequests
+from subzero.language import Language
 from subliminal.cli import MutexLock
 from subzero.lib.io import FileIO, get_viable_encoding
+from subzero.lib.dict import Dicked
 from subzero.util import get_root_path
 from subzero.constants import PLUGIN_NAME, PLUGIN_IDENTIFIER, MOVIE, SHOW, MEDIA_TYPE_TO_STRING
+from dogpile.cache.region import register_backend as register_cache_backend
 from lib import Plex
-from helpers import check_write_permissions, cast_bool, cast_int
+from helpers import check_write_permissions, cast_bool, cast_int, mswindows
 
-SUBTITLE_EXTS = ['utf', 'utf8', 'utf-8', 'srt', 'smi', 'rt', 'ssa', 'aqt', 'jss', 'ass', 'idx', 'sub', 'txt', 'psb',
-                 'vtt']
+register_cache_backend(
+    "subzero.cache.file", "subzero.cache_backends.file", "SZFileBackend")
+
+SUBTITLE_EXTS_BASE = ['utf', 'utf8', 'utf-8', 'srt', 'smi', 'rt', 'ssa', 'aqt', 'jss', 'ass', 'idx', 'sub', 'psb',
+                      'vtt']
+SUBTITLE_EXTS = SUBTITLE_EXTS_BASE + ["txt"]
+
 TEXT_SUBTITLE_EXTS = ("srt", "ass", "ssa", "vtt")
 VIDEO_EXTS = ['3g2', '3gp', 'asf', 'asx', 'avc', 'avi', 'avs', 'bivx', 'bup', 'divx', 'dv', 'dvr-ms', 'evo', 'fli',
               'flv',
@@ -46,6 +56,24 @@ def int_or_default(s, default):
         return default
 
 
+VALID_THROTTLE_EXCEPTIONS = (TooManyRequests, DownloadLimitExceeded, ServiceUnavailable)
+
+PROVIDER_THROTTLE_MAP = {
+    "default": {
+        TooManyRequests: (datetime.timedelta(hours=1), "1 hour"),
+        DownloadLimitExceeded: (datetime.timedelta(hours=3), "3 hours"),
+        ServiceUnavailable: (datetime.timedelta(minutes=20), "20 minutes"),
+    },
+    "opensubtitles": {
+        TooManyRequests: (datetime.timedelta(hours=3), "3 hours"),
+        DownloadLimitExceeded: (datetime.timedelta(hours=6), "6 hours"),
+    },
+    "addic7ed": {
+        DownloadLimitExceeded: (datetime.timedelta(hours=24), "24 hours"),
+    }
+}
+
+
 class Config(object):
     libraries_root = None
     plugin_info = ""
@@ -62,6 +90,9 @@ class Config(object):
     dbm_supported = False
     pms_request_timeout = 15
     low_impact_mode = False
+    new_style_cache = False
+    pack_cache_dir = None
+    advanced = None
 
     enable_channel = True
     enable_agent = True
@@ -70,11 +101,8 @@ class Config(object):
     lock_advanced_menu = False
     locked = False
     pin_valid_minutes = 10
-    lang_list = None
     subtitle_destination_folder = None
     subtitle_formats = None
-    providers = None
-    provider_settings = None
     max_recent_items_per_library = 200
     permissions_ok = False
     missing_permissions = None
@@ -100,6 +128,12 @@ class Config(object):
     react_to_activities = False
     activity_mode = None
     no_refresh = False
+    plex_transcoder = None
+    refiner_settings = None
+    exact_filenames = False
+    only_one = False
+    embedded_auto_extract = False
+    ietf_as_alpha3 = False
 
     store_recently_played_amount = 40
 
@@ -127,20 +161,21 @@ class Config(object):
         subzero.constants.DEFAULT_TIMEOUT = lib.DEFAULT_TIMEOUT = self.pms_request_timeout = \
             min(cast_int(Prefs['pms_request_timeout'], 15), 45)
         self.low_impact_mode = cast_bool(Prefs['low_impact_mode'])
+        self.new_style_cache = cast_bool(Prefs['new_style_cache'])
+        self.pack_cache_dir = self.get_pack_cache_dir()
+        self.advanced = self.get_advanced_config()
 
         os.environ["SZ_USER_AGENT"] = self.get_user_agent()
 
-        self.providers = self.get_providers()
-
+        self.setup_proxies()
         self.set_plugin_mode()
         self.set_plugin_lock()
         self.set_activity_modes()
+        self.parse_rename_mode()
 
-        self.lang_list = self.get_lang_list()
         self.subtitle_destination_folder = self.get_subtitle_destination_folder()
         self.subtitle_formats = self.get_subtitle_formats()
         self.forced_only = cast_bool(Prefs["subtitles.only_foreign"])
-        self.provider_settings = self.get_provider_settings()
         self.max_recent_items_per_library = int_or_default(Prefs["scheduler.max_recent_items_per_library"], 2000)
         self.sections = list(Plex["library"].sections())
         self.missing_permissions = []
@@ -162,6 +197,10 @@ class Config(object):
         self.default_mods = self.get_default_mods()
         self.debug_mods = cast_bool(Prefs['log_debug_mods'])
         self.no_refresh = os.environ.get("SZ_NO_REFRESH", False)
+        self.plex_transcoder = self.get_plex_transcoder()
+        self.only_one = cast_bool(Prefs['subtitles.only_one'])
+        self.embedded_auto_extract = cast_bool(Prefs["subtitles.embedded.autoextract"])
+        self.ietf_as_alpha3 = cast_bool(Prefs["subtitles.language.ietf_normalize"])
         self.initialized = True
 
     def init_libraries(self):
@@ -177,6 +216,13 @@ class Config(object):
             Log.Info("Using UnRAR from: %s", custom_unrar)
 
     def init_cache(self):
+        if self.new_style_cache:
+            subliminal.region.configure('subzero.cache.file', expiration_time=datetime.timedelta(days=30),
+                                        arguments={'appname': "sz_cache",
+                                                   'app_cache_dir': self.data_path})
+            Log.Info("Using new style file based cache!")
+            return
+
         names = ['dbhash', 'gdbm', 'dbm']
         dbfn = None
         self.dbm_supported = False
@@ -222,12 +268,37 @@ class Config(object):
         Log.Warn("Not using file based cache!")
         subliminal.region.configure('dogpile.cache.memory')
 
+    def sync_cache(self):
+        if not self.new_style_cache:
+            return
+        Log.Debug("Syncing cache")
+        subliminal.region.backend.sync()
+
+    def get_pack_cache_dir(self):
+        pack_cache_dir = os.path.join(config.data_path, "pack_cache")
+        if not os.path.isdir(pack_cache_dir):
+            os.makedirs(pack_cache_dir)
+
+        return pack_cache_dir
+
+    def get_advanced_config(self):
+        path = os.path.join(config.data_path, "advanced_settings.json")
+        if os.path.isfile(path):
+            data = FileIO.read(path, "r")
+
+            return Dicked(**jstyleson.loads(data))
+
+        return Dicked()
+
     def set_log_paths(self):
         # find log handler
         for handler in Core.log.handlers:
-            if getattr(getattr(handler, "__class__"), "__name__") in (
-                    'FileHandler', 'RotatingFileHandler', 'TimedRotatingFileHandler'):
+            cls_name = getattr(getattr(handler, "__class__"), "__name__")
+            if cls_name in ('FileHandler', 'RotatingFileHandler', 'TimedRotatingFileHandler'):
                 plugin_log_file = handler.baseFilename
+                if cls_name in ("RotatingFileHandler", "TimedRotatingFileHandler"):
+                    handler.backupCount = int_or_default(Prefs['log_rotate_keep'], 5)
+
                 if os.path.isfile(os.path.realpath(plugin_log_file)):
                     self.plugin_log_path = plugin_log_file
 
@@ -314,6 +385,9 @@ class Config(object):
                 path_str = location.path
                 if isinstance(path_str, unicode):
                     path_str = path_str.encode(self.fs_encoding)
+
+                if not os.path.exists(path_str):
+                    continue
 
                 if use_ignore_fs:
                     # check whether we've got an ignore file inside the section path
@@ -420,7 +494,27 @@ class Config(object):
         return enabled_sections
 
     # Prepare a list of languages we want subs for
-    def get_lang_list(self):
+    def get_lang_list(self, provider=None):
+        # advanced settings
+        if provider and self.advanced.providers and provider in self.advanced.providers:
+            adv_languages = self.advanced.providers[provider].get("languages", None)
+            if adv_languages:
+                adv_out = set()
+                for adv_lang in adv_languages:
+                    adv_lang = adv_lang.strip()
+                    try:
+                        real_lang = Language.fromietf(adv_lang)
+                    except:
+                        try:
+                            real_lang = Language.fromname(adv_lang)
+                        except:
+                            continue
+                    adv_out.update({real_lang})
+
+                # fallback to default languages if no valid language was found in advanced settings
+                if adv_out:
+                    return adv_out
+
         l = {Language.fromietf(Prefs["langPref1a"])}
         lang_custom = Prefs["langPrefCustom"].strip()
 
@@ -453,6 +547,8 @@ class Config(object):
 
         return l
 
+    lang_list = property(get_lang_list)
+
     def get_subtitle_destination_folder(self):
         if not Prefs["subtitles.save.filesystem"]:
             return
@@ -471,7 +567,7 @@ class Config(object):
             out.append("vtt")
         return out
 
-    def get_providers(self):
+    def get_providers(self, media_type="series"):
         providers = {'opensubtitles': cast_bool(Prefs['provider.opensubtitles.enabled']),
                      # 'thesubdb': Prefs['provider.thesubdb.enabled'],
                      'podnapisi': cast_bool(Prefs['provider.podnapisi.enabled']),
@@ -480,9 +576,16 @@ class Config(object):
                      'tvsubtitles': cast_bool(Prefs['provider.tvsubtitles.enabled']),
                      'legendastv': cast_bool(Prefs['provider.legendastv.enabled']),
                      'napiprojekt': cast_bool(Prefs['provider.napiprojekt.enabled']),
-                     'shooter': cast_bool(Prefs['provider.shooter.enabled']),
+                     'shooter': False,
+                     'subscene': cast_bool(Prefs['provider.subscene.enabled']),
                      'subscenter': False,
                      }
+
+        providers_by_prefs = copy.deepcopy(providers)
+
+        # disable subscene for movies by default
+        if media_type == "movies":
+            providers["subscene"] = False
 
         # ditch non-forced-subtitles-reporting providers
         if self.forced_only:
@@ -492,9 +595,39 @@ class Config(object):
             providers["napiprojekt"] = False
             providers["shooter"] = False
             providers["titlovi"] = False
-            providers["subscenter"] = False
+
+        # advanced settings
+        if media_type and self.advanced.providers:
+            for provider, data in self.advanced.providers.iteritems():
+                if provider not in providers or not providers_by_prefs[provider]:
+                    continue
+
+                if data["enabled_for"] is not None:
+                    providers[provider] = media_type in data["enabled_for"]
+
+        if "provider_throttle" not in Dict:
+            Dict["provider_throttle"] = {}
+
+        changed = False
+        for provider, enabled in dict(providers).iteritems():
+            reason, until, throttle_desc = Dict["provider_throttle"].get(provider, (None, None, None))
+            if reason:
+                now = datetime.datetime.now()
+                if now < until:
+                    Log.Info("Not using %s until %s, because of: %s", provider,
+                             until.strftime("%y/%m/%d %H:%M"), reason)
+                    providers[provider] = False
+                else:
+                    Log.Info("Using %s again after %s, (disabled because: %s)", provider, throttle_desc, reason)
+                    del Dict["provider_throttle"][provider]
+                    changed = True
+
+        if changed:
+            Dict.Save()
 
         return filter(lambda prov: providers[prov], providers)
+
+    providers = property(get_providers)
 
     def get_provider_settings(self):
         provider_settings = {'addic7ed': {'username': Prefs['provider.addic7ed.username'],
@@ -503,19 +636,53 @@ class Config(object):
                                           },
                              'opensubtitles': {'username': Prefs['provider.opensubtitles.username'],
                                                'password': Prefs['provider.opensubtitles.password'],
-                                               'use_tag_search': cast_bool(Prefs['provider.opensubtitles.use_tags']),
-                                               'only_foreign': cast_bool(Prefs['subtitles.only_foreign']),
+                                               'use_tag_search': self.exact_filenames,
+                                               'only_foreign': self.forced_only,
                                                'is_vip': cast_bool(Prefs['provider.opensubtitles.is_vip'])
                                                },
                              'podnapisi': {
-                                 'only_foreign': cast_bool(Prefs['subtitles.only_foreign'])
+                                 'only_foreign': self.forced_only,
                              },
                              'legendastv': {'username': Prefs['provider.legendastv.username'],
                                             'password': Prefs['provider.legendastv.password'],
-                                            },
+                                            }
                              }
 
         return provider_settings
+
+    provider_settings = property(get_provider_settings)
+
+    def provider_throttle(self, name, exception):
+        """
+        throttle a provider :name: for X hours based on the :exception: type
+        :param name:
+        :param exception:
+        :return:
+        """
+        cls = getattr(exception, "__class__")
+        cls_name = getattr(cls, "__name__")
+        if cls not in VALID_THROTTLE_EXCEPTIONS:
+            for valid_cls in VALID_THROTTLE_EXCEPTIONS:
+                if isinstance(cls, valid_cls):
+                    cls = valid_cls
+
+        throttle_data = PROVIDER_THROTTLE_MAP.get(name, PROVIDER_THROTTLE_MAP["default"]).get(cls, None) or \
+            PROVIDER_THROTTLE_MAP["default"].get(cls, None)
+
+        if not throttle_data:
+            return
+
+        throttle_delta, throttle_description = throttle_data
+
+        if "provider_throttle" not in Dict:
+            Dict["provider_throttle"] = {}
+
+        throttle_until = datetime.datetime.now() + throttle_delta
+        Dict["provider_throttle"][name] = (cls_name, throttle_until, throttle_description)
+
+        Log.Info("Throttling %s for %s, until %s, because of: %s", name, throttle_description,
+                 throttle_until.strftime("%y/%m/%d %H:%M"), cls_name)
+        Dict.Save()
 
     @property
     def provider_pool(self):
@@ -579,6 +746,12 @@ class Config(object):
 
         return mods
 
+    def setup_proxies(self):
+        proxy = Prefs["proxy"]
+        if proxy:
+            os.environ["SZ_HTTP_PROXY"] = proxy.strip()
+            Log.Debug("Using HTTP Proxy: %s", proxy)
+
     def set_activity_modes(self):
         val = Prefs["activity.on_playback"]
         if val == "never":
@@ -594,6 +767,65 @@ class Config(object):
             self.activity_mode = "hybrid-plus"
         else:
             self.activity_mode = "next_episode"
+
+    def get_plex_transcoder(self):
+        base_path = os.environ.get("PLEX_MEDIA_SERVER_HOME", None)
+        if not base_path:
+            # fall back to bundled plugins path
+            bundle_path = os.environ.get("PLEXBUNDLEDPLUGINSPATH", None)
+            if bundle_path:
+                base_path = os.path.normpath(os.path.join(bundle_path, "..", ".."))
+
+        if sys.platform == "darwin":
+            fn = os.path.join(base_path, "MacOS", "Plex Transcoder")
+        elif mswindows:
+            fn = os.path.join(base_path, "plextranscoder.exe")
+        else:
+            fn = os.path.join(base_path, "Plex Transcoder")
+
+        if os.path.isfile(fn):
+            return fn
+
+    def parse_rename_mode(self):
+        # fixme: exact_filenames should be determined via callback combined with info about the current video
+        # (original_name)
+
+        mode = str(Prefs["media_rename1"])
+        self.refiner_settings = {}
+
+        if cast_bool(Prefs['use_file_info_file']):
+            self.refiner_settings["file_info_file"] = True
+            self.exact_filenames = True
+
+        if mode == "none of the above":
+            return
+
+        elif mode == "Symlink to original file":
+            self.refiner_settings["symlinks"] = True
+            self.exact_filenames = True
+            return
+
+        elif mode == "I keep the original filenames":
+            self.exact_filenames = True
+            return
+
+        if mode in ("Filebot", "Sonarr/Radarr/Filebot"):
+            self.refiner_settings["filebot"] = True
+
+        if mode in ("Sonarr/Radarr (fill api info below)", "Sonarr/Radarr/Filebot"):
+            if Prefs["drone_api.sonarr.url"] and Prefs["drone_api.sonarr.api_key"]:
+                self.refiner_settings["sonarr"] = {
+                    "base_url": Prefs["drone_api.sonarr.url"],
+                    "api_key": Prefs["drone_api.sonarr.api_key"]
+                }
+                self.exact_filenames = True
+
+            if Prefs["drone_api.radarr.url"] and Prefs["drone_api.radarr.api_key"]:
+                self.refiner_settings["radarr"] = {
+                    "base_url": Prefs["drone_api.radarr.url"],
+                    "api_key": Prefs["drone_api.radarr.api_key"]
+                }
+                self.exact_filenames = True
 
     def init_subliminal_patches(self):
         # configure custom subtitle destination folders for scanning pre-existing subs

@@ -1,15 +1,24 @@
 # coding=utf-8
+import traceback
 import types
 import datetime
+import subprocess
+import os
 
 from func import enable_channel_wrapper
-from support.items import get_kind, get_item_thumb
-from support.helpers import get_video_display_title
+from subzero.language import Language
+from support.items import get_kind, get_item_thumb, get_item, get_item_kind_from_item, refresh_item
+from support.helpers import get_video_display_title, pad_title, display_language, quote_args
 from support.ignore import ignore_list
 from support.lib import get_intent
 from support.config import config
 from subzero.constants import ICON_SUB, ICON
+from support.plex_media import get_part, get_plex_metadata
 from support.scheduler import scheduler
+from support.scanning import scan_videos
+from support.storage import save_subtitles
+
+from subliminal_patch.subtitle import ModifiedSubtitle
 
 default_thumb = R(ICON_SUB)
 main_icon = ICON if not config.is_development else "icon-dev.jpg"
@@ -18,14 +27,6 @@ main_icon = ICON if not config.is_development else "icon-dev.jpg"
 route = enable_channel_wrapper(route)
 # noinspection PyUnboundLocalVariable
 handler = enable_channel_wrapper(handler)
-
-
-def should_display_ignore(items, previous=None):
-    kind = get_kind(items)
-    return items and (
-        (kind in ("show", "season")) or
-        (kind == "episode" and previous != "season")
-    )
 
 
 def add_ignore_options(oc, kind, callback_menu=None, title=None, rating_key=None, add_kind=True):
@@ -72,7 +73,7 @@ def dig_tree(oc, items, menu_callback, menu_determination_callback=None, force_r
         oc.add(DirectoryObject(
             key=Callback(menu_callback or menu_determination_callback(kind, item, pass_kwargs=pass_kwargs), title=title,
                          rating_key=force_rating_key or key, **add_kwargs),
-            title=title, thumb=thumb, summary=summary
+            title=pad_title(title) if kind in ("show", "season") else title, thumb=thumb, summary=summary
         ))
     return oc
 
@@ -148,6 +149,57 @@ def debounce(func):
         return func(*args, **kwargs)
 
     return wrap
+
+
+def extract_embedded_sub(**kwargs):
+    rating_key = kwargs["rating_key"]
+    part_id = kwargs.pop("part_id")
+    stream_index = kwargs.pop("stream_index")
+    with_mods = kwargs.pop("with_mods", False)
+    language = Language.fromietf(kwargs.pop("language"))
+    refresh = kwargs.pop("refresh", True)
+    set_current = kwargs.pop("set_current", True)
+
+    plex_item = get_item(rating_key)
+    item_type = get_item_kind_from_item(plex_item)
+    part = get_part(plex_item, part_id)
+
+    if part:
+        metadata = get_plex_metadata(rating_key, part_id, item_type, plex_item=plex_item)
+        scanned_parts = scan_videos([metadata], ignore_all=True, skip_hashing=True)
+        for stream in part.streams:
+            # subtitle stream
+            if str(stream.index) == stream_index:
+                forced = stream.forced
+                bn = os.path.basename(part.file)
+
+                set_refresh_menu_state(u"Extracting subtitle %s of %s" % (stream_index, bn))
+                Log.Info(u"Extracting stream %s (%s) of %s", stream_index, display_language(language), bn)
+
+                args = [
+                    config.plex_transcoder, "-i", part.file, "-map", "0:%s" % stream_index, "-f", "srt", "-"
+                ]
+                output = None
+                try:
+                    output = subprocess.check_output(quote_args(args), stderr=subprocess.PIPE, shell=True)
+                except:
+                    Log.Error("Extraction failed: %s", traceback.format_exc())
+
+                if output:
+                    subtitle = ModifiedSubtitle(language, mods=config.default_mods if with_mods else None)
+                    subtitle.content = output
+                    subtitle.provider_name = "embedded"
+                    subtitle.id = "stream_%s" % stream_index
+                    subtitle.score = 0
+                    subtitle.set_encoding("utf-8")
+
+                    # fixme: speedup video; only video.name is needed
+                    save_successful = save_subtitles(scanned_parts, {scanned_parts.keys()[0]: [subtitle]}, mode="m",
+                                                     set_current=set_current)
+                    set_refresh_menu_state(None)
+
+                    if save_successful and refresh:
+                        refresh_item(rating_key)
 
 
 class SZObjectContainer(ObjectContainer):

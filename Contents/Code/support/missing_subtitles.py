@@ -4,14 +4,15 @@ import time
 
 import os
 
-from babelfish import Language, LanguageReverseError
+from babelfish import LanguageReverseError
 
 from support.config import config, TEXT_SUBTITLE_EXTS
-from support.helpers import get_plex_item_display_title, cast_bool
+from support.helpers import get_plex_item_display_title, cast_bool, get_language_from_stream
 from support.items import get_item
 from support.lib import Plex
 from support.storage import get_subtitle_storage
 from subzero.video import has_external_subtitle
+from subzero.language import Language
 
 
 def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_title=None, internal=False, external=True, languages=()):
@@ -28,8 +29,6 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
     subtitle_storage.destroy()
 
     subtitle_target_dir, tdir_is_absolute = config.subtitle_sub_dir
-
-    ietf_as_alpha3 = cast_bool(Prefs["subtitles.language.ietf_normalize"])
 
     missing = set()
     languages_set = set([Language.fromietf(str(l)) for l in languages])
@@ -99,14 +98,12 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
                     else:
                         # parse with internal language parser first
                         try:
-                            lang = Locale.Language.Match(stream.language_code)
-                            if lang and lang != "xx":
-                                #Log.Debug("Found language: %r", lang)
-                                lang = Language.fromietf(lang)
-                            elif lang == "xx" and config.treat_und_as_first:
-                                lang = Language.fromietf(str(list(config.lang_list)[0]))
-                            else:
-                                continue
+                            lang = get_language_from_stream(stream.language_code)
+                            if not lang:
+                                if config.treat_und_as_first:
+                                    lang = Language.fromietf(str(list(config.lang_list)[0]))
+                                else:
+                                    continue
 
                         except (ValueError, LanguageReverseError):
                             continue
@@ -128,7 +125,7 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
 
             check_languages = set([Language.fromietf(str(l)) for l in languages])
             alpha3_map = {}
-            if ietf_as_alpha3:
+            if config.ietf_as_alpha3:
                 for language in existing_flat:
                     if language.country:
                         alpha3_map[language.alpha3] = language.country
@@ -150,7 +147,7 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
                 continue
 
             missing_from_part = set(Language.fromietf(l) for l in check_languages_str - existing_flat_str)
-            if ietf_as_alpha3:
+            if config.ietf_as_alpha3:
                 for language in missing_from_part:
                     language.country = alpha3_map.get(language.alpha3, None)
 

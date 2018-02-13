@@ -1,18 +1,20 @@
 # coding=utf-8
 import os
+import subprocess
+import traceback
 
-from babelfish import Language
+from subzero.language import Language
 
 from sub_mod import SubtitleModificationsMenu
 from menu_helpers import debounce, SubFolderObjectContainer, default_thumb, add_ignore_options, get_item_task_data, \
-    set_refresh_menu_state, route
+    set_refresh_menu_state, route, extract_embedded_sub
 
 from refresh_item import RefreshItem
 from subzero.constants import PREFIX
-from support.config import config
-from support.helpers import timestamp, df, get_language, display_language
-from support.items import get_item_kind_from_rating_key, get_item, get_current_sub, get_item_title
-from support.plex_media import get_plex_metadata
+from support.config import config, TEXT_SUBTITLE_EXTS
+from support.helpers import timestamp, df, get_language, display_language, quote_args, get_language_from_stream
+from support.items import get_item_kind_from_rating_key, get_item, get_current_sub, get_item_title, save_stored_sub
+from support.plex_media import get_plex_metadata, get_part, get_embedded_subtitle_streams
 from support.scanning import scan_videos
 from support.scheduler import scheduler
 from support.storage import get_subtitle_storage
@@ -22,7 +24,7 @@ from support.storage import get_subtitle_storage
 
 @route(PREFIX + '/item/{rating_key}/actions')
 @debounce
-def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, randomize=None):
+def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, randomize=None, header=None):
     """
     displays the item details menu of an item that doesn't contain any deeper tree, such as a movie or an episode
     :param rating_key:
@@ -40,7 +42,7 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
 
     timeout = 30
 
-    oc = SubFolderObjectContainer(title2=title, replace_parent=True)
+    oc = SubFolderObjectContainer(title2=title, replace_parent=True, header=header)
 
     if not item:
         oc.add(DirectoryObject(
@@ -98,18 +100,18 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
             part_id = str(part.id)
             part_index += 1
 
+            part_index_addon = ""
+            part_summary_addon = ""
+            if has_multiple_parts:
+                part_index_addon = u"File %s: " % part_index
+                part_summary_addon = "%s " % filename
+
             # iterate through all configured languages
             for lang in config.lang_list:
                 # get corresponding stored subtitle data for that media part (physical media item), for language
                 current_sub = stored_subs.get_any(part_id, lang)
                 current_sub_id = None
                 current_sub_provider_name = None
-
-                part_index_addon = ""
-                part_summary_addon = ""
-                if has_multiple_parts:
-                    part_index_addon = u"File %s: " % part_index
-                    part_summary_addon = "%s " % filename
 
                 summary = u"%sNo current subtitle in storage" % part_summary_addon
                 current_score = None
@@ -130,7 +132,7 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                                      item_type=plex_item.type, filename=filename, current_data=summary,
                                      randomize=timestamp(), current_provider=current_sub_provider_name,
                                      current_score=current_score),
-                        title=u"%sActions for %s subtitle" % (part_index_addon, display_language(lang)),
+                        title=u"%sManage %s subtitle" % (part_index_addon, display_language(lang)),
                         summary=summary
                     ))
                 else:
@@ -145,22 +147,52 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                         summary=summary
                     ))
 
-    add_ignore_options(oc, "videos", title=item_title, rating_key=rating_key, callback_menu=IgnoreMenu)
+            if config.plex_transcoder:
+                # embedded subtitles
+                embedded_count = 0
+                embedded_langs = []
+                for stream in part.streams:
+                    # subtitle stream
+                    if stream.stream_type == 3 and not stream.stream_key and stream.codec in TEXT_SUBTITLE_EXTS:
+                        lang = get_language_from_stream(stream.language_code)
+
+                        if not lang and config.treat_und_as_first:
+                            lang = list(config.lang_list)[0]
+
+                        if lang:
+                            embedded_langs.append(lang)
+                            embedded_count += 1
+
+                if embedded_count:
+                    oc.add(DirectoryObject(
+                        key=Callback(ListEmbeddedSubsForItemMenu, rating_key=rating_key, part_id=part_id, title=title,
+                                     item_type=plex_item.type, item_title=item_title, base_title=base_title,
+                                     randomize=timestamp()),
+                        title=u"%sEmbedded subtitles (%s)" % (part_index_addon, ", ".join(display_language(l) for l in
+                                                                                          set(embedded_langs))),
+                        summary=u"Extract and activate embedded subtitle streams"
+                    ))
+
+    ignore_title = item_title
+    if current_kind == "episode":
+        ignore_title = get_item_title(item)
+    add_ignore_options(oc, "videos", title=ignore_title, rating_key=rating_key, callback_menu=IgnoreMenu)
     subtitle_storage.destroy()
 
     return oc
 
 
 @route(PREFIX + '/item/current_sub/{rating_key}/{part_id}')
-@debounce
 def SubtitleOptionsMenu(**kwargs):
-    oc = SubFolderObjectContainer(title2=unicode(kwargs["title"]), replace_parent=True)
+    oc = SubFolderObjectContainer(title2=unicode(kwargs["title"]), replace_parent=True, header=kwargs.get("header"),
+                                  message=kwargs.get("message"))
     rating_key = kwargs["rating_key"]
     part_id = kwargs["part_id"]
     language = kwargs["language"]
     current_data = kwargs["current_data"]
 
     current_sub, stored_subs, storage = get_current_sub(rating_key, part_id, language)
+    subs_count = stored_subs.count(part_id, language)
     kwargs.pop("randomize")
 
     oc.add(DirectoryObject(
@@ -170,23 +202,31 @@ def SubtitleOptionsMenu(**kwargs):
         summary=kwargs["current_data"],
         thumb=default_thumb
     ))
+    if subs_count:
+        oc.add(DirectoryObject(
+            key=Callback(ListStoredSubsForItemMenu, randomize=timestamp(), **kwargs),
+            title=u"Select active %s subtitle" % kwargs["language_name"],
+            summary=u"%d subtitles in storage" % subs_count
+        ))
+
     oc.add(DirectoryObject(
         key=Callback(ListAvailableSubsForItemMenu, randomize=timestamp(), **kwargs),
-        title=u"List %s subtitles" % kwargs["language_name"],
+        title=u"List available %s subtitles" % kwargs["language_name"],
         summary=kwargs["current_data"]
     ))
     if current_sub:
         oc.add(DirectoryObject(
             key=Callback(SubtitleModificationsMenu, randomize=timestamp(), **kwargs),
-            title=u"Modify %s subtitle" % kwargs["language_name"],
+            title=u"Modify current %s subtitle" % kwargs["language_name"],
             summary=u"Currently applied mods: %s" % (", ".join(current_sub.mods) if current_sub.mods else "none")
         ))
 
-        oc.add(DirectoryObject(
-            key=Callback(BlacklistSubtitleMenu, randomize=timestamp(), **kwargs),
-            title=u"Blacklist %s subtitle and search for a new one" % kwargs["language_name"],
-            summary=current_data
-        ))
+        if current_sub.provider_name != "embedded":
+            oc.add(DirectoryObject(
+                key=Callback(BlacklistSubtitleMenu, randomize=timestamp(), **kwargs),
+                title=u"Blacklist current %s subtitle and search for a new one" % kwargs["language_name"],
+                summary=current_data
+            ))
 
         current_bl, subs = stored_subs.get_blacklist(part_id, language)
         if current_bl:
@@ -198,6 +238,71 @@ def SubtitleOptionsMenu(**kwargs):
 
     storage.destroy()
     return oc
+
+
+@route(PREFIX + '/item/list_stored_subs/{rating_key}/{part_id}')
+def ListStoredSubsForItemMenu(**kwargs):
+    oc = SubFolderObjectContainer(title2=unicode(kwargs["title"]), replace_parent=True)
+    rating_key = kwargs["rating_key"]
+    part_id = kwargs["part_id"]
+    language = Language.fromietf(kwargs["language"])
+
+    current_sub, stored_subs, storage = get_current_sub(rating_key, part_id, language)
+    all_subs = stored_subs.get_all(part_id, language)
+    kwargs.pop("randomize")
+
+    for key, subtitle in sorted(filter(lambda x: x[0] != "current", all_subs.items()),
+                                key=lambda x: x[1].date_added, reverse=True):
+        is_current = key == all_subs["current"]
+
+        summary = u"added: %s, %s, Language: %s, Score: %i, Storage: %s" % \
+                  (df(subtitle.date_added),
+                   subtitle.mode_verbose, display_language(language), subtitle.score,
+                   subtitle.storage_type)
+
+        sub_name = subtitle.provider_name
+        if sub_name == "embedded":
+            sub_name += " (%s)" % subtitle.id
+
+        oc.add(DirectoryObject(
+            key=Callback(SelectStoredSubForItemMenu, randomize=timestamp(), sub_key="__".join(key), **kwargs),
+            title=u"%s%s, Score: %s" % ("Current: " if is_current else "Stored: ", sub_name,
+                                        subtitle.score),
+            summary=summary
+        ))
+
+    return oc
+
+
+@route(PREFIX + '/item/set_current_sub/{rating_key}/{part_id}')
+@debounce
+def SelectStoredSubForItemMenu(**kwargs):
+    rating_key = kwargs["rating_key"]
+    part_id = kwargs["part_id"]
+    language = Language.fromietf(kwargs["language"])
+    item_type = kwargs["item_type"]
+    sub_key = tuple(kwargs.pop("sub_key").split("__"))
+
+    plex_item = get_item(rating_key)
+    storage = get_subtitle_storage()
+    stored_subs = storage.load(plex_item.rating_key)
+
+    subtitles = stored_subs.get_all(part_id, language)
+    subtitle = subtitles[sub_key]
+
+    subtitles["current"] = sub_key
+
+    save_stored_sub(subtitle, rating_key, part_id, language, item_type, plex_item=plex_item, storage=storage,
+                    stored_subs=stored_subs)
+
+    storage.destroy()
+
+    kwargs.pop("randomize")
+
+    kwargs["header"] = 'Success'
+    kwargs["message"] = 'Subtitle saved to disk'
+
+    return SubtitleOptionsMenu(randomize=timestamp(), **kwargs)
 
 
 @route(PREFIX + '/item/blacklist_recent/{language}')
@@ -353,7 +458,7 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
     metadata = get_plex_metadata(rating_key, part_id, item_type)
     plex_part = None
     if not config.low_impact_mode:
-        scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True)
+        scanned_parts = scan_videos([metadata], ignore_all=True)
 
         if not scanned_parts:
             Log.Error("Couldn't list available subtitles for %s", rating_key)
@@ -462,3 +567,74 @@ def TriggerDownloadSubtitle(rating_key=None, subtitle_id=None, item_title=None, 
     scheduler.clear_task_data("AvailableSubsForItem")
 
     return fatality(randomize=timestamp(), header=" ", replace_parent=True)
+
+
+@route(PREFIX + '/item/embedded/{rating_key}/{part_id}')
+def ListEmbeddedSubsForItemMenu(**kwargs):
+    rating_key = kwargs["rating_key"]
+    part_id = kwargs["part_id"]
+    title = kwargs["title"]
+    kwargs.pop("randomize")
+
+    oc = SubFolderObjectContainer(title2=title, replace_parent=True)
+
+    oc.add(DirectoryObject(
+        key=Callback(ItemDetailsMenu, rating_key=kwargs["rating_key"], item_title=kwargs["item_title"],
+                     base_title=kwargs["base_title"], title=kwargs["item_title"], randomize=timestamp()),
+        title=u"< Back to %s" % kwargs["title"],
+        thumb=default_thumb
+    ))
+
+    plex_item = get_item(rating_key)
+    part = get_part(plex_item, part_id)
+
+    if part:
+        for stream_data in get_embedded_subtitle_streams(part, skip_duplicate_unknown=False):
+            language = stream_data["language"]
+            is_unknown = stream_data["is_unknown"]
+            stream = stream_data["stream"]
+
+            if language:
+                forced = stream.forced
+                oc.add(DirectoryObject(
+                    key=Callback(TriggerExtractEmbeddedSubForItemMenu, randomize=timestamp(),
+                                 stream_index=str(stream.index), language=language, with_mods=True, **kwargs),
+                    title=u"Extract stream %s, "
+                          u"%s%s%s%s with default mods" % (stream.index, display_language(language),
+                                                           " (unknown)" if is_unknown else "",
+                                                           " (forced)" if forced else "",
+                                                           " (\"%s\")" % stream.title if stream.title else ""),
+                ))
+                oc.add(DirectoryObject(
+                    key=Callback(TriggerExtractEmbeddedSubForItemMenu, randomize=timestamp(),
+                                 stream_index=str(stream.index), language=language, **kwargs),
+                    title=u"Extract stream %s, %s%s%s%s" % (stream.index, display_language(language),
+                                                            " (unknown)" if is_unknown else "",
+                                                            " (forced)" if forced else "",
+                                                            " (\"%s\")" % stream.title if stream.title else ""),
+                ))
+    return oc
+
+
+@route(PREFIX + '/item/extract_embedded/{rating_key}/{part_id}/{stream_index}')
+@debounce
+def TriggerExtractEmbeddedSubForItemMenu(**kwargs):
+    rating_key = kwargs["rating_key"]
+    part_id = kwargs.get("part_id")
+    stream_index = kwargs.get("stream_index")
+
+    Thread.Create(extract_embedded_sub, **kwargs)
+    header = u"Extracting of embedded subtitle %s of part %s:%s triggered" % (stream_index, rating_key, part_id)
+
+    kwargs.pop("randomize")
+    kwargs.pop("item_type")
+    kwargs.pop("stream_index")
+    kwargs.pop("part_id")
+    kwargs.pop("with_mods", False)
+    kwargs.pop("language")
+    kwargs["title"] = kwargs["item_title"]
+    kwargs["header"] = header
+
+    return ItemDetailsMenu(randomize=timestamp(), **kwargs)
+
+

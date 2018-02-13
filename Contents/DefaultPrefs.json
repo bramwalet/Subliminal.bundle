@@ -203,6 +203,50 @@
     "default": "true"
   },
   {
+    "id": "media_rename1",
+    "label": "I rename my files using",
+    "type": "enum",
+    "values": [
+      "Sonarr/Radarr (fill api info below)",
+      "Filebot",
+      "Sonarr/Radarr/Filebot",
+      "Symlink to original file",
+      "I keep the original filenames",
+      "none of the above"
+    ],
+    "default": "I keep the original filenames"
+  },
+  {
+    "id": "use_file_info_file",
+    "label": "Retrieve original filename from .file_info/file_info index files (see wiki)",
+    "type": "bool",
+    "default": "false"
+  },
+  {
+    "id": "drone_api.sonarr.url",
+    "label": "Sonarr URL (add URL base if configured)",
+    "type": "text",
+    "default": "http://127.0.0.1:8989"
+  },
+  {
+    "id": "drone_api.sonarr.api_key",
+    "label": "Sonarr API key",
+    "type": "text",
+    "default": ""
+  },
+  {
+    "id": "drone_api.radarr.url",
+    "label": "Radarr URL (add URL base if configured, min. version: 0.2.0.897)",
+    "type": "text",
+    "default": "http://127.0.0.1:7878"
+  },
+  {
+    "id": "drone_api.radarr.api_key",
+    "label": "Radarr API key",
+    "type": "text",
+    "default": ""
+  },
+  {
     "id": "provider.opensubtitles.enabled",
     "label": "Provider: Enable OpenSubtitles",
     "type": "bool",
@@ -331,8 +375,8 @@
     "default": "false"
   },
   {
-    "id": "provider.shooter.enabled",
-    "label": "Provider: Enable Shooter.cn (Chinese)",
+    "id": "provider.subscene.enabled",
+    "label": "Provider: Enable SubScene",
     "type": "bool",
     "default": "false"
   },
@@ -343,20 +387,20 @@
     "default": "true"
   },
   {
-    "id": "provider.opensubtitles.use_tags",
-    "label": "I keep the exact (release-) filename of my media files",
+    "id": "subtitles.embedded.autoextract",
+    "label": "Automatically extract and use embedded subtitles upon media addition (with configured default mods)",
     "type": "bool",
-    "default": "true"
+    "default": "false"
   },
   {
     "id": "subtitles.scan.embedded",
-    "label": "Don't search for subtitles if there are embedded subtitles inside the media file (MKV/MP4)?",
+    "label": "Don't search for subtitles of a language if there are embedded subtitles inside the media file (MKV/MP4)?",
     "type": "bool",
     "default": "false"
   },
   {
     "id": "subtitles.scan.external",
-    "label": "Don't search for subtitles if they already exist on the filesystem (metadata/filesystem)?",
+    "label": "Don't search for subtitles of a language if they already exist on the filesystem (metadata/filesystem)?",
     "type": "bool",
     "default": "true"
   },
@@ -373,7 +417,7 @@
   },
   {
     "id": "subtitles.scan.exotic_ext",
-    "label": "Include \"exotic\" subtitle formats (anything else than .srt/.ssa/.ass/.vtt; embedded or external) in the above?",
+    "label": "Include non-text subtitle formats (anything else than .srt/.ssa/.ass/.vtt; embedded or external) in the above?",
     "type": "bool",
     "default": "false"
   },
@@ -573,10 +617,29 @@
     "default": "7"
   },
   {
+    "id": "scheduler.tasks.FindBetterSubtitles.air_date_cutoff",
+    "label": "Scheduler: Don't search for better subtitles if the item's air date is older than",
+    "type": "enum",
+    "values": [
+      "don't limit",
+      "1 year",
+      "2 years",
+      "3 years",
+      "4 years",
+      "5 years",
+      "6 years",
+      "7 years",
+      "8 years",
+      "9 years",
+      "10 years"
+    ],
+    "default": "1 year"
+  },
+  {
     "id": "scheduler.tasks.FindBetterSubtitles.overwrite_manually_selected",
     "label": "Scheduler: Overwrite manually selected subtitles when better found",
     "type": "bool",
-    "default": "false"
+    "default": "true"
   },
   {
     "id": "scheduler.tasks.FindBetterSubtitles.overwrite_manually_modified",
@@ -670,6 +733,12 @@
     "default": "true"
   },
   {
+    "id": "new_style_cache",
+    "label": "Use new style caching (for subliminal)",
+    "type": "bool",
+    "default": "true"
+  },
+  {
     "id": "low_impact_mode",
     "label": "Low impact mode (for remote filesystems)",
     "type": "bool",
@@ -680,6 +749,12 @@
     "label": "Timeout for API requests sent to the PMS",
     "type": "text",
     "default": "15"
+  },
+  {
+    "id": "proxy",
+    "label": "HTTP proxy to use for providers (supports credentials)",
+    "type": "text",
+    "default": ""
   },
   {
     "id": "log_level",
@@ -693,6 +768,12 @@
       "DEBUG"
     ],
     "default": "WARNING"
+  },
+  {
+    "id": "log_rotate_keep",
+    "label": "How many log backups to keep?",
+    "type": "text",
+    "default": "5"
   },
   {
     "id": "log_debug_mods",

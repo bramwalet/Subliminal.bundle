@@ -1,8 +1,6 @@
 # coding=utf-8
 import sys
 import datetime
-import time
-import os
 
 from subzero.sandbox import restore_builtins
 
@@ -27,7 +25,7 @@ from subzero.constants import OS_PLEX_USERAGENT, PERSONAL_MEDIA_IDENTIFIER
 from interface.menu import *
 from support.plex_media import media_to_videos, get_media_item_ids
 from support.scanning import scan_videos
-from support.storage import save_subtitles, store_subtitle_info
+from support.storage import save_subtitles, store_subtitle_info, get_subtitle_storage
 from support.items import is_ignored
 from support.config import config
 from support.lib import get_intent
@@ -116,6 +114,36 @@ def update_local_media(metadata, media, media_type="movies"):
             pass
 
 
+def agent_extract_embedded(videos):
+    try:
+        subtitle_storage = get_subtitle_storage()
+
+        for video in videos:
+            item = video["item"]
+            stored_subs = subtitle_storage.load_or_new(item)
+
+            for part in get_all_parts(item):
+                for requested_language in config.lang_list:
+                    embedded_subs = stored_subs.get_by_provider(part.id, requested_language, "embedded")
+                    current = stored_subs.get_any(part.id, requested_language)
+                    if not embedded_subs:
+                        stream_data = get_embedded_subtitle_streams(part, requested_language=requested_language,
+                                                                    get_forced=config.forced_only)
+
+                        if stream_data:
+                            stream = stream_data[0]["stream"]
+
+                            extract_embedded_sub(rating_key=item.rating_key, part_id=part.id,
+                                                 stream_index=str(stream.index),
+                                                 language=str(requested_language), with_mods=True, refresh=False,
+                                                 set_current=not current)
+                    else:
+                        Log.Debug("Skipping embedded subtitle extraction for %s, already got %r from %s",
+                                  item.rating_key, requested_language, embedded_subs[0].id)
+    except:
+        Log.Error("Something went wrong when auto-extracting subtitles, continuing: %s", traceback.format_exc())
+
+
 class SubZeroAgent(object):
     agent_type = None
     agent_type_verbose = None
@@ -133,24 +161,20 @@ class SubZeroAgent(object):
         Log.Debug("Sub-Zero %s, %s search" % (config.version, self.agent_type))
         results.Append(MetadataSearchResult(id='null', score=100))
 
+    def store_blank_subtitle_metadata(self, video_part_map):
+        store_subtitle_info(video_part_map, dict((k, []) for k in video_part_map.keys()), None, mode="a")
+
     def update(self, metadata, media, lang):
+        if not config.enable_agent:
+            Log.Debug("Skipping Sub-Zero agent(s)")
+            return
+
         Log.Debug("Sub-Zero %s, %s update called" % (config.version, self.agent_type))
         intent = get_intent()
 
         if not media:
             Log.Error("Called with empty media, something is really wrong with your setup!")
             return
-
-        # debounce for self.debounce seconds
-        now = datetime.datetime.now()
-        if "last_call" in Dict:
-            last_call = Dict["last_call"]
-            if last_call + datetime.timedelta(seconds=self.debounce) > now:
-                wait = self.debounce - (now - last_call).seconds
-                if wait >= 1:
-                    Log.Debug("Waiting %s seconds until continuing", wait)
-                    time.sleep(wait)
-        Dict["last_call"] = now
 
         item_ids = []
         try:
@@ -181,41 +205,71 @@ class SubZeroAgent(object):
             set_refresh_menu_state(media, media_type=self.agent_type)
 
             # scanned_video_part_map = {subliminal.Video: plex_part, ...}
-            scanned_video_part_map = scan_videos(videos, kind=self.agent_type)
+            providers = config.get_providers(media_type=self.agent_type)
+            scanned_video_part_map = scan_videos(videos, providers=providers)
+
+            # auto extract embedded
+            if config.embedded_auto_extract:
+                agent_extract_embedded(videos)
 
             # clear missing subtitles menu data
             if not scheduler.is_task_running("MissingSubtitles"):
                 scheduler.clear_task_data("MissingSubtitles")
 
             downloaded_subtitles = None
-            if not config.enable_agent:
-                Log.Debug("Skipping Sub-Zero agent(s)")
 
-            else:
-                # downloaded_subtitles = {subliminal.Video: [subtitle, subtitle, ...]}
+            # debounce for self.debounce seconds
+            now = datetime.datetime.now()
+            if "last_call" in Dict:
+                last_call = Dict["last_call"]
+                if last_call + datetime.timedelta(seconds=self.debounce) > now:
+                    wait = self.debounce - (now - last_call).seconds
+                    if wait >= 1:
+                        Log.Debug("Waiting %s seconds until continuing", wait)
+                        Thread.Sleep(wait)
+
+            # downloaded_subtitles = {subliminal.Video: [subtitle, subtitle, ...]}
+            try:
                 downloaded_subtitles = download_best_subtitles(scanned_video_part_map, min_score=use_score,
-                                                               throttle_time=self.debounce)
-                item_ids = get_media_item_ids(media, kind=self.agent_type)
+                                                               throttle_time=self.debounce, providers=providers)
+            except:
+                Log.Exception("Something went wrong when downloading subtitles")
+
+            if downloaded_subtitles is not None:
+                Dict["last_call"] = datetime.datetime.now()
+
+            item_ids = get_media_item_ids(media, kind=self.agent_type)
 
             downloaded_any = False
             if downloaded_subtitles:
                 downloaded_any = any(downloaded_subtitles.values())
 
             if downloaded_any:
-                save_subtitles(scanned_video_part_map, downloaded_subtitles, mods=config.default_mods)
+                save_successful = False
+                try:
+                    save_successful = save_subtitles(scanned_video_part_map, downloaded_subtitles,
+                                                     mods=config.default_mods)
+                except:
+                    Log.Exception("Something went wrong when saving subtitles")
+
                 track_usage("Subtitle", "refreshed", "download", 1)
 
-                for video, video_subtitles in downloaded_subtitles.items():
-                    # store item(s) in history
-                    for subtitle in video_subtitles:
-                        item_title = get_title_for_video_metadata(video.plexapi_metadata, add_section_title=False)
-                        history = get_history()
-                        history.add(item_title, video.id, section_title=video.plexapi_metadata["section"],
-                                    subtitle=subtitle)
+                # store SZ meta info even if download wasn't successful
+                if not save_successful:
+                    self.store_blank_subtitle_metadata(scanned_video_part_map)
+
+                else:
+                    for video, video_subtitles in downloaded_subtitles.items():
+                        # store item(s) in history
+                        for subtitle in video_subtitles:
+                            item_title = get_title_for_video_metadata(video.plexapi_metadata, add_section_title=False)
+                            history = get_history()
+                            history.add(item_title, video.id, section_title=video.plexapi_metadata["section"],
+                                        subtitle=subtitle)
+                            history.destroy()
             else:
-                # store subtitle info even if we've downloaded none
-                store_subtitle_info(scanned_video_part_map, dict((k, []) for k in scanned_video_part_map.keys()),
-                                    None, mode="a")
+                # store SZ meta info even if we've downloaded none
+                self.store_blank_subtitle_metadata(scanned_video_part_map)
 
             update_local_media(metadata, media, media_type=self.agent_type)
 
@@ -231,6 +285,10 @@ class SubZeroAgent(object):
                 intent.resolve("force", item_id)
 
             Dict.Save()
+
+            # fsync cache
+            if config.new_style_cache:
+                config.sync_cache()
 
 
 class SubZeroSubtitlesAgentMovies(SubZeroAgent, Agent.Movies):

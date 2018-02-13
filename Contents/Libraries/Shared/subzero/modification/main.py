@@ -154,7 +154,7 @@ class SubtitleModifications(object):
                 mod.modify(None, debug=self.debug, parent=self, **args)
 
     def apply_line_mods(self, new_entries, mods):
-        for entry in self.f:
+        for index, entry in enumerate(self.f, 1):
             applied_mods = []
             lines = []
 
@@ -162,13 +162,22 @@ class SubtitleModifications(object):
             start_tags = []
             end_tags = []
 
+            t = entry.text.strip()
+            if not t:
+                if self.debug:
+                    logger.debug(u"Skipping empty line: %s", index)
+                continue
+
             skip_entry = False
-            for line in entry.text.split(ur"\N"):
+            for line in t.split(ur"\N"):
                 # don't bother the mods with surrounding tags
                 old_line = line
                 line = line.strip()
                 skip_line = False
                 line_count += 1
+
+                if not line:
+                    continue
 
                 # clean {\X0} tags before processing
                 # fixme: handle nested tags?

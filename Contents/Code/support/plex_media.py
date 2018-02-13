@@ -5,6 +5,7 @@ import os
 import helpers
 from items import get_item
 from lib import Plex
+from support.config import TEXT_SUBTITLE_EXTS, config
 
 
 def get_metadata_dict(item, part, add):
@@ -152,15 +153,54 @@ def get_stream_fps(streams):
 
 
 def get_media_item_ids(media, kind="series"):
-    ids = []
-    if kind == "movies":
-        ids.append(media.id)
-    else:
+    # fixme: does this work correctly for full series force-refreshes and its intents?
+    ids = [media.id]
+    if kind == "series":
         for season in media.seasons:
             for episode in media.seasons[season].episodes:
                 ids.append(media.seasons[season].episodes[episode].id)
 
     return ids
+
+
+def get_all_parts(plex_item):
+    parts = []
+    for media in plex_item.media:
+        parts += media.parts
+
+    return parts
+
+
+def get_embedded_subtitle_streams(part, requested_language=None, skip_duplicate_unknown=True, get_forced=None):
+    streams = []
+    has_unknown = False
+    for stream in part.streams:
+        # subtitle stream
+        if stream.stream_type == 3 and not stream.stream_key and stream.codec in TEXT_SUBTITLE_EXTS:
+            language = helpers.get_language_from_stream(stream.language_code)
+            is_unknown = False
+            found_requested_language = requested_language and requested_language == language
+
+            if get_forced is not None:
+                if (get_forced and not stream.forced) or (not get_forced and stream.forced):
+                    continue
+
+            if not language and config.treat_und_as_first:
+                # only consider first unknown subtitle stream
+                if has_unknown and skip_duplicate_unknown:
+                    continue
+
+                language = list(config.lang_list)[0]
+                is_unknown = True
+                has_unknown = True
+
+            if not requested_language or found_requested_language:
+                streams.append({"stream": stream, "is_unknown": is_unknown, "language": language})
+
+                if found_requested_language:
+                    break
+
+    return streams
 
 
 def get_part(plex_item, part_id):

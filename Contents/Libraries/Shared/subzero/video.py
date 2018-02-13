@@ -1,9 +1,10 @@
 # coding=utf-8
+
 import logging
 import os
 
 from babelfish.exceptions import LanguageError
-from babelfish import Language
+from subzero.language import Language
 from subliminal_patch import scan_video, refine, search_external_subtitles
 
 logger = logging.getLogger(__name__)
@@ -15,23 +16,86 @@ def has_external_subtitle(part_id, stored_subs, language):
         return True
 
 
-def parse_video(fn, video_info, hints, external_subtitles=False, embedded_subtitles=False, known_embedded=None,
-                forced_only=False, no_refining=False, dry_run=False, ignore_all=False, stored_subs=None):
+def set_existing_languages(video, video_info, external_subtitles=False, embedded_subtitles=False, known_embedded=None,
+                           forced_only=False, stored_subs=None, languages=None, only_one=False):
+    logger.debug(u"Determining existing subtitles for %s", video.name)
 
+    # scan for external subtitles
+    external_langs_found = set(search_external_subtitles(video.name, forced_tag=forced_only, languages=languages,
+                                                         only_one=only_one).values())
+
+    # found external subtitles should be considered?
+    if external_subtitles:
+        # |= is update, thanks plex
+        video.subtitle_languages.update(external_langs_found)
+
+    else:
+        # did we already download subtitles for this?
+        if stored_subs and external_langs_found:
+            for lang in external_langs_found:
+                if has_external_subtitle(video_info["plex_part"].id, stored_subs, lang):
+                    logger.info("Not re-downloading subtitle for language %s, it already exists on the filesystem",
+                                lang)
+                    video.subtitle_languages.add(lang)
+
+    # add known embedded subtitles
+    if embedded_subtitles and known_embedded:
+        embedded_subtitle_languages = set()
+        # mp4 and stuff, check burned in
+        for language in known_embedded:
+            try:
+                embedded_subtitle_languages.add(Language.fromalpha3b(language))
+            except LanguageError:
+                logger.error('Embedded subtitle track language %r is not a valid language', language)
+                embedded_subtitle_languages.add(Language('und'))
+
+            logger.debug('Found embedded subtitle %r', embedded_subtitle_languages)
+            video.subtitle_languages.update(embedded_subtitle_languages)
+
+
+def parse_video(fn, hints, skip_hashing=False, dry_run=False, providers=None):
     logger.debug("Parsing video: %s, hints: %s", os.path.basename(fn), hints)
-    video = scan_video(fn, hints=hints, dont_use_actual_file=dry_run or no_refining)
+    return scan_video(fn, hints=hints, dont_use_actual_file=dry_run, providers=providers,
+                      skip_hashing=skip_hashing)
+
+
+def refine_video(video, no_refining=False, refiner_settings=None):
+    refiner_settings = refiner_settings or {}
+    video_info = video.plexapi_metadata
+    hints = video.hints
 
     if no_refining:
         logger.debug("Taking parse_video shortcut")
         return video
 
     # refiners
-
     refine_kwargs = {
-        "episode_refiners": ('tvdb', 'sz_omdb'),
-        "movie_refiners": ('sz_omdb',),
+        "episode_refiners": ['sz_tvdb', 'sz_omdb',],
+        "movie_refiners": ['sz_omdb',],
         "embedded_subtitles": False,
     }
+    refine_kwargs.update(refiner_settings)
+
+    if "filebot" in refiner_settings:
+        # filebot always comes first
+        refine_kwargs["episode_refiners"].insert(0, "filebot")
+        refine_kwargs["movie_refiners"].insert(0, "filebot")
+
+    if "symlinks" in refiner_settings:
+        refine_kwargs["episode_refiners"].insert(0, "symlinks")
+        refine_kwargs["movie_refiners"].insert(0, "symlinks")
+
+    if "file_info_file" in refiner_settings:
+        # file_info_file always comes first
+        refine_kwargs["episode_refiners"].insert(0, "file_info_file")
+        refine_kwargs["movie_refiners"].insert(0, "file_info_file")
+
+    if "sonarr" in refiner_settings:
+        # drone always comes last
+        refine_kwargs["episode_refiners"].append("drone")
+
+    if "radarr" in refiner_settings:
+        refine_kwargs["movie_refiners"].append("drone")
 
     # our own metadata refiner :)
     if "stream" in video_info:
@@ -61,6 +125,8 @@ def parse_video(fn, video_info, hints, external_subtitles=False, embedded_subtit
             logger.info(u"Re-refining with movie title: '%s' instead of '%s'", plex_title, old_title)
             refine(video, **refine_kwargs)
 
+            video.alternative_titles.append(old_title)
+
         # still no match? add our own data
         if not video.imdb_id:
             video.imdb_id = video_info.get("imdb_id")
@@ -68,6 +134,8 @@ def parse_video(fn, video_info, hints, external_subtitles=False, embedded_subtit
                 logger.info(u"Adding PMS imdb_id info: %s", video.imdb_id)
 
     if hints["type"] == "episode":
+        video.season = video_info.get("season", video.season)
+        video.episode = video_info.get("episode", video.episode)
         if not video.series_tvdb_id and not video.tvdb_id and plex_title:
             # add our title
             logger.info(u"Adding PMS title/original_title info: %s", plex_title)
@@ -78,50 +146,25 @@ def parse_video(fn, video_info, hints, external_subtitles=False, embedded_subtit
             logger.info(u"Re-refining with series title: '%s' instead of '%s'", plex_title, old_title)
             refine(video, **refine_kwargs)
 
+            video.alternative_series.append(old_title)
+
         # still no match? add our own data
-        if not video.series_tvdb_id:
+        if not video.series_tvdb_id or not video.tvdb_id:
+            logger.info(u"Adding PMS year info: %s", video_info.get("year"))
+            video.year = video_info.get("year")
+
+        if not video.series_tvdb_id and video_info.get("series_tvdb_id"):
             logger.info(u"Adding PMS series_tvdb_id info: %s", video_info.get("series_tvdb_id"))
             video.series_tvdb_id = video_info.get("series_tvdb_id")
 
-        if not video.tvdb_id:
+        if not video.tvdb_id and video_info.get("tvdb_id"):
             logger.info(u"Adding PMS tvdb_id info: %s", video_info.get("tvdb_id"))
             video.tvdb_id = video_info.get("tvdb_id")
 
     # did it match?
-    if (hints["type"] == "episode" and not video.series_tvdb_id and not video.tvdb_id and
-            not video.series_imdb_id) or (hints["type"] == "movie" and not video.imdb_id):
+    if (hints["type"] == "episode" and not video.series_tvdb_id and not video.tvdb_id) \
+            or (hints["type"] == "movie" and not video.imdb_id):
         logger.warning("Couldn't find corresponding series/movie in online databases, continuing")
-
-    # scan for external subtitles
-    external_langs_found = set(search_external_subtitles(video.name, forced_tag=forced_only).values())
-
-    # found external subtitles should be considered?
-    if external_subtitles:
-        # |= is update, thanks plex
-        video.subtitle_languages.update(external_langs_found)
-
-    else:
-        # did we already download subtitles for this?
-        if not ignore_all and stored_subs and external_langs_found:
-            for lang in external_langs_found:
-                if has_external_subtitle(video_info["plex_part"].id, stored_subs, lang):
-                    logger.info("Not re-downloading subtitle for language %s, it already exists on the filesystem",
-                                lang)
-                    video.subtitle_languages.add(lang)
-
-    # add known embedded subtitles
-    if embedded_subtitles and known_embedded:
-        embedded_subtitle_languages = set()
-        # mp4 and stuff, check burned in
-        for language in known_embedded:
-            try:
-                embedded_subtitle_languages.add(Language.fromalpha3b(language))
-            except LanguageError:
-                logger.error('Embedded subtitle track language %r is not a valid language', language)
-                embedded_subtitle_languages.add(Language('und'))
-
-            logger.debug('Found embedded subtitle %r', embedded_subtitle_languages)
-            video.subtitle_languages.update(embedded_subtitle_languages)
 
     # guess special
     if hints["type"] == "episode":
@@ -129,7 +172,7 @@ def parse_video(fn, video_info, hints, external_subtitles=False, embedded_subtit
             video.is_special = True
         else:
             # check parent folder name
-            if os.path.dirname(fn).split(os.path.sep)[-1].lower() in ("specials", "season 00"):
+            if os.path.dirname(video.name).split(os.path.sep)[-1].lower() in ("specials", "season 00"):
                 video.is_special = True
 
     return video

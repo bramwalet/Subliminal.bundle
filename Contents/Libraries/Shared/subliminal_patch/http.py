@@ -5,11 +5,14 @@ import certifi
 import ssl
 import os
 import socket
+import logging
+
 from requests import Session, exceptions
 from retry.api import retry_call
 
 from subzero.lib.io import get_viable_encoding
 
+logger = logging.getLogger(__name__)
 pem_file = os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(unicode(__file__, get_viable_encoding()))), "..", certifi.where()))
 try:
     default_ssl_context = ssl.create_default_context(cafile=pem_file)
@@ -25,7 +28,18 @@ class RetryingSession(Session):
         super(RetryingSession, self).__init__()
         self.verify = pem_file
 
+        proxy = os.environ.get('SZ_HTTP_PROXY')
+        if proxy:
+            self.proxies = {
+                "http": proxy,
+                "https": proxy
+            }
+
     def retry_method(self, method, *args, **kwargs):
+        if self.proxies:
+            # fixme: may be a little loud
+            logger.debug("Using proxy %s for: %s", self.proxies["http"], args[0])
+
         return retry_call(getattr(super(RetryingSession, self), method), fargs=args, fkwargs=kwargs, tries=3, delay=5,
                           exceptions=(exceptions.ConnectionError,
                                       exceptions.ProxyError,
@@ -36,9 +50,13 @@ class RetryingSession(Session):
                                       socket.timeout))
 
     def get(self, *args, **kwargs):
+        if self.proxies and "timeout" in kwargs and kwargs["timeout"]:
+            kwargs["timeout"] = kwargs["timeout"] * 3
         return self.retry_method("get", *args, **kwargs)
 
     def post(self, *args, **kwargs):
+        if self.proxies and "timeout" in kwargs and kwargs["timeout"]:
+            kwargs["timeout"] = kwargs["timeout"] * 3
         return self.retry_method("post", *args, **kwargs)
 
 
@@ -55,54 +73,42 @@ class TimeoutTransport(Transport):
         return c
 
 
-class TimeoutSafeTransport(SafeTransport):
-    """Timeout support for ``xmlrpc.client.SafeTransport``."""
-    def __init__(self, timeout, *args, **kwargs):
+class SubZeroTransport(SafeTransport):
+    """
+    Timeout and proxy support for ``xmlrpc.client.(Safe)Transport``
+    """
+    def __init__(self, timeout, url, *args, **kwargs):
         SafeTransport.__init__(self, *args, **kwargs)
         self.timeout = timeout
-        self.context = default_ssl_context
+        self.host = None
+        self.proxy = None
+        self.scheme = url.split('://', 1)[0]
+        self.https = url.startswith('https')
+        self.proxy = os.environ.get('SZ_HTTP_PROXY')
+
+        if self.https:
+            self.context = default_ssl_context
+
+        if self.proxy:
+            logger.debug("Using proxy %s for: %s", self.proxy, url)
+            self.https = self.proxy.startswith('https')
+
+            if self.timeout:
+                self.timeout = self.timeout * 3
 
     def make_connection(self, host):
-        c = SafeTransport.make_connection(self, host)
+        self.host = host
+        if self.proxy:
+            host = self.proxy.split('://', 1)[-1]
+        if self.https:
+            c = SafeTransport.make_connection(self, host)
+        else:
+            c = Transport.make_connection(self, host)
+
         c.timeout = self.timeout
 
         return c
 
-    # def single_request(self, host, handler, request_body, verbose=0):
-    #     # issue XML-RPC request
-    #
-    #     h = self.make_connection(host)
-    #     if verbose:
-    #         h.set_debuglevel(1)
-    #
-    #     try:
-    #         self.send_request(h, handler, request_body)
-    #         self.send_host(h, host)
-    #         self.send_user_agent(h)
-    #         self.send_content(h, request_body)
-    #
-    #         response = h.getresponse(buffering=True)
-    #
-    #         if response.status == 200:
-    #             self.verbose = verbose
-    #             headers = response.getheaders()
-    #             rsp = self.parse_response(response)
-    #             rsp[0]["headers"] = dict(headers)
-    #             return rsp
-    #
-    #     except Fault:
-    #         raise
-    #     except Exception:
-    #         # All unexpected errors leave connection in
-    #         # a strange state, so we clear it.
-    #         self.close()
-    #         raise
-    #
-    #     #discard any response data and raise exception
-    #     if (response.getheader("content-length", 0)):
-    #         response.read()
-    #     raise ProtocolError(
-    #         host + handler,
-    #         response.status, response.reason,
-    #         response.msg,
-    #         )
+    def send_request(self, connection, handler, request_body):
+        handler = '%s://%s%s' % (self.scheme, self.host, handler)
+        Transport.send_request(self, connection, handler, request_body)

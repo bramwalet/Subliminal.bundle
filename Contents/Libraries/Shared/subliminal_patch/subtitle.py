@@ -38,7 +38,11 @@ class Subtitle(Subtitle_):
     plex_media_fps = None
     skip_wrong_fps = False
     wrong_fps = False
+    is_pack = False
+    asked_for_release_group = None
+    asked_for_episode = None
 
+    pack_data = None
     _guessed_encoding = None
 
     def __init__(self, language, hearing_impaired=False, page_link=None, encoding=None, mods=None):
@@ -64,6 +68,10 @@ class Subtitle(Subtitle_):
         #    return fix_text(self.content.decode(self.encoding, errors='replace'), **ftfy_defaults)
 
         return self.content.decode(self.guess_encoding(), errors='replace')
+
+    @property
+    def numeric_id(self):
+        raise NotImplemented
 
     def make_picklable(self):
         """
@@ -159,7 +167,7 @@ class Subtitle(Subtitle_):
                 elif self.language.script == "Cyrl":
                     encodings.extend(['windows-1251', 'iso-8859-5'])
                 else:
-                    encodings.extend(['windows-1251', 'windows-1250', 'iso-8859-5', 'iso-8859-2'])
+                    encodings.extend(['windows-1250', 'windows-1251', 'iso-8859-2', 'iso-8859-5'])
 
         else:
             # Western European (windows-1252) / Northern European
@@ -307,6 +315,7 @@ class Subtitle(Subtitle_):
 
         submods = SubtitleModifications(debug=debug)
         if submods.load(content=self.text, language=self.language):
+            logger.info("Applying mods: %s", self.mods)
             submods.modify(*self.mods)
 
             content = fix_text(self.pysubs2_to_unicode(submods.f, format=format), **ftfy_defaults)\
@@ -390,8 +399,16 @@ def guess_matches(video, guess, partial=False):
             formats = [formats]
 
         if video.format:
+            video_format = video.format
+            if video_format in ("HDTV", "SDTV", "TV"):
+                video_format = "TV"
+                logger.debug("Treating HDTV/SDTV the same")
+
             for frmt in formats:
-                if frmt.lower() == video.format.lower():
+                if frmt in ("HDTV", "SDTV"):
+                    frmt = "TV"
+
+                if frmt.lower() == video_format.lower():
                     matches.add('format')
                     break
     # video_codec

@@ -8,6 +8,8 @@ import os
 
 import time
 
+import datetime
+
 from ignore import ignore_list
 from helpers import is_recent, get_plex_item_display_title, query_plex, PartUnknownException
 from lib import Plex, get_intent
@@ -59,12 +61,15 @@ def get_item_kind_from_item(item):
 
 def get_item_title(item):
     kind = get_item_kind_from_item(item)
-    if kind not in ("episode", "movie"):
+    if kind not in ("episode", "movie", "season", "series"):
         return
 
     if kind == "episode":
         return get_plex_item_display_title(item, "show", parent=item.season, section_title=None,
                                                  parent_title=item.show.title)
+    elif kind == "season":
+        return get_plex_item_display_title(item, "season", parent=item.show, section_title="Season",
+                                           parent_title=item.show.title)
     else:
         return get_plex_item_display_title(item, kind, section_title=None)
 
@@ -267,6 +272,11 @@ def is_ignored(rating_key, item=None):
         Log.Debug("Item %s's show is in the soft ignore list" % rating_key)
         return True
 
+    # season in soft ignore list
+    if kind == "Episode" and item.season.rating_key in ignore_list["seasons"]:
+        Log.Debug("Item %s's season is in the soft ignore list" % rating_key)
+        return True
+
     # section in soft ignore list
     if item.section.key in ignore_list["sections"]:
         Log.Debug("Item %s's section is in the soft ignore list" % rating_key)
@@ -323,7 +333,7 @@ def refresh_item(rating_key, force=False, timeout=8000, refresh_kind=None, paren
         Log.Info("%s item %s", "Refreshing" if not force else "Forced-refreshing", key)
         Plex["library/metadata"].refresh(key)
         if multiple:
-            time.sleep(10)
+            Thread.Sleep(10.0)
 
 
 def get_current_sub(rating_key, part_id, language, plex_item=None):
@@ -336,11 +346,63 @@ def get_current_sub(rating_key, part_id, language, plex_item=None):
     return current_sub, stored_subs, subtitle_storage
 
 
-def set_mods_for_part(rating_key, part_id, language, item_type, mods, mode="add"):
+def save_stored_sub(stored_subtitle, rating_key, part_id, language, item_type, plex_item=None, storage=None,
+                    stored_subs=None):
     from support.plex_media import get_plex_metadata
     from support.scanning import scan_videos
-    from support.storage import save_subtitles
+    from support.storage import save_subtitles, get_subtitle_storage
 
+    plex_item = plex_item or get_item(rating_key)
+    storage = storage or get_subtitle_storage()
+
+    cleanup = not storage
+
+    stored_subs = stored_subs or storage.load(plex_item.rating_key)
+
+    if not all([plex_item, stored_subs]):
+        return
+
+    try:
+        metadata = get_plex_metadata(rating_key, part_id, item_type, plex_item=plex_item)
+    except PartUnknownException:
+        return
+
+    scanned_parts = scan_videos([metadata], ignore_all=True, skip_hashing=True)
+    video, plex_part = scanned_parts.items()[0]
+
+    subtitle = ModifiedSubtitle(language, mods=stored_subtitle.mods)
+    subtitle.content = stored_subtitle.content
+    if stored_subtitle.encoding:
+        # thanks plex
+        setattr(subtitle, "_guessed_encoding", stored_subtitle.encoding)
+
+        if stored_subtitle.encoding != "utf-8":
+            subtitle.normalize()
+            stored_subtitle.content = subtitle.content
+            stored_subtitle.encoding = "utf-8"
+            storage.save(stored_subs)
+
+    subtitle.plex_media_fps = plex_part.fps
+    subtitle.page_link = stored_subtitle.id
+    subtitle.language = language
+    subtitle.id = stored_subtitle.id
+
+    try:
+        save_subtitles(scanned_parts, {video: [subtitle]}, mode="m", bare_save=True)
+        Log.Debug("Modified %s subtitle for: %s:%s with: %s", language.name, rating_key, part_id,
+                  ", ".join(stored_subtitle.mods) if stored_subtitle.mods else "none")
+    except:
+        Log.Error("Something went wrong when modifying subtitle: %s", traceback.format_exc())
+
+    if subtitle.storage_path:
+        stored_subtitle.last_mod = datetime.datetime.fromtimestamp(os.path.getmtime(subtitle.storage_path))
+        storage.save(stored_subs)
+
+    if cleanup:
+        storage.destroy()
+
+
+def set_mods_for_part(rating_key, part_id, language, item_type, mods, mode="add"):
     plex_item = get_item(rating_key)
 
     if not plex_item:
@@ -376,37 +438,7 @@ def set_mods_for_part(rating_key, part_id, language, item_type, mods, mode="add"
         raise NotImplementedError("Wrong mode given")
     storage.save(stored_subs)
 
-    try:
-        metadata = get_plex_metadata(rating_key, part_id, item_type, plex_item=plex_item)
-    except PartUnknownException:
-        return
-
-    scanned_parts = scan_videos([metadata], kind="series" if item_type == "episode" else "movie", ignore_all=True,
-                                no_refining=True)
-    video, plex_part = scanned_parts.items()[0]
-
-    subtitle = ModifiedSubtitle(language, mods=current_sub.mods)
-    subtitle.content = current_sub.content
-    if current_sub.encoding:
-        # thanks plex
-        setattr(subtitle, "_guessed_encoding", current_sub.encoding)
-
-        if current_sub.encoding != "utf-8":
-            subtitle.normalize()
-            current_sub.content = subtitle.content
-            current_sub.encoding = "utf-8"
-            storage.save(stored_subs)
+    save_stored_sub(current_sub, rating_key, part_id, language, item_type, plex_item=plex_item, storage=storage,
+                    stored_subs=stored_subs)
 
     storage.destroy()
-
-    subtitle.plex_media_fps = plex_part.fps
-    subtitle.page_link = "modify subtitles with: %s" % (", ".join(current_sub.mods) if current_sub.mods else "none")
-    subtitle.language = language
-    subtitle.id = current_sub.id
-
-    try:
-        save_subtitles(scanned_parts, {video: [subtitle]}, mode="m", bare_save=True)
-        Log.Debug("Modified %s subtitle for: %s:%s with: %s", language.name, rating_key, part_id,
-                  ", ".join(current_sub.mods) if current_sub.mods else "none")
-    except:
-        Log.Error("Something went wrong when modifying subtitle: %s", traceback.format_exc())

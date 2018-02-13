@@ -110,9 +110,11 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
         if task.ready_for_display:
             task_state = "Running: %s/%s (%s%%)" % (task.items_done, task.items_searching, task.percentage)
         else:
-            task_state = "Last scheduler run: %s; Next scheduled run: %s; Last runtime: %s" % (
-                df(scheduler.last_run(task_name)) or "never",
-                df(scheduler.next_run(task_name)) or "never",
+            lr = scheduler.last_run(task_name)
+            nr = scheduler.next_run(task_name)
+            task_state = "Last run: %s; Next scheduled run: %s; Last runtime: %s" % (
+                df(scheduler.last_run(task_name)) if lr else "never",
+                df(scheduler.next_run(task_name)) if nr else "never",
                 str(task.last_run_time).split(".")[0])
 
         oc.add(DirectoryObject(
@@ -156,6 +158,19 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
         ))
 
     if not only_refresh:
+        if "provider_throttle" in Dict and Dict["provider_throttle"].keys():
+            summary_data = []
+            for provider, data in Dict["provider_throttle"].iteritems():
+                reason, until, desc = data
+                summary_data.append("%s until %s (%s)" % (provider, until.strftime("%y/%m/%d %H:%M"), reason))
+
+            oc.add(DirectoryObject(
+                key=Callback(fatality, force_title=" ", randomize=timestamp()),
+                title=pad_title("Throttled providers: %s" % ", ".join(Dict["provider_throttle"].keys())),
+                summary=", ".join(summary_data),
+                thumb=R("icon-throttled.jpg")
+            ))
+
         oc.add(DirectoryObject(
             key=Callback(AdvancedMenu),
             title=pad_title("Advanced functions"),

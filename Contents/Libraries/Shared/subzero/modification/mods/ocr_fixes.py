@@ -39,13 +39,16 @@ class FixOCR(SubtitleTextModification):
 
         return [
             # remove broken HI tag colons (ANNOUNCER'., ". instead of :) after at least 3 uppercase chars
-            NReProcessor(re.compile(ur'(?u)(^.*(?<=[A-ZÀ-Ž]{3})[A-ZÀ-Ž-_\s0-9"\']+["\'’ʼ❜‘‛”“‟„][.,‚،⹁、]\s*)'), "", name="SE_fix_HI_colons"),
-            WholeLineProcessor(self.data_dict["WholeLines"], name="SE_replace_line"),
-            MultipleWordReProcessor(self.data_dict["WholeWords"], name="SE_replace_word"),
-            MultipleWordReProcessor(self.data_dict["BeginLines"], name="SE_replace_beginline"),
-            MultipleWordReProcessor(self.data_dict["EndLines"], name="SE_replace_endline"),
-            MultipleWordReProcessor(self.data_dict["PartialLines"], name="SE_replace_partialline"),
-            MultipleLineProcessor(self.data_dict["PartialWordsAlways"], name="SE_replace_partialwordsalways")
+            NReProcessor(re.compile(ur'(?u)(^.*(?<=[A-ZÀ-Ž]{3})[A-ZÀ-Ž-_\s0-9"\']+["\'’ʼ❜‘‛”“‟„][.,‚،⹁、]\s*)'), "",
+                         name="OCR_fix_HI_colons"),
+            # fix F'bla
+            NReProcessor(re.compile(ur'(?u)(\bF)(\')([A-zÀ-ž]*\b)'), r"\1\3", name="OCR_fix_F"),
+            WholeLineProcessor(self.data_dict["WholeLines"], name="OCR_replace_line"),
+            MultipleWordReProcessor(self.data_dict["WholeWords"], name="OCR_replace_word"),
+            MultipleWordReProcessor(self.data_dict["BeginLines"], name="OCR_replace_beginline"),
+            MultipleWordReProcessor(self.data_dict["EndLines"], name="OCR_replace_endline"),
+            MultipleWordReProcessor(self.data_dict["PartialLines"], name="OCR_replace_partialline"),
+            MultipleLineProcessor(self.data_dict["PartialWordsAlways"], name="OCR_replace_partialwordsalways")
         ]
 
 
