@@ -29,14 +29,6 @@ route = enable_channel_wrapper(route)
 handler = enable_channel_wrapper(handler)
 
 
-def should_display_ignore(items, previous=None):
-    kind = get_kind(items)
-    return items and (
-        (kind in ("show", "season")) or
-        (kind == "episode" and previous != "season")
-    )
-
-
 def add_ignore_options(oc, kind, callback_menu=None, title=None, rating_key=None, add_kind=True):
     """
 

@@ -158,10 +158,11 @@ def get_video_display_title(kind, title, section_title=None, parent_title=None, 
     if add_section_title:
         section_add = ("%s: " % section_title) if section_title else ""
 
-    if kind == "show" and parent_title:
+    if kind in ("season", "show") and parent_title:
         if season and episode:
             return '%s%s S%02dE%02d%s' % (section_add, parent_title, season or 0, episode or 0,
                                           (", %s" % title if title else ""))
+
         return '%s%s%s' % (section_add, parent_title, (", %s" % title if title else ""))
     return "%s%s" % (section_add, title)
 

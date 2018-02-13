@@ -61,12 +61,15 @@ def get_item_kind_from_item(item):
 
 def get_item_title(item):
     kind = get_item_kind_from_item(item)
-    if kind not in ("episode", "movie"):
+    if kind not in ("episode", "movie", "season", "series"):
         return
 
     if kind == "episode":
         return get_plex_item_display_title(item, "show", parent=item.season, section_title=None,
                                                  parent_title=item.show.title)
+    elif kind == "season":
+        return get_plex_item_display_title(item, "season", parent=item.show, section_title="Season",
+                                           parent_title=item.show.title)
     else:
         return get_plex_item_display_title(item, kind, section_title=None)
 
@@ -267,6 +270,11 @@ def is_ignored(rating_key, item=None):
     # show in soft ignore list
     if kind == "Episode" and item.show.rating_key in ignore_list["series"]:
         Log.Debug("Item %s's show is in the soft ignore list" % rating_key)
+        return True
+
+    # season in soft ignore list
+    if kind == "Episode" and item.season.rating_key in ignore_list["seasons"]:
+        Log.Debug("Item %s's season is in the soft ignore list" % rating_key)
         return True
 
     # section in soft ignore list

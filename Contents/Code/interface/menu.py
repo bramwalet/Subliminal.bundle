@@ -12,7 +12,7 @@ from requests import HTTPError
 from item_details import ItemDetailsMenu
 from refresh_item import RefreshItem
 from menu_helpers import add_ignore_options, dig_tree, set_refresh_menu_state, \
-    should_display_ignore, default_thumb, debounce, ObjectContainer, SubFolderObjectContainer, route, \
+    default_thumb, debounce, ObjectContainer, SubFolderObjectContainer, route, \
     extract_embedded_sub
 from main import fatality, IgnoreMenu
 from advanced import DispatchRestart
@@ -22,7 +22,7 @@ from support.scheduler import scheduler
 from support.config import config
 from support.helpers import timestamp, df, display_language
 from support.ignore import ignore_list
-from support.items import get_all_items, get_items_info, get_item_kind_from_rating_key, get_item, MI_KEY
+from support.items import get_all_items, get_items_info, get_item_kind_from_rating_key, get_item, MI_KEY, get_item_title
 from support.storage import get_subtitle_storage
 
 # init GUI
@@ -101,9 +101,12 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
         dig_tree(oc, items, MetadataMenu,
                  pass_kwargs={"base_title": title, "display_items": deeper, "previous_item_type": kind,
                               "previous_rating_key": rating_key})
+
         # we don't know exactly where we are here, only add ignore option to series
-        if should_display_ignore(items, previous=previous_item_type):
-            add_ignore_options(oc, "series", title=item_title, rating_key=rating_key, callback_menu=IgnoreMenu)
+        if current_kind in ("series", "season"):
+            item = get_item(rating_key)
+            sub_title = get_item_title(item)
+            add_ignore_options(oc, current_kind, title=sub_title, rating_key=rating_key, callback_menu=IgnoreMenu)
 
         # mass-extract embedded
         if current_kind == "season" and config.plex_transcoder:

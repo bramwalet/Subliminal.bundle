@@ -173,7 +173,10 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                         summary=u"Extract and activate embedded subtitle streams"
                     ))
 
-    add_ignore_options(oc, "videos", title=item_title, rating_key=rating_key, callback_menu=IgnoreMenu)
+    ignore_title = item_title
+    if current_kind == "episode":
+        ignore_title = get_item_title(item)
+    add_ignore_options(oc, "videos", title=ignore_title, rating_key=rating_key, callback_menu=IgnoreMenu)
     subtitle_storage.destroy()
 
     return oc
