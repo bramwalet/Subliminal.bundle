@@ -71,9 +71,9 @@ For further help or manual installation, [please go to the wiki](https://github.
 
 ## Big thanks to the beta testing team (in no particular order)!
 the.vbm, mmgoodnow, Vertig0ne, thliu78, tattoomees, ostman, count_confucius, 
-eherberg, tywilliams_88, Swanny, Jippo, Joost1991 / joost, Marik, seannymurrs, 
-the.vbm, eherberg, seannymurrs, Jon, AmbyDK, Jippo, Clay, mmgoodnow, Abenlog, 
-michael, smikwily, shoghicp, Zuikkis, Isilorn, Jacob K, Ninjouz, chopeta, fvb
+eherberg, tywilliams_88, Swanny, Jippo, Joost1991 / joost, Marik, Jon, AmbyDK, 
+Jippo, Clay, mmgoodnow, Abenlog, michael, smikwily, shoghicp, Zuikkis, Isilorn, 
+Jacob K, Ninjouz, chopeta, fvb
 
 ## Changelog
 
