@@ -69,6 +69,12 @@ Ever had broken music icons in a subtitle? Nordic characters like `Å` which tur
 Simply go to the Plex Channels in your Plex Media Server, search for Sub-Zero and install it.
 For further help or manual installation, [please go to the wiki](https://github.com/pannal/Sub-Zero.bundle/wiki).
 
+## Big thanks to the beta testing team (in no particular order)!
+the.vbm, mmgoodnow, Vertig0ne, thliu78, tattoomees, ostman, count_confucius, 
+eherberg, tywilliams_88, Swanny, Jippo, Joost1991 / joost, Marik, seannymurrs, 
+the.vbm, eherberg, seannymurrs, Jon, AmbyDK, Jippo, Clay, mmgoodnow, Abenlog, 
+michael, smikwily, shoghicp, Zuikkis, Isilorn, Jacob K, Ninjouz, chopeta, fvb
+
 ## Changelog
 
 2.5.0.2221
@@ -143,9 +149,6 @@ For further help or manual installation, [please go to the wiki](https://github.
 - advanced settings: define enabled-for languages per provider
 - advanced settings: add deep-clean option (clean up the subtitle-sub-folder and the parent one)
 
-
-
-Big thanks to the beta testing team! You know who you are!
 
 [older changes](CHANGELOG.md)
 
