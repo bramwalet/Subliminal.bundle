@@ -71,40 +71,77 @@ For further help or manual installation, [please go to the wiki](https://github.
 
 ## Changelog
 
-2.0.33.1871
-- core: normalize line endings in subtitles to LF (\n)
-- core: add subtitle storage lock to avoid race condition
-- core: be more verbose about subtitle storage addition
-- core: fix MPL2 newline parsing, which resulted in broken subtitles
-- core: encoding change: reduce log spam
-- submod: common: fix CM_starting_spacedots
-- opensubtitles: fix request/response handling
+2.5.0.2221
+refiners: add support for retrieving original filename from
+	- drone derivates: sonarr, radarr
+	- filebot
+	- symlinks
+    - file_info meta file lists (see wiki)
 
+providers: add subscene (disabled by default to not flood subscene on release)
+    - normal search
+    - season pack search if season has concluded
 
+core: add provider subtitle-archive/pack cache for retrieving single subtitles from previously downloaded (season-) packs (subscene)
+core/agent: massive performance improvements over 2.0
+core/agent/background-tasks: reduce memory usage to a fraction of 2.0
+core/providers: add dynamic provider throttling when certain events occur (ServiceUnavailable, too many downloads, ...), to lighten the provider-load
+core/agent/config: automatically extract embedded subtitles (and use them if no current subtitle)
+core: fix internal subtitle info storage issues
+core: always store internal subtitle information even if no subtitle was downloaded (fixes SearchAllRecentlyAddedMissing)
+core: fix internal subtitle info storage on windows (gzip handling is broken there)
+core: don't fail on missing logfile paths
+core: fix default encoding order for non-script-serbian
+core: improve logging
+core: add AsRequested to cleanup garbage names
+core: treat SDTV and HDTV the same when searching for subtitles
+core: parse_video: trust PMS season and episode numbers
+core: parse_video: add series year information from PMS if none found
+core: upgrade dependencies
+core: update subliminal to 62cdb3c
+core: add new file based cache mechanism, rendering DBM/memory backends obsolete
+core: treat 23.980 fps as 23.976 and vice-versa
+core: add HTTP proxy support for querying the providers (supports credentials)
+core: only compute file hashes for enabled providers
+core: massive speedup; refine only when needed, exit early otherwise
+core: store last modified timestamp in subtitle info storage
+core: only write to subtitle info storage if we haven't had one or any subtitle was downloaded
+core: only clean up the sub-folder if a subtitle-sub-folder has been selected, and not the parent one also
+core: support for CP437 encoded filenames in ZIP-Archives
+core: use scandir library instead of os.listdir if possible, reducing performance-impact
+core: archives: support multi-episode subtitles (partly)
+core: subtitle cleanup: add support for hi, cc, sdh secondary filename tags; don't autoclean .txt
+core: increase request timeout by three times in case a proxy is being used
+core: fix language=Unknown in Plex when "Restrict to one language"-setting is set
+core: refining: re-add old detected title as alternative title after re-refining with plex metadata's title; fixes #428
+core: implement advanced_settings.json (see advanced_settings.json.template for reference, copy to "Plug-in Support/Data/com.plexapp.agents.subzero" to use it)
+core/tasks: fix search all recently added missing (the total number of items will change in the menu while running), reduces memory usage
+core/menu: add support for extracting embedded subtitles using the builtin plex transcoder
+core/menu: skip wrong season or episode in returned subtitle results
+core/config: fix language handling if treat undefined as first language is set
+providers: remove shooter.cn
+providers: add support for zip/rar archives containing more than one subtitle file
+submod: common: remove redundant interpunction ("Hello !!!" -> "Hello!")
+submod: skip provider hashing when applying mods
+submod: correctly drop empty line (fixing broken display)
+submod: OCR: fix F'xxxxx -> Fxxxxx
+submod: HI: improve bracket matching
+submod: OCR: fix l/L instead of I more aggressively
+submod: common: fix uppercase I's in lowercase words more aggressively
+submod: HI: improve HI_before_colon
+submod: common: be more aggressive when fixing numbers; correctly space out spaced ellipses; don't break spaced ellipses; handle multiple spaces in numbers
+menu: add support for extracting embedded subtitles for a whole season
+menu: add reapply mods to current subtitle
+menu: pad titles for more submenus, resulting in detail view in PlexWeb
+menu: add subtitle selection submenu (if multiple subtitles are inside the subtitle info storage; e.g. previously downloaded ones or extracted embedded)
+menu: advanced: add skip findbettersubtitles menu item, which sets the last_run to now (for debugging purposes)
+menu: ignore: add more natural title for seasons and episodes (kills your old ignore lists!)
+config: skip provider hashing on low impact mode
+config: add limit by air date setting to consider for FindBetterSubtitles task (default: 1 year)
+advanced settings: define enabled-for media types per provider
+advanced settings: define enabled-for languages per provider
+advanced settings: add deep-clean option (clean up the subtitle-sub-folder and the parent one)
 
-2.0.33.1849
-- opensubtitles: add VIP server handling + preference; VIP benefits: 10€/year, ad-free subs, 1000 subs/day, no-cache VIP server, help SZ and subscribe via http://v.ht/osvip
-- opensubtitles: try to reuse previous token instead of logging in every time
-- core: add throttling between searches (10 seconds)
-- core: fix IETF handling for good
-- core: fix no subtitles being searched in certain situations (when an external subtitle without special tag exists)
-- core: add subtitle blacklist
-- core: fixes
-- core: fix detection of certain PMS media stream language tags ("FR" for example)
-- core: missing subtitles: correctly skip unwanted subtitle extensions
-- core: missing subtitles: honor "treat undefined as first language" option correctly
-- api: add blacklisting endpoints for quickly searching for new subtitls via bookmarklet
-- submod: colors: apply color mods at the end of processing modifications; fix color mods
-- submod: new remove_tags modification to remove all styling tags from subtitles
-- submod: HI: be more aggressive at handling brackets
-- submod: OCR: update en and hrv
-- submod: common: remove "torrent downloaded from ..." lines
-- submod: OCR: fix WholeWord handling, improving modification
-- submod: apply OCR fixes before HI
-- submod: OCR: fix broken HI tag colons (ANNOUNCER'. instead of ANNOUNCER:)
-- menu: advanced: speed up batch modifications
-- menu: add subtitle blacklist
-- menu: recently played: show only TV episodes and movies (music tracks were listed here as well)
 
 
 Big thanks to the beta testing team! You know who you are!
