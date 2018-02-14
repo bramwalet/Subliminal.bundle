@@ -42,8 +42,8 @@ DOWNLOAD_TRIES = 0
 DOWNLOAD_RETRY_SLEEP = 6
 
 # fixme: this may be overkill
-REMOVE_CRAP_FROM_FILENAME = re.compile(r"(?i)((?:[\s_-]+(?:obfuscated|scrambled|nzbgeek|chamele0n|buymore|xpost"
-                                       r"|postbot|asrequested))?(?:(?<=(?=[\s_-]*.+?))\[[^\[\]]*?\])?)(?:\.\w+|$)$")
+REMOVE_CRAP_FROM_FILENAME = re.compile(r"(?i)(?:([\s_-]+(?:obfuscated|scrambled|nzbgeek|chamele0n|buymore|xpost|postbot"
+                                       r"|asrequested)(?:\[.+\])?)|[\s_-]\w{2,}(\[.+\]))(?=\.\w+$|$)")
 
 SUBTITLE_EXTENSIONS = ('.srt', '.sub', '.smi', '.txt', '.ssa', '.ass', '.mpl', '.vtt')
 
