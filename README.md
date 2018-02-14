@@ -77,6 +77,12 @@ Jacob K, Ninjouz, chopeta, fvb
 
 ## Changelog
 
+2.5.0.2241
+
+- fix issue when removing crap from filenames to not accidentally remove release group #436
+- fix initialization of soft ignore list after upgrade fron 2.0
+
+
 2.5.0.2221
 
 - refiners: add support for retrieving original filename from
