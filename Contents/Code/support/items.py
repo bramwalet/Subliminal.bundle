@@ -260,7 +260,7 @@ def is_ignored(rating_key, item=None):
     :return:
     """
     # item in soft ignore list
-    if rating_key in ignore_list["videos"]:
+    if ignore_list["videos"] and rating_key in ignore_list["videos"]:
         Log.Debug("Item %s is in the soft ignore list" % rating_key)
         return True
 
@@ -268,17 +268,17 @@ def is_ignored(rating_key, item=None):
     kind = get_item_kind(item)
 
     # show in soft ignore list
-    if kind == "Episode" and item.show.rating_key in ignore_list["series"]:
+    if kind == "Episode" and ignore_list["series"] and item.show.rating_key in ignore_list["series"]:
         Log.Debug("Item %s's show is in the soft ignore list" % rating_key)
         return True
 
     # season in soft ignore list
-    if kind == "Episode" and item.season.rating_key in ignore_list["seasons"]:
+    if kind == "Episode" and ignore_list["seasons"] and item.season.rating_key in ignore_list["seasons"]:
         Log.Debug("Item %s's season is in the soft ignore list" % rating_key)
         return True
 
     # section in soft ignore list
-    if item.section.key in ignore_list["sections"]:
+    if ignore_list["sections"] and item.section.key in ignore_list["sections"]:
         Log.Debug("Item %s's section is in the soft ignore list" % rating_key)
         return True
 
