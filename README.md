@@ -77,6 +77,10 @@ Jacob K, Ninjouz, chopeta, fvb
 
 ## Changelog
 
+2.5.0.2247
+- fix ignoring by-hash-matched episodes
+
+
 2.5.0.2241
 
 - fix issue when removing crap from filenames to not accidentally remove release group #436
