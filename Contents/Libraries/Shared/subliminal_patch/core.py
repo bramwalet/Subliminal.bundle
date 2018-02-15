@@ -319,16 +319,18 @@ class SZProviderPool(ProviderPool):
                 logger.error("%r: Match computation failed: %s", s, traceback.format_exc())
                 continue
 
+            orig_matches = matches.copy()
+
             logger.debug('%r: Found matches %r', s, matches)
             unsorted_subtitles.append(
-                (s, compute_score(matches, s, video, hearing_impaired=use_hearing_impaired), matches))
+                (s, compute_score(matches, s, video, hearing_impaired=use_hearing_impaired), matches, orig_matches))
 
         # sort subtitles by score
         scored_subtitles = sorted(unsorted_subtitles, key=operator.itemgetter(1), reverse=True)
 
         # download best subtitles, falling back on the next on error
         downloaded_subtitles = []
-        for subtitle, score, matches in scored_subtitles:
+        for subtitle, score, matches, orig_matches in scored_subtitles:
             # check score
             if score < min_score:
                 logger.info('%r: Score %d is below min_score (%d)', subtitle, score, min_score)
@@ -351,7 +353,7 @@ class SZProviderPool(ProviderPool):
                              score, hearing_impaired)
                 continue
 
-            if is_episode and not {"series", "season", "episode"}.issubset(matches):
+            if is_episode and not {"series", "season", "episode"}.issubset(orig_matches):
                 logger.debug("%r: Skipping subtitle with score %d, because it doesn't match our series/episode",
                              subtitle, score)
                 continue
