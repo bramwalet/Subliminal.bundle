@@ -29,6 +29,9 @@ class DroneAPIClient(object):
         if not base_url.endswith("/"):
             base_url += "/"
 
+        if not base_url.startswith("http"):
+            base_url = "http://%s" % base_url
+
         if not base_url.endswith("api/"):
             self.api_url = urljoin(base_url, "api/")
 
