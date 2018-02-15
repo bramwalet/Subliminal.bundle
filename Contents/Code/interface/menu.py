@@ -332,24 +332,27 @@ def ValidatePrefs():
     # debug drone
     if "sonarr" in config.refiner_settings or "radarr" in config.refiner_settings:
         Log.Debug("----- Connections -----")
-        from subliminal_patch.refiners.drone import SonarrClient, RadarrClient
-        for key, cls in [("sonarr", SonarrClient), ("radarr", RadarrClient)]:
-            if key in config.refiner_settings:
-                cname = key.capitalize()
-                try:
-                    status = cls(**config.refiner_settings[key]).status()
-                except HTTPError, e:
-                    if e.response.status_code == 401:
-                        Log.Debug("%s: NOT WORKING - BAD API KEY", cname)
-                    else:
+        try:
+            from subliminal_patch.refiners.drone import SonarrClient, RadarrClient
+            for key, cls in [("sonarr", SonarrClient), ("radarr", RadarrClient)]:
+                if key in config.refiner_settings:
+                    cname = key.capitalize()
+                    try:
+                        status = cls(**config.refiner_settings[key]).status()
+                    except HTTPError, e:
+                        if e.response.status_code == 401:
+                            Log.Debug("%s: NOT WORKING - BAD API KEY", cname)
+                        else:
+                            Log.Debug("%s: NOT WORKING - %s", cname, traceback.format_exc())
+                    except:
                         Log.Debug("%s: NOT WORKING - %s", cname, traceback.format_exc())
-                except:
-                    Log.Debug("%s: NOT WORKING - %s", cname, traceback.format_exc())
-                else:
-                    if status["version"]:
-                        Log.Debug("%s: OK - %s", cname, status["version"])
                     else:
-                        Log.Debug("%s: NOT WORKING - %s", cname)
+                        if status and status["version"]:
+                            Log.Debug("%s: OK - %s", cname, status["version"])
+                        else:
+                            Log.Debug("%s: NOT WORKING - %s", cname)
+        except:
+            Log.Debug("Something went really wrong when evaluating Sonarr/Radarr: %s", traceback.format_exc())
 
     # fixme: check existance of and os access of logs
     Log.Debug("----- Environment -----")
