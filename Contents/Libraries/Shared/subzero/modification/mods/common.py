@@ -20,7 +20,7 @@ class CommonFixes(SubtitleTextModification):
 
     processors = [
         # -- = ...
-        StringProcessor("-- ", '... ', name="CM_doubledash"),
+        NReProcessor(re.compile(r'(?u)(^-\s?-[-\s]*)(?!.+\s?-\s?-[-\s]*)'), "", name="CM_doubledash"),
 
         # '' = "
         StringProcessor("''", '"', name="CM_double_apostrophe"),
