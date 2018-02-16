@@ -197,13 +197,13 @@ class SubtitleModifications(object):
                         line = mod.modify(line.strip(), entry=entry.text, debug=self.debug, parent=self, **args)
                     except EmptyEntryError:
                         if self.debug:
-                            logger.debug(u"%s: %r -> ''", identifier, entry.text)
+                            logger.debug(u"%d: %s: %r -> ''", index, identifier, entry.text)
                         skip_entry = True
                         break
 
                     if not line:
                         if self.debug:
-                            logger.debug(u"%s: %r -> ''", identifier, old_line)
+                            logger.debug(u"%d: %s: %r -> ''", index, identifier, old_line)
                         skip_line = True
                         break
 
@@ -235,12 +235,12 @@ class SubtitleModifications(object):
                     lines.append(cleaned_line)
                 else:
                     if self.debug:
-                        logger.debug(u"Ditching now empty line (%r)", line)
+                        logger.debug(u"%d: Ditching now empty line (%r)", index, line)
 
             if not lines:
                 # don't bother logging when the entry only had one line
                 if self.debug and line_count > 1:
-                    logger.debug(u"%r -> ''", entry.text)
+                    logger.debug(u"%d: %r -> ''", index, entry.text)
                 continue
 
             new_text = ur"\N".join(lines)
