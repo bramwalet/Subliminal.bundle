@@ -22,8 +22,8 @@ class CommonFixes(SubtitleTextModification):
         # -- = ...
         NReProcessor(re.compile(r'(?u)(^-\s?-[-\s]*)(?!.+\s?-\s?-[-\s]*)'), "", name="CM_doubledash"),
 
-        # line = _
-        NReProcessor(re.compile(r'(?u)(^[_\s]*_+[_\s]*$)'), "", name="CM_underscore_only"),
+        # line = _/-/\s
+        NReProcessor(re.compile(r'(?u)(^[-_\s]*[-_\s]+[-_\s]*$)'), "", name="CM_underscore_only"),
 
         # '' = "
         StringProcessor("''", '"', name="CM_double_apostrophe"),
