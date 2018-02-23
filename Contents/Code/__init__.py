@@ -2,10 +2,10 @@
 import sys
 import datetime
 
-from subzero.sandbox import restore_builtins
+from subzero.sandbox import fix_environment_stuff
 
 module = sys.modules['__main__']
-restore_builtins(module, {})
+fix_environment_stuff(module, {})
 
 globals = getattr(module, "__builtins__")["globals"]
 for key, value in getattr(module, "__builtins__").iteritems():
