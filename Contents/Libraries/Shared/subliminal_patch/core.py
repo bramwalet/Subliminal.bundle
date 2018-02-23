@@ -10,6 +10,7 @@ import time
 import operator
 
 import itertools
+from httplib import ResponseNotReady
 
 import rarfile
 import requests
@@ -242,6 +243,7 @@ class SZProviderPool(ProviderPool):
                     requests.exceptions.ProxyError,
                     requests.exceptions.SSLError,
                     requests.Timeout,
+                    ResponseNotReady,
                     socket.timeout):
                 logger.error('Provider %r connection error', subtitle.provider_name)
 
