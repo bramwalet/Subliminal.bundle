@@ -243,9 +243,16 @@ class SZProviderPool(ProviderPool):
                     requests.exceptions.ProxyError,
                     requests.exceptions.SSLError,
                     requests.Timeout,
-                    ResponseNotReady,
                     socket.timeout):
                 logger.error('Provider %r connection error', subtitle.provider_name)
+
+            except ResponseNotReady:
+                logger.error('Provider %r response error, reinitializing', subtitle.provider_name)
+                try:
+                    self[subtitle.provider_name].terminate()
+                    self[subtitle.provider_name].initialize()
+                except:
+                    logger.error('Provider %r reinitialization error', subtitle.provider_name)
 
             except rarfile.BadRarFile:
                 logger.error('Malformed RAR file from provider %r, skipping subtitle.', subtitle.provider_name)
