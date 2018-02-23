@@ -18,7 +18,6 @@ from collections import defaultdict
 from bs4 import UnicodeDammit
 from babelfish import LanguageReverseError
 from guessit.jsonutils import GuessitEncoder
-from scandir import scandir
 from subliminal import ProviderError, refiner_manager
 
 from extensions import provider_registry
@@ -31,6 +30,7 @@ from subliminal.core import guessit, ProviderPool, io, is_windows_special_path, 
 from subliminal_patch.exceptions import TooManyRequests
 
 from subzero.language import Language
+from subzero.lib.io import scandir
 
 logger = logging.getLogger(__name__)
 
