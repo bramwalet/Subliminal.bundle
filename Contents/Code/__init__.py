@@ -206,7 +206,14 @@ class SubZeroAgent(object):
 
             # scanned_video_part_map = {subliminal.Video: plex_part, ...}
             providers = config.get_providers(media_type=self.agent_type)
-            scanned_video_part_map = scan_videos(videos, providers=providers)
+            try:
+                scanned_video_part_map = scan_videos(videos, providers=providers)
+            except IOError, e:
+                Log.Exception("Permission error, please check your folder/file permissions. Exiting.")
+                if cast_bool(Prefs["check_permissions"]):
+                    config.permissions_ok = False
+                    config.missing_permissions = e.message
+                return
 
             # auto extract embedded
             if config.embedded_auto_extract:

@@ -41,12 +41,19 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
         return oc
 
     if not config.permissions_ok and config.missing_permissions:
-        for title, path in config.missing_permissions:
+        if not isinstance(config.missing_permissions, list):
             oc.add(DirectoryObject(
                 key=Callback(fatality, randomize=timestamp()),
                 title=pad_title("Insufficient permissions"),
-                summary="Insufficient permissions on library %s, folder: %s" % (title, path),
+                summary=config.missing_permissions,
             ))
+        else:
+            for title, path in config.missing_permissions:
+                oc.add(DirectoryObject(
+                    key=Callback(fatality, randomize=timestamp()),
+                    title=pad_title("Insufficient permissions"),
+                    summary="Insufficient permissions on library %s, folder: %s" % (title, path),
+                ))
         return oc
 
     if not config.enabled_sections:
