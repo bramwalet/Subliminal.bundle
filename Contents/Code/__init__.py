@@ -119,7 +119,7 @@ class SubliminalSubtitlesAgentMovies(Agent.Movies):
     name = 'Subliminal Movie Subtitles'
     languages = [Locale.Language.English]
     primary_provider = False
-    contributes_to = ['com.plexapp.agents.imdb']
+    contributes_to = ['com.plexapp.agents.imdb'] 
 
     def search(self, results, media, lang):
         Log.Debug("MOVIE SEARCH CALLED")
