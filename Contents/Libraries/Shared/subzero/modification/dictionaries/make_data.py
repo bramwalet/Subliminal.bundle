@@ -53,6 +53,7 @@ SZ_FIX_DATA = {
             u" 're ": u"'re ",
             u"LAst": u"Last",
             u"forthis": u"for this",
+            u"Ls": u"Is",
         },
         "PartialLines": {
             u"L know": u"I know",
