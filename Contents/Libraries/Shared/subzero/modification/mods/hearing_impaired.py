@@ -68,7 +68,7 @@ class HearingImpaired(SubtitleTextModification):
                      name="HI_starting_upper_then_sentence"),
 
         # remove music symbols
-        NReProcessor(re.compile(ur'(?u)(^[♫♪\s]*[♫♪\s]+[♫♪\s]*$)'), "", name="CM_music_symbols_only"),
+        NReProcessor(re.compile(ur'(?u)(^[*#¶♫♪\s]*[*#¶♫♪\s]+[*#¶♫♪\s]*$)'), "", name="HI_music_symbols_only"),
     ]
 
     post_processors = empty_line_post_processors
