@@ -44,9 +44,18 @@ DOWNLOAD_RETRY_SLEEP = 6
 
 # fixme: this may be overkill
 REMOVE_CRAP_FROM_FILENAME = re.compile(r"(?i)(?:([\s_-]+(?:obfuscated|scrambled|nzbgeek|chamele0n|buymore|xpost|postbot"
-                                       r"|asrequested)(?:\[.+\])?)|[\s_-]\w{2,}(\[.+\]))(?=\.\w+$|$)")
+                                       r"|asrequested)(?:\[.+\])?)|([\s_-]\w{2,})(\[.+\]))(?=\.\w+$|$)")
 
 SUBTITLE_EXTENSIONS = ('.srt', '.sub', '.smi', '.txt', '.ssa', '.ass', '.mpl', '.vtt')
+
+
+def remove_crap_from_fn(fn):
+    # in case of the second regex part, the legit release group name will be in group(2), if it's followed by [string]
+    # otherwise replace fully, because the first part matched
+    def repl(m):
+        return m.group(2) if len(m.groups()) == 3 else ""
+
+    return REMOVE_CRAP_FROM_FILENAME.sub(repl, fn)
 
 
 class SZProviderPool(ProviderPool):
@@ -468,15 +477,15 @@ def scan_video(path, dont_use_actual_file=False, hints=None, providers=None, ski
     # remove crap from folder names
     if video_type == "episode":
         if len(split_path) > 2:
-            split_path[-3] = REMOVE_CRAP_FROM_FILENAME.sub("", split_path[-3])
+            split_path[-3] = remove_crap_from_fn(split_path[-3])
     else:
         if len(split_path) > 1:
-            split_path[-2] = REMOVE_CRAP_FROM_FILENAME.sub("", split_path[-2])
+            split_path[-2] = remove_crap_from_fn(split_path[-2])
 
     guess_from = os.path.join(*split_path)
 
     # remove crap from file name
-    guess_from = REMOVE_CRAP_FROM_FILENAME.sub("", guess_from)
+    guess_from = remove_crap_from_fn(guess_from)
 
     # guess
     hints["single_value"] = True

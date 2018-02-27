@@ -5,13 +5,13 @@ import os
 
 from guessit import guessit
 from subliminal import Episode
-from subliminal_patch.core import REMOVE_CRAP_FROM_FILENAME
+from subliminal_patch.core import remove_crap_from_fn
 
 logger = logging.getLogger(__name__)
 
 
 def update_video(video, fn):
-    guess_from = REMOVE_CRAP_FROM_FILENAME.sub("", fn)
+    guess_from = remove_crap_from_fn(fn)
 
     logger.debug(u"Got original filename: %s", guess_from)
 
