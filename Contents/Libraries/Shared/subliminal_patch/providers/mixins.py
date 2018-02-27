@@ -84,7 +84,7 @@ class ProviderSubtitleArchiveMixin(object):
                 # - release group matches (and we asked for one and it was matched, or it was not matched)
                 is_episode = subtitle.asked_for_episode
 
-                episodes = guess["episode"]
+                episodes = guess.get("episode")
                 if is_episode and episodes and not isinstance(episodes, list):
                     episodes = [episodes]
 
