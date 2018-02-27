@@ -66,6 +66,9 @@ class HearingImpaired(SubtitleTextModification):
         # all caps at start before new sentence
         NReProcessor(re.compile(ur'(?u)^(?=[A-ZÀ-Ž]{4,})[A-ZÀ-Ž-_\s]+\s([A-ZÀ-Ž][a-zà-ž].+)'), r"\1",
                      name="HI_starting_upper_then_sentence"),
+
+        # remove music symbols
+        NReProcessor(re.compile(ur'(?u)(^[♫♪\s]*[♫♪\s]+[♫♪\s]*$)'), "", name="CM_music_symbols_only"),
     ]
 
     post_processors = empty_line_post_processors
