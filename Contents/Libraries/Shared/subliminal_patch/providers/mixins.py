@@ -92,7 +92,7 @@ class ProviderSubtitleArchiveMixin(object):
                         (
                                 subtitle.episode in episodes
                                 or (subtitle.is_pack and subtitle.asked_for_episode in episodes)
-                        ) and guess["season"] == subtitle.season):
+                        ) and guess.get("season") == subtitle.season):
 
                     format_matches = True
                     wanted_format_but_not_found = False
@@ -108,7 +108,7 @@ class ProviderSubtitleArchiveMixin(object):
                             wanted_format_but_not_found = True
 
                         else:
-                            formats = guess["format"]
+                            formats = guess.get("format")
                             if not isinstance(formats, types.ListType):
                                 formats = [formats]
 
