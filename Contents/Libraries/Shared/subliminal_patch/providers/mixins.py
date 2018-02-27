@@ -108,7 +108,7 @@ class ProviderSubtitleArchiveMixin(object):
                             wanted_format_but_not_found = True
 
                         else:
-                            formats = guess.get("format")
+                            formats = guess["format"]
                             if not isinstance(formats, types.ListType):
                                 formats = [formats]
 
