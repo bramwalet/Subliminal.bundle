@@ -57,7 +57,8 @@ class HearingImpaired(SubtitleTextModification):
         # more than one space is inside the text
         NReProcessor(re.compile(ur'(?u)(?:(?<=^)|(?<=[.\-!?\"\']))([\s-]*(?=[A-zÀ-ž]\s*[A-zÀ-ž]\s*[A-zÀ-ž])'
                                 ur'[A-zÀ-ž-_0-9\s\"\']+:\s*)(?![0-9])'),
-                     lambda match: match.group(1) if match.group(1).count(" ") > 1 else "",
+                     lambda match: match.group(1) if (match.group(1).count(" ") > 1
+                                                      or match.group(1).count("-") > 1) else "",
                      name="HI_before_colon_noncaps"),
 
         # text in brackets at start, after optional dash, before colon or at end of line
