@@ -381,6 +381,12 @@
     "default": "false"
   },
   {
+    "id": "provider.hosszupuska.enabled",
+    "label": "Provider: Enable hosszupuskasub.com (Hungarian)",
+    "type": "bool",
+    "default": "false"
+  },
+  {
     "id": "providers.multithreading",
     "label": "Search enabled providers simultaneously (multithreading)",
     "type": "bool",
