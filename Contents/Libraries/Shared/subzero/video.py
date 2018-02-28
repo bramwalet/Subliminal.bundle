@@ -46,8 +46,11 @@ def set_existing_languages(video, video_info, external_subtitles=False, embedded
             try:
                 embedded_subtitle_languages.add(Language.fromalpha3b(language))
             except LanguageError:
-                logger.error('Embedded subtitle track language %r is not a valid language', language)
-                embedded_subtitle_languages.add(Language('und'))
+                try:
+                    embedded_subtitle_languages.add(Language.fromietf(language))
+                except LanguageError:
+                    logger.error('Embedded subtitle track language %r is not a valid language', language)
+                    embedded_subtitle_languages.add(Language('und'))
 
             logger.debug('Found embedded subtitle %r', embedded_subtitle_languages)
             video.subtitle_languages.update(embedded_subtitle_languages)
