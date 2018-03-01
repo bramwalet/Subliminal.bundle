@@ -10,6 +10,15 @@ repl_map = {
 }
 
 
+def language_from_stream(l):
+    for method in ("fromietf", "fromalpha3t", "fromalpha3b"):
+        try:
+            return getattr(Language, method)(l)
+        except LanguageError:
+            pass
+    raise LanguageError()
+
+
 class Language(Language_):
     @classmethod
     def fromietf(cls, ietf):
