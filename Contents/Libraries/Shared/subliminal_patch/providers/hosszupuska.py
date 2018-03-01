@@ -10,6 +10,7 @@ from babelfish import Language, language_converters
 from requests import Session
 
 from subliminal_patch.providers import Provider
+from subliminal_patch.providers.mixins import ProviderSubtitleArchiveMixin
 from subliminal.providers import ParserBeautifulSoup
 from subliminal_patch.exceptions import ProviderError
 from subliminal.score import get_equivalent_release_groups
@@ -17,6 +18,24 @@ from subliminal_patch.subtitle import Subtitle
 from subliminal.subtitle import fix_line_ending
 from subliminal.utils import sanitize, sanitize_release_group
 from subliminal.video import Episode
+from zipfile import ZipFile, is_zipfile
+from rarfile import RarFile, is_rarfile
+from subliminal_patch.utils import sanitize, fix_inconsistent_naming as _fix_inconsistent_naming
+
+def fix_inconsistent_naming(title):
+    """Fix titles with inconsistent naming using dictionary and sanitize them.
+
+    :param str title: original title.
+    :return: new title.
+    :rtype: str
+
+    """
+    return _fix_inconsistent_naming(title, {"DC's Legends of Tomorrow": "Legends of Tomorrow",
+                                            "Marvel's Jessica Jones": "Jessica Jones"})
+
+
+
+
 
 logger = logging.getLogger(__name__)
 
@@ -101,7 +120,7 @@ class HosszupuskaSubtitle(Subtitle):
         return matches
 
 
-class HosszupuskaProvider(Provider):
+class HosszupuskaProvider(Provider, ProviderSubtitleArchiveMixin):
     """Hosszupuska Provider."""
     languages = {Language('hun', 'HU')} | {Language(l) for l in [
         'hun', 'eng'
@@ -125,19 +144,14 @@ class HosszupuskaProvider(Provider):
             return Language.fromhosszupuska('en')
         return None
 
-    def check_lxml(self):
-        try:
-            require("lxml")
-        except Exception as e:
-            if e.__module__ == 'pkg_resources' and e.__class__.__name__ == 'DistributionNotFound':
-                return False
-        return True
+
 
     def query(self, series, season, episode, year=None):
 
         # Search for s01e03 instead of s1e3
         seasona = season
         episodea = episode
+        series = fix_inconsistent_naming(series)
         seriesa = series.replace(' ', '+').replace('\'', '')
 
         if season < 10:
@@ -221,7 +235,7 @@ class HosszupuskaProvider(Provider):
                                                    sub_episode, sub_format, sub_release_group, sub_resolution, sub_year)
 
                     # Currently rar is not supported (But not commonly used on the provider)
-                    if 'rar' not in sub_downloadlink and sub_season == season and sub_episode == episode:
+                    if sub_season == season and sub_episode == episode:
                         logger.debug('Found subtitle \r\n%s', subtitle)
                         subtitles.append(subtitle)
         return subtitles
@@ -230,15 +244,21 @@ class HosszupuskaProvider(Provider):
         return [s for s in self.query(video.series, video.season, video.episode, video.year) if s.language in languages]
 
     def download_subtitle(self, subtitle):
-
-        # download as a zip
-        logger.info('Downloading subtitle %r', subtitle.subtitle_id)
         r = self.session.get(subtitle.page_link, timeout=10)
         r.raise_for_status()
 
-        # open the zip
-        with ZipFile(io.BytesIO(r.content)) as zf:
-            if len(zf.namelist()) > 1:
-                raise ProviderError('More than one file to unzip')
+        # open the archive
+        archive_stream = io.BytesIO(r.content)
+        if is_rarfile(archive_stream):
+            logger.debug('Archive identified as rar')
+            archive = RarFile(archive_stream)
+        elif is_zipfile(archive_stream):
+            logger.debug('Archive identified as zip')
+            archive = ZipFile(archive_stream)
+        else:
+            raise ProviderError('Unidentified archive type')
 
-            subtitle.content = fix_line_ending(zf.read(zf.namelist()[0]))
+        subtitle.content = self.get_subtitle_from_archive(subtitle, archive)
+
+
+
