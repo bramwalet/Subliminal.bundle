@@ -376,7 +376,7 @@
   },
   {
     "id": "provider.subscene.enabled",
-    "label": "Provider: Enable SubScene",
+    "label": "Provider: Enable SubScene (TV shows)",
     "type": "bool",
     "default": "false"
   },

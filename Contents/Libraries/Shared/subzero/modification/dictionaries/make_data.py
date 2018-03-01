@@ -34,6 +34,8 @@ SZ_FIX_DATA = {
             u"lljust": u"ll just",
             u" L ": u" I ",
             u" l ": u" I ",
+            u"'sjust": u"'s just",
+            u"'tjust": u"'t just",
         },
         "WholeWords": {
             u"I'11": u"I'll",
@@ -53,6 +55,9 @@ SZ_FIX_DATA = {
             u" 're ": u"'re ",
             u"LAst": u"Last",
             u"forthis": u"for this",
+            u"Ls": u"Is",
+            u"Iam": u"I am",
+            u"Ican": u"I can",
         },
         "PartialLines": {
             u"L know": u"I know",

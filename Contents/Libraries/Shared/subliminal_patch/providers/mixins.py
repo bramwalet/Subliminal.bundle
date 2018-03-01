@@ -56,8 +56,8 @@ class ProviderRetryMixin(object):
 
 class ProviderSubtitleArchiveMixin(object):
     """
-    handled ZipFile and RarFile archives
-    needs subtitle.episode, subtitle.season, subtitle.matches and subtitle.releases to work
+    handles ZipFile and RarFile archives
+    needs subtitle.episode, subtitle.season, subtitle.matches, subtitle.releases and subtitle.asked_for_episode to work
     """
     def get_subtitle_from_archive(self, subtitle, archive):
         # extract subtitle's content
@@ -84,7 +84,7 @@ class ProviderSubtitleArchiveMixin(object):
                 # - release group matches (and we asked for one and it was matched, or it was not matched)
                 is_episode = subtitle.asked_for_episode
 
-                episodes = guess["episode"]
+                episodes = guess.get("episode")
                 if is_episode and episodes and not isinstance(episodes, list):
                     episodes = [episodes]
 
@@ -92,7 +92,7 @@ class ProviderSubtitleArchiveMixin(object):
                         (
                                 subtitle.episode in episodes
                                 or (subtitle.is_pack and subtitle.asked_for_episode in episodes)
-                        ) and guess["season"] == subtitle.season):
+                        ) and guess.get("season") == subtitle.season):
 
                     format_matches = True
                     wanted_format_but_not_found = False

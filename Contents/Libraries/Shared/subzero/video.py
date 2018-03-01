@@ -4,7 +4,7 @@ import logging
 import os
 
 from babelfish.exceptions import LanguageError
-from subzero.language import Language
+from subzero.language import Language, language_from_stream
 from subliminal_patch import scan_video, refine, search_external_subtitles
 
 logger = logging.getLogger(__name__)
@@ -44,7 +44,8 @@ def set_existing_languages(video, video_info, external_subtitles=False, embedded
         # mp4 and stuff, check burned in
         for language in known_embedded:
             try:
-                embedded_subtitle_languages.add(Language.fromalpha3b(language))
+                embedded_subtitle_languages.add(language_from_stream(language))
+
             except LanguageError:
                 logger.error('Embedded subtitle track language %r is not a valid language', language)
                 embedded_subtitle_languages.add(Language('und'))

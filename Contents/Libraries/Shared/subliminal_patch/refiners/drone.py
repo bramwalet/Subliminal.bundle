@@ -9,7 +9,7 @@ import requests
 from guessit import guessit
 from requests.compat import urljoin, quote
 from subliminal import Episode, Movie, region
-from subliminal_patch.core import REMOVE_CRAP_FROM_FILENAME
+from subliminal_patch.core import remove_crap_from_fn
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +28,9 @@ class DroneAPIClient(object):
 
         if not base_url.endswith("/"):
             base_url += "/"
+
+        if not base_url.startswith("http"):
+            base_url = "http://%s" % base_url
 
         if not base_url.endswith("api/"):
             self.api_url = urljoin(base_url, "api/")
@@ -171,7 +174,7 @@ class SonarrClient(DroneAPIClient):
         :return:
         """
         ext = os.path.splitext(video.name)[1]
-        guess_from = REMOVE_CRAP_FROM_FILENAME.sub("", scene_name + ext)
+        guess_from = remove_crap_from_fn(scene_name + ext)
 
         # guess
         hints = {
@@ -260,7 +263,7 @@ class RadarrClient(DroneAPIClient):
         :return:
         """
         ext = os.path.splitext(video.name)[1]
-        guess_from = REMOVE_CRAP_FROM_FILENAME.sub("", scene_name + ext)
+        guess_from = remove_crap_from_fn(scene_name + ext)
 
         # guess
         hints = {
@@ -308,4 +311,4 @@ def refine(video, **kwargs):
             client.update_video(video, os.path.splitext(additional_data["original_filepath"])[0])
 
         if "release_group" in additional_data and not video.release_group:
-            video.release_group = REMOVE_CRAP_FROM_FILENAME.sub("", additional_data["release_group"])
+            video.release_group = remove_crap_from_fn(additional_data["release_group"])

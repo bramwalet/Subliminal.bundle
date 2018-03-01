@@ -20,7 +20,13 @@ class CommonFixes(SubtitleTextModification):
 
     processors = [
         # -- = ...
-        StringProcessor("-- ", '... ', name="CM_doubledash"),
+        NReProcessor(re.compile(r'(?u)(^-\s?-[-\s]*)(?!.+\s?-\s?-[-\s]*)'), "", name="CM_doubledash"),
+
+        # line = _/-/\s
+        NReProcessor(re.compile(r'(?u)(^[-_\s]*[-_\s]+[-_\s]*$)'), "", name="CM_non_word_only"),
+
+        # fix music symbols
+        NReProcessor(re.compile(ur'(?u)(^[*#¶\s]*[*#¶\s]+[*#¶\s]*$)'), u"♪", name="CM_music_symbols"),
 
         # '' = "
         StringProcessor("''", '"', name="CM_double_apostrophe"),

@@ -39,8 +39,8 @@ class FixOCR(SubtitleTextModification):
 
         return [
             # remove broken HI tag colons (ANNOUNCER'., ". instead of :) after at least 3 uppercase chars
-            NReProcessor(re.compile(ur'(?u)(^.*(?<=[A-ZÀ-Ž]{3})[A-ZÀ-Ž-_\s0-9"\']+["\'’ʼ❜‘‛”“‟„][.,‚،⹁、]\s*)'), "",
-                         name="OCR_fix_HI_colons"),
+            NReProcessor(re.compile(ur'(?u)(^.*(?<=[A-ZÀ-Ž]{3})[A-ZÀ-Ž-_\s0-9]+)(["\'’ʼ❜‘‛”“‟„]*[.,‚،⹁、;]+)(\s*)'),
+                         r"\1:\3", name="OCR_fix_HI_colons"),
             # fix F'bla
             NReProcessor(re.compile(ur'(?u)(\bF)(\')([A-zÀ-ž]*\b)'), r"\1\3", name="OCR_fix_F"),
             WholeLineProcessor(self.data_dict["WholeLines"], name="OCR_replace_line"),

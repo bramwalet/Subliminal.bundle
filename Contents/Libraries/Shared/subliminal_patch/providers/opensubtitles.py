@@ -94,12 +94,6 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         self.token = None
         self.is_vip = is_vip
 
-        if is_vip:
-            self.server = self.get_server_proxy(self.vip_url)
-            logger.info("Using VIP server")
-        else:
-            self.server = self.get_server_proxy(self.default_url)
-
         if use_tag_search:
             logger.info("Using tag/exact filename search")
 
@@ -138,6 +132,12 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
             return func()
 
     def initialize(self):
+        if self.is_vip:
+            self.server = self.get_server_proxy(self.vip_url)
+            logger.info("Using VIP server")
+        else:
+            self.server = self.get_server_proxy(self.default_url)
+
         logger.info('Logging in')
 
         token = region.get("os_token", expiration_time=3600)
