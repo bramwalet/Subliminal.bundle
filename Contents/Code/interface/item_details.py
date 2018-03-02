@@ -251,7 +251,7 @@ def ListStoredSubsForItemMenu(**kwargs):
     all_subs = stored_subs.get_all(part_id, language)
     kwargs.pop("randomize")
 
-    for key, subtitle in sorted(filter(lambda x: x[0] != "current", all_subs.items()),
+    for key, subtitle in sorted(filter(lambda x: x[0] not in ("current", "blacklist"), all_subs.items()),
                                 key=lambda x: x[1].date_added, reverse=True):
         is_current = key == all_subs["current"]
 
