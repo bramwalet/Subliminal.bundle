@@ -1,6 +1,7 @@
 # coding=utf-8
 import traceback
 import helpers
+from babelfish.exceptions import LanguageError
 
 from support.lib import Plex, get_intent
 from support.plex_media import get_stream_fps
@@ -8,6 +9,7 @@ from support.storage import get_subtitle_storage
 from support.config import config, TEXT_SUBTITLE_EXTS
 
 from subzero.video import parse_video, set_existing_languages
+from subzero.language import language_from_stream
 
 
 def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, providers=None, skip_hashing=False):
@@ -52,7 +54,11 @@ def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, pr
                     # fixme: tap into external subtitles here instead of scanning for ourselves later?
                     if not stream.stream_key and stream.codec:
                         if config.exotic_ext or stream.codec.lower() in TEXT_SUBTITLE_EXTS:
-                            lang = helpers.get_language_from_stream(stream.language_code)
+                            lang = None
+                            try:
+                                lang = language_from_stream(stream.language_code)
+                            except LanguageError:
+                                Log.Debug("Couldn't detect embedded subtitle stream language: %s", stream.language_code)
 
                             # treat unknown language as lang1?
                             if not lang and config.treat_und_as_first:
