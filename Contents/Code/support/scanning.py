@@ -43,10 +43,8 @@ def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, pr
             plexpy_part = part
 
     # embedded subtitles
-    if plexpy_part:
-        Log.Debug("Got part: %r", plexpy_part)
+    if plexpy_part and embedded_subtitles:
         for stream in plexpy_part.streams:
-            Log.Debug("Found stream: %r", stream)
             # subtitle stream
             if stream.stream_type == 3:
                 stream_title = getattr(stream, "title", "") or ""
@@ -54,10 +52,6 @@ def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, pr
                 if not forced and stream_title and "forced" in stream_title.strip().lower():
                     forced = True
 
-                Log.Debug("Found subtitle stream: %r; forced only: %r, "
-                          "stream forced: %r, stream key: %r, stream codec: %r", stream, config.forced_only,
-                          forced,
-                          stream.stream_key, stream.codec)
                 if (config.forced_only and forced) or \
                         (not config.forced_only and not forced):
 
