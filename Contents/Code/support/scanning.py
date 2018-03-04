@@ -50,7 +50,7 @@ def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, pr
             # subtitle stream
             if stream.stream_type == 3:
                 stream_title = getattr(stream, "title", "") or ""
-                forced = getattr(stream, "forced")
+                forced = getattr(stream, "forced", False)
                 if not forced and stream_title and "forced" in stream_title.strip().lower():
                     forced = True
 
@@ -63,7 +63,7 @@ def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, pr
 
                     # embedded subtitle
                     # fixme: tap into external subtitles here instead of scanning for ourselves later?
-                    if not stream.stream_key and stream.codec:
+                    if stream.codec and getattr(stream, "index", None):
                         if config.exotic_ext or stream.codec.lower() in TEXT_SUBTITLE_EXTS:
                             lang = None
                             try:
