@@ -48,13 +48,10 @@ def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, pr
         for stream in plexpy_part.streams:
             # subtitle stream
             if stream.stream_type == 3:
-                stream_title = getattr(stream, "title", "") or ""
-                forced = getattr(stream, "forced", False)
-                if not forced and stream_title and "forced" in stream_title.strip().lower():
-                    forced = True
+                is_forced = helpers.is_stream_forced(stream)
 
-                if (config.forced_only and forced) or \
-                        (not config.forced_only and not forced):
+                if (config.forced_only and is_forced) or \
+                        (not config.forced_only and not is_forced):
 
                     # embedded subtitle
                     # fixme: tap into external subtitles here instead of scanning for ourselves later?

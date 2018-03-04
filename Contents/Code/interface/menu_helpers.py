@@ -194,6 +194,7 @@ def extract_embedded_sub(**kwargs):
                     subtitle.set_encoding("utf-8")
 
                     # fixme: speedup video; only video.name is needed
+                    # fixme: save as .forced if forced flag is set
                     save_successful = save_subtitles(scanned_parts, {scanned_parts.keys()[0]: [subtitle]}, mode="m",
                                                      set_current=set_current)
                     set_refresh_menu_state(None)

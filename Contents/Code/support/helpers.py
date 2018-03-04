@@ -377,5 +377,14 @@ def display_language(l):
     return l.name if not addons else "%s (%s)" % (l.name, ", ".join(addons))
 
 
+def is_stream_forced(stream):
+    stream_title = getattr(stream, "title", "") or ""
+    forced = getattr(stream, "forced", False)
+    if not forced and stream_title and "forced" in stream_title.strip().lower():
+        forced = True
+
+    return forced
+
+
 class PartUnknownException(Exception):
     pass
