@@ -43,6 +43,7 @@ def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, pr
             plexpy_part = part
 
     # embedded subtitles
+    # fixme: skip the whole scanning process if known_embedded == wanted languages?
     if plexpy_part and embedded_subtitles:
         for stream in plexpy_part.streams:
             # subtitle stream
