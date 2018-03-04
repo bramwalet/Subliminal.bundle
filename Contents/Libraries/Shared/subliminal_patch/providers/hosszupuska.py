@@ -21,6 +21,8 @@ from subliminal.video import Episode
 from zipfile import ZipFile, is_zipfile
 from rarfile import RarFile, is_rarfile
 from subliminal_patch.utils import sanitize, fix_inconsistent_naming as _fix_inconsistent_naming
+from guessit import guessit
+
 
 def fix_inconsistent_naming(title):
     """Fix titles with inconsistent naming using dictionary and sanitize them.
@@ -34,34 +36,21 @@ def fix_inconsistent_naming(title):
                                             "Marvel's Jessica Jones": "Jessica Jones"})
 
 
-
-
-
 logger = logging.getLogger(__name__)
 
 language_converters.register('hosszupuska = subliminal_patch.converters.hosszupuska:HosszupuskaConverter')
-
-# link_re = re.compile(r'^(?P<series>.+?)(?: \(?\d{4}\)?| \((?:US|UK)\))? \((?P<first_year>\d{4})-\d{4}\)$')
-# episode_id_re = re.compile(r'^episode-\d+\.html$')
 
 
 class HosszupuskaSubtitle(Subtitle):
     """Hosszupuska Subtitle."""
     provider_name = 'hosszupuska'
-    hash_verifiable = False
-    hearing_impaired_verifiable = True
-    is_pack = False
 
     def __str__(self):
         subtit = "Subtitle id: " + str(self.subtitle_id) \
                + " Series: " + self.series \
                + " Season: " + str(self.season) \
                + " Episode: " + str(self.episode) \
-               + " Release_group: " + str(self.release_group) + " "
-        if self.format:
-            subtit = subtit + " Format: " + self.format + " "
-        if self.resolution:
-            subtit = subtit + " Resolution: " + self.resolution
+               + " Releases: " + str(self.releases)
         if self.year:
             subtit = subtit + " Year: " + str(self.year)
         if six.PY3:
@@ -69,22 +58,21 @@ class HosszupuskaSubtitle(Subtitle):
         return subtit.encode('utf-8')
 
     def __init__(self, language, page_link, subtitle_id, series, season, episode,
-                 format, release_group, resolution, year):
+                 releases, year, asked_for_release_group=None, asked_for_episode=None):
         super(HosszupuskaSubtitle, self).__init__(language, page_link=page_link)
         self.subtitle_id = subtitle_id
         self.series = series
         self.season = season
         self.episode = episode
-        self.format = format
-        self.release_group = release_group
-        self.resolution = resolution
+        self.releases = releases
         self.year = year
         if year:
             self.year = int(year)
 
         self.release_info = hash
         self.page_link = page_link
-
+        self.asked_for_release_group = asked_for_release_group
+        self.asked_for_episode = asked_for_episode
 
     @property
     def id(self):
@@ -105,17 +93,20 @@ class HosszupuskaSubtitle(Subtitle):
         if ('series' in matches and video.original_series and self.year is None or
            video.year and video.year == self.year):
             matches.add('year')
-        # resolution
-        if video.resolution and self.resolution and video.resolution.lower() == self.resolution.lower():
-            matches.add('resolution')
+
         # release_group
-        if (video.release_group and self.release_group and
-                any(r in sanitize_release_group(self.release_group.lower())
-                    for r in get_equivalent_release_groups(sanitize_release_group(video.release_group.lower())))):
-                        matches.add('release_group')
-        # other properties
-        if video.format and self.format and video.format.lower() == self.format.lower():
+        if (video.release_group and self.releases and
+                any(r in sanitize_release_group(self.releases)
+                    for r in get_equivalent_release_groups(sanitize_release_group(video.release_group)))):
+            matches.add('release_group')
+        # resolution
+        if video.resolution and self.releases and video.resolution in self.releases.lower():
+            matches.add('resolution')
+        # format
+        if video.format and self.releases and video.format.lower() in self.releases.lower():
             matches.add('format')
+        # other properties
+        matches |= guess_matches(video, guessit(self.releases))
 
         return matches
 
@@ -144,9 +135,7 @@ class HosszupuskaProvider(Provider, ProviderSubtitleArchiveMixin):
             return Language.fromhosszupuska('en')
         return None
 
-
-
-    def query(self, series, season, episode, year=None):
+    def query(self, series, season, episode, year=None, video=None):
 
         # Search for s01e03 instead of s1e3
         seasona = season
@@ -169,17 +158,11 @@ class HosszupuskaProvider(Provider, ProviderSubtitleArchiveMixin):
             "&resz="+str(episodea)+"&nyelvtipus=%25&x=24&y=8"
         logger.info('Url %s', url)
 
-        # scraper = cfscrape.create_scraper()  # returns a CloudflareScraper instance
-        # Or: scraper = cfscrape.CloudflareScraper()  # CloudflareScraper inherits from requests.Session
-        # r = scraper.get(url).content
-        # file = open('testfile.txt','r')
-        # r = file.read();
-
         r = self.session.get(url, timeout=10).content
-
 
         i = 0
         soup = ParserBeautifulSoup(r, ['lxml'])
+
         table = soup.find_all("table")[9]
 
         subtitles = []
@@ -217,31 +200,19 @@ class HosszupuskaProvider(Provider, ProviderSubtitleArchiveMixin):
                     sub_version = datas[1].getText().split('(')[2].split(')')[0]
 
                 # One subtitle can be used for sevearl relase add both of them.
-                sub_releases = sub_version.split(',')
-                for release in sub_releases:
-                    if ('-' in release.strip()):
-                        sub_release_group = (release.strip()).split('-')[1]
-                        sub_resolution = (release.strip()).split('-')[0]
-                        if ('0p' not in sub_resolution):
-                            sub_format = sub_resolution
-                            sub_resolution = None
-                        else:
-                            sub_format = None
-                    else:
-                        sub_release_group = release
-                        sub_resolution = None
-                        sub_format = None
-                    subtitle = self.subtitle_class(sub_language, sub_downloadlink, sub_id, sub_english_name, sub_season,
-                                                   sub_episode, sub_format, sub_release_group, sub_resolution, sub_year)
+                sub_releases = str(sub_version.split(','))
+                subtitle = self.subtitle_class(sub_language, sub_downloadlink, sub_id, sub_english_name, sub_season,
+                                               sub_episode, sub_releases, sub_year,
+                                               asked_for_release_group=video.release_group, asked_for_episode=episode)
 
-                    # Currently rar is not supported (But not commonly used on the provider)
-                    if sub_season == season and sub_episode == episode:
-                        logger.debug('Found subtitle \r\n%s', subtitle)
-                        subtitles.append(subtitle)
+                if sub_season == season and sub_episode == episode:
+                    logger.debug('Found subtitle \r\n%s', subtitle)
+                    subtitles.append(subtitle)
         return subtitles
 
     def list_subtitles(self, video, languages):
-        return [s for s in self.query(video.series, video.season, video.episode, video.year) if s.language in languages]
+        return [s for s in self.query(video.series, video.season, video.episode, video.year, video=video)
+                if s.language in languages]
 
     def download_subtitle(self, subtitle):
         r = self.session.get(subtitle.page_link, timeout=10)
@@ -259,6 +230,3 @@ class HosszupuskaProvider(Provider, ProviderSubtitleArchiveMixin):
             raise ProviderError('Unidentified archive type')
 
         subtitle.content = self.get_subtitle_from_archive(subtitle, archive)
-
-
-
