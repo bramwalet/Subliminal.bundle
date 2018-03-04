@@ -802,8 +802,7 @@ def save_subtitles(file_path, subtitles, single=False, directory=None, chmod=Non
                 with open(subtitle_path, 'w') as f:
                     f.write(content)
             else:
-                logger.error(u"Something went wrong when getting modified subtitle for %s: %s", subtitle,
-                             traceback.format_exc())
+                logger.error(u"Something went wrong when getting modified subtitle for %s", subtitle)
 
         # change chmod if requested
         if chmod:
