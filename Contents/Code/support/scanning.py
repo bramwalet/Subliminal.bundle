@@ -51,7 +51,7 @@ def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, pr
             if stream.stream_type == 3:
                 stream_title = getattr(stream, "title", "") or ""
                 forced = getattr(stream, "forced")
-                if not forced and stream.title and "forced" in stream_title.strip().lower():
+                if not forced and stream_title and "forced" in stream_title.strip().lower():
                     forced = True
 
                 Log.Debug("Found subtitle stream: %r; forced only: %r, "
