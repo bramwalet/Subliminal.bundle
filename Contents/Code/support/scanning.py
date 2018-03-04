@@ -44,31 +44,32 @@ def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, pr
 
     # embedded subtitles
     # fixme: skip the whole scanning process if known_embedded == wanted languages?
-    if plexpy_part and embedded_subtitles:
-        for stream in plexpy_part.streams:
-            # subtitle stream
-            if stream.stream_type == 3:
-                is_forced = helpers.is_stream_forced(stream)
+    if plexpy_part:
+        if embedded_subtitles:
+            for stream in plexpy_part.streams:
+                # subtitle stream
+                if stream.stream_type == 3:
+                    is_forced = helpers.is_stream_forced(stream)
 
-                if (config.forced_only and is_forced) or \
-                        (not config.forced_only and not is_forced):
+                    if (config.forced_only and is_forced) or \
+                            (not config.forced_only and not is_forced):
 
-                    # embedded subtitle
-                    # fixme: tap into external subtitles here instead of scanning for ourselves later?
-                    if stream.codec and getattr(stream, "index", None):
-                        if config.exotic_ext or stream.codec.lower() in TEXT_SUBTITLE_EXTS:
-                            lang = None
-                            try:
-                                lang = language_from_stream(stream.language_code)
-                            except LanguageError:
-                                Log.Debug("Couldn't detect embedded subtitle stream language: %s", stream.language_code)
+                        # embedded subtitle
+                        # fixme: tap into external subtitles here instead of scanning for ourselves later?
+                        if stream.codec and getattr(stream, "index", None):
+                            if config.exotic_ext or stream.codec.lower() in TEXT_SUBTITLE_EXTS:
+                                lang = None
+                                try:
+                                    lang = language_from_stream(stream.language_code)
+                                except LanguageError:
+                                    Log.Debug("Couldn't detect embedded subtitle stream language: %s", stream.language_code)
 
-                            # treat unknown language as lang1?
-                            if not lang and config.treat_und_as_first:
-                                lang = list(config.lang_list)[0]
+                                # treat unknown language as lang1?
+                                if not lang and config.treat_und_as_first:
+                                    lang = list(config.lang_list)[0]
 
-                            if lang:
-                                known_embedded.append(lang.alpha3)
+                                if lang:
+                                    known_embedded.append(lang.alpha3)
     else:
         Log.Warn("Part %s missing of %s, not able to scan internal streams", plex_part.id, rating_key)
 

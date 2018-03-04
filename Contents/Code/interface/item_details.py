@@ -24,7 +24,8 @@ from support.storage import get_subtitle_storage
 
 @route(PREFIX + '/item/{rating_key}/actions')
 @debounce
-def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, randomize=None, header=None):
+def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, randomize=None, header=None,
+                    message=None):
     """
     displays the item details menu of an item that doesn't contain any deeper tree, such as a movie or an episode
     :param rating_key:
@@ -42,7 +43,7 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
 
     timeout = 30
 
-    oc = SubFolderObjectContainer(title2=title, replace_parent=True, header=header)
+    oc = SubFolderObjectContainer(title2=title, replace_parent=True, header=header, message=message)
 
     if not item:
         oc.add(DirectoryObject(
@@ -593,16 +594,16 @@ def ListEmbeddedSubsForItemMenu(**kwargs):
             language = stream_data["language"]
             is_unknown = stream_data["is_unknown"]
             stream = stream_data["stream"]
+            is_forced = stream_data["is_forced"]
 
             if language:
-                forced = stream.forced
                 oc.add(DirectoryObject(
                     key=Callback(TriggerExtractEmbeddedSubForItemMenu, randomize=timestamp(),
                                  stream_index=str(stream.index), language=language, with_mods=True, **kwargs),
                     title=u"Extract stream %s, "
                           u"%s%s%s%s with default mods" % (stream.index, display_language(language),
                                                            " (unknown)" if is_unknown else "",
-                                                           " (forced)" if forced else "",
+                                                           " (forced)" if is_forced else "",
                                                            " (\"%s\")" % stream.title if stream.title else ""),
                 ))
                 oc.add(DirectoryObject(
@@ -610,7 +611,7 @@ def ListEmbeddedSubsForItemMenu(**kwargs):
                                  stream_index=str(stream.index), language=language, **kwargs),
                     title=u"Extract stream %s, %s%s%s%s" % (stream.index, display_language(language),
                                                             " (unknown)" if is_unknown else "",
-                                                            " (forced)" if forced else "",
+                                                            " (forced)" if is_forced else "",
                                                             " (\"%s\")" % stream.title if stream.title else ""),
                 ))
     return oc
@@ -634,6 +635,7 @@ def TriggerExtractEmbeddedSubForItemMenu(**kwargs):
     kwargs.pop("language")
     kwargs["title"] = kwargs["item_title"]
     kwargs["header"] = header
+    kwargs["message"] = header
 
     return ItemDetailsMenu(randomize=timestamp(), **kwargs)
 

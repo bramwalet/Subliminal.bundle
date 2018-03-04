@@ -8,7 +8,7 @@ import os
 from func import enable_channel_wrapper
 from subzero.language import Language
 from support.items import get_kind, get_item_thumb, get_item, get_item_kind_from_item, refresh_item
-from support.helpers import get_video_display_title, pad_title, display_language, quote_args
+from support.helpers import get_video_display_title, pad_title, display_language, quote_args, is_stream_forced
 from support.ignore import ignore_list
 from support.lib import get_intent
 from support.config import config
@@ -170,7 +170,7 @@ def extract_embedded_sub(**kwargs):
         for stream in part.streams:
             # subtitle stream
             if str(stream.index) == stream_index:
-                forced = stream.forced
+                is_forced = is_stream_forced(stream)
                 bn = os.path.basename(part.file)
 
                 set_refresh_menu_state(u"Extracting subtitle %s of %s" % (stream_index, bn))
@@ -194,9 +194,8 @@ def extract_embedded_sub(**kwargs):
                     subtitle.set_encoding("utf-8")
 
                     # fixme: speedup video; only video.name is needed
-                    # fixme: save as .forced if forced flag is set
                     save_successful = save_subtitles(scanned_parts, {scanned_parts.keys()[0]: [subtitle]}, mode="m",
-                                                     set_current=set_current)
+                                                     set_current=set_current, is_forced=is_forced)
                     set_refresh_menu_state(None)
 
                     if save_successful and refresh:
