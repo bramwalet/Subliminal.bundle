@@ -66,7 +66,7 @@ In addition to that Sub-Zero also fixes problems introduced by the subtitle crea
 Ever had broken music icons in a subtitle? Nordic characters like `Å` which turned into `Ã¥`? Not anymore.
 
 ## Installation
-Simply go to the Plex Channels in your Plex Media Server, search for Sub-Zero and install it.
+Simply go to the Plex Plugins in your Plex Media Server, search for Sub-Zero and install it.
 For further help or manual installation, [please go to the wiki](https://github.com/pannal/Sub-Zero.bundle/wiki).
 
 ## Big thanks to the beta testing team (in no particular order)!
