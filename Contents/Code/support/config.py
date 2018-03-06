@@ -576,6 +576,7 @@ class Config(object):
                      'tvsubtitles': cast_bool(Prefs['provider.tvsubtitles.enabled']),
                      'legendastv': cast_bool(Prefs['provider.legendastv.enabled']),
                      'napiprojekt': cast_bool(Prefs['provider.napiprojekt.enabled']),
+                     'hosszupuska': cast_bool(Prefs['provider.hosszupuska.enabled']),
                      'shooter': False,
                      'subscene': cast_bool(Prefs['provider.subscene.enabled']),
                      'subscenter': False,
@@ -594,6 +595,7 @@ class Config(object):
             providers["legendastv"] = False
             providers["napiprojekt"] = False
             providers["shooter"] = False
+            providers["hosszupuska"] = False
             providers["titlovi"] = False
 
         # advanced settings
