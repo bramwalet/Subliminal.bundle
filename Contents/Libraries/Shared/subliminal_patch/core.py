@@ -797,7 +797,7 @@ def save_subtitles(file_path, subtitles, single=False, directory=None, chmod=Non
                 subtitle_path = os.path.splitext(subtitle_path)[0] + (u".%s" % format)
 
             logger.debug(u"Saving %r to %r", subtitle, subtitle_path)
-            content = subtitle.get_modified_content(format=format)
+            content = subtitle.get_modified_content(format=format, debug=debug_mods)
             if content:
                 with open(subtitle_path, 'w') as f:
                     f.write(content)

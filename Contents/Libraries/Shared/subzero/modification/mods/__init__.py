@@ -24,7 +24,7 @@ class SubtitleModification(object):
     def __init__(self, parent):
         return
 
-    def _process(self, content, processors, debug=False, parent=None, **kwargs):
+    def _process(self, content, processors, debug=False, parent=None, index=None, **kwargs):
         if not content:
             return
 
@@ -46,7 +46,7 @@ class SubtitleModification(object):
             if debug:
                 if old_content == new_content:
                     continue
-                logger.debug("%s: %s -> %s", processor, repr(old_content), repr(new_content))
+                logger.debug("%d: %s: %s -> %s", index, processor, repr(old_content), repr(new_content))
         return new_content
 
     def pre_process(self, content, debug=False, parent=None, **kwargs):

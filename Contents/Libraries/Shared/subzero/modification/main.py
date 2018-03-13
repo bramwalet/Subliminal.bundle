@@ -194,7 +194,8 @@ class SubtitleModifications(object):
                     mod = self.initialized_mods[identifier]
 
                     try:
-                        line = mod.modify(line.strip(), entry=entry.text, debug=self.debug, parent=self, **args)
+                        line = mod.modify(line.strip(), entry=entry.text, debug=self.debug, parent=self, index=index,
+                                          **args)
                     except EmptyEntryError:
                         if self.debug:
                             logger.debug(u"%d: %s: %r -> ''", index, identifier, entry.text)
