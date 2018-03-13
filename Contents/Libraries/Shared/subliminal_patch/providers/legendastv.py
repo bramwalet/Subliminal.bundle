@@ -24,7 +24,8 @@ class LegendasTVSubtitle(_LegendasTVSubtitle):
         # episode
         if isinstance(video, Episode) and self.type == 'episode':
             # series
-            if video.series and sanitize(self.title) == sanitize(video.series):
+            if video.series and (sanitize(self.title) in (
+                    sanitize(name) for name in [video.series] + video.alternative_series)):
                 matches.add('series')
 
             # year
@@ -38,7 +39,8 @@ class LegendasTVSubtitle(_LegendasTVSubtitle):
         # movie
         elif isinstance(video, Movie) and self.type == 'movie':
             # title
-            if video.title and sanitize(self.title) == sanitize(video.title):
+            if video.title and (sanitize(self.title) in (
+                    sanitize(name) for name in [video.title] + video.alternative_titles)):
                 matches.add('title')
 
             # year
@@ -61,3 +63,7 @@ class LegendasTVProvider(_LegendasTVProvider):
     def download_subtitle(self, subtitle):
         super(LegendasTVProvider, self).download_subtitle(subtitle)
         subtitle.archive.content = None
+
+    def get_archives(self, title_id, language_code, title_type, season, episode):
+        return super(LegendasTVProvider, self).get_archives.original(self, title_id, language_code, title_type,
+                                                                     season, episode)

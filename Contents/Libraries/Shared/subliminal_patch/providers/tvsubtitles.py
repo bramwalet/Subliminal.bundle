@@ -3,7 +3,7 @@
 import logging
 
 
-from babelfish import Language
+from subzero.language import Language
 from subliminal.providers import ParserBeautifulSoup
 from subliminal.cache import SHOW_EXPIRATION_TIME, region, EPISODE_EXPIRATION_TIME
 from subliminal.providers.tvsubtitles import TVsubtitlesProvider as _TVsubtitlesProvider, \
@@ -106,6 +106,9 @@ class TVsubtitlesProvider(_TVsubtitlesProvider):
 
         # get the episode ids
         episode_ids = self.get_episode_ids(show_id, season)
+        # Provider doesn't store multi episode information
+        episode = min(episode) if episode and isinstance(episode, list) else episode
+
         if episode not in episode_ids:
             logger.error('Episode %d not found', episode)
             return []
@@ -123,7 +126,7 @@ class TVsubtitlesProvider(_TVsubtitlesProvider):
             subtitle_id = int(row.parent['href'][10:-5])
             page_link = self.server_url + 'subtitle-%d.html' % subtitle_id
             rip = row.find('p', title='rip').text.strip() or None
-            release = row.find('p', title='release').text.strip() or None
+            release = row.find('h5').text.strip() or None
 
             subtitle = self.subtitle_class(language, page_link, subtitle_id, series, season, episode, year, rip,
                                            release)

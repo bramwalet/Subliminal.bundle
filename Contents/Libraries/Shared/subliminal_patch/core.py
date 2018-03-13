@@ -10,6 +10,7 @@ import time
 import operator
 
 import itertools
+from httplib import ResponseNotReady
 
 import rarfile
 import requests
@@ -21,11 +22,16 @@ from guessit.jsonutils import GuessitEncoder
 from subliminal import ProviderError, refiner_manager
 
 from extensions import provider_registry
+from subliminal.exceptions import ServiceUnavailable, DownloadLimitExceeded
 from subliminal.score import compute_score as default_compute_score
 from subliminal.utils import hash_napiprojekt, hash_opensubtitles, hash_shooter, hash_thesubdb
 from subliminal.video import VIDEO_EXTENSIONS, Video, Episode, Movie
-from subliminal.core import guessit, Language, ProviderPool, io, is_windows_special_path, \
+from subliminal.core import guessit, ProviderPool, io, is_windows_special_path, \
     ThreadPoolExecutor, check_video
+from subliminal_patch.exceptions import TooManyRequests
+
+from subzero.language import Language
+from subzero.lib.io import scandir
 
 logger = logging.getLogger(__name__)
 
@@ -36,14 +42,25 @@ INCLUDE_EXOTIC_SUBS = True
 DOWNLOAD_TRIES = 0
 DOWNLOAD_RETRY_SLEEP = 6
 
-REMOVE_CRAP_FROM_FILENAME = re.compile(r"(?i)[\s_-]+(obfuscated|scrambled|nzbgeek|chamele0n"
-                                       r"|buymore|xpost|postbot|asrequested)(\.\w+|$)$")
+# fixme: this may be overkill
+REMOVE_CRAP_FROM_FILENAME = re.compile(r"(?i)(?:([\s_-]+(?:obfuscated|scrambled|nzbgeek|chamele0n|buymore|xpost|postbot"
+                                       r"|asrequested)(?:\[.+\])?)|([\s_-]\w{2,})(\[.+\]))(?=\.\w+$|$)")
 
 SUBTITLE_EXTENSIONS = ('.srt', '.sub', '.smi', '.txt', '.ssa', '.ass', '.mpl', '.vtt')
 
 
+def remove_crap_from_fn(fn):
+    # in case of the second regex part, the legit release group name will be in group(2), if it's followed by [string]
+    # otherwise replace fully, because the first part matched
+    def repl(m):
+        return m.group(2) if len(m.groups()) == 3 else ""
+
+    return REMOVE_CRAP_FROM_FILENAME.sub(repl, fn)
+
+
 class SZProviderPool(ProviderPool):
-    def __init__(self, providers=None, provider_configs=None, blacklist=None):
+    def __init__(self, providers=None, provider_configs=None, blacklist=None, throttle_callback=None,
+                 pre_download_hook=None, post_download_hook=None, language_hook=None):
         #: Name of providers to use
         self.providers = providers or provider_registry.names()
 
@@ -57,6 +74,15 @@ class SZProviderPool(ProviderPool):
         self.discarded_providers = set()
 
         self.blacklist = blacklist or []
+
+        self.throttle_callback = throttle_callback
+
+        self.pre_download_hook = pre_download_hook
+        self.post_download_hook = post_download_hook
+        self.language_hook = language_hook
+
+        if not self.throttle_callback:
+            self.throttle_callback = lambda x, y: x
 
     def __enter__(self):
         return self
@@ -105,13 +131,22 @@ class SZProviderPool(ProviderPool):
         :rtype: list of :class:`~subliminal.subtitle.Subtitle` or None
 
         """
+        languages_search_base = self.language_hook(provider)
+
         # check video validity
         if not provider_registry[provider].check(video):
             logger.info('Skipping provider %r: not a valid video', provider)
             return []
 
+        # check whether we want to search this provider for the languages
+        use_languages = languages_search_base & languages
+        if not use_languages:
+            logger.info('Skipping provider %r: no language to search for (advanced: %r, requested: %r)', provider,
+                        languages_search_base, languages)
+            return []
+
         # check supported languages
-        provider_languages = provider_registry[provider].languages & languages
+        provider_languages = provider_registry[provider].languages & use_languages
         if not provider_languages:
             logger.info('Skipping provider %r: no language to search for', provider)
             return []
@@ -128,7 +163,7 @@ class SZProviderPool(ProviderPool):
                     continue
                 if s.id in seen:
                     continue
-                s.plex_media_fps = float(video.fps)
+                s.plex_media_fps = float(video.fps) if video.fps else None
                 out.append(s)
                 seen.append(s.id)
 
@@ -136,6 +171,11 @@ class SZProviderPool(ProviderPool):
 
         except (requests.Timeout, socket.timeout):
             logger.error('Provider %r timed out', provider)
+
+        except (TooManyRequests, DownloadLimitExceeded, ServiceUnavailable), e:
+            self.throttle_callback(provider, e)
+            return
+
         except:
             logger.exception('Unexpected error in provider %r: %s', provider, traceback.format_exc())
 
@@ -200,7 +240,13 @@ class SZProviderPool(ProviderPool):
         while True:
             tries += 1
             try:
+                if self.pre_download_hook:
+                    self.pre_download_hook(subtitle)
+
                 self[subtitle.provider_name].download_subtitle(subtitle)
+                if self.post_download_hook:
+                    self.post_download_hook(subtitle)
+
                 break
             except (requests.ConnectionError,
                     requests.exceptions.ProxyError,
@@ -209,8 +255,21 @@ class SZProviderPool(ProviderPool):
                     socket.timeout):
                 logger.error('Provider %r connection error', subtitle.provider_name)
 
+            except ResponseNotReady:
+                logger.error('Provider %r response error, reinitializing', subtitle.provider_name)
+                try:
+                    self[subtitle.provider_name].terminate()
+                    self[subtitle.provider_name].initialize()
+                except:
+                    logger.error('Provider %r reinitialization error', subtitle.provider_name)
+
             except rarfile.BadRarFile:
                 logger.error('Malformed RAR file from provider %r, skipping subtitle.', subtitle.provider_name)
+                return False
+
+            except (TooManyRequests, DownloadLimitExceeded, ServiceUnavailable), e:
+                self.throttle_callback(subtitle.provider_name, e)
+                self.discarded_providers.add(subtitle.provider_name)
                 return False
 
             except:
@@ -265,6 +324,8 @@ class SZProviderPool(ProviderPool):
         compute_score = compute_score or default_compute_score
         use_hearing_impaired = hearing_impaired in ("prefer", "force HI")
 
+        is_episode = isinstance(video, Episode)
+
         # sort subtitles by score
         unsorted_subtitles = []
 
@@ -276,16 +337,18 @@ class SZProviderPool(ProviderPool):
                 logger.error("%r: Match computation failed: %s", s, traceback.format_exc())
                 continue
 
+            orig_matches = matches.copy()
+
             logger.debug('%r: Found matches %r', s, matches)
             unsorted_subtitles.append(
-                (s, compute_score(matches, s, video, hearing_impaired=use_hearing_impaired), matches))
+                (s, compute_score(matches, s, video, hearing_impaired=use_hearing_impaired), matches, orig_matches))
 
         # sort subtitles by score
         scored_subtitles = sorted(unsorted_subtitles, key=operator.itemgetter(1), reverse=True)
 
         # download best subtitles, falling back on the next on error
         downloaded_subtitles = []
-        for subtitle, score, matches in scored_subtitles:
+        for subtitle, score, matches, orig_matches in scored_subtitles:
             # check score
             if score < min_score:
                 logger.info('%r: Score %d is below min_score (%d)', subtitle, score, min_score)
@@ -306,6 +369,11 @@ class SZProviderPool(ProviderPool):
                             hearing_impaired in ("force HI", "force non-HI"):
                 logger.debug('%r: Skipping subtitle with score %d because hearing-impaired set to %s', subtitle,
                              score, hearing_impaired)
+                continue
+
+            if is_episode and not {"series", "season", "episode"}.issubset(orig_matches):
+                logger.debug("%r: Skipping subtitle with score %d, because it doesn't match our series/episode",
+                             subtitle, score)
                 continue
 
             # download
@@ -335,7 +403,7 @@ class SZAsyncProviderPool(SZProviderPool):
 
         #: Maximum number of threads to use
         self.max_workers = max_workers or len(self.providers)
-        logger.info("Using %d threads for %d providers", self.max_workers, len(self.providers))
+        logger.info("Using %d threads for %d providers (%s)", self.max_workers, len(self.providers), self.providers)
 
     def list_subtitles_provider(self, provider, video, languages):
         # list subtitles
@@ -349,6 +417,9 @@ class SZAsyncProviderPool(SZProviderPool):
         return provider, provider_subtitles
 
     def list_subtitles(self, video, languages, blacklist=None):
+        if is_windows_special_path:
+            return super(SZAsyncProviderPool, self).list_subtitles(video, languages)
+
         subtitles = []
 
         with ThreadPoolExecutor(self.max_workers) as executor:
@@ -371,7 +442,7 @@ if is_windows_special_path:
     SZAsyncProviderPool = SZProviderPool
 
 
-def scan_video(path, dont_use_actual_file=False, hints=None):
+def scan_video(path, dont_use_actual_file=False, hints=None, providers=None, skip_hashing=False):
     """Scan a video from a `path`.
 
     patch:
@@ -406,15 +477,15 @@ def scan_video(path, dont_use_actual_file=False, hints=None):
     # remove crap from folder names
     if video_type == "episode":
         if len(split_path) > 2:
-            split_path[-3] = REMOVE_CRAP_FROM_FILENAME.sub(r"\2", split_path[-3])
+            split_path[-3] = remove_crap_from_fn(split_path[-3])
     else:
         if len(split_path) > 1:
-            split_path[-2] = REMOVE_CRAP_FROM_FILENAME.sub(r"\2", split_path[-2])
+            split_path[-2] = remove_crap_from_fn(split_path[-2])
 
     guess_from = os.path.join(*split_path)
 
     # remove crap from file name
-    guess_from = REMOVE_CRAP_FROM_FILENAME.sub(r"\2", guess_from)
+    guess_from = remove_crap_from_fn(guess_from)
 
     # guess
     hints["single_value"] = True
@@ -426,30 +497,49 @@ def scan_video(path, dont_use_actual_file=False, hints=None):
     if video_type == "movie" and hints.get("expected_title"):
         video.title = hints.get("expected_title")[0]
 
+    video.hints = hints
+
     if dont_use_actual_file:
         return video
 
     # size and hashes
-    video.size = os.path.getsize(path)
-    if video.size > 10485760:
-        logger.debug('Size is %d', video.size)
-        video.hashes['opensubtitles'] = hash_opensubtitles(path)
-        video.hashes['shooter'] = hash_shooter(path)
-        video.hashes['thesubdb'] = hash_thesubdb(path)
-        video.hashes['napiprojekt'] = hash_napiprojekt(path)
-        logger.debug('Computed hashes %r', video.hashes)
-    else:
-        logger.warning('Size is lower than 10MB: hashes not computed')
+    if not skip_hashing:
+        video.size = os.path.getsize(path)
+        if video.size > 10485760:
+            logger.debug('Size is %d', video.size)
+            if "opensubtitles" in providers:
+                video.hashes['opensubtitles'] = hash_opensubtitles(path)
+
+            if "shooter" in providers:
+                video.hashes['shooter'] = hash_shooter(path)
+
+            if "thesubdb" in providers:
+                video.hashes['thesubdb'] = hash_thesubdb(path)
+
+            if "napiprojekt" in providers:
+                try:
+                    video.hashes['napiprojekt'] = hash_napiprojekt(path)
+                except MemoryError:
+                    logger.warning(u"Couldn't compute napiprojekt hash for %s", path)
+
+            logger.debug('Computed hashes %r', video.hashes)
+        else:
+            logger.warning('Size is lower than 10MB: hashes not computed')
 
     return video
 
 
-def _search_external_subtitles(path, forced_tag=False):
+def _search_external_subtitles(path, forced_tag=False, languages=None, only_one=False):
     dirpath, filename = os.path.split(path)
     dirpath = dirpath or '.'
     fileroot, fileext = os.path.splitext(filename)
     subtitles = {}
-    for p in os.listdir(dirpath):
+    for entry in scandir(dirpath):
+        if not entry.is_file(follow_symlinks=False):
+            continue
+
+        p = entry.name
+
         # keep only valid subtitle filenames
         if not p.startswith(fileroot) or not p.endswith(SUBTITLE_EXTENSIONS):
             continue
@@ -486,6 +576,9 @@ def _search_external_subtitles(path, forced_tag=False):
             except ValueError:
                 logger.error('Cannot parse language code %r', language_code)
 
+        if not language and only_one:
+            language = list(languages)[0]
+
         subtitles[p] = language
 
     logger.debug('Found subtitles %r', subtitles)
@@ -493,7 +586,7 @@ def _search_external_subtitles(path, forced_tag=False):
     return subtitles
 
 
-def search_external_subtitles(path, forced_tag=False):
+def search_external_subtitles(path, forced_tag=False, languages=None, only_one=False):
     """
     wrap original search_external_subtitles function to search multiple paths for one given video
     # todo: cleanup and merge with _search_external_subtitles
@@ -512,7 +605,8 @@ def search_external_subtitles(path, forced_tag=False):
         logger.debug("external subs: scanning path %s", abspath)
 
         if os.path.isdir(os.path.dirname(abspath)):
-            subtitles.update(_search_external_subtitles(abspath, forced_tag=forced_tag))
+            subtitles.update(_search_external_subtitles(abspath, forced_tag=forced_tag, languages=languages,
+                                                        only_one=only_one))
     logger.debug("external subs: found %s", subtitles)
     return subtitles
 

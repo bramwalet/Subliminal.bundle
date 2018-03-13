@@ -154,7 +154,7 @@ class SubtitleModifications(object):
                 mod.modify(None, debug=self.debug, parent=self, **args)
 
     def apply_line_mods(self, new_entries, mods):
-        for entry in self.f:
+        for index, entry in enumerate(self.f, 1):
             applied_mods = []
             lines = []
 
@@ -162,13 +162,22 @@ class SubtitleModifications(object):
             start_tags = []
             end_tags = []
 
+            t = entry.text.strip()
+            if not t:
+                if self.debug:
+                    logger.debug(u"Skipping empty line: %s", index)
+                continue
+
             skip_entry = False
-            for line in entry.text.split(ur"\N"):
+            for line in t.split(ur"\N"):
                 # don't bother the mods with surrounding tags
                 old_line = line
                 line = line.strip()
                 skip_line = False
                 line_count += 1
+
+                if not line:
+                    continue
 
                 # clean {\X0} tags before processing
                 # fixme: handle nested tags?
@@ -188,13 +197,13 @@ class SubtitleModifications(object):
                         line = mod.modify(line.strip(), entry=entry.text, debug=self.debug, parent=self, **args)
                     except EmptyEntryError:
                         if self.debug:
-                            logger.debug(u"%s: %r -> ''", identifier, entry.text)
+                            logger.debug(u"%d: %s: %r -> ''", index, identifier, entry.text)
                         skip_entry = True
                         break
 
                     if not line:
                         if self.debug:
-                            logger.debug(u"%s: %r -> ''", identifier, old_line)
+                            logger.debug(u"%d: %s: %r -> ''", index, identifier, old_line)
                         skip_line = True
                         break
 
@@ -226,12 +235,12 @@ class SubtitleModifications(object):
                     lines.append(cleaned_line)
                 else:
                     if self.debug:
-                        logger.debug(u"Ditching now empty line (%r)", line)
+                        logger.debug(u"%d: Ditching now empty line (%r)", index, line)
 
             if not lines:
                 # don't bother logging when the entry only had one line
                 if self.debug and line_count > 1:
-                    logger.debug(u"%r -> ''", entry.text)
+                    logger.debug(u"%d: %r -> ''", index, entry.text)
                 continue
 
             new_text = ur"\N".join(lines)

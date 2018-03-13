@@ -32,13 +32,34 @@ class HearingImpaired(SubtitleTextModification):
                                   name="HI_brackets_full"),
 
         # brackets (only remove if at least 3 chars in brackets)
-        NReProcessor(re.compile(ur'(?sux)-?\s*[([].+?(?=[A-zÀ-ž]{3,}).+?[)\]][\s:]*'), "", name="HI_brackets"),
+        NReProcessor(re.compile(ur'(?sux)-?\s*[([][^([)\]]+?(?=[A-zÀ-ž"\']{3,})[^([)\]]+[)\]][\s:]*'), "",
+                     name="HI_brackets"),
+
+        NReProcessor(re.compile(ur'(?sux)-?\s*[([]\s*(?=[A-zÀ-ž"\']{3,})[^([)\]]+$'), "", name="HI_bracket_open_start"),
+
+        NReProcessor(re.compile(ur'(?sux)-?\s*(?=[A-zÀ-ž"\']{3,})[^([)\]]+[)\]][\s:]*'), "",
+                     name="HI_bracket_open_end"),
 
         # text before colon (and possible dash in front), max 11 chars after the first whitespace (if any)
         # NReProcessor(re.compile(r'(?u)(^[A-z\-\'"_]+[\w\s]{0,11}:[^0-9{2}][\s]*)'), "", name="HI_before_colon"),
 
-        # starting text before colon (at least 2 uppercase chars)
-        NReProcessor(re.compile(ur'(?u)(^[\s-]*(?=[A-ZÀ-Ž]{2})[A-zÀ-ž-_\s0-9"\']+:\s*)'), "", name="HI_before_colon"),
+        # starting text before colon (at least 3 chars)
+        #NReProcessor(re.compile(ur'(?u)(\b|^)([\s-]*(?=[A-zÀ-ž-_0-9"\']{3,})[A-zÀ-ž-_0-9"\']+:\s*)'), "",
+        #             name="HI_before_colon"),
+
+        # uppercase text before colon (at least 3 uppercase chars); at start or after a sentence,
+        # possibly with a dash in front
+        NReProcessor(re.compile(ur'(?u)(?:(?<=^)|(?<=[.\-!?\"\']))([\s-]*(?=[A-ZÀ-Ž]\s*[A-ZÀ-Ž]\s*[A-ZÀ-Ž])'
+                                ur'[A-ZÀ-Ž-_0-9\s\"\']+:\s*)(?![0-9])'), "", name="HI_before_colon_caps"),
+
+        # any text before colon (at least 3 uppercase chars); at start or after a sentence,
+        # possibly with a dash in front; try not breaking actual sentences with a colon at the end by not matching if
+        # more than one space is inside the text
+        NReProcessor(re.compile(ur'(?u)(?:(?<=^)|(?<=[.\-!?\"\']))([\s-]*(?=[A-zÀ-ž]\s*[A-zÀ-ž]\s*[A-zÀ-ž])'
+                                ur'[A-zÀ-ž-_0-9\s\"\']+:\s*)(?![0-9])'),
+                     lambda match: match.group(1) if (match.group(1).count(" ") > 1
+                                                      or match.group(1).count("-") > 1) else "",
+                     name="HI_before_colon_noncaps"),
 
         # text in brackets at start, after optional dash, before colon or at end of line
         # fixme: may be too aggressive
@@ -54,6 +75,9 @@ class HearingImpaired(SubtitleTextModification):
         # all caps at start before new sentence
         NReProcessor(re.compile(ur'(?u)^(?=[A-ZÀ-Ž]{4,})[A-ZÀ-Ž-_\s]+\s([A-ZÀ-Ž][a-zà-ž].+)'), r"\1",
                      name="HI_starting_upper_then_sentence"),
+
+        # remove music symbols
+        NReProcessor(re.compile(ur'(?u)(^[*#¶♫♪\s]*[*#¶♫♪\s]+[*#¶♫♪\s]*$)'), "", name="HI_music_symbols_only"),
     ]
 
     post_processors = empty_line_post_processors

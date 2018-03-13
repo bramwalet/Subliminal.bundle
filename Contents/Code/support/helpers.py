@@ -15,7 +15,7 @@ from collections import OrderedDict
 import chardet
 
 from bs4 import UnicodeDammit
-from babelfish import Language
+from subzero.language import Language
 from subzero.analytics import track_event
 
 mswindows = (sys.platform == "win32")
@@ -158,10 +158,11 @@ def get_video_display_title(kind, title, section_title=None, parent_title=None, 
     if add_section_title:
         section_add = ("%s: " % section_title) if section_title else ""
 
-    if kind == "show" and parent_title:
+    if kind in ("season", "show") and parent_title:
         if season and episode:
             return '%s%s S%02dE%02d%s' % (section_add, parent_title, season or 0, episode or 0,
                                           (", %s" % title if title else ""))
+
         return '%s%s%s' % (section_add, parent_title, (", %s" % title if title else ""))
     return "%s%s" % (section_add, title)
 
@@ -374,6 +375,15 @@ def display_language(l):
         addons.append(l.script.code)
 
     return l.name if not addons else "%s (%s)" % (l.name, ", ".join(addons))
+
+
+def is_stream_forced(stream):
+    stream_title = getattr(stream, "title", "") or ""
+    forced = getattr(stream, "forced", False)
+    if not forced and stream_title and "forced" in stream_title.strip().lower():
+        forced = True
+
+    return forced
 
 
 class PartUnknownException(Exception):

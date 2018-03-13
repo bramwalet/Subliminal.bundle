@@ -2,6 +2,7 @@
 import sys
 import os
 import logging
+import codecs
 
 from common import update_video
 logger = logging.getLogger(__name__)
@@ -29,7 +30,7 @@ def refine(video, **kwargs):
         path = os.path.join(os.path.dirname(video.name), fn)
         if os.path.isfile(path):
             logger.info(u"Found %s for %s", fn, video_fn)
-            with open(path, "rb") as f:
+            with codecs.open(path, "rb", encoding="utf-8") as f:
                 for line in f:
                     if video_fn in line and delimiter in line:
                         orig_fn_start = line.index(delimiter) + del_len

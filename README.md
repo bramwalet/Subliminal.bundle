@@ -1,11 +1,11 @@
 # Sub-Zero for Plex
 [![](https://img.shields.io/github/release/pannal/Sub-Zero.bundle.svg?style=flat&label=stable)](https://github.com/pannal/Sub-Zero.bundle/releases/latest)<!--[![](https://img.shields.io/github/release/pannal/Sub-Zero.bundle/all.svg?maxAge=2592000&label=testing+2.0+RC9)](https://github.com/pannal/Sub-Zero.bundle/releases)--> [![master](https://img.shields.io/badge/master-stable-green.svg?maxAge=2592000)]()
-[![Maintenance](https://img.shields.io/maintenance/yes/2017.svg)]()
+[![Maintenance](https://img.shields.io/maintenance/yes/2018.svg)]()
 [![Slack Status](https://szslack.fragstore.net/badge.svg)](https://szslack.fragstore.net)
 
 <img src="https://raw.githubusercontent.com/pannal/Sub-Zero.bundle/master/Contents/Resources/subzero.gif" align="left" height="100"> <font size="5"><b>Subtitles done right!</b></font><br />
 
-Check out **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)** by [@ukdtom](https://github.com/ukdtom) <br />
+Check out **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)** by [@ukdtom](https://github.com/ukdtom) and [@mmgoodnow](https://github.com/mmgoodnow) <br />
 <br style="clear:left;"/>
 
 If you like this, buy me a beer: <br>[![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=G9VKR2B8PMNKG) <br>or become a Patreon starting at **1 $ / month** <br><a href="https://www.patreon.com/subzero_plex" target="_blank"><img src="http://www.wenspencer.com/wp-content/uploads/2017/02/patreon-button.png" height="42" /></a> <br>or use the OpenSubtitles Sub-Zero affiliate link to become VIP <br>**10€/year, ad-free subs, 1000 subs/day, no-cache *VIP* server**<br><a href="http://v.ht/osvip" target="_blank"><img src="https://static.opensubtitles.org/gfx/logo.gif" height="50" /></a> 
@@ -66,50 +66,47 @@ In addition to that Sub-Zero also fixes problems introduced by the subtitle crea
 Ever had broken music icons in a subtitle? Nordic characters like `Å` which turned into `Ã¥`? Not anymore.
 
 ## Installation
-Simply go to the Plex Channels in your Plex Media Server, search for Sub-Zero and install it.
+Simply go to the Plex Plugins in your Plex Media Server, search for Sub-Zero and install it.
 For further help or manual installation, [please go to the wiki](https://github.com/pannal/Sub-Zero.bundle/wiki).
+
+## Big thanks to the beta testing team (in no particular order)!
+the.vbm, mmgoodnow, Vertig0ne, thliu78, tattoomees, ostman, count_confucius, 
+eherberg, tywilliams_88, Swanny, Jippo, Joost1991 / joost, Marik, Jon, AmbyDK, 
+Clay, mmgoodnow, Abenlog, michael, smikwily, shoghicp, Zuikkis, Isilorn, 
+Jacob K, Ninjouz, chopeta, fvb
 
 ## Changelog
 
-2.0.33.1871
-- core: normalize line endings in subtitles to LF (\n)
-- core: add subtitle storage lock to avoid race condition
-- core: be more verbose about subtitle storage addition
-- core: fix MPL2 newline parsing, which resulted in broken subtitles
-- core: encoding change: reduce log spam
-- submod: common: fix CM_starting_spacedots
-- opensubtitles: fix request/response handling
+2.5.0.2287
+
+- core: reduce main icon size
+- core: fix usage on NVIDIA SHIELD (hopefully, please report back), #441
+- core: add scandir fallback to listdir in case of badly configured locale in environment, #441, #440
+- core: get subtitles from archive: don't assume an episode match
+- core: get subtitles from archive: don't assume any attributes in guess
+- core: improve release group detection for drone/filebot/file_info refiners
+- core: fix language detection for embedded subtitle streams
+- core: support extraction of embedded mov_text subtitles in mp4 video files
+- refiners: drone: add http:// to url if not given
+- providers: opensubtitles: retry/reinitialize request when encountering ResponseNotReady
+- config: clarify subscene being only enabled for TV series by default
+- menu: when encountering permission errors when scanning media files, warn in the menu about them
+- submod: common: don't break -- addic7ed --
+- submod: common: remove lines that consist only of dash, underscore
+- submod: OCR: fix Ls = Is
+- submod: OCR: fix bad HI colons (ANNOUNCER; instead of ANNOUNCER:)
+- submod: common: fix lines consisting only of bad music symbols (*#¶ = ♪)
+- submod: HI: remove music-symbol-only-lines
+- submod: HI: be less aggressive about lines ending with a colon; please re-apply all your mods via advanced menu
+- submod: OCR: fix it'sjust, isn'tjust, Iam, Ican
 
 
 
-2.0.33.1849
-- opensubtitles: add VIP server handling + preference; VIP benefits: 10€/year, ad-free subs, 1000 subs/day, no-cache VIP server, help SZ and subscribe via http://v.ht/osvip
-- opensubtitles: try to reuse previous token instead of logging in every time
-- core: add throttling between searches (10 seconds)
-- core: fix IETF handling for good
-- core: fix no subtitles being searched in certain situations (when an external subtitle without special tag exists)
-- core: add subtitle blacklist
-- core: fixes
-- core: fix detection of certain PMS media stream language tags ("FR" for example)
-- core: missing subtitles: correctly skip unwanted subtitle extensions
-- core: missing subtitles: honor "treat undefined as first language" option correctly
-- api: add blacklisting endpoints for quickly searching for new subtitls via bookmarklet
-- submod: colors: apply color mods at the end of processing modifications; fix color mods
-- submod: new remove_tags modification to remove all styling tags from subtitles
-- submod: HI: be more aggressive at handling brackets
-- submod: OCR: update en and hrv
-- submod: common: remove "torrent downloaded from ..." lines
-- submod: OCR: fix WholeWord handling, improving modification
-- submod: apply OCR fixes before HI
-- submod: OCR: fix broken HI tag colons (ANNOUNCER'. instead of ANNOUNCER:)
-- menu: advanced: speed up batch modifications
-- menu: add subtitle blacklist
-- menu: recently played: show only TV episodes and movies (music tracks were listed here as well)
+2.5.0.2247
+- fix ignoring by-hash-matched episodes
 
-
-Big thanks to the beta testing team! You know who you are!
 
 [older changes](CHANGELOG.md)
 
 
-Subtitles provided by [OpenSubtitles.org](http://www.opensubtitles.org/), [Podnapisi.NET](https://www.podnapisi.net/), [TVSubtitles.net](http://www.tvsubtitles.net/), [Addic7ed.com](http://www.addic7ed.com/), [Legendas TV](http://legendas.tv/), [Napi Projekt](http://www.napiprojekt.pl/), [Shooter](http://shooter.cn/), [Titlovi](http://titlovi.com)
+Subtitles provided by [OpenSubtitles.org](http://www.opensubtitles.org/), [Podnapisi.NET](https://www.podnapisi.net/), [TVSubtitles.net](http://www.tvsubtitles.net/), [Addic7ed.com](http://www.addic7ed.com/), [Legendas TV](http://legendas.tv/), [Napi Projekt](http://www.napiprojekt.pl/), [Shooter](http://shooter.cn/), [Titlovi](http://titlovi.com), [SubScene](https://subscene.com/)

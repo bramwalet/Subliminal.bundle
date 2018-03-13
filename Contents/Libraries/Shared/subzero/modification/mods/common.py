@@ -20,7 +20,13 @@ class CommonFixes(SubtitleTextModification):
 
     processors = [
         # -- = ...
-        StringProcessor("-- ", '... ', name="CM_doubledash"),
+        NReProcessor(re.compile(r'(?u)(^-\s?-[-\s]*)(?!.+\s?-\s?-[-\s]*)'), "", name="CM_doubledash"),
+
+        # line = _/-/\s
+        NReProcessor(re.compile(r'(?u)(^[-_\s]*[-_\s]+[-_\s]*$)'), "", name="CM_non_word_only"),
+
+        # fix music symbols
+        NReProcessor(re.compile(ur'(?u)(^[*#¶\s]*[*#¶]+[*#¶\s]*$)'), u"♪", name="CM_music_symbols"),
 
         # '' = "
         StringProcessor("''", '"', name="CM_double_apostrophe"),
@@ -33,6 +39,9 @@ class CommonFixes(SubtitleTextModification):
 
         # no space after ellipsis
         NReProcessor(re.compile(r'(?u)\.\.\.(?![\s.,!?\'"])(?!$)'), "... ", name="CM_ellipsis_no_space"),
+
+        # no space before spaced ellipsis
+        NReProcessor(re.compile(r'(?u)(?<=[^\s])(?<!\s)\. \. \.'), " . . .", name="CM_ellipsis_no_space2"),
 
         # multiple spaces
         NReProcessor(re.compile(r'(?u)[\s]{2,}'), " ", name="CM_multiple_spaces"),
@@ -56,14 +65,14 @@ class CommonFixes(SubtitleTextModification):
         NReProcessor(re.compile(r'(?u)^\s?>>\s*'), "", name="CM_leading_crocodiles"),
 
         # replace uppercase I with lowercase L in words
-        NReProcessor(re.compile(ur'(?u)([A-zÀ-ž][a-zà-ž]+)(I+)'),
+        NReProcessor(re.compile(ur'(?u)([a-zà-ž]+)(I+)'),
                      lambda match: ur'%s%s' % (match.group(1), "l" * len(match.group(2))),
                      name="CM_uppercase_i_in_word"),
 
         # fix spaces in numbers (allows for punctuation: ,.:' (comma/dot only fixed if after space, those may be
         # countdowns otherwise); don't break up ellipses
         NReProcessor(
-            re.compile(r'(?u)([0-9]+[0-9:\']*(?<!\.\.)\s+(?!\.\.)[0-9,.:\']*(?=[0-9]+)[0-9,.:\'\s]+)(?=\s|$)'),
+            re.compile(r'(?u)(\b[0-9]+[0-9:\']*(?<!\.\.)\s+(?!\.\.)[0-9,.:\'\s]*(?=[0-9]+)[0-9,.:\'])'),
             lambda match: match.group(1).replace(" ", ""),
             name="CM_spaces_in_numbers"),
 
@@ -76,8 +85,8 @@ class CommonFixes(SubtitleTextModification):
                      lambda match: match.group(1).strip() + (" " if match.group(2).endswith(" ") else ""),
                      name="CM_double_interpunct"),
 
-        # remove spaces before punctuation
-        NReProcessor(re.compile(r'(?u)(?:(?<=^)|(?<=\w)) +([!?.,](?![!?.,]))'), r"\1", name="CM_punctuation_space"),
+        # remove spaces before punctuation; don't break spaced ellipses
+        NReProcessor(re.compile(r'(?u)(?:(?<=^)|(?<=\w)) +([!?.,](?![!?.,]| \.))'), r"\1", name="CM_punctuation_space"),
     ]
 
     post_processors = empty_line_post_processors

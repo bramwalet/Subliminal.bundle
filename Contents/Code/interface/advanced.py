@@ -8,7 +8,7 @@ import urlparse
 
 from zipfile import ZipFile, ZIP_DEFLATED
 
-from babelfish import Language
+from subzero.language import Language
 
 from subzero.lib.io import FileIO
 from subzero.constants import PREFIX, PLUGIN_IDENTIFIER
@@ -50,12 +50,20 @@ def AdvancedMenu(randomize=None, header=None, message=None):
         title=pad_title("Trigger find better subtitles"),
     ))
     oc.add(DirectoryObject(
+        key=Callback(SkipFindBetterSubtitles, randomize=timestamp()),
+        title=pad_title("Skip next find better subtitles (sets last run to now)"),
+    ))
+    oc.add(DirectoryObject(
         key=Callback(TriggerStorageMaintenance, randomize=timestamp()),
         title=pad_title("Trigger subtitle storage maintenance"),
     ))
     oc.add(DirectoryObject(
         key=Callback(TriggerStorageMigration, randomize=timestamp()),
         title=pad_title("Trigger subtitle storage migration (expensive)"),
+    ))
+    oc.add(DirectoryObject(
+        key=Callback(TriggerCacheMaintenance, randomize=timestamp()),
+        title=pad_title("Trigger cache maintenance (refiners, providers and packs/archives)"),
     ))
     oc.add(DirectoryObject(
         key=Callback(ApplyDefaultMods, randomize=timestamp()),
@@ -88,6 +96,10 @@ def AdvancedMenu(randomize=None, header=None, message=None):
     oc.add(DirectoryObject(
         key=Callback(InvalidateCache, randomize=timestamp()),
         title=pad_title("Invalidate Sub-Zero metadata caches (subliminal)"),
+    ))
+    oc.add(DirectoryObject(
+        key=Callback(ResetProviderThrottle, randomize=timestamp()),
+        title=pad_title("Reset provider throttle states"),
     ))
     return oc
 
@@ -158,6 +170,20 @@ def TriggerBetterSubtitles(randomize=None):
     )
 
 
+
+@route(PREFIX + '/skipbetter')
+@debounce
+def SkipFindBetterSubtitles(randomize=None):
+    task = scheduler.task("FindBetterSubtitles")
+    task.last_run = datetime.datetime.now()
+
+    return AdvancedMenu(
+        randomize=timestamp(),
+        header='Success',
+        message='FindBetterSubtitles skipped'
+    )
+
+
 @route(PREFIX + '/triggermaintenance')
 @debounce
 def TriggerStorageMaintenance(randomize=None):
@@ -177,6 +203,17 @@ def TriggerStorageMigration(randomize=None):
         randomize=timestamp(),
         header='Success',
         message='MigrateSubtitleStorage triggered'
+    )
+
+
+@route(PREFIX + '/triggercachemaintenance')
+@debounce
+def TriggerCacheMaintenance(randomize=None):
+    scheduler.dispatch_task("CacheMaintenance")
+    return AdvancedMenu(
+        randomize=timestamp(),
+        header='Success',
+        message='TriggerCacheMaintenance triggered'
     )
 
 
@@ -300,7 +337,10 @@ def DownloadLogs():
 @debounce
 def InvalidateCache(randomize=None):
     from subliminal.cache import region
-    region.invalidate()
+    if config.new_style_cache:
+        region.backend.clear()
+    else:
+        region.invalidate()
     return AdvancedMenu(
         randomize=timestamp(),
         header='Success',
@@ -338,3 +378,14 @@ def ClearPin(randomize=None):
     Dict["pin_correct_time"] = None
     config.locked = True
     return fatality(force_title="Menu locked", header=" ", no_history=True)
+
+
+@route(PREFIX + '/reset_throttle')
+def ResetProviderThrottle(randomize=None):
+    Dict["provider_throttle"] = {}
+    Dict.Save()
+    return AdvancedMenu(
+        randomize=timestamp(),
+        header='Success',
+        message='Provider throttles reset'
+    )

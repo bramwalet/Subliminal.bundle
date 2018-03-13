@@ -38,7 +38,11 @@ class Subtitle(Subtitle_):
     plex_media_fps = None
     skip_wrong_fps = False
     wrong_fps = False
+    is_pack = False
+    asked_for_release_group = None
+    asked_for_episode = None
 
+    pack_data = None
     _guessed_encoding = None
 
     def __init__(self, language, hearing_impaired=False, page_link=None, encoding=None, mods=None):
@@ -64,6 +68,10 @@ class Subtitle(Subtitle_):
         #    return fix_text(self.content.decode(self.encoding, errors='replace'), **ftfy_defaults)
 
         return self.content.decode(self.guess_encoding(), errors='replace')
+
+    @property
+    def numeric_id(self):
+        raise NotImplemented
 
     def make_picklable(self):
         """

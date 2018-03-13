@@ -4,10 +4,12 @@ import datetime
 import os
 import pprint
 import copy
+import traceback
 import types
 
 from subliminal_patch.core import save_subtitles as subliminal_save_subtitles
 from subzero.subtitle_storage import StoredSubtitlesManager
+from subzero.lib.io import FileIO
 
 from subtitlehelpers import force_utf8
 from config import config
@@ -20,10 +22,11 @@ def get_subtitle_storage():
     return StoredSubtitlesManager(Data, Thread, get_item)
 
 
-def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_type, mode="a"):
+def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_type, mode="a", set_current=True):
     """
     stores information about downloaded subtitles in plex's Dict()
     """
+    subtitle_storage = get_subtitle_storage()
     for video, video_subtitles in downloaded_subtitles.items():
         part = scanned_video_part_map[video]
         part_id = str(part.id)
@@ -32,15 +35,25 @@ def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_ty
         metadata = video.plexapi_metadata
         title = get_title_for_video_metadata(metadata)
 
-        subtitle_storage = get_subtitle_storage()
-        stored_subs = subtitle_storage.load_or_new(plex_item)
+        stored_subs = subtitle_storage.load(video_id)
+        is_new = False
+        if not stored_subs:
+            is_new = True
+            Log.Debug(u"Creating new subtitle storage: %s, %s", video_id, part_id)
+            stored_subs = subtitle_storage.new(plex_item)
 
         for subtitle in video_subtitles:
             lang = str(subtitle.language)
             subtitle.normalize()
             Log.Debug(u"Adding subtitle to storage: %s, %s, %s, %s, %s" % (video_id, part_id, lang, title,
                                                                            subtitle.guess_encoding()))
-            ret_val = stored_subs.add(part_id, lang, subtitle, storage_type, mode=mode)
+
+            last_mod = None
+            if subtitle.storage_path:
+                last_mod = datetime.datetime.fromtimestamp(os.path.getmtime(subtitle.storage_path))
+
+            ret_val = stored_subs.add(part_id, lang, subtitle, storage_type, mode=mode, last_mod=last_mod,
+                                      set_current=set_current)
 
             if ret_val:
                 Log.Debug("Subtitle stored")
@@ -48,9 +61,11 @@ def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_ty
             else:
                 Log.Debug("Subtitle already existing in storage")
 
-        Log.Debug("Saving subtitle storage for %s" % video_id)
-        subtitle_storage.save(stored_subs)
-        subtitle_storage.destroy()
+        if is_new or video_subtitles:
+            Log.Debug("Saving subtitle storage for %s" % video_id)
+            subtitle_storage.save(stored_subs)
+
+    subtitle_storage.destroy()
 
 
 def reset_storage(key):
@@ -112,7 +127,7 @@ def save_subtitles_to_file(subtitles, tags=None, forced_tag=None):
     return True
 
 
-def save_subtitles_to_metadata(videos, subtitles):
+def save_subtitles_to_metadata(videos, subtitles, is_forced=False):
     for video, video_subtitles in subtitles.items():
         mediaPart = videos[video]
         for subtitle in video_subtitles:
@@ -124,14 +139,17 @@ def save_subtitles_to_metadata(videos, subtitles):
                 mp = PMSMediaProxy(video.id).get_part(mediaPart.id)
             else:
                 mp = mediaPart
-            mp.subtitles[Locale.Language.Match(subtitle.language.alpha2)][subtitle.id] = Proxy.Media(content, ext="srt")
+            pm = Proxy.Media(content, ext="srt", forced="1" if is_forced else None)
+            mp.subtitles[Locale.Language.Match(subtitle.language.alpha2)][subtitle.id] = pm
     return True
 
 
-def save_subtitles(scanned_video_part_map, downloaded_subtitles, mode="a", bare_save=False, mods=None):
+def save_subtitles(scanned_video_part_map, downloaded_subtitles, mode="a", bare_save=False, mods=None,
+                   set_current=True, is_forced=False):
     """
      
-    :param scanned_video_part_map: 
+    :param set_current: save the subtitle as the current one
+    :param scanned_video_part_map:
     :param downloaded_subtitles: 
     :param mode: 
     :param bare_save: don't trigger anything; don't store information
@@ -157,29 +175,64 @@ def save_subtitles(scanned_video_part_map, downloaded_subtitles, mode="a", bare_
     save_to_fs = cast_bool(Prefs['subtitles.save.filesystem'])
     if save_to_fs:
         storage = "filesystem"
-        try:
-            Log.Debug("Using filesystem as subtitle storage")
-            save_subtitles_to_file(downloaded_subtitles)
-        except OSError:
-            if cast_bool(Prefs["subtitles.save.metadata_fallback"]):
-                meta_fallback = True
-                storage = "metadata"
+
+    if set_current:
+        if save_to_fs:
+            try:
+                Log.Debug("Using filesystem as subtitle storage")
+                save_subtitles_to_file(downloaded_subtitles, forced_tag=is_forced)
+            except OSError:
+                if cast_bool(Prefs["subtitles.save.metadata_fallback"]):
+                    meta_fallback = True
+                    storage = "metadata"
+                else:
+                    raise
             else:
-                raise
-        else:
-            save_successful = True
+                save_successful = True
 
-    if not save_to_fs or meta_fallback:
-        if meta_fallback:
-            Log.Debug("Using metadata as subtitle storage, because filesystem storage failed")
-        else:
-            Log.Debug("Using metadata as subtitle storage")
-        save_successful = save_subtitles_to_metadata(scanned_video_part_map, downloaded_subtitles)
+        if not save_to_fs or meta_fallback:
+            if meta_fallback:
+                Log.Debug("Using metadata as subtitle storage, because filesystem storage failed")
+            else:
+                Log.Debug("Using metadata as subtitle storage")
+            save_successful = save_subtitles_to_metadata(scanned_video_part_map, downloaded_subtitles,
+                                                         is_forced=is_forced)
 
-    if not bare_save and save_successful and config.notify_executable:
-        notify_executable(config.notify_executable, scanned_video_part_map, downloaded_subtitles, storage)
+        if not bare_save and save_successful and config.notify_executable:
+            notify_executable(config.notify_executable, scanned_video_part_map, downloaded_subtitles, storage)
 
-    if not bare_save and save_successful:
-        store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage, mode=mode)
+    if not bare_save and (save_successful or not set_current):
+        store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage, mode=mode, set_current=set_current)
 
     return save_successful
+
+
+def get_pack_id(subtitle):
+    return "%s_%s" % (subtitle.provider_name, subtitle.numeric_id)
+
+
+def get_pack_data(subtitle):
+    subtitle_id = get_pack_id(subtitle)
+
+    archive = os.path.join(config.pack_cache_dir, subtitle_id + ".archive")
+    if os.path.isfile(archive):
+        Log.Info("Loading archive from pack cache: %s", subtitle_id)
+        try:
+            data = FileIO.read(archive, 'rb')
+
+            return data
+        except:
+            Log.Error("Couldn't load archive from pack cache: %s: %s", subtitle_id, traceback.format_exc())
+
+
+def store_pack_data(subtitle, data):
+    subtitle_id = get_pack_id(subtitle)
+
+    archive = os.path.join(config.pack_cache_dir, subtitle_id + ".archive")
+
+    Log.Info("Storing archive in pack cache: %s", subtitle_id)
+    try:
+        FileIO.write(archive, data, 'wb')
+
+    except:
+        Log.Error("Couldn't store archive in pack cache: %s: %s", subtitle_id, traceback.format_exc())

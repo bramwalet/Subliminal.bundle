@@ -5,7 +5,7 @@ import logging
 import traceback
 import types
 
-from babelfish import Language
+from subzero.language import Language
 
 from constants import mode_map
 

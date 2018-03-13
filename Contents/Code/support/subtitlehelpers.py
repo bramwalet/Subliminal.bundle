@@ -133,7 +133,13 @@ class DefaultSubtitleHelper(SubtitleHelper):
         # Attempt to extract the language from the filename (e.g. Avatar (2009).eng)
         # IETF support thanks to
         # https://github.com/hpsbranco/LocalMedia.bundle/commit/4fad9aefedece78a1fa96401304351347f644369
-        language = Locale.Language.Match(match_ietf_language(file))
+        lang_part = match_ietf_language(file)
+        if lang_part != file:
+            language = Locale.Language.Match(lang_part)
+        elif config.only_one:
+            language = Locale.Language.Match(list(config.lang_list)[0].alpha2)
+        else:
+            language = Locale.Language.Match("xx")
 
         # skip non-SRT if wanted
         if not config.exotic_ext and ext not in TEXT_SUBTITLE_EXTS:
