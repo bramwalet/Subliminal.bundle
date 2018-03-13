@@ -41,12 +41,12 @@ class SubtitleModification(object):
             new_content = processor.process(new_content, debug=debug, **kwargs)
             if not new_content:
                 if debug:
-                    logger.debug("Processor returned empty line: %s", processor)
+                    logger.debug("Processor returned empty line: %s", processor.name)
                 break
             if debug:
                 if old_content == new_content:
                     continue
-                logger.debug("%d: %s: %s -> %s", index, processor, repr(old_content), repr(new_content))
+                logger.debug("%d: %s: %s -> %s", index, processor.name, repr(old_content), repr(new_content))
         return new_content
 
     def pre_process(self, content, debug=False, parent=None, **kwargs):
