@@ -10,6 +10,10 @@ Don't expect support if you mess this up.
     // true: in case of a configured subtitle sub-folder, also clean up the folder containing the media item
     "thorough_cleaning": false,
 
+    // list of subtitle formats that should be considered as text-based. useful if your media player doesn't natively
+    // support ASS/SSA for example (remove them from this list then)
+    "text_subtitle_formats": ["srt", "ass", "ssa", "vtt", "mov_text"],
+
     // per-provider-config
     "providers": {
         // enabled_for: specifies which media type to enable the provider for. does not override global/throttled
@@ -45,5 +49,8 @@ Don't expect support if you mess this up.
         "tvsubtitles": {
             "enabled_for": ["series"],
         },
+        "hosszupuska": {
+            "enabled_for": ["series"],
+        }
     }
 }

@@ -829,6 +829,10 @@ class Config(object):
                 }
                 self.exact_filenames = True
 
+    @property
+    def text_based_formats(self):
+        return self.advanced.text_subtitle_formats or TEXT_SUBTITLE_EXTS
+
     def init_subliminal_patches(self):
         # configure custom subtitle destination folders for scanning pre-existing subs
         Log.Debug("Patching subliminal ...")
