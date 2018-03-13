@@ -172,11 +172,11 @@ def SubtitleShiftModMenu(unit=None, **kwargs):
 
     rng = []
     if unit == "h":
-        rng = range(-10, 11)
+        rng = list(reversed(range(-10, 0))) + list(reversed(range(1, 11)))
     elif unit in ("m", "s"):
-        rng = range(-15, 15)
+        rng = list(reversed(range(-15, 0))) + list(reversed(range(1, 16)))
     elif unit == "ms":
-        rng = range(-900, 1000, 100)
+        rng = list(reversed(range(-900, 0, 100))) + list(reversed(range(100, 1000, 100)))
 
     for i in rng:
         if i == 0:
