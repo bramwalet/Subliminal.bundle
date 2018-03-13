@@ -1,7 +1,7 @@
 # coding=utf-8
 import re
 
-from subzero.modification.mods import SubtitleTextModification, empty_line_post_processors, EmptyEntryError
+from subzero.modification.mods import SubtitleTextModification, empty_line_post_processors, EmptyEntryError, TAG
 from subzero.modification.processors.re_processor import NReProcessor
 from subzero.modification import registry
 
@@ -28,16 +28,17 @@ class HearingImpaired(SubtitleTextModification):
 
     processors = [
         # full bracket entry, single or multiline; starting with brackets and ending with brackets
-        FullBracketEntryProcessor(re.compile(ur'(?sux)^-?\s?[([].+(?=[^)\]]{3,}).+[)\]]$'), "",
-                                  name="HI_brackets_full"),
+        FullBracketEntryProcessor(re.compile(ur'(?sux)^-?%(t)s[([].+(?=[^)\]]{3,}).+[)\]]%(t)s$' % {"t": TAG}),
+                                  "", name="HI_brackets_full"),
 
         # brackets (only remove if at least 3 chars in brackets)
-        NReProcessor(re.compile(ur'(?sux)-?\s*[([][^([)\]]+?(?=[A-zÀ-ž"\']{3,})[^([)\]]+[)\]][\s:]*'), "",
-                     name="HI_brackets"),
+        NReProcessor(re.compile(ur'(?sux)-?%(t)s[([][^([)\]]+?(?=[A-zÀ-ž"\']{3,})[^([)\]]+[)\]][\s:]*%(t)s' %
+                                {"t": TAG}), "", name="HI_brackets"),
 
-        NReProcessor(re.compile(ur'(?sux)-?\s*[([]\s*(?=[A-zÀ-ž"\']{3,})[^([)\]]+$'), "", name="HI_bracket_open_start"),
+        NReProcessor(re.compile(ur'(?sux)-?%(t)s[([]%(t)s(?=[A-zÀ-ž"\']{3,})[^([)\]]+%(t)s$' % {"t": TAG}),
+                     "", name="HI_bracket_open_start"),
 
-        NReProcessor(re.compile(ur'(?sux)-?\s*(?=[A-zÀ-ž"\']{3,})[^([)\]]+[)\]][\s:]*'), "",
+        NReProcessor(re.compile(ur'(?sux)-?%(t)s(?=[A-zÀ-ž"\']{3,})[^([)\]]+[)\]][\s:]*%(t)s' % {"t": TAG}), "",
                      name="HI_bracket_open_end"),
 
         # text before colon (and possible dash in front), max 11 chars after the first whitespace (if any)
@@ -77,7 +78,8 @@ class HearingImpaired(SubtitleTextModification):
                      name="HI_starting_upper_then_sentence"),
 
         # remove music symbols
-        NReProcessor(re.compile(ur'(?u)(^[*#¶♫♪\s]*[*#¶♫♪\s]+[*#¶♫♪\s]*$)'), "", name="HI_music_symbols_only"),
+        NReProcessor(re.compile(ur'(?u)(^%(t)s[*#¶♫♪\s]*%(t)s[*#¶♫♪\s]+%(t)s[*#¶♫♪\s]*%(t)s$)' % {"t": TAG}),
+                     "", name="HI_music_symbols_only"),
     ]
 
     post_processors = empty_line_post_processors
