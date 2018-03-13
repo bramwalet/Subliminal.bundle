@@ -47,6 +47,7 @@ class SubtitleModification(object):
                 if old_content == new_content:
                     continue
                 logger.debug("%d: %s: %s -> %s", index, processor.name, repr(old_content), repr(new_content))
+
         return new_content
 
     def pre_process(self, content, debug=False, parent=None, **kwargs):

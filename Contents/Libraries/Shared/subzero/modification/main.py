@@ -264,6 +264,8 @@ class SubtitleModifications(object):
                     if self.debug:
                         logger.debug(u"Fixing tags: %s (%r -> %r)", str(add_start_tags+add_end_tags), new_text,
                                      entry.text)
+                else:
+                    entry.text = new_text
             else:
                 entry.text = new_text
 

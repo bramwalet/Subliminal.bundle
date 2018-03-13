@@ -46,7 +46,9 @@ oh god multiline! THEME MUSIC)
 
 10
 00:00:30,612 --> 00:00:33,112
-(SWITCH CLICKING)
+<i> ( intercom buzzes )</i>
+- woman:<i> Ken's here</i>
+<i> for the meeting.</i>
 
 11
 00:00:33,658 --> 00:00:34,783
