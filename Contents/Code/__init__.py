@@ -217,7 +217,10 @@ class SubZeroAgent(object):
 
             # auto extract embedded
             if config.embedded_auto_extract:
-                agent_extract_embedded(videos)
+                if config.plex_transcoder:
+                    agent_extract_embedded(videos)
+                else:
+                    Log.Warning("Plex Transcoder not found, can't auto extract")
 
             # clear missing subtitles menu data
             if not scheduler.is_task_running("MissingSubtitles"):
