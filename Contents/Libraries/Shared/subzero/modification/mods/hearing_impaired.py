@@ -49,15 +49,16 @@ class HearingImpaired(SubtitleTextModification):
         #             name="HI_before_colon"),
 
         # uppercase text before colon (at least 3 uppercase chars); at start or after a sentence,
-        # possibly with a dash in front
+        # possibly with a dash in front; ignore anything ending with a quote
         NReProcessor(re.compile(ur'(?u)(?:(?<=^)|(?<=[.\-!?\"\']))([\s-]*(?=[A-ZÀ-Ž]\s*[A-ZÀ-Ž]\s*[A-ZÀ-Ž])'
-                                ur'[A-ZÀ-Ž-_0-9\s\"\']+:\s*)(?![0-9])'), "", name="HI_before_colon_caps"),
+                                ur'[A-ZÀ-Ž-_0-9\s\"\']+:(?![\"\'’ʼ❜‘‛”“‟„])\s*)(?![0-9])'), "",
+                     name="HI_before_colon_caps"),
 
         # any text before colon (at least 3 uppercase chars); at start or after a sentence,
         # possibly with a dash in front; try not breaking actual sentences with a colon at the end by not matching if
-        # more than one space is inside the text
+        # more than one space is inside the text; ignore anything ending with a quote
         NReProcessor(re.compile(ur'(?u)(?:(?<=^)|(?<=[.\-!?\"\']))([\s-]*(?=[A-zÀ-ž]\s*[A-zÀ-ž]\s*[A-zÀ-ž])'
-                                ur'[A-zÀ-ž-_0-9\s\"\']+:\s*)(?![0-9])'),
+                                ur'[A-zÀ-ž-_0-9\s\"\']+:(?![\"\'’ʼ❜‘‛”“‟„])\s*)(?![0-9])'),
                      lambda match: match.group(1) if (match.group(1).count(" ") > 1
                                                       or match.group(1).count("-") > 1) else "",
                      name="HI_before_colon_noncaps"),
