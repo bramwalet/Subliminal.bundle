@@ -32,13 +32,13 @@ class HearingImpaired(SubtitleTextModification):
                                   "", name="HI_brackets_full"),
 
         # brackets (only remove if at least 3 chars in brackets)
-        NReProcessor(re.compile(ur'(?sux)-?%(t)s[([][^([)\]]+?(?=[A-zÀ-ž"\']{3,})[^([)\]]+[)\]][\s:]*%(t)s' %
+        NReProcessor(re.compile(ur'(?sux)-?%(t)s[([][^([)\]]+?(?=[A-zÀ-ž"\'.]{3,})[^([)\]]+[)\]][\s:]*%(t)s' %
                                 {"t": TAG}), "", name="HI_brackets"),
 
-        NReProcessor(re.compile(ur'(?sux)-?%(t)s[([]%(t)s(?=[A-zÀ-ž"\']{3,})[^([)\]]+%(t)s$' % {"t": TAG}),
+        NReProcessor(re.compile(ur'(?sux)-?%(t)s[([]%(t)s(?=[A-zÀ-ž"\'.]{3,})[^([)\]]+%(t)s$' % {"t": TAG}),
                      "", name="HI_bracket_open_start"),
 
-        NReProcessor(re.compile(ur'(?sux)-?%(t)s(?=[A-zÀ-ž"\']{3,})[^([)\]]+[)\]][\s:]*%(t)s' % {"t": TAG}), "",
+        NReProcessor(re.compile(ur'(?sux)-?%(t)s(?=[A-zÀ-ž"\'.]{3,})[^([)\]]+[)\]][\s:]*%(t)s' % {"t": TAG}), "",
                      name="HI_bracket_open_end"),
 
         # text before colon (and possible dash in front), max 11 chars after the first whitespace (if any)
