@@ -58,7 +58,7 @@ def FirstLetterMetadataMenu(rating_key, key, title=None, base_title=None, displa
 
 @route(PREFIX + '/section/contents', display_items=bool)
 def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, previous_item_type=None,
-                 previous_rating_key=None, header=None, randomize=None):
+                 previous_rating_key=None, message=None, header=None, randomize=None):
     """
     displays the contents of a section based on whether it has a deeper tree or not (movies->movie (item) list; series->series list)
     :param rating_key:
@@ -72,7 +72,7 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
     title = unicode(title)
     item_title = title
     title = base_title + " > " + title
-    oc = SubFolderObjectContainer(title2=title, no_cache=True, no_history=True, header=header,
+    oc = SubFolderObjectContainer(title2=title, no_cache=True, no_history=True, header=header, message=message,
                                   view_group="full_details")
 
     current_kind = get_item_kind_from_rating_key(rating_key)
