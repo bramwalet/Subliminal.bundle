@@ -77,7 +77,7 @@ class CommonFixes(SubtitleTextModification):
             name="CM_spaces_in_numbers"),
 
         # uppercase after dot
-        NReProcessor(re.compile(ur'(?u)((?:[^.\s])+\.\s+)([a-zà-ž])'),
+        NReProcessor(re.compile(ur'(?u)((?<!(?=\s*[A-ZÀ-Ž-_0-9.]\s*))(?:[^.\s])+\.\s+)([a-zà-ž])'),
                      lambda match: ur'%s%s' % (match.group(1), match.group(2).upper()), name="CM_uppercase_after_dot"),
 
         # remove double interpunction
