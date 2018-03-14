@@ -20,7 +20,7 @@ class CommonFixes(SubtitleTextModification):
 
     processors = [
         # -- = ...
-        NReProcessor(re.compile(r'(?u)(^-\s?-[-\s]*)(?!.+\s?-\s?-[-\s]*)'), "", name="CM_doubledash"),
+        NReProcessor(re.compile(r'(?u)(\w|\b|\s|^)(-\s?-(?!\s*-))'), ur"\1—", name="CM_doubledash"),
 
         # line = _/-/\s
         NReProcessor(re.compile(r'(?u)(^[-_\s]*[-_\s]+[-_\s]*$)'), "", name="CM_non_word_only"),
