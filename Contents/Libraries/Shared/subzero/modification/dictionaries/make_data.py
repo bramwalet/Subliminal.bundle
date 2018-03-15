@@ -85,6 +85,7 @@ SZ_FIX_DATA = {
             u"L haven't": u"I haven't",
             u"L couldn't": u"I couldn't",
             u"L won't": u"I won't",
+            u"H i": u"Hi",
         },
         "BeginLines": {
             u"l ": u"I ",
