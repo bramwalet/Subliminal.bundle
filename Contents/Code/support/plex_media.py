@@ -195,7 +195,7 @@ def get_embedded_subtitle_streams(part, requested_language=None, skip_duplicate_
                 is_unknown = True
                 has_unknown = True
 
-            if not requested_language or found_requested_language:
+            if not requested_language or found_requested_language or has_unknown:
                 streams.append({"stream": stream, "is_unknown": is_unknown, "language": language,
                                 "is_forced": is_forced})
 
