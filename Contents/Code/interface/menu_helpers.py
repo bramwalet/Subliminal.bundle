@@ -179,7 +179,7 @@ def extract_embedded_sub(**kwargs):
                 Log.Info(u"Extracting stream %s (%s) of %s", stream_index, display_language(language), bn)
 
                 args = [
-                    config.plex_transcoder, "-i", part.file, "-map", "0:%s" % stream_index, "-f", "srt", "-"
+                    config.plex_transcoder, "-i", part.file, "-map", "0:%s" % stream_index, "-f", stream.codec, "-"
                 ]
                 output = None
                 try:
