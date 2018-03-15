@@ -73,7 +73,7 @@ class CommonFixes(SubtitleTextModification):
         # countdowns otherwise); don't break up ellipses
         NReProcessor(
             re.compile(r'(?u)(\b[0-9]+[0-9:\']*(?<!\.\.)\s+(?!\.\.)[0-9,.:\'\s]*(?=[0-9]+)[0-9,.:\'])'),
-            lambda match: match.group(1).replace(" ", ""),
+            lambda match: match.group(1).replace(" ", "") if match.group(1).count(" ") == 1 else match.group(1),
             name="CM_spaces_in_numbers"),
 
         # uppercase after dot
