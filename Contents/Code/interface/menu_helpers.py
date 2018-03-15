@@ -178,8 +178,10 @@ def extract_embedded_sub(**kwargs):
                 set_refresh_menu_state(u"Extracting subtitle %s of %s" % (stream_index, bn))
                 Log.Info(u"Extracting stream %s (%s) of %s", stream_index, display_language(language), bn)
 
+                out_codec = stream.codec if stream.codec != "mov_text" else "srt"
+
                 args = [
-                    config.plex_transcoder, "-i", part.file, "-map", "0:%s" % stream_index, "-f", stream.codec, "-"
+                    config.plex_transcoder, "-i", part.file, "-map", "0:%s" % stream_index, "-f", out_codec, "-"
                 ]
                 output = None
                 try:
