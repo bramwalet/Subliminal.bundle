@@ -114,12 +114,12 @@ def update_local_media(metadata, media, media_type="movies"):
             pass
 
 
-def agent_extract_embedded(videos):
+def agent_extract_embedded(video_part_map):
     try:
         subtitle_storage = get_subtitle_storage()
 
-        for video in videos:
-            item = video["item"]
+        for video, part in video_part_map.iteritems():
+            item = video.plexapi_metadata["item"]
             stored_subs = subtitle_storage.load_or_new(item)
 
             for part in get_all_parts(item):
@@ -137,6 +137,8 @@ def agent_extract_embedded(videos):
                                                  stream_index=str(stream.index),
                                                  language=str(requested_language), with_mods=True, refresh=False,
                                                  set_current=not current)
+
+                            video.subtitle_languages.update({requested_language})
                     else:
                         Log.Debug("Skipping embedded subtitle extraction for %s, already got %r from %s",
                                   item.rating_key, requested_language, embedded_subs[0].id)
@@ -218,7 +220,7 @@ class SubZeroAgent(object):
             # auto extract embedded
             if config.embedded_auto_extract:
                 if config.plex_transcoder:
-                    agent_extract_embedded(videos)
+                    agent_extract_embedded(scanned_video_part_map)
                 else:
                     Log.Warning("Plex Transcoder not found, can't auto extract")
 

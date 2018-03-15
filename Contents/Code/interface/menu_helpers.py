@@ -164,6 +164,8 @@ def extract_embedded_sub(**kwargs):
     item_type = get_item_kind_from_item(plex_item)
     part = get_part(plex_item, part_id)
 
+    any_successful = False
+
     if part:
         metadata = get_plex_metadata(rating_key, part_id, item_type, plex_item=plex_item)
         scanned_parts = scan_videos([metadata], ignore_all=True, skip_hashing=True)
@@ -200,6 +202,10 @@ def extract_embedded_sub(**kwargs):
 
                     if save_successful and refresh:
                         refresh_item(rating_key)
+
+                    any_successful = True
+
+    return any_successful
 
 
 class SZObjectContainer(ObjectContainer):
