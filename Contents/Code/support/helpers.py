@@ -292,7 +292,7 @@ def notify_executable(exe_info, videos, subtitles, storage):
             prepared_arguments = [arg % prepared_data for arg in arguments]
 
             Log.Debug(u"Calling %s with arguments: %s" % (exe, prepared_arguments))
-            env = os.environ
+            env = dict(os.environ)
             if not mswindows:
                 env_path = {"PATH": os.pathsep.join(
                                         [
