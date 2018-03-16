@@ -337,7 +337,7 @@
     "default": "19"
   },
   {
-    "id": "provider.addic7ed.use_random_agents",
+    "id": "provider.addic7ed.use_random_agents1",
     "label": "Addic7ed: Use random user agents",
     "type": "bool",
     "default": "true"
