@@ -23,7 +23,7 @@ class CommonFixes(SubtitleTextModification):
         NReProcessor(re.compile(r'(?u)(\w|\b|\s|^)(-\s?-(?!\s*-))'), ur"\1—", name="CM_doubledash"),
 
         # line = _/-/\s
-        NReProcessor(re.compile(r'(?u)(^[-_\s]*[-_\s]+[-_\s]*$)'), "", name="CM_non_word_only"),
+        NReProcessor(re.compile(r'(?u)(^[-_\s.]*[-_\s.]+[-_\s.]*$)'), "", name="CM_non_word_only"),
 
         # fix music symbols
         NReProcessor(re.compile(ur'(?u)(^[*#¶\s]*[*#¶]+[*#¶\s]*$)'), u"♪", name="CM_music_symbols"),
