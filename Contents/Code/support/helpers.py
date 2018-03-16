@@ -304,6 +304,8 @@ def notify_executable(exe_info, videos, subtitles, storage):
                             }
                 env = dict(os.environ, **env_path)
 
+            env.pop("LD_LIBRARY_PATH", None)
+
             try:
                 output = subprocess.check_output(quote_args([exe] + prepared_arguments),
                                                  stderr=subprocess.STDOUT, shell=True, env=env)
