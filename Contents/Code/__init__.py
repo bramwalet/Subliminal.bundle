@@ -138,7 +138,8 @@ def agent_extract_embedded(video_part_map):
                                                  language=str(requested_language), with_mods=True, refresh=False,
                                                  set_current=not current)
 
-                            video.subtitle_languages.update({requested_language})
+                            if not cast_bool(Prefs["subtitles.search_after_autoextract"]):
+                                video.subtitle_languages.update({requested_language})
                     else:
                         Log.Debug("Skipping embedded subtitle extraction for %s, already got %r from %s",
                                   item.rating_key, requested_language, embedded_subs[0].id)

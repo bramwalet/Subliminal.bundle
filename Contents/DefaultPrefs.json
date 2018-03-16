@@ -399,6 +399,12 @@
     "default": "false"
   },
   {
+    "id": "subtitles.search_after_autoextract",
+    "label": "After automatic extraction of embedded subtitles, also immediately search for available subtitles?",
+    "type": "bool",
+    "default": "false"
+  },
+  {
     "id": "subtitles.scan.embedded",
     "label": "Don't search for subtitles of a language if there are embedded subtitles inside the media file (MKV/MP4)?",
     "type": "bool",
