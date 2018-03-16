@@ -340,7 +340,7 @@
     "id": "provider.addic7ed.use_random_agents",
     "label": "Addic7ed: Use random user agents",
     "type": "bool",
-    "default": "false"
+    "default": "true"
   },
   {
     "id": "provider.legendastv.enabled",
