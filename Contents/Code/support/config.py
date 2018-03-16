@@ -788,6 +788,11 @@ class Config(object):
         if os.path.isfile(fn):
             return fn
 
+        # look inside Resources folder as fallback, as well
+        fn = os.path.join(base_path, "Resources", "Plex Transcoder")
+        if os.path.isfile(fn):
+            return fn
+
     def parse_rename_mode(self):
         # fixme: exact_filenames should be determined via callback combined with info about the current video
         # (original_name)
