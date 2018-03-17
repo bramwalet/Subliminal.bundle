@@ -15,7 +15,8 @@ Don't expect support if you mess this up.
     "text_subtitle_formats": ["srt", "ass", "ssa", "vtt", "mov_text"],
 
     // allow multiple automatic subtitle extractions at the same time; by default, to not clog up the CPU, SZ only
-    // executes one automatic extraction at a time.
+    // executes one automatic extraction at a time. This does not affect manually started extractions and only affect
+    // multiple agent/metadata update calls. Refreshing a season or a full TV show will still only use one thread.
     "auto_extract_multithread": false,
 
     // per-provider-config
