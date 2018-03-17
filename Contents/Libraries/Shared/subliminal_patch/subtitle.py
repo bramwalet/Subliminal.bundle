@@ -84,10 +84,10 @@ class Subtitle(Subtitle_):
         ge = self.guess_encoding()
         logger.debug("Encoding change requested: to %s, from %s", encoding, ge)
         if encoding == ge:
-            logger.debug("Encoding already is %s", encoding)
             return
 
         unicontent = self.text
+        logger.debug("Changing encoding: to %s, from %s", encoding, ge)
         self.content = unicontent.encode(encoding)
         self._guessed_encoding = encoding
 
@@ -109,7 +109,6 @@ class Subtitle(Subtitle_):
 
         """
         if self._guessed_encoding:
-            logger.debug('Encoding already guessed: %s', self._guessed_encoding)
             return self._guessed_encoding
 
         logger.info('Guessing encoding for language %s', self.language)
