@@ -131,7 +131,10 @@ class SZProviderPool(ProviderPool):
         :rtype: list of :class:`~subliminal.subtitle.Subtitle` or None
 
         """
-        languages_search_base = self.language_hook(provider)
+        if self.language_hook:
+            languages_search_base = self.language_hook(provider)
+        else:
+            languages_search_base = languages
 
         # check video validity
         if not provider_registry[provider].check(video):
