@@ -2,6 +2,7 @@
 
 import re
 
+from subzero.language import Language
 from subzero.modification.mods import SubtitleTextModification, empty_line_post_processors, SubtitleModification
 from subzero.modification.processors.string_processor import StringProcessor
 from subzero.modification.processors.re_processor import NReProcessor
@@ -113,6 +114,12 @@ class ReverseRTL(SubtitleModification):
     description = "Reverse punctuation in RTL languages"
     exclusive = True
     order = 50
+    languages = [Language("heb")]
+
+    long_description = """\
+    Some playback devices don't properly handle right-to-left markers for punctuation. Physically swap punctuation.
+    Applicable to languages: hebrew
+    """
 
     processors = [
         # new? (?u)(^([\s.!?]*)(.+?)(\s*)(-?\s*)$); \5\4\3\2

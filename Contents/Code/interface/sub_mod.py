@@ -20,6 +20,7 @@ def SubtitleModificationsMenu(**kwargs):
     rating_key = kwargs["rating_key"]
     part_id = kwargs["part_id"]
     language = kwargs["language"]
+    lang_instance = Language.fromietf(language)
     current_sub, stored_subs, storage = get_current_sub(rating_key, part_id, language)
     kwargs.pop("randomize")
 
@@ -40,6 +41,9 @@ def SubtitleModificationsMenu(**kwargs):
             continue
 
         if mod.exclusive and identifier in current_mods:
+            continue
+
+        if mod.languages and lang_instance not in mod.languages:
             continue
 
         oc.add(DirectoryObject(

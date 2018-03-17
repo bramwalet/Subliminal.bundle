@@ -20,6 +20,7 @@ class SubtitleModification(object):
     pre_processors = []
     processors = []
     post_processors = []
+    languages = []
 
     def __init__(self, parent):
         return

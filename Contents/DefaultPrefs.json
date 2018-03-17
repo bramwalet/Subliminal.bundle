@@ -482,6 +482,12 @@
     "default": "true"
   },
   {
+    "id": "subtitles.reverse_rtl",
+    "label": "Reverse punctuation in RTL languages (heb)",
+    "type": "bool",
+    "default": "false"
+  },
+  {
     "id": "subtitles.colors",
     "label": "Change colors of subtitles to",
     "type": "enum",

@@ -88,6 +88,13 @@ class SubtitleModifications(object):
             if identifier in final_mods and mod_cls.exclusive:
                 final_mods.pop(identifier)
 
+            # language-specific mod, check validity
+            if mod_cls.languages and self.language not in mod_cls.languages:
+                if self.debug:
+                    logger.debug("Skipping %s, because %r is not a valid language for this mod",
+                                 identifier, self.language)
+                continue
+
             # merge args of duplicate mods if possible
             elif identifier in final_mods and mod_cls.args_mergeable:
                 final_mods[identifier] = mod_cls.merge_args(final_mods[identifier], args)
