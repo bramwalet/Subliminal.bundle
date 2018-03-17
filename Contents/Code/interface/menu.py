@@ -175,7 +175,7 @@ def multi_extract_embedded(stream_list, refresh=False, with_mods=False):
 
         extract_embedded_sub(rating_key=plexapi_item.rating_key, part_id=plexapi_part.id,
                              plex_item=plexapi_item, part=plexapi_part, scanned_videos=video_part_map,
-                             stream_index=stream_index,
+                             stream_index=stream_index, set_current=set_current,
                              language=language, with_mods=with_mods, refresh=refresh)
 
 
