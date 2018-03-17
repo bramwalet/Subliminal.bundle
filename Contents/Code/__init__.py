@@ -118,11 +118,15 @@ def agent_extract_embedded(video_part_map):
     try:
         subtitle_storage = get_subtitle_storage()
 
-        for video, part in video_part_map.iteritems():
+        to_extract = []
+        item_count = 0
+
+        for video, part_info in video_part_map.iteritems():
             item = video.plexapi_metadata["item"]
             stored_subs = subtitle_storage.load_or_new(item)
 
             for part in get_all_parts(item):
+                item_count = item_count + 1
                 for requested_language in config.lang_list:
                     embedded_subs = stored_subs.get_by_provider(part.id, requested_language, "embedded")
                     current = stored_subs.get_any(part.id, requested_language)
@@ -133,16 +137,17 @@ def agent_extract_embedded(video_part_map):
                         if stream_data:
                             stream = stream_data[0]["stream"]
 
-                            extract_embedded_sub(rating_key=item.rating_key, part_id=part.id,
-                                                 stream_index=str(stream.index),
-                                                 language=str(requested_language), with_mods=True, refresh=False,
-                                                 set_current=not current)
+                            to_extract.append((item.rating_key, part.id, str(stream.index), str(requested_language),
+                                               not current))
 
                             if not cast_bool(Prefs["subtitles.search_after_autoextract"]):
                                 video.subtitle_languages.update({requested_language})
                     else:
                         Log.Debug("Skipping embedded subtitle extraction for %s, already got %r from %s",
                                   item.rating_key, requested_language, embedded_subs[0].id)
+        if to_extract:
+            Log.Info("Triggering extraction of %d embedded subtitles of %d items", len(to_extract), item_count)
+            Thread.Create(multi_extract_embedded, stream_list=to_extract, refresh=True, with_mods=True)
     except:
         Log.Error("Something went wrong when auto-extracting subtitles, continuing: %s", traceback.format_exc())
 

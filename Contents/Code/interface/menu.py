@@ -169,6 +169,13 @@ def SeasonExtractEmbedded(**kwargs):
     return MetadataMenu(randomize=timestamp(), title=item_title, **kwargs)
 
 
+def multi_extract_embedded(stream_list, refresh=False, with_mods=False):
+    for rating_key, part_id, stream_index, language, set_current in stream_list:
+        extract_embedded_sub(rating_key=rating_key, part_id=part_id,
+                             stream_index=stream_index,
+                             language=language, with_mods=with_mods, refresh=refresh)
+
+
 def season_extract_embedded(rating_key, requested_language, with_mods=False):
     # get stored subtitle info for item id
     subtitle_storage = get_subtitle_storage()
