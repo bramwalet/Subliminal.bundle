@@ -160,15 +160,18 @@ def extract_embedded_sub(**kwargs):
     refresh = kwargs.pop("refresh", True)
     set_current = kwargs.pop("set_current", True)
 
-    plex_item = get_item(rating_key)
+    plex_item = kwargs.pop("plex_item", get_item(rating_key))
     item_type = get_item_kind_from_item(plex_item)
-    part = get_part(plex_item, part_id)
+    part = kwargs.pop("part", get_part(plex_item, part_id))
+    scanned_videos = kwargs.pop("scanned_videos", None)
 
     any_successful = False
 
     if part:
-        metadata = get_plex_metadata(rating_key, part_id, item_type, plex_item=plex_item)
-        scanned_parts = scan_videos([metadata], ignore_all=True, skip_hashing=True)
+        if not scanned_videos:
+            metadata = get_plex_metadata(rating_key, part_id, item_type, plex_item=plex_item)
+            scanned_videos = scan_videos([metadata], ignore_all=True, skip_hashing=True)
+
         for stream in part.streams:
             # subtitle stream
             if str(stream.index) == stream_index:
@@ -198,7 +201,7 @@ def extract_embedded_sub(**kwargs):
                     subtitle.set_encoding("utf-8")
 
                     # fixme: speedup video; only video.name is needed
-                    save_successful = save_subtitles(scanned_parts, {scanned_parts.keys()[0]: [subtitle]}, mode="m",
+                    save_successful = save_subtitles(scanned_videos, {scanned_videos.keys()[0]: [subtitle]}, mode="m",
                                                      set_current=set_current, is_forced=is_forced)
                     set_refresh_menu_state(None)
 

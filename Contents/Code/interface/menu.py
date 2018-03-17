@@ -170,8 +170,11 @@ def SeasonExtractEmbedded(**kwargs):
 
 
 def multi_extract_embedded(stream_list, refresh=False, with_mods=False):
-    for rating_key, part_id, stream_index, language, set_current in stream_list:
-        extract_embedded_sub(rating_key=rating_key, part_id=part_id,
+    for video_part_map, plexapi_part, stream_index, language, set_current in stream_list:
+        plexapi_item = video_part_map.keys()[0].plexapi_metadata["item"]
+
+        extract_embedded_sub(rating_key=plexapi_item.rating_key, part_id=plexapi_part.id,
+                             plex_item=plexapi_item, part=plexapi_part, scanned_videos=video_part_map,
                              stream_index=stream_index,
                              language=language, with_mods=with_mods, refresh=refresh)
 
