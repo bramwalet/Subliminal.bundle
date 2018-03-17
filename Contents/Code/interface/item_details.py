@@ -1,7 +1,5 @@
 # coding=utf-8
 import os
-import subprocess
-import traceback
 
 from subzero.language import Language
 
@@ -12,7 +10,7 @@ from menu_helpers import debounce, SubFolderObjectContainer, default_thumb, add_
 from refresh_item import RefreshItem
 from subzero.constants import PREFIX
 from support.config import config, TEXT_SUBTITLE_EXTS
-from support.helpers import timestamp, df, get_language, display_language, quote_args, get_language_from_stream
+from support.helpers import timestamp, df, get_language, display_language, get_language_from_stream
 from support.items import get_item_kind_from_rating_key, get_item, get_current_sub, get_item_title, save_stored_sub
 from support.plex_media import get_plex_metadata, get_part, get_embedded_subtitle_streams
 from support.scanning import scan_videos
