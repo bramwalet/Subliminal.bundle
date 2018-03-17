@@ -171,14 +171,21 @@ def SeasonExtractEmbedded(**kwargs):
     return MetadataMenu(randomize=timestamp(), title=item_title, **kwargs)
 
 
-def multi_extract_embedded(stream_list, refresh=False, with_mods=False):
-    for video_part_map, plexapi_part, stream_index, language, set_current in stream_list:
-        plexapi_item = video_part_map.keys()[0].plexapi_metadata["item"]
+def multi_extract_embedded(stream_list, refresh=False, with_mods=False, single_thread=True):
+    def execute():
+        for video_part_map, plexapi_part, stream_index, language, set_current in stream_list:
+            plexapi_item = video_part_map.keys()[0].plexapi_metadata["item"]
 
-        extract_embedded_sub(rating_key=plexapi_item.rating_key, part_id=plexapi_part.id,
-                             plex_item=plexapi_item, part=plexapi_part, scanned_videos=video_part_map,
-                             stream_index=stream_index, set_current=set_current,
-                             language=language, with_mods=with_mods, refresh=refresh)
+            extract_embedded_sub(rating_key=plexapi_item.rating_key, part_id=plexapi_part.id,
+                                 plex_item=plexapi_item, part=plexapi_part, scanned_videos=video_part_map,
+                                 stream_index=stream_index, set_current=set_current,
+                                 language=language, with_mods=with_mods, refresh=refresh)
+
+    if single_thread:
+        with Thread.Lock(key="extract_embedded"):
+            execute()
+    else:
+        execute()
 
 
 def season_extract_embedded(rating_key, requested_language, with_mods=False, force=False):

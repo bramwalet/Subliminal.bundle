@@ -147,7 +147,8 @@ def agent_extract_embedded(video_part_map):
                                   plexapi_item.rating_key, requested_language, embedded_subs[0].id)
         if to_extract:
             Log.Info("Triggering extraction of %d embedded subtitles of %d items", len(to_extract), item_count)
-            Thread.Create(multi_extract_embedded, stream_list=to_extract, refresh=True, with_mods=True)
+            Thread.Create(multi_extract_embedded, stream_list=to_extract, refresh=True, with_mods=True,
+                          single_thread=not config.advanced.auto_extract_multithread)
     except:
         Log.Error("Something went wrong when auto-extracting subtitles, continuing: %s", traceback.format_exc())
 
