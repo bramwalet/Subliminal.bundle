@@ -309,7 +309,7 @@ class Subtitle(Subtitle_):
         :return: string 
         """
         if not self.mods:
-            return fix_text(self.content.decode("utf-8"), **ftfy_defaults)
+            return fix_text(self.content.decode("utf-8"), **ftfy_defaults).encode(encoding="utf-8")
 
         submods = SubtitleModifications(debug=debug)
         if submods.load(content=self.text, language=self.language):

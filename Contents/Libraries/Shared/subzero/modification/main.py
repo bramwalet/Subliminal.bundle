@@ -139,7 +139,8 @@ class SubtitleModifications(object):
             if self.debug:
                 logger.debug("Line mods took %ss", time.time() - line_mods_start)
 
-        self.f.events = new_entries
+            if new_entries:
+                self.f.events = new_entries
 
         # apply last file mods
         if non_line_mods:
