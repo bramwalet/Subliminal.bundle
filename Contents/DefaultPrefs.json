@@ -471,7 +471,7 @@
   },
   {
     "id": "subtitles.fix_common",
-    "label": "Fix common whitespace/punctuation issues in subtitles",
+    "label": "Fix common issues in subtitles",
     "type": "bool",
     "default": "true"
   },
