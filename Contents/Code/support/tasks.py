@@ -385,11 +385,12 @@ class SearchAllRecentlyAddedMissing(Task):
         try:
             for fn in recent_files:
                 stored_subs = subtitle_storage.load(filename=fn)
-                video_id = stored_subs.video_id
                 if not stored_subs:
-                    Log.Debug("Skipping item %s because storage is empty", video_id)
+                    Log.Debug("Skipping item %s because storage is empty", fn)
                     skip_item()
                     continue
+
+                video_id = stored_subs.video_id
 
                 # added_date <= max_search_days?
                 if stored_subs.added_at + datetime.timedelta(days=max_search_days) <= now:
