@@ -581,6 +581,7 @@ class Config(object):
                      'hosszupuska': cast_bool(Prefs['provider.hosszupuska.enabled']),
                      'shooter': False,
                      'subscene': cast_bool(Prefs['provider.subscene.enabled']),
+                     'argenteam': cast_bool(Prefs['provider.argenteam.enabled']),
                      'subscenter': False,
                      }
 
@@ -599,6 +600,7 @@ class Config(object):
             providers["shooter"] = False
             providers["hosszupuska"] = False
             providers["titlovi"] = False
+            providers["argenteam"] = False
 
         # advanced settings
         if media_type and self.advanced.providers:

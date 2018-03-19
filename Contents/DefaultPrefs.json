@@ -387,6 +387,12 @@
     "default": "false"
   },
   {
+    "id": "provider.argenteam.enabled",
+    "label": "Provider: Enable aRGENTeaM (Spanish)",
+    "type": "bool",
+    "default": "false"
+  },
+  {
     "id": "providers.multithreading",
     "label": "Search enabled providers simultaneously (multithreading)",
     "type": "bool",
