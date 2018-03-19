@@ -1,9 +1,10 @@
 # coding=utf-8
 import logging
+import os
 
 from subliminal.providers.argenteam import ArgenteamProvider as _ArgenteamProvider, \
     ArgenteamSubtitle as _ArgenteamSubtitle, json, ZipFile, io, sanitize, sanitize_release_group, \
-    get_equivalent_release_groups, guess_matches, guessit
+    get_equivalent_release_groups, guess_matches, guessit, Session
 from subliminal_patch.providers.mixins import ProviderSubtitleArchiveMixin
 
 logger = logging.getLogger(__name__)
@@ -94,6 +95,13 @@ class ArgenteamProvider(_ArgenteamProvider, ProviderSubtitleArchiveMixin):
     subtitle_class = ArgenteamSubtitle
     hearing_impaired_verifiable = False
     language_list = list(_ArgenteamProvider.languages)
+
+    def __init__(self):
+        self.session = None
+
+    def initialize(self):
+        self.session = Session()
+        self.session.headers = {'User-Agent': os.environ.get("SZ_USER_AGENT", "Sub-Zero/2")}
 
     def search_episode_id(self, series, season, episode):
         """Search the episode id from the `series`, `season` and `episode`.
