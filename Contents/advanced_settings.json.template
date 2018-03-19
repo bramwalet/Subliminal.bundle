@@ -19,6 +19,11 @@ Don't expect support if you mess this up.
     // multiple agent/metadata update calls. Refreshing a season or a full TV show will still only use one thread.
     "auto_extract_multithread": false,
 
+    // when the find better subtitles task finds a subtitle for an item that has an active extracted embedded subtitle
+    // set, what should be the minimum score that subtitle has to have in order to be considered better?
+    "find_better_as_extracted_tv_score": 352,
+    "find_better_as_extracted_movie_score": 82,
+
     // per-provider-config
     "providers": {
         // enabled_for: specifies which media type to enable the provider for. does not override global/throttled
