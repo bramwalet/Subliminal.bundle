@@ -1,7 +1,6 @@
 # coding=utf-8
 import logging
 import os
-import json
 import io
 
 from zipfile import ZipFile
@@ -166,7 +165,7 @@ class ArgenteamProvider(Provider, ProviderSubtitleArchiveMixin):
         logger.info('Searching id for %r', query)
         r = self.session.get(self.API_URL + 'search', params={'q': query}, timeout=10)
         r.raise_for_status()
-        results = json.loads(r.text)
+        results = r.json()
         match_id = None
         if results['total'] >= 1:
             for result in results["results"]:
@@ -197,7 +196,7 @@ class ArgenteamProvider(Provider, ProviderSubtitleArchiveMixin):
         response = self.session.get(url, params={'id': argenteam_id}, timeout=10)
 
         response.raise_for_status()
-        content = json.loads(response.text)
+        content = response.json()
 
         imdb_id = year = None
         returned_title = title
