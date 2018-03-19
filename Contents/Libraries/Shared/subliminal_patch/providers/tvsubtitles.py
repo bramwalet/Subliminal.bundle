@@ -97,13 +97,7 @@ class TVsubtitlesProvider(_TVsubtitlesProvider):
 
         return episode_ids
 
-    def query(self, series, season, episode, year=None):
-        # search the show id
-        show_id = self.search_show_id(series, year)
-        if show_id is None:
-            logger.info('No show id found for %r (%r)', series, {'year': year})
-            return []
-
+    def query(self, show_id, series, season, episode, year=None):
         # get the episode ids
         episode_ids = self.get_episode_ids(show_id, season)
         # Provider doesn't store multi episode information
