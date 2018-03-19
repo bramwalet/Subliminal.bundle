@@ -61,6 +61,9 @@ Don't expect support if you mess this up.
         },
         "hosszupuska": {
             "enabled_for": ["series"],
+        },
+        "argenteam": {
+            "enabled_for": ["series", "movies"],
         }
     }
 }

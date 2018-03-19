@@ -388,7 +388,7 @@
   },
   {
     "id": "provider.argenteam.enabled",
-    "label": "Provider: Enable aRGENTeaM (TV shows, Spanish)",
+    "label": "Provider: Enable aRGENTeaM (Spanish)",
     "type": "bool",
     "default": "false"
   },
