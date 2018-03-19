@@ -1,32 +1,48 @@
 # coding=utf-8
 import logging
 import os
+import json
+import io
 
-from subliminal.providers.argenteam import ArgenteamProvider as _ArgenteamProvider, \
-    ArgenteamSubtitle as _ArgenteamSubtitle, json, ZipFile, io, sanitize, sanitize_release_group, \
-    get_equivalent_release_groups, guess_matches, guessit, Session
+from zipfile import ZipFile
+from guessit import guessit
+from requests import Session
+from subliminal import Episode
+from subliminal.score import get_equivalent_release_groups
+from subliminal.utils import sanitize_release_group, sanitize
+from subliminal_patch.providers import Provider
+from subliminal_patch.subtitle import Subtitle, guess_matches
 from subliminal_patch.providers.mixins import ProviderSubtitleArchiveMixin
+from subzero.language import Language
 
 logger = logging.getLogger(__name__)
 
 
 # fixme: add movie support
 
-class ArgenteamSubtitle(_ArgenteamSubtitle):
+class ArgenteamSubtitle(Subtitle):
     hearing_impaired_verifiable = False
     _release_info = None
 
     def __init__(self, language, download_link, series, season, episode, release, version, source, video_codec, tvdb_id,
                  asked_for_episode=None, asked_for_release_group=None, *args, **kwargs):
-        super(ArgenteamSubtitle, self).__init__(language, download_link, series, season, episode, release, version,
-                                                *args, **kwargs)
-
+        super(ArgenteamSubtitle, self).__init__(language, download_link, *args, **kwargs)
+        self.download_link = download_link
+        self.series = series
+        self.season = season
+        self.episode = episode
+        self.release = release
+        self.version = version
         self.asked_for_release_group = asked_for_release_group
         self.asked_for_episode = asked_for_episode
         self.matches = None
         self.format = source
         self.video_codec = video_codec
         self.tvdb_id = tvdb_id
+
+    @property
+    def id(self):
+        return self.download_link
 
     @property
     def release_info(self):
@@ -91,10 +107,14 @@ class ArgenteamSubtitle(_ArgenteamSubtitle):
         return matches
 
 
-class ArgenteamProvider(_ArgenteamProvider, ProviderSubtitleArchiveMixin):
+class ArgenteamProvider(Provider, ProviderSubtitleArchiveMixin):
+    provider_name = 'argenteam'
+    languages = {Language.fromalpha2(l) for l in ['es']}
+    video_types = (Episode,)
+    API_URL = "http://argenteam.net/api/v1/"
     subtitle_class = ArgenteamSubtitle
     hearing_impaired_verifiable = False
-    language_list = list(_ArgenteamProvider.languages)
+    language_list = list(languages)
 
     def __init__(self):
         self.session = None
@@ -102,6 +122,9 @@ class ArgenteamProvider(_ArgenteamProvider, ProviderSubtitleArchiveMixin):
     def initialize(self):
         self.session = Session()
         self.session.headers = {'User-Agent': os.environ.get("SZ_USER_AGENT", "Sub-Zero/2")}
+
+    def terminate(self):
+        self.session.close()
 
     def search_episode_id(self, series, season, episode):
         """Search the episode id from the `series`, `season` and `episode`.
