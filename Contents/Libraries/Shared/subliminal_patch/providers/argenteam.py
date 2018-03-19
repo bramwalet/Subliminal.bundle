@@ -13,8 +13,9 @@ logger = logging.getLogger(__name__)
 
 class ArgenteamSubtitle(_ArgenteamSubtitle):
     hearing_impaired_verifiable = False
+    _release_info = None
 
-    def __init__(self, language, download_link, series, season, episode, release, version, source, tvdb_id,
+    def __init__(self, language, download_link, series, season, episode, release, version, source, video_codec, tvdb_id,
                  asked_for_episode=None, asked_for_release_group=None, *args, **kwargs):
         super(ArgenteamSubtitle, self).__init__(language, download_link, series, season, episode, release, version,
                                                 *args, **kwargs)
@@ -24,12 +25,28 @@ class ArgenteamSubtitle(_ArgenteamSubtitle):
         else:
             rls_base = source or version
 
-        self.release_info = rls_base + ("-"+release if release else "")
         self.asked_for_release_group = asked_for_release_group
         self.asked_for_episode = asked_for_episode
         self.matches = None
         self.format = source
+        self.video_codec = video_codec
         self.tvdb_id = tvdb_id
+
+    @property
+    def release_info(self):
+        if self._release_info:
+            return self._release_info
+
+        combine_dot = ("format", "version", "video_codec")
+
+        combine = []
+        for attr in combine_dot:
+            value = getattr(self, attr)
+            if value:
+                combine.append(value)
+
+        self._release_info = u".".join(combine) + ("-"+self.release if self.release else "")
+        return self._release_info
 
     def __repr__(self):
         return '<%s %r [%s]>' % (
@@ -76,7 +93,7 @@ class ArgenteamSubtitle(_ArgenteamSubtitle):
         if video.tvdb_id and str(self.tvdb_id) == str(video.tvdb_id):
             matches.add('tvdb_id')
 
-        matches |= guess_matches(video, guessit(self.version), partial=True)
+        matches |= guess_matches(video, guessit(self.release_info), partial=True)
         return matches
 
 
@@ -84,6 +101,31 @@ class ArgenteamProvider(_ArgenteamProvider, ProviderSubtitleArchiveMixin):
     subtitle_class = ArgenteamSubtitle
     hearing_impaired_verifiable = False
     language_list = list(_ArgenteamProvider.languages)
+
+    def search_episode_id(self, series, season, episode):
+        """Search the episode id from the `series`, `season` and `episode`.
+
+        :param str series: series of the episode.
+        :param int season: season of the episode.
+        :param int episode: episode number.
+        :return: the episode id, if any.
+        :rtype: int or None
+
+        """
+        # make the search
+        query = '%s S%#02dE%#02d' % (series, season, episode)
+        logger.info('Searching episode id for %r', query)
+        r = self.session.get(self.API_URL + 'search', params={'q': query}, timeout=10)
+        r.raise_for_status()
+        results = json.loads(r.text)
+        episode_id = None
+        if results['total'] == 1:
+            if results['results'][0]['type'] == "episode":
+                episode_id = results['results'][0]['id']
+        else:
+            logger.error('No episode id found for %r', series)
+
+        return episode_id
 
     def query(self, series, video, season, episode):
 
@@ -99,7 +141,7 @@ class ArgenteamProvider(_ArgenteamProvider, ProviderSubtitleArchiveMixin):
         for r in content['releases']:
             for s in r['subtitles']:
                 sub = ArgenteamSubtitle(language, s['uri'], series, season, episode, r['team'], r['tags'], r['source'],
-                                        content["tvdb"],
+                                        r['codec'], content["tvdb"],
                                         asked_for_release_group=video.release_group,
                                         asked_for_episode=episode
                                         )
