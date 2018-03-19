@@ -83,7 +83,6 @@ class ArgenteamSubtitle(Subtitle):
                 matches.add('tvdb_id')
 
         elif isinstance(video, Movie) and self.movie_kind == 'movie':
-            print self.imdb_id, video.imdb_id
             # title
             if video.title and (sanitize(self.title) in (
                      sanitize(name) for name in [video.title] + video.alternative_titles)):
