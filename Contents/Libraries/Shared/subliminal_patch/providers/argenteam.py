@@ -20,11 +20,6 @@ class ArgenteamSubtitle(_ArgenteamSubtitle):
         super(ArgenteamSubtitle, self).__init__(language, download_link, series, season, episode, release, version,
                                                 *args, **kwargs)
 
-        if source and version:
-            rls_base = u".".join([source, version])
-        else:
-            rls_base = source or version
-
         self.asked_for_release_group = asked_for_release_group
         self.asked_for_episode = asked_for_episode
         self.matches = None
@@ -37,15 +32,13 @@ class ArgenteamSubtitle(_ArgenteamSubtitle):
         if self._release_info:
             return self._release_info
 
-        combine_dot = ("format", "version", "video_codec")
-
         combine = []
-        for attr in combine_dot:
+        for attr in ("format", "version", "video_codec"):
             value = getattr(self, attr)
             if value:
                 combine.append(value)
 
-        self._release_info = u".".join(combine) + ("-"+self.release if self.release else "")
+        self._release_info = u".".join(combine) + (u"-"+self.release if self.release else "")
         return self._release_info
 
     def __repr__(self):
