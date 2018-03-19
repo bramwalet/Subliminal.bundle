@@ -167,13 +167,8 @@ class Addic7edProvider(_Addic7edProvider):
             soup.decompose()
             soup = None
 
-    def query(self, series, season, year=None, country=None):
+    def query(self, show_id, series, season, year=None, country=None):
         # patch: fix logging
-        # get the show id
-        show_id = self.get_show_id(series, year, country)
-        if show_id is None:
-            logger.info('No show id found for %r (%r)', series, {'year': year, 'country': country})
-            return []
 
         # get the page of the season of the show
         logger.info('Getting the page of show id %d, season %d', show_id, season)
