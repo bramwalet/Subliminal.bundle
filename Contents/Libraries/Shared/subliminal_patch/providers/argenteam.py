@@ -150,7 +150,7 @@ class ArgenteamProvider(Provider, ProviderSubtitleArchiveMixin):
     def terminate(self):
         self.session.close()
 
-    def search_ids(self, title, season=None, episode=None):
+    def search_ids(self, title, year=None, season=None, episode=None, titles=None):
         """Search movie or episode id from the `title`, `season` and `episode`.
 
         :param str title: series of the episode or movie name
@@ -162,6 +162,8 @@ class ArgenteamProvider(Provider, ProviderSubtitleArchiveMixin):
         """
         # make the search
         query = title
+        titles = titles or []
+
         is_episode = False
         if season and episode:
             is_episode = True
@@ -174,14 +176,23 @@ class ArgenteamProvider(Provider, ProviderSubtitleArchiveMixin):
         match_ids = []
         if results['total'] >= 1:
             for result in results["results"]:
-                if (result['type'] == "episode" and is_episode) or (result['type'] == "movie" and not is_episode):
-                    match_ids.append(result['id'])
+                if (result['type'] == "episode" and not is_episode) or (result['type'] == "movie" and is_episode):
+                    continue
+
+                # advanced title check in case of multiple results
+                if results['total'] > 1:
+                    if not is_episode and year:
+                        if result["title"] and not (sanitize(result["title"]) in (u"%s %s" % (sanitize(name), year)
+                                                                                  for name in titles)):
+                            continue
+
+                match_ids.append(result['id'])
         else:
             logger.error('No episode id found for %r', query)
 
         return match_ids
 
-    def query(self, title, video):
+    def query(self, title, video, titles=None):
         is_episode = isinstance(video, Episode)
         season = episode = None
         url = self.API_URL + 'movie'
@@ -189,10 +200,10 @@ class ArgenteamProvider(Provider, ProviderSubtitleArchiveMixin):
             season = video.season
             episode = video.episode
             url = self.API_URL + 'episode'
-            argenteam_ids = self.search_ids(title, season, episode)
+            argenteam_ids = self.search_ids(title, year=video.year, season=season, episode=episode, titles=titles)
 
         else:
-            argenteam_ids = self.search_ids(title)
+            argenteam_ids = self.search_ids(title, year=video.year, titles=titles)
 
         if not argenteam_ids:
             return []
@@ -237,7 +248,7 @@ class ArgenteamProvider(Provider, ProviderSubtitleArchiveMixin):
         has_multiple_titles = len(titles) > 1
 
         for title in titles:
-            subs = self.query(title, video)
+            subs = self.query(title, video, titles=titles)
             if subs:
                 return subs
 
