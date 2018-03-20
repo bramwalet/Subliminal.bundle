@@ -193,7 +193,7 @@ class ArgenteamProvider(Provider, ProviderSubtitleArchiveMixin):
         else:
             argenteam_ids = self.search_ids(title)
 
-        if argenteam_ids is None:
+        if not argenteam_ids:
             return []
 
         language = self.language_list[0]
