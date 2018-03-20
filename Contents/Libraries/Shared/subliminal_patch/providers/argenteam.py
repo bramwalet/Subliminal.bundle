@@ -41,6 +41,7 @@ class ArgenteamSubtitle(Subtitle):
         self.video_codec = video_codec
         self.tvdb_id = tvdb_id
         self.imdb_id = "tt" + imdb_id if imdb_id else None
+        self.releases = self.release_info
 
     @property
     def id(self):
