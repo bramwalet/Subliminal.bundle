@@ -138,7 +138,7 @@ class ArgenteamProvider(Provider, ProviderSubtitleArchiveMixin):
     hearing_impaired_verifiable = False
     language_list = list(languages)
 
-    multi_id_throttle = 2  # seconds
+    multi_result_throttle = 2  # seconds
 
     def __init__(self):
         self.session = None
@@ -247,7 +247,7 @@ class ArgenteamProvider(Provider, ProviderSubtitleArchiveMixin):
                     subtitles.append(sub)
 
             if has_multiple_ids:
-                time.sleep(self.multi_id_throttle)
+                time.sleep(self.multi_result_throttle)
 
         return subtitles
 
@@ -265,7 +265,7 @@ class ArgenteamProvider(Provider, ProviderSubtitleArchiveMixin):
                 return subs
 
             if has_multiple_titles:
-                time.sleep(self.multi_id_throttle)
+                time.sleep(self.multi_result_throttle)
 
         return []
 
