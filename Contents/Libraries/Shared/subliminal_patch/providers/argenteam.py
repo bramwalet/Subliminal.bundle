@@ -2,6 +2,7 @@
 import logging
 import os
 import io
+import time
 
 from zipfile import ZipFile
 from guessit import guessit
@@ -123,6 +124,7 @@ class ArgenteamSubtitle(Subtitle):
                     break
 
         matches |= guess_matches(video, guessit(self.release_info), partial=True)
+        self.matches = matches
         return matches
 
 
@@ -135,6 +137,8 @@ class ArgenteamProvider(Provider, ProviderSubtitleArchiveMixin):
     hearing_impaired_verifiable = False
     language_list = list(languages)
 
+    multi_id_throttle = 2  # seconds
+
     def __init__(self):
         self.session = None
 
@@ -145,7 +149,7 @@ class ArgenteamProvider(Provider, ProviderSubtitleArchiveMixin):
     def terminate(self):
         self.session.close()
 
-    def search_id(self, title, season=None, episode=None):
+    def search_ids(self, title, season=None, episode=None):
         """Search movie or episode id from the `title`, `season` and `episode`.
 
         :param str title: series of the episode or movie name
@@ -166,16 +170,15 @@ class ArgenteamProvider(Provider, ProviderSubtitleArchiveMixin):
         r = self.session.get(self.API_URL + 'search', params={'q': query}, timeout=10)
         r.raise_for_status()
         results = r.json()
-        match_id = None
+        match_ids = []
         if results['total'] >= 1:
             for result in results["results"]:
                 if (result['type'] == "episode" and is_episode) or (result['type'] == "movie" and not is_episode):
-                    match_id = result['id']
-                    break
+                    match_ids.append(result['id'])
         else:
             logger.error('No episode id found for %r', query)
 
-        return match_id
+        return match_ids
 
     def query(self, title, video):
         is_episode = isinstance(video, Episode)
@@ -185,37 +188,42 @@ class ArgenteamProvider(Provider, ProviderSubtitleArchiveMixin):
             season = video.season
             episode = video.episode
             url = self.API_URL + 'episode'
-            argenteam_id = self.search_id(title, season, episode)
+            argenteam_ids = self.search_ids(title, season, episode)
 
         else:
-            argenteam_id = self.search_id(title)
+            argenteam_ids = self.search_ids(title)
 
-        if argenteam_id is None:
+        if argenteam_ids is None:
             return []
-
-        response = self.session.get(url, params={'id': argenteam_id}, timeout=10)
-
-        response.raise_for_status()
-        content = response.json()
-
-        imdb_id = year = None
-        returned_title = title
-        if not is_episode and "info" in content:
-            imdb_id = content["info"].get("imdb")
-            year = content["info"].get("year")
-            returned_title = content["info"].get("title", title)
 
         language = self.language_list[0]
         subtitles = []
-        for r in content['releases']:
-            for s in r['subtitles']:
-                sub = ArgenteamSubtitle(language, s['uri'], "episode" if is_episode else "movie", returned_title,
-                                        season, episode, year, r.get('team'), r.get('tags'),
-                                        r.get('source'), r.get('codec'), content.get("tvdb"), imdb_id,
-                                        asked_for_release_group=video.release_group,
-                                        asked_for_episode=episode
-                                        )
-                subtitles.append(sub)
+        has_multiple_ids = len(argenteam_ids) > 1
+        for aid in argenteam_ids:
+            response = self.session.get(url, params={'id': aid}, timeout=10)
+
+            response.raise_for_status()
+            content = response.json()
+
+            imdb_id = year = None
+            returned_title = title
+            if not is_episode and "info" in content:
+                imdb_id = content["info"].get("imdb")
+                year = content["info"].get("year")
+                returned_title = content["info"].get("title", title)
+
+            for r in content['releases']:
+                for s in r['subtitles']:
+                    sub = ArgenteamSubtitle(language, s['uri'], "episode" if is_episode else "movie", returned_title,
+                                            season, episode, year, r.get('team'), r.get('tags'),
+                                            r.get('source'), r.get('codec'), content.get("tvdb"), imdb_id,
+                                            asked_for_release_group=video.release_group,
+                                            asked_for_episode=episode
+                                            )
+                    subtitles.append(sub)
+
+            if has_multiple_ids:
+                time.sleep(self.multi_id_throttle)
 
         return subtitles
 
@@ -225,10 +233,15 @@ class ArgenteamProvider(Provider, ProviderSubtitleArchiveMixin):
         else:
             titles = [video.title] + video.alternative_titles
 
+        has_multiple_titles = len(titles) > 1
+
         for title in titles:
             subs = self.query(title, video)
             if subs:
                 return subs
+
+            if has_multiple_titles:
+                time.sleep(self.multi_id_throttle)
 
         return []
 
