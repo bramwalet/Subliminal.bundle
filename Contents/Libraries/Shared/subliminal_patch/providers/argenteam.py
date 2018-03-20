@@ -172,7 +172,7 @@ class ArgenteamProvider(Provider, ProviderSubtitleArchiveMixin):
             is_episode = True
             query = '%s S%#02dE%#02d' % (title, season, episode)
 
-        logger.info(u'Searching id for %r', query)
+        logger.info(u'Searching %s ID for %r', "episode" if is_episode else "movie", query)
         r = self.session.get(self.API_URL + 'search', params={'q': query}, timeout=10)
         r.raise_for_status()
         results = r.json()
@@ -197,7 +197,7 @@ class ArgenteamProvider(Provider, ProviderSubtitleArchiveMixin):
 
                 match_ids.append(result['id'])
         else:
-            logger.error(u'No episode id found for %r', query)
+            logger.error(u'No episode ID found for %r', query)
 
         if match_ids:
             logger.debug(u"Found matching IDs: %s", ", ".join(str(id) for id in match_ids))
