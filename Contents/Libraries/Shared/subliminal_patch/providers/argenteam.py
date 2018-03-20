@@ -57,13 +57,13 @@ class ArgenteamSubtitle(Subtitle):
             if value:
                 combine.append(value)
 
-        self._release_info = u"%s%s." % (self.title, " (%s)" % self.year if self.year else "") + u".".join(combine) + \
-                             (u"-"+self.release if self.release else "")
+        self._release_info = u".".join(combine) + (u"-"+self.release if self.release else "")
         return self._release_info
 
     def __repr__(self):
         return '<%s %r [%s]>' % (
-            self.__class__.__name__, self.release_info, self.language)
+            self.__class__.__name__, u"%s%s." % (self.title, " (%s)" % self.year if self.year else "") +
+            self.release_info, self.language)
 
     def get_matches(self, video):
         matches = set()
