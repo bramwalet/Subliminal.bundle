@@ -90,7 +90,7 @@ class ArgenteamSubtitle(Subtitle):
                 matches.add('title')
 
             # imdb_id
-            if video.imdb_id and str(self.imdb_id) == str(video.imdb_id):
+            if video.imdb_id and self.imdb_id and str(self.imdb_id) == str(video.imdb_id):
                 matches.add('imdb_id')
 
             # year
