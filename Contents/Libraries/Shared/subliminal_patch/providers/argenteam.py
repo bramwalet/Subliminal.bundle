@@ -57,7 +57,8 @@ class ArgenteamSubtitle(Subtitle):
             if value:
                 combine.append(value)
 
-        self._release_info = u".".join(combine) + (u"-"+self.release if self.release else "")
+        self._release_info = u"%s%s." % (self.title, " (%s)" % self.year if self.year else "") + u".".join(combine) + \
+                             (u"-"+self.release if self.release else "")
         return self._release_info
 
     def __repr__(self):
