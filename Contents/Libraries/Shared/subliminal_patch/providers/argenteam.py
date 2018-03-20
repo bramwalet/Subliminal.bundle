@@ -159,8 +159,8 @@ class ArgenteamProvider(Provider, ProviderSubtitleArchiveMixin):
         :param str title: series of the episode or movie name
         :param int season: season of the episode.
         :param int episode: episode number.
-        :return: the id, if any.
-        :rtype: int or None
+        :return: list of ids
+        :rtype: list
 
         """
         # make the search
