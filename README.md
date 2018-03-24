@@ -77,7 +77,7 @@ Jacob K, Ninjouz, chopeta, fvb
 
 ## Changelog
 
-2.5.3.2408
+2.5.3.2414
 
 - core: expand user agent list
 - core: update subliminal to 4ad5d31
