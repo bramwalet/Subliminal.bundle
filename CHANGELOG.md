@@ -1,5 +1,33 @@
 
 
+2.5.0.2287
+
+- core: reduce main icon size
+- core: fix usage on NVIDIA SHIELD (hopefully, please report back), #441
+- core: add scandir fallback to listdir in case of badly configured locale in environment, #441, #440
+- core: get subtitles from archive: don't assume an episode match
+- core: get subtitles from archive: don't assume any attributes in guess
+- core: improve release group detection for drone/filebot/file_info refiners
+- core: fix language detection for embedded subtitle streams
+- core: support extraction of embedded mov_text subtitles in mp4 video files
+- refiners: drone: add http:// to url if not given
+- providers: opensubtitles: retry/reinitialize request when encountering ResponseNotReady
+- config: clarify subscene being only enabled for TV series by default
+- menu: when encountering permission errors when scanning media files, warn in the menu about them
+- submod: common: don't break -- addic7ed --
+- submod: common: remove lines that consist only of dash, underscore
+- submod: OCR: fix Ls = Is
+- submod: OCR: fix bad HI colons (ANNOUNCER; instead of ANNOUNCER:)
+- submod: common: fix lines consisting only of bad music symbols (*#¶ = ♪)
+- submod: HI: remove music-symbol-only-lines
+- submod: HI: be less aggressive about lines ending with a colon; please re-apply all your mods via advanced menu
+- submod: OCR: fix it'sjust, isn'tjust, Iam, Ican
+
+
+2.5.0.2247
+- fix ignoring by-hash-matched episodes
+
+
 2.5.0.2241
 
 - fix issue when removing crap from filenames to not accidentally remove release group #436
