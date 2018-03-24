@@ -20,8 +20,8 @@ class CommonFixes(SubtitleTextModification):
     """
 
     processors = [
-        # -- = ...
-        NReProcessor(re.compile(r'(?u)(\w|\b|\s|^)(-\s?-(?!\s*-))'), ur"\1—", name="CM_doubledash"),
+        # -- = em dash
+        NReProcessor(re.compile(r'(?u)(\w|\b|\s|^)(-\s?-{1,2})'), ur"\1—", name="CM_multidash"),
 
         # line = _/-/\s
         NReProcessor(re.compile(r'(?u)(^[-_\s.]*[-_\s.]+[-_\s.]*$)'), "", name="CM_non_word_only"),
@@ -46,6 +46,9 @@ class CommonFixes(SubtitleTextModification):
 
         # multiple spaces
         NReProcessor(re.compile(r'(?u)[\s]{2,}'), " ", name="CM_multiple_spaces"),
+
+        # more than 3 dots
+        NReProcessor(re.compile(r'(?u)\.{3,}'), "...", name="CM_dots"),
 
         # no space after starting dash
         NReProcessor(re.compile(r'(?u)^-(?![\s-])'), "- ", name="CM_dash_space"),
