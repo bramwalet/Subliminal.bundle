@@ -32,6 +32,10 @@ def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_ty
         part_id = str(part.id)
         video_id = str(video.id)
         plex_item = get_item(video_id)
+        if not plex_item:
+            Log.Warning("Plex item not found: %s", video_id)
+            continue
+
         metadata = video.plexapi_metadata
         title = get_title_for_video_metadata(metadata)
 
