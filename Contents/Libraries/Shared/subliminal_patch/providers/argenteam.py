@@ -62,8 +62,9 @@ class ArgenteamSubtitle(Subtitle):
         return self._release_info
 
     def __repr__(self):
+        ep_addon = (" S%02dE%02d" % (self.season, self.episode)) if self.episode else ""
         return '<%s %r [%s]>' % (
-            self.__class__.__name__, u"%s%s." % (self.title, " (%s)" % self.year if self.year else "") +
+            self.__class__.__name__, u"%s%s%s." % (self.title, " (%s)" % self.year if self.year else "", ep_addon) +
             self.release_info, self.language)
 
     def get_matches(self, video):
@@ -258,15 +259,12 @@ class ArgenteamProvider(Provider, ProviderSubtitleArchiveMixin):
         else:
             titles = [video.title] + video.alternative_titles
 
-        has_multiple_titles = len(titles) > 1
-
         for title in titles:
             subs = self.query(title, video, titles=titles)
             if subs:
                 return subs
 
-            if has_multiple_titles:
-                time.sleep(self.multi_result_throttle)
+            time.sleep(self.multi_result_throttle)
 
         return []
 
