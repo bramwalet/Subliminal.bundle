@@ -2,6 +2,7 @@
 
 import re
 
+from subzero.language import Language
 from subzero.modification.mods import SubtitleTextModification, empty_line_post_processors, SubtitleModification
 from subzero.modification.processors.string_processor import StringProcessor
 from subzero.modification.processors.re_processor import NReProcessor
@@ -19,11 +20,11 @@ class CommonFixes(SubtitleTextModification):
     """
 
     processors = [
-        # -- = ...
-        NReProcessor(re.compile(r'(?u)(^-\s?-[-\s]*)(?!.+\s?-\s?-[-\s]*)'), "", name="CM_doubledash"),
+        # -- = em dash
+        NReProcessor(re.compile(r'(?u)(\w|\b|\s|^)(-\s?-{1,2})'), ur"\1—", name="CM_multidash"),
 
         # line = _/-/\s
-        NReProcessor(re.compile(r'(?u)(^[-_\s]*[-_\s]+[-_\s]*$)'), "", name="CM_non_word_only"),
+        NReProcessor(re.compile(r'(?u)(^[-_\s.]*[-_\s.]+[-_\s.]*$)'), "", name="CM_non_word_only"),
 
         # fix music symbols
         NReProcessor(re.compile(ur'(?u)(^[*#¶\s]*[*#¶]+[*#¶\s]*$)'), u"♪", name="CM_music_symbols"),
@@ -45,6 +46,9 @@ class CommonFixes(SubtitleTextModification):
 
         # multiple spaces
         NReProcessor(re.compile(r'(?u)[\s]{2,}'), " ", name="CM_multiple_spaces"),
+
+        # more than 3 dots
+        NReProcessor(re.compile(r'(?u)\.{3,}'), "...", name="CM_dots"),
 
         # no space after starting dash
         NReProcessor(re.compile(r'(?u)^-(?![\s-])'), "- ", name="CM_dash_space"),
@@ -73,11 +77,11 @@ class CommonFixes(SubtitleTextModification):
         # countdowns otherwise); don't break up ellipses
         NReProcessor(
             re.compile(r'(?u)(\b[0-9]+[0-9:\']*(?<!\.\.)\s+(?!\.\.)[0-9,.:\'\s]*(?=[0-9]+)[0-9,.:\'])'),
-            lambda match: match.group(1).replace(" ", ""),
+            lambda match: match.group(1).replace(" ", "") if match.group(1).count(" ") == 1 else match.group(1),
             name="CM_spaces_in_numbers"),
 
         # uppercase after dot
-        NReProcessor(re.compile(ur'(?u)((?:[^.\s])+\.\s+)([a-zà-ž])'),
+        NReProcessor(re.compile(ur'(?u)((?<!(?=\s*[A-ZÀ-Ž-_0-9.]\s*))(?:[^.\s])+\.\s+)([a-zà-ž])'),
                      lambda match: ur'%s%s' % (match.group(1), match.group(2).upper()), name="CM_uppercase_after_dot"),
 
         # remove double interpunction
@@ -112,12 +116,23 @@ class ReverseRTL(SubtitleModification):
     identifier = "reverse_rtl"
     description = "Reverse punctuation in RTL languages"
     exclusive = True
+    order = 50
+    languages = [Language("heb")]
+
+    long_description = """\
+    Some playback devices don't properly handle right-to-left markers for punctuation. Physically swap punctuation.
+    Applicable to languages: hebrew
+    """
 
     processors = [
-        NReProcessor(re.compile(ur"(?u)((?=(?<=\b|^)|(?<=\s))([.!?-]+)([^.!?-]+)(?=\b|$|\s))"), r"\3\2",
+        # new? (?u)(^([\s.!?]*)(.+?)(\s*)(-?\s*)$); \5\4\3\2
+        #NReProcessor(re.compile(ur"(?u)((?=(?<=\b|^)|(?<=\s))([.!?-]+)([^.!?-]+)(?=\b|$|\s))"), r"\3\2",
+        #             name="CM_RTL_reverse")
+        NReProcessor(re.compile(ur"(?u)(^([\s.!?]*)(.+?)(\s*)(-?\s*)$)"), r"\5\4\3\2",
                      name="CM_RTL_reverse")
     ]
 
 
 registry.register(CommonFixes)
 registry.register(RemoveTags)
+registry.register(ReverseRTL)

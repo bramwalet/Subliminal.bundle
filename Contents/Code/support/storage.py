@@ -32,6 +32,10 @@ def store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage_ty
         part_id = str(part.id)
         video_id = str(video.id)
         plex_item = get_item(video_id)
+        if not plex_item:
+            Log.Warning("Plex item not found: %s", video_id)
+            continue
+
         metadata = video.plexapi_metadata
         title = get_title_for_video_metadata(metadata)
 
@@ -127,7 +131,7 @@ def save_subtitles_to_file(subtitles, tags=None, forced_tag=None):
     return True
 
 
-def save_subtitles_to_metadata(videos, subtitles):
+def save_subtitles_to_metadata(videos, subtitles, is_forced=False):
     for video, video_subtitles in subtitles.items():
         mediaPart = videos[video]
         for subtitle in video_subtitles:
@@ -139,12 +143,13 @@ def save_subtitles_to_metadata(videos, subtitles):
                 mp = PMSMediaProxy(video.id).get_part(mediaPart.id)
             else:
                 mp = mediaPart
-            mp.subtitles[Locale.Language.Match(subtitle.language.alpha2)][subtitle.id] = Proxy.Media(content, ext="srt")
+            pm = Proxy.Media(content, ext="srt", forced="1" if is_forced else None)
+            mp.subtitles[Locale.Language.Match(subtitle.language.alpha2)][subtitle.id] = pm
     return True
 
 
 def save_subtitles(scanned_video_part_map, downloaded_subtitles, mode="a", bare_save=False, mods=None,
-                   set_current=True):
+                   set_current=True, is_forced=False):
     """
      
     :param set_current: save the subtitle as the current one
@@ -179,7 +184,7 @@ def save_subtitles(scanned_video_part_map, downloaded_subtitles, mode="a", bare_
         if save_to_fs:
             try:
                 Log.Debug("Using filesystem as subtitle storage")
-                save_subtitles_to_file(downloaded_subtitles)
+                save_subtitles_to_file(downloaded_subtitles, forced_tag=is_forced)
             except OSError:
                 if cast_bool(Prefs["subtitles.save.metadata_fallback"]):
                     meta_fallback = True
@@ -194,7 +199,8 @@ def save_subtitles(scanned_video_part_map, downloaded_subtitles, mode="a", bare_
                 Log.Debug("Using metadata as subtitle storage, because filesystem storage failed")
             else:
                 Log.Debug("Using metadata as subtitle storage")
-            save_successful = save_subtitles_to_metadata(scanned_video_part_map, downloaded_subtitles)
+            save_successful = save_subtitles_to_metadata(scanned_video_part_map, downloaded_subtitles,
+                                                         is_forced=is_forced)
 
         if not bare_save and save_successful and config.notify_executable:
             notify_executable(config.notify_executable, scanned_video_part_map, downloaded_subtitles, storage)

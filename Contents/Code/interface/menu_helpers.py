@@ -8,7 +8,7 @@ import os
 from func import enable_channel_wrapper
 from subzero.language import Language
 from support.items import get_kind, get_item_thumb, get_item, get_item_kind_from_item, refresh_item
-from support.helpers import get_video_display_title, pad_title, display_language, quote_args
+from support.helpers import get_video_display_title, pad_title, display_language, quote_args, is_stream_forced
 from support.ignore import ignore_list
 from support.lib import get_intent
 from support.config import config
@@ -160,24 +160,31 @@ def extract_embedded_sub(**kwargs):
     refresh = kwargs.pop("refresh", True)
     set_current = kwargs.pop("set_current", True)
 
-    plex_item = get_item(rating_key)
+    plex_item = kwargs.pop("plex_item", get_item(rating_key))
     item_type = get_item_kind_from_item(plex_item)
-    part = get_part(plex_item, part_id)
+    part = kwargs.pop("part", get_part(plex_item, part_id))
+    scanned_videos = kwargs.pop("scanned_videos", None)
+
+    any_successful = False
 
     if part:
-        metadata = get_plex_metadata(rating_key, part_id, item_type, plex_item=plex_item)
-        scanned_parts = scan_videos([metadata], ignore_all=True, skip_hashing=True)
+        if not scanned_videos:
+            metadata = get_plex_metadata(rating_key, part_id, item_type, plex_item=plex_item)
+            scanned_videos = scan_videos([metadata], ignore_all=True, skip_hashing=True)
+
         for stream in part.streams:
             # subtitle stream
             if str(stream.index) == stream_index:
-                forced = stream.forced
+                is_forced = is_stream_forced(stream)
                 bn = os.path.basename(part.file)
 
                 set_refresh_menu_state(u"Extracting subtitle %s of %s" % (stream_index, bn))
                 Log.Info(u"Extracting stream %s (%s) of %s", stream_index, display_language(language), bn)
 
+                out_codec = stream.codec if stream.codec != "mov_text" else "srt"
+
                 args = [
-                    config.plex_transcoder, "-i", part.file, "-map", "0:%s" % stream_index, "-f", "srt", "-"
+                    config.plex_transcoder, "-i", part.file, "-map", "0:%s" % stream_index, "-f", out_codec, "-"
                 ]
                 output = None
                 try:
@@ -194,12 +201,16 @@ def extract_embedded_sub(**kwargs):
                     subtitle.set_encoding("utf-8")
 
                     # fixme: speedup video; only video.name is needed
-                    save_successful = save_subtitles(scanned_parts, {scanned_parts.keys()[0]: [subtitle]}, mode="m",
-                                                     set_current=set_current)
+                    save_successful = save_subtitles(scanned_videos, {scanned_videos.keys()[0]: [subtitle]}, mode="m",
+                                                     set_current=set_current, is_forced=is_forced)
                     set_refresh_menu_state(None)
 
                     if save_successful and refresh:
                         refresh_item(rating_key)
+
+                    any_successful = True
+
+    return any_successful
 
 
 class SZObjectContainer(ObjectContainer):

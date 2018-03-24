@@ -14,7 +14,7 @@ def language_from_stream(l):
     for method in ("fromietf", "fromalpha3t", "fromalpha3b"):
         try:
             return getattr(Language, method)(l)
-        except LanguageError:
+        except (LanguageError, ValueError):
             pass
     raise LanguageError()
 

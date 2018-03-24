@@ -116,6 +116,7 @@ class Config(object):
     remove_tags = False
     fix_ocr = False
     fix_common = False
+    reverse_rtl = False
     colors = ""
     chmod = None
     forced_only = False
@@ -188,6 +189,7 @@ class Config(object):
         self.remove_tags = cast_bool(Prefs['subtitles.remove_tags'])
         self.fix_ocr = cast_bool(Prefs['subtitles.fix_ocr'])
         self.fix_common = cast_bool(Prefs['subtitles.fix_common'])
+        self.reverse_rtl = cast_bool(Prefs['subtitles.reverse_rtl'])
         self.colors = Prefs['subtitles.colors'] if Prefs['subtitles.colors'] != "don't change" else None
         self.chmod = self.check_chmod()
         self.exotic_ext = cast_bool(Prefs["subtitles.scan.exotic_ext"])
@@ -579,6 +581,7 @@ class Config(object):
                      'hosszupuska': cast_bool(Prefs['provider.hosszupuska.enabled']),
                      'shooter': False,
                      'subscene': cast_bool(Prefs['provider.subscene.enabled']),
+                     'argenteam': cast_bool(Prefs['provider.argenteam.enabled']),
                      'subscenter': False,
                      }
 
@@ -597,6 +600,7 @@ class Config(object):
             providers["shooter"] = False
             providers["hosszupuska"] = False
             providers["titlovi"] = False
+            providers["argenteam"] = False
 
         # advanced settings
         if media_type and self.advanced.providers:
@@ -634,7 +638,7 @@ class Config(object):
     def get_provider_settings(self):
         provider_settings = {'addic7ed': {'username': Prefs['provider.addic7ed.username'],
                                           'password': Prefs['provider.addic7ed.password'],
-                                          'use_random_agents': cast_bool(Prefs['provider.addic7ed.use_random_agents']),
+                                          'use_random_agents': cast_bool(Prefs['provider.addic7ed.use_random_agents1']),
                                           },
                              'opensubtitles': {'username': Prefs['provider.opensubtitles.username'],
                                                'password': Prefs['provider.opensubtitles.password'],
@@ -745,6 +749,8 @@ class Config(object):
             mods.append("common")
         if self.colors:
             mods.append("color(name=%s)" % self.colors)
+        if self.reverse_rtl:
+            mods.append("reverse_rtl")
 
         return mods
 
@@ -788,6 +794,11 @@ class Config(object):
         if os.path.isfile(fn):
             return fn
 
+        # look inside Resources folder as fallback, as well
+        fn = os.path.join(base_path, "Resources", "Plex Transcoder")
+        if os.path.isfile(fn):
+            return fn
+
     def parse_rename_mode(self):
         # fixme: exact_filenames should be determined via callback combined with info about the current video
         # (original_name)
@@ -828,6 +839,10 @@ class Config(object):
                     "api_key": Prefs["drone_api.radarr.api_key"]
                 }
                 self.exact_filenames = True
+
+    @property
+    def text_based_formats(self):
+        return self.advanced.text_subtitle_formats or TEXT_SUBTITLE_EXTS
 
     def init_subliminal_patches(self):
         # configure custom subtitle destination folders for scanning pre-existing subs

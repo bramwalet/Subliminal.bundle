@@ -385,11 +385,12 @@ class SearchAllRecentlyAddedMissing(Task):
         try:
             for fn in recent_files:
                 stored_subs = subtitle_storage.load(filename=fn)
-                video_id = stored_subs.video_id
                 if not stored_subs:
-                    Log.Debug("Skipping item %s because storage is empty", video_id)
+                    Log.Debug("Skipping item %s because storage is empty", fn)
                     skip_item()
                     continue
+
+                video_id = stored_subs.video_id
 
                 # added_date <= max_search_days?
                 if stored_subs.added_at + datetime.timedelta(days=max_search_days) <= now:
@@ -641,6 +642,8 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
         now = datetime.datetime.now()
         min_score_series = int(Prefs["subtitles.search.minimumTVScore2"].strip())
         min_score_movies = int(Prefs["subtitles.search.minimumMovieScore2"].strip())
+        min_score_extracted_series = config.advanced.find_better_as_extracted_tv_score or 352
+        min_score_extracted_movies = config.advanced.find_better_as_extracted_movie_score or 82
         overwrite_manually_modified = cast_bool(
             Prefs["scheduler.tasks.FindBetterSubtitles.overwrite_manually_modified"])
         overwrite_manually_selected = cast_bool(
@@ -666,9 +669,11 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
                 if stored_subs.item_type == "episode":
                     cutoff = self.series_cutoff
                     min_score = min_score_series
+                    min_score_extracted = min_score_extracted_series
                 else:
                     cutoff = self.movies_cutoff
                     min_score = min_score_movies
+                    min_score_extracted = min_score_extracted_movies
 
                 # don't search for better subtitles until at least 30 minutes have passed
                 if stored_subs.added_at + datetime.timedelta(minutes=30) > now:
@@ -735,6 +740,13 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
                             better_visited = 0
                             for sub in subs:
                                 if sub.score > current_score and sub.score > min_score:
+                                    if current.provider_name == "embedded" and sub.score < min_score_extracted:
+                                        Log.Debug(u"%s: Not downloading subtitle for %s, we've got an active extracted "
+                                                  u"embedded sub and the min score %s isn't met (%s).",
+                                                  self.name, video_id, min_score_extracted, sub.score)
+                                        better_visited += 1
+                                        break
+
                                     Log.Debug(u"%s: Better subtitle found for %s, downloading", self.name, video_id)
                                     better_tried_download += 1
                                     ret = self.download_subtitle(sub, video_id, mode="b")

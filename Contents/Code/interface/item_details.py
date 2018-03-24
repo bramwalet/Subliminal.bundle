@@ -1,7 +1,5 @@
 # coding=utf-8
 import os
-import subprocess
-import traceback
 
 from subzero.language import Language
 
@@ -12,7 +10,7 @@ from menu_helpers import debounce, SubFolderObjectContainer, default_thumb, add_
 from refresh_item import RefreshItem
 from subzero.constants import PREFIX
 from support.config import config, TEXT_SUBTITLE_EXTS
-from support.helpers import timestamp, df, get_language, display_language, quote_args, get_language_from_stream
+from support.helpers import timestamp, df, get_language, display_language, get_language_from_stream
 from support.items import get_item_kind_from_rating_key, get_item, get_current_sub, get_item_title, save_stored_sub
 from support.plex_media import get_plex_metadata, get_part, get_embedded_subtitle_streams
 from support.scanning import scan_videos
@@ -24,7 +22,8 @@ from support.storage import get_subtitle_storage
 
 @route(PREFIX + '/item/{rating_key}/actions')
 @debounce
-def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, randomize=None, header=None):
+def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, randomize=None, header=None,
+                    message=None):
     """
     displays the item details menu of an item that doesn't contain any deeper tree, such as a movie or an episode
     :param rating_key:
@@ -42,7 +41,7 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
 
     timeout = 30
 
-    oc = SubFolderObjectContainer(title2=title, replace_parent=True, header=header)
+    oc = SubFolderObjectContainer(title2=title, replace_parent=True, header=header, message=message)
 
     if not item:
         oc.add(DirectoryObject(
@@ -251,7 +250,7 @@ def ListStoredSubsForItemMenu(**kwargs):
     all_subs = stored_subs.get_all(part_id, language)
     kwargs.pop("randomize")
 
-    for key, subtitle in sorted(filter(lambda x: x[0] != "current", all_subs.items()),
+    for key, subtitle in sorted(filter(lambda x: x[0] not in ("current", "blacklist"), all_subs.items()),
                                 key=lambda x: x[1].date_added, reverse=True):
         is_current = key == all_subs["current"]
 
@@ -593,16 +592,16 @@ def ListEmbeddedSubsForItemMenu(**kwargs):
             language = stream_data["language"]
             is_unknown = stream_data["is_unknown"]
             stream = stream_data["stream"]
+            is_forced = stream_data["is_forced"]
 
             if language:
-                forced = stream.forced
                 oc.add(DirectoryObject(
                     key=Callback(TriggerExtractEmbeddedSubForItemMenu, randomize=timestamp(),
                                  stream_index=str(stream.index), language=language, with_mods=True, **kwargs),
                     title=u"Extract stream %s, "
                           u"%s%s%s%s with default mods" % (stream.index, display_language(language),
                                                            " (unknown)" if is_unknown else "",
-                                                           " (forced)" if forced else "",
+                                                           " (forced)" if is_forced else "",
                                                            " (\"%s\")" % stream.title if stream.title else ""),
                 ))
                 oc.add(DirectoryObject(
@@ -610,7 +609,7 @@ def ListEmbeddedSubsForItemMenu(**kwargs):
                                  stream_index=str(stream.index), language=language, **kwargs),
                     title=u"Extract stream %s, %s%s%s%s" % (stream.index, display_language(language),
                                                             " (unknown)" if is_unknown else "",
-                                                            " (forced)" if forced else "",
+                                                            " (forced)" if is_forced else "",
                                                             " (\"%s\")" % stream.title if stream.title else ""),
                 ))
     return oc
@@ -634,6 +633,7 @@ def TriggerExtractEmbeddedSubForItemMenu(**kwargs):
     kwargs.pop("language")
     kwargs["title"] = kwargs["item_title"]
     kwargs["header"] = header
+    kwargs["message"] = header
 
     return ItemDetailsMenu(randomize=timestamp(), **kwargs)
 

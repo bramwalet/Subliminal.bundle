@@ -114,32 +114,41 @@ def update_local_media(metadata, media, media_type="movies"):
             pass
 
 
-def agent_extract_embedded(videos):
+def agent_extract_embedded(video_part_map):
     try:
         subtitle_storage = get_subtitle_storage()
 
-        for video in videos:
-            item = video["item"]
-            stored_subs = subtitle_storage.load_or_new(item)
+        to_extract = []
+        item_count = 0
 
-            for part in get_all_parts(item):
+        for scanned_video, part_info in video_part_map.iteritems():
+            plexapi_item = scanned_video.plexapi_metadata["item"]
+            stored_subs = subtitle_storage.load_or_new(plexapi_item)
+
+            for plexapi_part in get_all_parts(plexapi_item):
+                item_count = item_count + 1
                 for requested_language in config.lang_list:
-                    embedded_subs = stored_subs.get_by_provider(part.id, requested_language, "embedded")
-                    current = stored_subs.get_any(part.id, requested_language)
+                    embedded_subs = stored_subs.get_by_provider(plexapi_part.id, requested_language, "embedded")
+                    current = stored_subs.get_any(plexapi_part.id, requested_language)
                     if not embedded_subs:
-                        stream_data = get_embedded_subtitle_streams(part, requested_language=requested_language,
+                        stream_data = get_embedded_subtitle_streams(plexapi_part, requested_language=requested_language,
                                                                     get_forced=config.forced_only)
 
                         if stream_data:
                             stream = stream_data[0]["stream"]
 
-                            extract_embedded_sub(rating_key=item.rating_key, part_id=part.id,
-                                                 stream_index=str(stream.index),
-                                                 language=str(requested_language), with_mods=True, refresh=False,
-                                                 set_current=not current)
+                            to_extract.append(({scanned_video: part_info}, plexapi_part, str(stream.index),
+                                               str(requested_language), not current))
+
+                            if not cast_bool(Prefs["subtitles.search_after_autoextract"]):
+                                scanned_video.subtitle_languages.update({requested_language})
                     else:
                         Log.Debug("Skipping embedded subtitle extraction for %s, already got %r from %s",
-                                  item.rating_key, requested_language, embedded_subs[0].id)
+                                  plexapi_item.rating_key, requested_language, embedded_subs[0].id)
+        if to_extract:
+            Log.Info("Triggering extraction of %d embedded subtitles of %d items", len(to_extract), item_count)
+            Thread.Create(multi_extract_embedded, stream_list=to_extract, refresh=True, with_mods=True,
+                          single_thread=not config.advanced.auto_extract_multithread)
     except:
         Log.Error("Something went wrong when auto-extracting subtitles, continuing: %s", traceback.format_exc())
 
@@ -217,7 +226,10 @@ class SubZeroAgent(object):
 
             # auto extract embedded
             if config.embedded_auto_extract:
-                agent_extract_embedded(videos)
+                if config.plex_transcoder:
+                    agent_extract_embedded(scanned_video_part_map)
+                else:
+                    Log.Warning("Plex Transcoder not found, can't auto extract")
 
             # clear missing subtitles menu data
             if not scheduler.is_task_running("MissingSubtitles"):

@@ -58,7 +58,7 @@ def FirstLetterMetadataMenu(rating_key, key, title=None, base_title=None, displa
 
 @route(PREFIX + '/section/contents', display_items=bool)
 def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, previous_item_type=None,
-                 previous_rating_key=None, header=None, randomize=None):
+                 previous_rating_key=None, message=None, header=None, randomize=None):
     """
     displays the contents of a section based on whether it has a deeper tree or not (movies->movie (item) list; series->series list)
     :param rating_key:
@@ -72,7 +72,7 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
     title = unicode(title)
     item_title = title
     title = base_title + " > " + title
-    oc = SubFolderObjectContainer(title2=title, no_cache=True, no_history=True, header=header,
+    oc = SubFolderObjectContainer(title2=title, no_cache=True, no_history=True, header=header, message=message,
                                   view_group="full_details")
 
     current_kind = get_item_kind_from_rating_key(rating_key)
@@ -117,18 +117,19 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
                                  title=title,
                                  previous_item_type=previous_item_type, with_mods=True,
                                  previous_rating_key=previous_rating_key, randomize=timestamp()),
-                    title=u"Extract missing %s embedded subtitles with default mods" % display_language(lang),
+                    title=u"Extract missing %s embedded subtitles" % display_language(lang),
                     summary="Extracts the not yet extracted embedded subtitles of all episodes for the current season "
                             "with all configured default modifications"
                 ))
                 oc.add(DirectoryObject(
                     key=Callback(SeasonExtractEmbedded, rating_key=rating_key, language=lang,
                                  base_title=show.section.title, display_items=display_items, item_title=item_title,
-                                 title=title,
-                                 previous_item_type=previous_item_type, with_mods=False,
+                                 title=title, force=True,
+                                 previous_item_type=previous_item_type, with_mods=True,
                                  previous_rating_key=previous_rating_key, randomize=timestamp()),
-                    title=u"Extract missing %s embedded subtitles" % display_language(lang),
-                    summary="Extracts the not yet extracted embedded subtitles of all episodes for the current season"
+                    title=u"Extract and activate %s embedded subtitles" % display_language(lang),
+                    summary="Extracts embedded subtitles of all episodes for the current season "
+                            "with all configured default modifications"
                 ))
 
         # add refresh
@@ -158,9 +159,10 @@ def SeasonExtractEmbedded(**kwargs):
     with_mods = kwargs.pop("with_mods")
     item_title = kwargs.pop("item_title")
     title = kwargs.pop("title")
+    force = kwargs.pop("force", False)
 
     Thread.Create(season_extract_embedded, **{"rating_key": rating_key, "requested_language": requested_language,
-                                              "with_mods": with_mods})
+                                              "with_mods": with_mods, "force": force})
 
     kwargs["header"] = 'Success'
     kwargs["message"] = u"Extracting of embedded subtitles for %s triggered" % title
@@ -169,7 +171,24 @@ def SeasonExtractEmbedded(**kwargs):
     return MetadataMenu(randomize=timestamp(), title=item_title, **kwargs)
 
 
-def season_extract_embedded(rating_key, requested_language, with_mods=False):
+def multi_extract_embedded(stream_list, refresh=False, with_mods=False, single_thread=True):
+    def execute():
+        for video_part_map, plexapi_part, stream_index, language, set_current in stream_list:
+            plexapi_item = video_part_map.keys()[0].plexapi_metadata["item"]
+
+            extract_embedded_sub(rating_key=plexapi_item.rating_key, part_id=plexapi_part.id,
+                                 plex_item=plexapi_item, part=plexapi_part, scanned_videos=video_part_map,
+                                 stream_index=stream_index, set_current=set_current,
+                                 language=language, with_mods=with_mods, refresh=refresh)
+
+    if single_thread:
+        with Thread.Lock(key="extract_embedded"):
+            execute()
+    else:
+        execute()
+
+
+def season_extract_embedded(rating_key, requested_language, with_mods=False, force=False):
     # get stored subtitle info for item id
     subtitle_storage = get_subtitle_storage()
 
@@ -180,15 +199,19 @@ def season_extract_embedded(rating_key, requested_language, with_mods=False):
                 stored_subs = subtitle_storage.load_or_new(item)
                 for part in get_all_parts(item):
                     embedded_subs = stored_subs.get_by_provider(part.id, requested_language, "embedded")
-                    if not embedded_subs:
+                    current = stored_subs.get_any(part.id, requested_language)
+                    if not embedded_subs or force:
                         stream_data = get_embedded_subtitle_streams(part, requested_language=requested_language,
                                                                     get_forced=config.forced_only)
                         if stream_data:
                             stream = stream_data[0]["stream"]
 
+                            set_current = not current or force
+                            refresh = not current
+
                             extract_embedded_sub(rating_key=item.rating_key, part_id=part.id,
-                                                 stream_index=str(stream.index),
-                                                 language=requested_language, with_mods=with_mods)
+                                                 stream_index=str(stream.index), set_current=set_current,
+                                                 refresh=refresh, language=requested_language, with_mods=with_mods)
     finally:
         subtitle_storage.destroy()
 

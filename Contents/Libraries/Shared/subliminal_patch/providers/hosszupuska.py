@@ -1,10 +1,11 @@
-# coding: iso8859_2
+# coding: utf-8
+
 import io
 import six
-from pkg_resources import require
 import logging
 import re
-from zipfile import ZipFile
+import os
+import time
 
 from babelfish import Language, language_converters
 from requests import Session
@@ -14,8 +15,7 @@ from subliminal_patch.providers.mixins import ProviderSubtitleArchiveMixin
 from subliminal.providers import ParserBeautifulSoup
 from subliminal_patch.exceptions import ProviderError
 from subliminal.score import get_equivalent_release_groups
-from subliminal_patch.subtitle import Subtitle
-from subliminal.subtitle import fix_line_ending
+from subliminal_patch.subtitle import Subtitle, guess_matches
 from subliminal.utils import sanitize, sanitize_release_group
 from subliminal.video import Episode
 from zipfile import ZipFile, is_zipfile
@@ -57,22 +57,29 @@ class HosszupuskaSubtitle(Subtitle):
             return subtit
         return subtit.encode('utf-8')
 
-    def __init__(self, language, page_link, subtitle_id, series, season, episode,
+    def __init__(self, language, page_link, subtitle_id, series, season, episode, version,
                  releases, year, asked_for_release_group=None, asked_for_episode=None):
         super(HosszupuskaSubtitle, self).__init__(language, page_link=page_link)
         self.subtitle_id = subtitle_id
         self.series = series
         self.season = season
         self.episode = episode
+        self.version = version
         self.releases = releases
         self.year = year
         if year:
             self.year = int(year)
 
-        self.release_info = hash
+        self.release_info = u", ".join(releases)
         self.page_link = page_link
         self.asked_for_release_group = asked_for_release_group
         self.asked_for_episode = asked_for_episode
+
+    def __repr__(self):
+        ep_addon = (" S%02dE%02d" % (self.season, self.episode)) if self.episode else ""
+        return '<%s %r [%s]>' % (
+            self.__class__.__name__, u"%s%s%s [%s]" % (self.series, " (%s)" % self.year if self.year else "", ep_addon,
+                                                       self.release_info), self.language)
 
     @property
     def id(self):
@@ -95,18 +102,18 @@ class HosszupuskaSubtitle(Subtitle):
             matches.add('year')
 
         # release_group
-        if (video.release_group and self.releases and
-                any(r in sanitize_release_group(self.releases)
+        if (video.release_group and self.version and
+                any(r in sanitize_release_group(self.version)
                     for r in get_equivalent_release_groups(sanitize_release_group(video.release_group)))):
             matches.add('release_group')
         # resolution
-        if video.resolution and self.releases and video.resolution in self.releases.lower():
+        if video.resolution and self.version and video.resolution in self.version.lower():
             matches.add('resolution')
         # format
-        if video.format and self.releases and video.format.lower() in self.releases.lower():
+        if video.format and self.version and video.format.lower() in self.version.lower():
             matches.add('format')
         # other properties
-        matches |= guess_matches(video, guessit(self.releases))
+        matches |= guess_matches(video, guessit(self.release_info.encode("utf-8")))
 
         return matches
 
@@ -119,11 +126,12 @@ class HosszupuskaProvider(Provider, ProviderSubtitleArchiveMixin):
     video_types = (Episode,)
     server_url = 'http://hosszupuskasub.com/'
     subtitle_class = HosszupuskaSubtitle
-    hearing_impaired_verifiable = True
+    hearing_impaired_verifiable = False
+    multi_result_throttle = 2  # seconds
 
     def initialize(self):
         self.session = Session()
-        # self.session.headers['User-Agent'] = 'Subliminal/%s' % __short_version__
+        self.session.headers = {'User-Agent': os.environ.get("SZ_USER_AGENT", "Sub-Zero/2")}
 
     def terminate(self):
         self.session.close()
@@ -138,19 +146,10 @@ class HosszupuskaProvider(Provider, ProviderSubtitleArchiveMixin):
     def query(self, series, season, episode, year=None, video=None):
 
         # Search for s01e03 instead of s1e3
-        seasona = season
-        episodea = episode
+        seasona = "%02d" % season
+        episodea = "%02d" % episode
         series = fix_inconsistent_naming(series)
         seriesa = series.replace(' ', '+').replace('\'', '')
-
-        if season < 10:
-            seasona = '0'+str(season)
-        else:
-            seasona = str(season)
-        if episode < 10:
-            episodea = '0'+str(episode)
-        else:
-            episodea = str(episode)
 
         # get the episode page
         logger.info('Getting the page for episode %s', episode)
@@ -179,40 +178,53 @@ class HosszupuskaProvider(Provider, ProviderSubtitleArchiveMixin):
                 # Posting date of subtitle
                 # sub_date = datas[4].getText()
 
-                sub_year = None
+                sub_year = sub_english_name = sub_version = None
                 # Handle the case when '(' in subtitle
                 if datas[1].getText().count('(') == 2:
                     sub_english_name = re.split('s(\d{1,2})e(\d{1,2})', datas[1].getText())[3]
                 if datas[1].getText().count('(') == 3:
                     sub_year = re.findall(r"(?<=\()(\d{4})(?=\))", datas[1].getText().strip())[0]
                     sub_english_name = re.split('s(\d{1,2})e(\d{1,2})', datas[1].getText().split('(')[0])[0]
+
+                if not sub_english_name:
+                    continue
+
                 sub_season = int((re.findall('s(\d{1,2})', datas[1].find_all('b')[0].getText(), re.VERBOSE)[0])
                                  .lstrip('0'))
                 sub_episode = int((re.findall('e(\d{1,2})', datas[1].find_all('b')[0].getText(), re.VERBOSE)[0])
                                   .lstrip('0'))
-                sub_language = self.get_language(datas[2].find_all('img')[0]['src'].split('/')[1])
-                sub_downloadlink = datas[6].find_all('a')[1]['href']
-                sub_id = sub_downloadlink.split('=')[1].split('.')[0]
-
-                if datas[1].getText().count('(') == 2:
-                    sub_version = datas[1].getText().split('(')[1].split(')')[0]
-                if datas[1].getText().count('(') == 3:
-                    sub_version = datas[1].getText().split('(')[2].split(')')[0]
-
-                # One subtitle can be used for sevearl relase add both of them.
-                sub_releases = str(sub_version.split(','))
-                subtitle = self.subtitle_class(sub_language, sub_downloadlink, sub_id, sub_english_name, sub_season,
-                                               sub_episode, sub_releases, sub_year,
-                                               asked_for_release_group=video.release_group, asked_for_episode=episode)
 
                 if sub_season == season and sub_episode == episode:
-                    logger.debug('Found subtitle \r\n%s', subtitle)
+                    sub_language = self.get_language(datas[2].find_all('img')[0]['src'].split('/')[1])
+                    sub_downloadlink = datas[6].find_all('a')[1]['href']
+                    sub_id = sub_downloadlink.split('=')[1].split('.')[0]
+
+                    if datas[1].getText().count('(') == 2:
+                        sub_version = datas[1].getText().split('(')[1].split(')')[0]
+                    if datas[1].getText().count('(') == 3:
+                        sub_version = datas[1].getText().split('(')[2].split(')')[0]
+
+                    # One subtitle can be used for several releases
+                    sub_releases = [s.strip() for s in sub_version.split(',')]
+                    subtitle = self.subtitle_class(sub_language, sub_downloadlink, sub_id, sub_english_name.strip(),
+                                                   sub_season, sub_episode, sub_version, sub_releases, sub_year,
+                                                   asked_for_release_group=video.release_group,
+                                                   asked_for_episode=episode)
+
+                    logger.debug('Found subtitle: %r', subtitle)
                     subtitles.append(subtitle)
+
         return subtitles
 
     def list_subtitles(self, video, languages):
-        return [s for s in self.query(video.series, video.season, video.episode, video.year, video=video)
-                if s.language in languages]
+        titles = [video.series] + video.alternative_series
+
+        for title in titles:
+            subs = self.query(title, video.season, video.episode, video.year, video=video)
+            if subs:
+                return subs
+
+            time.sleep(self.multi_result_throttle)
 
     def download_subtitle(self, subtitle):
         r = self.session.get(subtitle.page_link, timeout=10)

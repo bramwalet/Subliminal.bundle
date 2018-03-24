@@ -212,7 +212,7 @@ class JSONStoredVideoSubtitles(object):
             return out
 
         for key, subtitle in all_subs.iteritems():
-            if key == "current":
+            if key in ("current", "blacklist"):
                 continue
 
             if subtitle.provider_name == provider_name:
@@ -226,7 +226,7 @@ class JSONStoredVideoSubtitles(object):
             return 0
 
         subs = part.get(str(lang))
-        return len(filter(lambda key: key != "current", subs.keys()))
+        return len(filter(lambda key: key not in ("current", "blacklist"), subs.keys()))
 
     def get_sub_key(self, provider_name, id):
         return provider_name, str(id)

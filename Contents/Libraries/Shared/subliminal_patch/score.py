@@ -8,10 +8,9 @@ from subliminal.score import get_scores
 logger = logging.getLogger(__name__)
 
 
-FPS_EQUALITY = {
-    23.976: 23.98
-}
-FPS_EQUALITY.update({value: key for key, value in FPS_EQUALITY.iteritems()})
+FPS_EQUALITY = (
+    (23.976, 23.98, 24.0),
+)
 
 
 def framerate_equal(source, check):
@@ -23,8 +22,9 @@ def framerate_equal(source, check):
     if source == check:
         return True
 
-    if check in FPS_EQUALITY and FPS_EQUALITY[check] == source:
-        return True
+    for equal_fps_tuple in FPS_EQUALITY:
+        if check in equal_fps_tuple and source in equal_fps_tuple:
+            return True
 
     return False
 
@@ -95,7 +95,7 @@ def compute_score(matches, subtitle, video, hearing_impaired=None):
             matches |= {'series', 'year', 'season', 'episode'}
         if 'tvdb_id' in matches:
             logger.debug('Adding tvdb_id match equivalents')
-            matches |= {'series', 'year', 'season', 'episode'}
+            matches |= {'series', 'year', 'season', 'episode', 'title'}
         if 'series_tvdb_id' in matches:
             logger.debug('Adding series_tvdb_id match equivalents')
             matches |= {'series', 'year'}

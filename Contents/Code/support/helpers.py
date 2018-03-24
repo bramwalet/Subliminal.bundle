@@ -292,7 +292,7 @@ def notify_executable(exe_info, videos, subtitles, storage):
             prepared_arguments = [arg % prepared_data for arg in arguments]
 
             Log.Debug(u"Calling %s with arguments: %s" % (exe, prepared_arguments))
-            env = os.environ
+            env = dict(os.environ)
             if not mswindows:
                 env_path = {"PATH": os.pathsep.join(
                                         [
@@ -303,6 +303,8 @@ def notify_executable(exe_info, videos, subtitles, storage):
                                     )
                             }
                 env = dict(os.environ, **env_path)
+
+            env.pop("LD_LIBRARY_PATH", None)
 
             try:
                 output = subprocess.check_output(quote_args([exe] + prepared_arguments),
@@ -375,6 +377,15 @@ def display_language(l):
         addons.append(l.script.code)
 
     return l.name if not addons else "%s (%s)" % (l.name, ", ".join(addons))
+
+
+def is_stream_forced(stream):
+    stream_title = getattr(stream, "title", "") or ""
+    forced = getattr(stream, "forced", False)
+    if not forced and stream_title and "forced" in stream_title.strip().lower():
+        forced = True
+
+    return forced
 
 
 class PartUnknownException(Exception):

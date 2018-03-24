@@ -20,6 +20,7 @@ def SubtitleModificationsMenu(**kwargs):
     rating_key = kwargs["rating_key"]
     part_id = kwargs["part_id"]
     language = kwargs["language"]
+    lang_instance = Language.fromietf(language)
     current_sub, stored_subs, storage = get_current_sub(rating_key, part_id, language)
     kwargs.pop("randomize")
 
@@ -40,6 +41,9 @@ def SubtitleModificationsMenu(**kwargs):
             continue
 
         if mod.exclusive and identifier in current_mods:
+            continue
+
+        if mod.languages and lang_instance not in mod.languages:
             continue
 
         oc.add(DirectoryObject(
@@ -172,11 +176,11 @@ def SubtitleShiftModMenu(unit=None, **kwargs):
 
     rng = []
     if unit == "h":
-        rng = range(-10, 11)
+        rng = list(reversed(range(-10, 0))) + list(reversed(range(1, 11)))
     elif unit in ("m", "s"):
-        rng = range(-15, 15)
+        rng = list(reversed(range(-15, 0))) + list(reversed(range(1, 16)))
     elif unit == "ms":
-        rng = range(-900, 1000, 100)
+        rng = list(reversed(range(-900, 0, 100))) + list(reversed(range(100, 1000, 100)))
 
     for i in rng:
         if i == 0:

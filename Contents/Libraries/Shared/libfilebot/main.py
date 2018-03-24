@@ -23,7 +23,10 @@ def quote_args(seq):
 
 def win32_xattr(fn):
     handler = ADS(fn)
-    return handler.get_stream_content("net.filebot.filename")
+    try:
+        return handler.get_stream_content("net.filebot.filename")
+    except IOError:
+        pass
 
 
 def default_xattr(fn):

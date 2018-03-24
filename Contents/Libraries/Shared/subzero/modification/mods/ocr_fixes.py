@@ -39,7 +39,9 @@ class FixOCR(SubtitleTextModification):
 
         return [
             # remove broken HI tag colons (ANNOUNCER'., ". instead of :) after at least 3 uppercase chars
-            NReProcessor(re.compile(ur'(?u)(^.*(?<=[A-ZÀ-Ž]{3})[A-ZÀ-Ž-_\s0-9]+)(["\'’ʼ❜‘‛”“‟„]*[.,‚،⹁、;]+)(\s*)'),
+            # don't modify stuff inside quotes
+            NReProcessor(re.compile(ur'(?u)(^[^"\'’ʼ❜‘‛”“‟„]*(?<=[A-ZÀ-Ž]{3})[A-ZÀ-Ž-_\s0-9]+)'
+                                    ur'(["\'’ʼ❜‘‛”“‟„]*[.,‚،⹁、;]+)(\s*)(?!["\'’ʼ❜‘‛”“‟„])'),
                          r"\1:\3", name="OCR_fix_HI_colons"),
             # fix F'bla
             NReProcessor(re.compile(ur'(?u)(\bF)(\')([A-zÀ-ž]*\b)'), r"\1\3", name="OCR_fix_F"),

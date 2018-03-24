@@ -337,10 +337,10 @@
     "default": "19"
   },
   {
-    "id": "provider.addic7ed.use_random_agents",
+    "id": "provider.addic7ed.use_random_agents1",
     "label": "Addic7ed: Use random user agents",
     "type": "bool",
-    "default": "false"
+    "default": "true"
   },
   {
     "id": "provider.legendastv.enabled",
@@ -378,11 +378,17 @@
     "id": "provider.subscene.enabled",
     "label": "Provider: Enable SubScene (TV shows)",
     "type": "bool",
-    "default": "false"
+    "default": "true"
   },
   {
     "id": "provider.hosszupuska.enabled",
     "label": "Provider: Enable hosszupuskasub.com (Hungarian)",
+    "type": "bool",
+    "default": "false"
+  },
+  {
+    "id": "provider.argenteam.enabled",
+    "label": "Provider: Enable aRGENTeaM (Spanish)",
     "type": "bool",
     "default": "false"
   },
@@ -395,6 +401,12 @@
   {
     "id": "subtitles.embedded.autoextract",
     "label": "Automatically extract and use embedded subtitles upon media addition (with configured default mods)",
+    "type": "bool",
+    "default": "false"
+  },
+  {
+    "id": "subtitles.search_after_autoextract",
+    "label": "After automatic extraction of embedded subtitles, also immediately search for available subtitles?",
     "type": "bool",
     "default": "false"
   },
@@ -465,7 +477,7 @@
   },
   {
     "id": "subtitles.fix_common",
-    "label": "Fix common whitespace/punctuation issues in subtitles",
+    "label": "Fix common issues in subtitles",
     "type": "bool",
     "default": "true"
   },
@@ -474,6 +486,12 @@
     "label": "Fix common OCR errors in downloaded subtitles",
     "type": "bool",
     "default": "true"
+  },
+  {
+    "id": "subtitles.reverse_rtl",
+    "label": "Reverse punctuation in RTL languages (heb)",
+    "type": "bool",
+    "default": "false"
   },
   {
     "id": "subtitles.colors",

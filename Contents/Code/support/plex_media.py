@@ -180,9 +180,10 @@ def get_embedded_subtitle_streams(part, requested_language=None, skip_duplicate_
             language = helpers.get_language_from_stream(stream.language_code)
             is_unknown = False
             found_requested_language = requested_language and requested_language == language
+            is_forced = helpers.is_stream_forced(stream)
 
             if get_forced is not None:
-                if (get_forced and not stream.forced) or (not get_forced and stream.forced):
+                if (get_forced and not is_forced) or (not get_forced and is_forced):
                     continue
 
             if not language and config.treat_und_as_first:
@@ -194,8 +195,9 @@ def get_embedded_subtitle_streams(part, requested_language=None, skip_duplicate_
                 is_unknown = True
                 has_unknown = True
 
-            if not requested_language or found_requested_language:
-                streams.append({"stream": stream, "is_unknown": is_unknown, "language": language})
+            if not requested_language or found_requested_language or has_unknown:
+                streams.append({"stream": stream, "is_unknown": is_unknown, "language": language,
+                                "is_forced": is_forced})
 
                 if found_requested_language:
                     break

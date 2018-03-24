@@ -239,24 +239,32 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
 
         # loop over subtitle items
         for subtitle_item in response['data']:
+            _subtitle_item = subtitle_item
+            if not isinstance(_subtitle_item, dict):
+                _subtitle_item = response["data"][subtitle_item]
+
+                if not isinstance(_subtitle_item, dict):
+                    logger.error("Malformed data returned from API")
+                    continue
+
             # read the item
-            language = Language.fromopensubtitles(subtitle_item['SubLanguageID'])
-            hearing_impaired = bool(int(subtitle_item['SubHearingImpaired']))
-            page_link = subtitle_item['SubtitlesLink']
-            subtitle_id = int(subtitle_item['IDSubtitleFile'])
-            matched_by = subtitle_item['MatchedBy']
-            movie_kind = subtitle_item['MovieKind']
-            hash = subtitle_item['MovieHash']
-            movie_name = subtitle_item['MovieName']
-            movie_release_name = subtitle_item['MovieReleaseName']
-            movie_year = int(subtitle_item['MovieYear']) if subtitle_item['MovieYear'] else None
-            movie_imdb_id = 'tt' + subtitle_item['IDMovieImdb']
-            movie_fps = subtitle_item.get('MovieFPS')
-            series_season = int(subtitle_item['SeriesSeason']) if subtitle_item['SeriesSeason'] else None
-            series_episode = int(subtitle_item['SeriesEpisode']) if subtitle_item['SeriesEpisode'] else None
-            filename = subtitle_item['SubFileName']
-            encoding = subtitle_item.get('SubEncoding') or None
-            foreign_parts_only = bool(int(subtitle_item.get('SubForeignPartsOnly', 0)))
+            language = Language.fromopensubtitles(_subtitle_item['SubLanguageID'])
+            hearing_impaired = bool(int(_subtitle_item['SubHearingImpaired']))
+            page_link = _subtitle_item['SubtitlesLink']
+            subtitle_id = int(_subtitle_item['IDSubtitleFile'])
+            matched_by = _subtitle_item['MatchedBy']
+            movie_kind = _subtitle_item['MovieKind']
+            hash = _subtitle_item['MovieHash']
+            movie_name = _subtitle_item['MovieName']
+            movie_release_name = _subtitle_item['MovieReleaseName']
+            movie_year = int(_subtitle_item['MovieYear']) if _subtitle_item['MovieYear'] else None
+            movie_imdb_id = 'tt' + _subtitle_item['IDMovieImdb']
+            movie_fps = _subtitle_item.get('MovieFPS')
+            series_season = int(_subtitle_item['SeriesSeason']) if _subtitle_item['SeriesSeason'] else None
+            series_episode = int(_subtitle_item['SeriesEpisode']) if _subtitle_item['SeriesEpisode'] else None
+            filename = _subtitle_item['SubFileName']
+            encoding = _subtitle_item.get('SubEncoding') or None
+            foreign_parts_only = bool(int(_subtitle_item.get('SubForeignPartsOnly', 0)))
 
             # foreign/forced subtitles only wanted
             if only_foreign and not foreign_parts_only:
@@ -266,7 +274,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
             if not only_foreign and foreign_parts_only:
                 continue
 
-            query_parameters = subtitle_item.get("QueryParameters")
+            query_parameters = _subtitle_item.get("QueryParameters")
 
             subtitle = self.subtitle_class(language, hearing_impaired, page_link, subtitle_id, matched_by,
                                            movie_kind,

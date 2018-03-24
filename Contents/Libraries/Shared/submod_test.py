@@ -20,7 +20,7 @@ debug = "--debug" in sys.argv
 if debug:
     logging.basicConfig(level=logging.DEBUG)
 
-sub = Subtitle(Language.fromietf("eng"), mods=["common", "remove_HI", "remove_tags", "OCR_fixes"])
+sub = Subtitle(Language.fromietf("eng"), mods=["common", "remove_HI", "OCR_fixes"])
 sub.content = open(fn).read()
 sub.normalize()
 content = sub.get_modified_content(debug=True)

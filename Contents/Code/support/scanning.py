@@ -1,6 +1,7 @@
 # coding=utf-8
 import traceback
 import helpers
+from babelfish.exceptions import LanguageError
 
 from support.lib import Plex, get_intent
 from support.plex_media import get_stream_fps
@@ -8,6 +9,7 @@ from support.storage import get_subtitle_storage
 from support.config import config, TEXT_SUBTITLE_EXTS
 
 from subzero.video import parse_video, set_existing_languages
+from subzero.language import language_from_stream
 
 
 def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, providers=None, skip_hashing=False):
@@ -41,27 +43,37 @@ def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, pr
             plexpy_part = part
 
     # embedded subtitles
+    # fixme: skip the whole scanning process if known_embedded == wanted languages?
     if plexpy_part:
-        for stream in plexpy_part.streams:
-            # subtitle stream
-            if stream.stream_type == 3:
-                if (config.forced_only and getattr(stream, "forced")) or \
-                        (not config.forced_only and not getattr(stream, "forced")):
+        if embedded_subtitles:
+            for stream in plexpy_part.streams:
+                # subtitle stream
+                if stream.stream_type == 3:
+                    is_forced = helpers.is_stream_forced(stream)
 
-                    # embedded subtitle
-                    # fixme: tap into external subtitles here instead of scanning for ourselves later?
-                    if not stream.stream_key and stream.codec:
-                        if config.exotic_ext or stream.codec.lower() in TEXT_SUBTITLE_EXTS:
-                            lang = helpers.get_language_from_stream(stream.language_code)
+                    if (config.forced_only and is_forced) or \
+                            (not config.forced_only and not is_forced):
 
-                            # treat unknown language as lang1?
-                            if not lang and config.treat_und_as_first:
-                                lang = list(config.lang_list)[0]
+                        # embedded subtitle
+                        # fixme: tap into external subtitles here instead of scanning for ourselves later?
+                        if stream.codec and getattr(stream, "index", None):
+                            if config.exotic_ext or stream.codec.lower() in config.text_based_formats:
+                                lang = None
+                                try:
+                                    lang = language_from_stream(stream.language_code)
+                                except LanguageError:
+                                    Log.Debug("Couldn't detect embedded subtitle stream language: %s", stream.language_code)
 
-                            if lang:
-                                known_embedded.append(lang.alpha3)
+                                # treat unknown language as lang1?
+                                if not lang and config.treat_und_as_first:
+                                    lang = list(config.lang_list)[0]
+
+                                if lang:
+                                    known_embedded.append(lang.alpha3)
     else:
         Log.Warn("Part %s missing of %s, not able to scan internal streams", plex_part.id, rating_key)
+
+    Log.Debug("Known embedded: %r", known_embedded)
 
     subtitle_storage = get_subtitle_storage()
     stored_subs = subtitle_storage.load(rating_key)
@@ -69,11 +81,6 @@ def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, pr
 
     try:
         # get basic video info scan (filename)
-        # video = parse_video(plex_part.file, pms_video_info, hints, external_subtitles=external_subtitles,
-        #                     embedded_subtitles=embedded_subtitles, known_embedded=known_embedded,
-        #                     forced_only=config.forced_only, no_refining=no_refining, ignore_all=ignore_all,
-        #                     stored_subs=stored_subs, refiner_settings=config.refiner_settings, providers=providers,
-        #                     skip_hashing=config.low_impact_mode)
         video = parse_video(plex_part.file, hints, skip_hashing=config.low_impact_mode or skip_hashing,
                             providers=providers)
 

@@ -122,12 +122,13 @@ class ProviderSubtitleArchiveMixin(object):
                                             ("release_group" in subtitle.matches or
                                              "hash" in subtitle.matches)):
 
-                        asked_for_rlsgrp = subtitle.asked_for_release_group.lower()
+                        if subtitle.asked_for_release_group:
+                            asked_for_rlsgrp = subtitle.asked_for_release_group.lower()
 
-                        if asked_for_rlsgrp:
-                            release_group_matches = False
-                            if asked_for_rlsgrp in sub_name_lower:
-                                release_group_matches = True
+                            if asked_for_rlsgrp:
+                                release_group_matches = False
+                                if asked_for_rlsgrp in sub_name_lower:
+                                    release_group_matches = True
 
                     if release_group_matches and format_matches:
                         matching_sub = sub_name

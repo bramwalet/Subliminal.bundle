@@ -88,6 +88,13 @@ class SubtitleModifications(object):
             if identifier in final_mods and mod_cls.exclusive:
                 final_mods.pop(identifier)
 
+            # language-specific mod, check validity
+            if mod_cls.languages and self.language not in mod_cls.languages:
+                if self.debug:
+                    logger.debug("Skipping %s, because %r is not a valid language for this mod",
+                                 identifier, self.language)
+                continue
+
             # merge args of duplicate mods if possible
             elif identifier in final_mods and mod_cls.args_mergeable:
                 final_mods[identifier] = mod_cls.merge_args(final_mods[identifier], args)
@@ -132,7 +139,8 @@ class SubtitleModifications(object):
             if self.debug:
                 logger.debug("Line mods took %ss", time.time() - line_mods_start)
 
-        self.f.events = new_entries
+            if new_entries:
+                self.f.events = new_entries
 
         # apply last file mods
         if non_line_mods:
@@ -194,7 +202,8 @@ class SubtitleModifications(object):
                     mod = self.initialized_mods[identifier]
 
                     try:
-                        line = mod.modify(line.strip(), entry=entry.text, debug=self.debug, parent=self, **args)
+                        line = mod.modify(line.strip(), entry=entry.text, debug=self.debug, parent=self, index=index,
+                                          **args)
                     except EmptyEntryError:
                         if self.debug:
                             logger.debug(u"%d: %s: %r -> ''", index, identifier, entry.text)
@@ -263,6 +272,8 @@ class SubtitleModifications(object):
                     if self.debug:
                         logger.debug(u"Fixing tags: %s (%r -> %r)", str(add_start_tags+add_end_tags), new_text,
                                      entry.text)
+                else:
+                    entry.text = new_text
             else:
                 entry.text = new_text
 
