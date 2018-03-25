@@ -156,8 +156,19 @@ class SZProviderPool(ProviderPool):
 
         # list subtitles
         logger.info('Listing subtitles with provider %r and languages %r', provider, provider_languages)
+        results = []
         try:
-            results = self[provider].list_subtitles(video, provider_languages)
+            try:
+                results = self[provider].list_subtitles(video, provider_languages)
+            except ResponseNotReady:
+                logger.error('Provider %r response error, reinitializing', provider)
+                try:
+                    self[provider].terminate()
+                    self[provider].initialize()
+                    results = self[provider].list_subtitles(video, provider_languages)
+                except:
+                    logger.error('Provider %r reinitialization error', provider)
+
             seen = []
             out = []
             for s in results:
