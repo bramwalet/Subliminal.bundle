@@ -5,6 +5,7 @@ import time
 import logging
 import traceback
 import types
+from httplib import ResponseNotReady
 
 from guessit import guessit
 from subliminal import ProviderError
@@ -42,7 +43,7 @@ class ProviderRetryMixin(object):
         while i <= amount:
             try:
                 return f()
-            except (Unauthorized, ServiceUnavailable, TooManyRequests, DownloadLimitExceeded):
+            except (Unauthorized, ServiceUnavailable, TooManyRequests, DownloadLimitExceeded, ResponseNotReady):
                 raise
             except exc:
                 formatted_exc = traceback.format_exc()
