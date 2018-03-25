@@ -11,6 +11,8 @@ repl_map = {
 
 
 def language_from_stream(l):
+    if not l:
+        raise LanguageError()
     for method in ("fromietf", "fromalpha3t", "fromalpha3b"):
         try:
             return getattr(Language, method)(l)
