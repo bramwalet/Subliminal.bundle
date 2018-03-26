@@ -1,5 +1,52 @@
 
 
+2.5.3.2414
+
+- core: expand user agent list
+- core: update subliminal to 4ad5d31
+- core: treat 23.976, 23.98, 24.0 fps as equal
+- core: correctly skip blacklist entries when iterating through currently known subs
+- core: fix unpacking of packs without asked-for-release-group
+- core: fix embedded subtitle language detection; add debug log
+- core: treat embedded subtitle containing "forced" in its title as forced
+- core: improve embedded subtitles detection
+- core: store extracted embedded forced subtitles with the "forced" suffix (e.g.: video.en.forced.srt)
+- core: don't bother trying to extract embedded subtitle if transcoder wasn't found
+- core: fix automatic extraction of unknown embedded subtitle streams
+- core: skip immediately searching for new subtitle after successfully extracting embedded
+- core: extract embedded ASS: don't transcode to SRT using ffmpeg (Plex Transcoder), do the transcoding later using pysubs2; fixes offset issues
+- core: extract embedded: let ffmpeg auto convert mov_text/tx3g to srt
+- core: fix transcoder detection; add fallback #460
+- core: remove LD_LIBRARY_PATH from environment before calling notification executable
+- core: auto extract embedded subtitles in a separate thread
+- core: reduce encoding change log spam
+- core: only allow one automatic extraction at a time; add optional advanced settings "auto_extract_multithread"
+- core: add minimum score a subtitle has to have when considered by the find better subtitles task, when the current subtitle is an extracted embedded one; add advanced_settings entries
+- core/config: automatic extraction: add config setting to indicate whether there should be an immediate search for available subtitles after extraction or not (default: off)
+- core/menu/submod: add reverse_rtl modification for Hebrew; fixes #409
+- core: scoring: assume title match on tvdb_id match
+- tasks: search all recently added missing: fix attribute access on missing stored subtitle info
+- providers: add hosszupuska (hungarian, thanks morpheus133 for the basic implementation)
+- providers: add argenteam (spanish, thanks mmiraglia for the basic implementation)
+- providers: addic7ed: use random user agent by default (enforce for existing configs)
+- providers: enable subscene by default
+- providers: opensubtitles: add fallback for dict based query response in contrast to list/array based
+- advanced settings: make text-based-subtitle-formats configurable
+- menu: submod: inverse-reverse subtitle timing time-choices for better accessibility
+- submod: reduce log spam in case of debug logs enabled
+- submod: style tags could result in no output at all
+- submod: fix empty content if only non-line-mods were used, no line-mods; fixes #449
+- submod: HI: correctly handle style tags when checking for brackets
+- submod: HI: don't remove anything that's surrounded by quotes
+- submod: HI: double or triple dash is em dash
+- submod: HI: HI_before_colon_noncaps, don't assume single quotes are sentence enders
+- submod: common: don't uppercase after abbreviations
+- submod: common: don't break phone numbers (more than one spaced number pair found)
+- submod: common: also count lines only consisting of dots as removable
+- submod: common: replace more than 3 consecutive dots with 3 dots
+- submod: OCR: "H i." = "Hi."
+
+
 2.5.0.2287
 
 - core: reduce main icon size
