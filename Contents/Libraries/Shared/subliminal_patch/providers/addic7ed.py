@@ -136,7 +136,7 @@ class Addic7edProvider(_Addic7edProvider):
 
         # build the params
         series_year = '%s %d' % (series, year) if year is not None else series
-        params = {'search': series_year, 'submit': 'Search'}
+        params = {'search': series_year, 'Submit': 'Search'}
 
         # make the search
         logger.info('Searching show ids with %r', params)
