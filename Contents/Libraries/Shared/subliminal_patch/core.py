@@ -385,10 +385,15 @@ class SZProviderPool(ProviderPool):
                              score, hearing_impaired)
                 continue
 
-            if is_episode and not {"series", "season", "episode"}.issubset(orig_matches):
-                logger.debug("%r: Skipping subtitle with score %d, because it doesn't match our series/episode",
-                             subtitle, score)
-                continue
+            if is_episode:
+                can_verify_series = True
+                if not subtitle.hash_verifiable and "hash" in matches:
+                    can_verify_series = False
+
+                if can_verify_series and not {"series", "season", "episode"}.issubset(orig_matches):
+                    logger.debug("%r: Skipping subtitle with score %d, because it doesn't match our series/episode",
+                                 subtitle, score)
+                    continue
 
             # download
             logger.debug("%r: Trying to download subtitle with matches %s, score: %s; release(s): %s", subtitle, matches,
