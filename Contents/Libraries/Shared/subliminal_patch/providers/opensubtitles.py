@@ -240,12 +240,10 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         # loop over subtitle items
         for subtitle_item in response['data']:
             _subtitle_item = subtitle_item
-            if not isinstance(_subtitle_item, dict):
-                _subtitle_item = response["data"][subtitle_item]
 
-                if not isinstance(_subtitle_item, dict):
-                    logger.error("Malformed data returned from API")
-                    continue
+            # in case OS messes their API results up again, check whether we've got a dict or a string as subtitle_item
+            if hasattr(_subtitle_item, "startswith"):
+                _subtitle_item = response["data"][subtitle_item]
 
             # read the item
             language = Language.fromopensubtitles(_subtitle_item['SubLanguageID'])
