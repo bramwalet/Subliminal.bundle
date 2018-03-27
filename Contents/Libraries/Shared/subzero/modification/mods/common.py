@@ -26,6 +26,9 @@ class CommonFixes(SubtitleTextModification):
         # line = _/-/\s
         NReProcessor(re.compile(r'(?u)(^\W*[-_.]+\W*$)'), "", name="CM_non_word_only"),
 
+        # multi space
+        NReProcessor(re.compile(r'(?u)(\s{2,})'), " ", name="CM_multi_space"),
+
         # fix music symbols
         NReProcessor(re.compile(ur'(?u)(^[*#¶\s]*[*#¶]+[*#¶\s]*$)'), u"♪", name="CM_music_symbols"),
 
