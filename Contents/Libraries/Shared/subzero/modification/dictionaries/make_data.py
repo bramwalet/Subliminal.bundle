@@ -39,6 +39,7 @@ SZ_FIX_DATA = {
         },
         "WholeWords": {
             u"I'11": u"I'll",
+            u"III'll": u"I'll",
             u"Tun": u"Run",
             u"pan'": u"part",
             u"al'": u"at",
