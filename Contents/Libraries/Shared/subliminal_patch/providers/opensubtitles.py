@@ -75,15 +75,16 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
     hearing_impaired_verifiable = True
     skip_wrong_fps = True
     is_vip = False
+    use_ssl = True
 
-    default_url = "https://api.opensubtitles.org/xml-rpc"
-    vip_url = "https://vip-api.opensubtitles.org/xml-rpc"
+    default_url = "//api.opensubtitles.org/xml-rpc"
+    vip_url = "//vip-api.opensubtitles.org/xml-rpc"
 
     languages = {Language.fromopensubtitles(l) for l in language_converters['szopensubtitles'].codes}# | {
         #Language.fromietf("sr-latn"), Language.fromietf("sr-cyrl")}
 
     def __init__(self, username=None, password=None, use_tag_search=False, only_foreign=False, skip_wrong_fps=True,
-                 is_vip=False):
+                 is_vip=False, use_ssl=True):
         if any((username, password)) and not all((username, password)):
             raise ConfigurationError('Username and password must be specified')
 
@@ -94,6 +95,10 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         self.skip_wrong_fps = skip_wrong_fps
         self.token = None
         self.is_vip = is_vip
+        self.use_ssl = use_ssl
+
+        self.default_url = ("https:" if use_ssl else "http:") + self.default_url
+        self.vip_url = ("https:" if use_ssl else "http:") + self.vip_url
 
         if use_tag_search:
             logger.info("Using tag/exact filename search")

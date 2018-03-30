@@ -644,7 +644,8 @@ class Config(object):
                                                'password': Prefs['provider.opensubtitles.password'],
                                                'use_tag_search': self.exact_filenames,
                                                'only_foreign': self.forced_only,
-                                               'is_vip': cast_bool(Prefs['provider.opensubtitles.is_vip'])
+                                               'is_vip': cast_bool(Prefs['provider.opensubtitles.is_vip']),
+                                               'use_ssl': cast_bool(Prefs['provider.opensubtitles.use_ssl']),
                                                },
                              'podnapisi': {
                                  'only_foreign': self.forced_only,
