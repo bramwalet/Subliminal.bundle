@@ -396,7 +396,6 @@ def save_stored_sub(stored_subtitle, rating_key, part_id, language, item_type, p
 
     if subtitle.storage_path:
         stored_subtitle.last_mod = datetime.datetime.fromtimestamp(os.path.getmtime(subtitle.storage_path))
-        storage.save(stored_subs)
 
     if cleanup:
         storage.destroy()
@@ -436,9 +435,9 @@ def set_mods_for_part(rating_key, part_id, language, item_type, mods, mode="add"
             current_sub.mods.pop()
     else:
         raise NotImplementedError("Wrong mode given")
-    storage.save(stored_subs)
 
     save_stored_sub(current_sub, rating_key, part_id, language, item_type, plex_item=plex_item, storage=storage,
                     stored_subs=stored_subs)
 
+    storage.save(stored_subs)
     storage.destroy()
