@@ -646,8 +646,6 @@ class Config(object):
                                                'only_foreign': self.forced_only,
                                                'is_vip': cast_bool(Prefs['provider.opensubtitles.is_vip']),
                                                'use_ssl': cast_bool(Prefs['provider.opensubtitles.use_ssl']),
-                                               'use_new_transport':
-                                                   cast_bool(Prefs['provider.opensubtitles.use_new_transport']),
                                                },
                              'podnapisi': {
                                  'only_foreign': self.forced_only,

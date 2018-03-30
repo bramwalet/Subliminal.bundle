@@ -123,13 +123,10 @@ class SubZeroRequestsTransport(xmlrpclib.SafeTransport):
     """
     # change our user agent to reflect Requests
     user_agent = "Python XMLRPC with Requests (python-requests.org)"
-    cert = pem_file
     proxies = None
-    verify = True
 
-    def __init__(self, use_https=True, cert=None, verify=None, user_agent=None, timeout=10, *args, **kwargs):
-        self.cert = cert if cert is not None else self.cert
-        self.verify = verify if verify is not None else self.verify
+    def __init__(self, use_https=True, verify=None, user_agent=None, timeout=10, *args, **kwargs):
+        self.verify = pem_file if verify is None else verify
         self.use_https = use_https
         self.user_agent = user_agent if user_agent is not None else self.user_agent
         self.timeout = timeout
@@ -151,7 +148,7 @@ class SubZeroRequestsTransport(xmlrpclib.SafeTransport):
         try:
             resp = requests.post(url, data=request_body, headers=headers,
                                  stream=True, timeout=self.timeout, proxies=self.proxies,
-                                 cert=self.cert, verify=self.verify)
+                                 verify=self.verify)
         except ValueError:
             raise
         except Exception:
@@ -172,4 +169,5 @@ class SubZeroRequestsTransport(xmlrpclib.SafeTransport):
         property
         """
         scheme = 'https' if self.use_https else 'http'
+        handler = handler[1:] if handler and handler[0] == "/" else handler
         return '%s://%s/%s' % (scheme, host, handler)
