@@ -124,7 +124,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         )
 
         self.token = response['token']
-        logger.debug('Logged in with token %r', self.token)
+        logger.debug('Logged in with token %r', self.token[:10]+"X"*(len(self.token)-10))
 
         region.set("os_token", self.token)
 
