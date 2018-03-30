@@ -11,7 +11,7 @@ from subliminal.providers.opensubtitles import OpenSubtitlesProvider as _OpenSub
     OpenSubtitlesSubtitle as _OpenSubtitlesSubtitle, Episode, ServerProxy, Unauthorized, NoSession, \
     DownloadLimitReached, InvalidImdbid, UnknownUserAgent, DisabledUserAgent, OpenSubtitlesError
 from mixins import ProviderRetryMixin
-from subliminal_patch.http import SubZeroTransport
+from subliminal_patch.http import SubZeroTransport, SubZeroRequestsTransport
 from subliminal.cache import region
 from subliminal_patch.score import framerate_equal
 from subzero.language import Language
@@ -76,6 +76,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
     skip_wrong_fps = True
     is_vip = False
     use_ssl = True
+    use_new_transport = False
 
     default_url = "//api.opensubtitles.org/xml-rpc"
     vip_url = "//vip-api.opensubtitles.org/xml-rpc"
@@ -84,7 +85,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         #Language.fromietf("sr-latn"), Language.fromietf("sr-cyrl")}
 
     def __init__(self, username=None, password=None, use_tag_search=False, only_foreign=False, skip_wrong_fps=True,
-                 is_vip=False, use_ssl=True):
+                 is_vip=False, use_ssl=True, use_new_transport=False):
         if any((username, password)) and not all((username, password)):
             raise ConfigurationError('Username and password must be specified')
 
@@ -96,6 +97,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         self.token = None
         self.is_vip = is_vip
         self.use_ssl = use_ssl
+        self.use_new_transport = use_new_transport
 
         self.default_url = ("https:" if use_ssl else "http:") + self.default_url
         self.vip_url = ("https:" if use_ssl else "http:") + self.vip_url
@@ -107,6 +109,9 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
             logger.info("Only searching for foreign/forced subtitles")
 
     def get_server_proxy(self, url, timeout=10):
+        if self.use_new_transport:
+            return ServerProxy(url, SubZeroRequestsTransport(use_http=self.use_ssl, timeout=timeout,
+                                                             user_agent=os.environ.get("SZ_USER_AGENT", "Sub-Zero/2")))
         return ServerProxy(url, SubZeroTransport(timeout, url))
 
     def log_in(self, server_url=None):
