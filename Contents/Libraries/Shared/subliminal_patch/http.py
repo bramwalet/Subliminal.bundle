@@ -119,6 +119,7 @@ class SubZeroRequestsTransport(xmlrpclib.SafeTransport):
     """
     Drop in Transport for xmlrpclib that uses Requests instead of httplib
 
+    Based on: https://gist.github.com/chrisguitarguy/2354951#gistcomment-2388906
 
     """
     # change our user agent to reflect Requests
