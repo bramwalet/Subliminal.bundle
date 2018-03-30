@@ -144,7 +144,7 @@ def save_subtitles_to_metadata(videos, subtitles, is_forced=False):
             else:
                 mp = mediaPart
             pm = Proxy.Media(content, ext="srt", forced="1" if is_forced else None)
-            mp.subtitles[Locale.Language.Match(subtitle.language.alpha2)][subtitle.id] = pm
+            mp.subtitles[Locale.Language.Match(subtitle.language.alpha2)] = {"subzero": pm}
     return True
 
 
