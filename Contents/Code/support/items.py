@@ -348,6 +348,18 @@ def get_current_sub(rating_key, part_id, language, plex_item=None):
 
 def save_stored_sub(stored_subtitle, rating_key, part_id, language, item_type, plex_item=None, storage=None,
                     stored_subs=None):
+    """
+    in order for this to work, if the calling supplies stored_subs, it has to trigger its saving explicitly
+    :param stored_subtitle:
+    :param rating_key:
+    :param part_id:
+    :param language:
+    :param item_type:
+    :param plex_item:
+    :param storage:
+    :param stored_subs:
+    :return:
+    """
     from support.plex_media import get_plex_metadata
     from support.scanning import scan_videos
     from support.storage import save_subtitles, get_subtitle_storage
@@ -357,7 +369,10 @@ def save_stored_sub(stored_subtitle, rating_key, part_id, language, item_type, p
 
     cleanup = not storage
 
-    stored_subs = stored_subs or storage.load(plex_item.rating_key)
+    stored_subs_was_provided = True
+    if not stored_subs:
+        stored_subs = storage.load(plex_item.rating_key)
+        stored_subs_was_provided = False
 
     if not all([plex_item, stored_subs]):
         return
@@ -396,6 +411,9 @@ def save_stored_sub(stored_subtitle, rating_key, part_id, language, item_type, p
 
     if subtitle.storage_path:
         stored_subtitle.last_mod = datetime.datetime.fromtimestamp(os.path.getmtime(subtitle.storage_path))
+
+    if not stored_subs_was_provided:
+        storage.save(stored_subs)
 
     if cleanup:
         storage.destroy()
