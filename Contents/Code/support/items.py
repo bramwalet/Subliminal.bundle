@@ -349,7 +349,8 @@ def get_current_sub(rating_key, part_id, language, plex_item=None):
 def save_stored_sub(stored_subtitle, rating_key, part_id, language, item_type, plex_item=None, storage=None,
                     stored_subs=None):
     """
-    in order for this to work, if the calling supplies stored_subs, it has to trigger its saving explicitly
+    in order for this to work, if the calling supplies stored_subs and storage, it has to trigger its saving and
+    destruction explicitly
     :param stored_subtitle:
     :param rating_key:
     :param part_id:
@@ -365,12 +366,10 @@ def save_stored_sub(stored_subtitle, rating_key, part_id, language, item_type, p
     from support.storage import save_subtitles, get_subtitle_storage
 
     plex_item = plex_item or get_item(rating_key)
-    storage = storage or get_subtitle_storage()
-
-    cleanup = not storage
 
     stored_subs_was_provided = True
-    if not stored_subs:
+    if not stored_subs or not storage:
+        storage = get_subtitle_storage()
         stored_subs = storage.load(plex_item.rating_key)
         stored_subs_was_provided = False
 
@@ -414,8 +413,6 @@ def save_stored_sub(stored_subtitle, rating_key, part_id, language, item_type, p
 
     if not stored_subs_was_provided:
         storage.save(stored_subs)
-
-    if cleanup:
         storage.destroy()
 
 
