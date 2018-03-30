@@ -97,6 +97,9 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         self.is_vip = is_vip
         self.use_ssl = use_ssl
 
+        if use_ssl:
+            logger.debug("Using HTTPS connection")
+
         self.default_url = ("https:" if use_ssl else "http:") + self.default_url
         self.vip_url = ("https:" if use_ssl else "http:") + self.vip_url
 

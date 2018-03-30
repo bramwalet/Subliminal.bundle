@@ -273,12 +273,6 @@
     "default": "false"
   },
   {
-    "id": "provider.opensubtitles.use_ssl",
-    "label": "OpenSubtitles use HTTPS?",
-    "type": "bool",
-    "default": "true"
-  },
-  {
     "id": "provider.podnapisi.enabled",
     "label": "Provider: Enable Podnapisi.NET",
     "type": "bool",

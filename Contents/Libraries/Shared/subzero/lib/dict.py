@@ -123,6 +123,9 @@ class Dicked(object):
         return self._entries <= d
 
     def __eq__(self, d):
+        if d is None and not self._entries:
+            return True
+
         return self._entries == d
 
     def __ne__(self, d):
