@@ -167,7 +167,7 @@ class SZProviderPool(ProviderPool):
                     self[provider].initialize()
                     results = self[provider].list_subtitles(video, provider_languages)
                 except:
-                    logger.error('Provider %r reinitialization error', provider)
+                    logger.error('Provider %r reinitialization error: %s', provider, traceback.format_exc())
 
             seen = []
             out = []
@@ -275,7 +275,8 @@ class SZProviderPool(ProviderPool):
                     self[subtitle.provider_name].terminate()
                     self[subtitle.provider_name].initialize()
                 except:
-                    logger.error('Provider %r reinitialization error', subtitle.provider_name)
+                    logger.error('Provider %r reinitialization error: %s', subtitle.provider_name,
+                                 traceback.format_exc())
 
             except rarfile.BadRarFile:
                 logger.error('Malformed RAR file from provider %r, skipping subtitle.', subtitle.provider_name)

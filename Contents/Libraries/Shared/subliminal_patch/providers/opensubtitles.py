@@ -2,6 +2,7 @@
 
 import logging
 import os
+import traceback
 
 from babelfish import language_converters
 from dogpile.cache.api import NO_VALUE
@@ -164,11 +165,17 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
                 
     def terminate(self):
         try:
+            checked(self.server.LogOut(self.token))
+        except:
+            logger.error("Logout failed: %s", traceback.format_exc())
+
+        try:
             if self.server:
                 self.server.close()
         except:
-            pass
+            logger.error("Logout failed (server close): %s", traceback.format_exc())
 
+        self.server = None
         self.token = None
 
     def list_subtitles(self, video, languages):
