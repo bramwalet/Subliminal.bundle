@@ -212,6 +212,12 @@ class Config(object):
                 rarfile.UNRAR_TOOL = unrar_exe
                 Log.Info("Using UnRAR from: %s", unrar_exe)
 
+        elif Core.runtime.os == "MacOSX":
+            unrar_exe = os.path.abspath(os.path.join(self.libraries_root, "MacOSX", "i386", "UnRAR", "unrar"))
+            if os.path.isfile(unrar_exe):
+                rarfile.UNRAR_TOOL = unrar_exe
+                Log.Info("Using UnRAR from: %s", unrar_exe)
+
         custom_unrar = os.environ.get("SZ_UNRAR_TOOL")
         if custom_unrar and os.path.isfile(custom_unrar):
             rarfile.UNRAR_TOOL = custom_unrar
