@@ -1,12 +1,13 @@
 # coding=utf-8
-from xmlrpclib import SafeTransport, ProtocolError, Fault, Transport
-
 import certifi
 import ssl
 import os
 import socket
 import logging
+import requests
+import xmlrpclib
 
+from xmlrpclib import SafeTransport, ProtocolError, Fault, Transport
 from requests import Session, exceptions
 from retry.api import retry_call
 
@@ -112,3 +113,62 @@ class SubZeroTransport(SafeTransport):
     def send_request(self, connection, handler, request_body):
         handler = '%s://%s%s' % (self.scheme, self.host, handler)
         Transport.send_request(self, connection, handler, request_body)
+
+
+class SubZeroRequestsTransport(xmlrpclib.SafeTransport):
+    """
+    Drop in Transport for xmlrpclib that uses Requests instead of httplib
+
+    Based on: https://gist.github.com/chrisguitarguy/2354951#gistcomment-2388906
+
+    """
+    # change our user agent to reflect Requests
+    user_agent = "Python XMLRPC with Requests (python-requests.org)"
+    proxies = None
+
+    def __init__(self, use_https=True, verify=None, user_agent=None, timeout=10, *args, **kwargs):
+        self.verify = pem_file if verify is None else verify
+        self.use_https = use_https
+        self.user_agent = user_agent if user_agent is not None else self.user_agent
+        self.timeout = timeout
+        proxy = os.environ.get('SZ_HTTP_PROXY')
+        if proxy:
+            self.proxies = {
+                "http": proxy,
+                "https": proxy
+            }
+
+        xmlrpclib.SafeTransport.__init__(self, *args, **kwargs)
+
+    def request(self, host, handler, request_body, verbose=0):
+        """
+        Make an xmlrpc request.
+        """
+        headers = {'User-Agent': self.user_agent}
+        url = self._build_url(host, handler)
+        try:
+            resp = requests.post(url, data=request_body, headers=headers,
+                                 stream=True, timeout=self.timeout, proxies=self.proxies,
+                                 verify=self.verify)
+        except ValueError:
+            raise
+        except Exception:
+            raise  # something went wrong
+        else:
+            try:
+                resp.raise_for_status()
+            except requests.RequestException as e:
+                raise xmlrpclib.ProtocolError(url, resp.status_code,
+                                              str(e), resp.headers)
+            else:
+                self.verbose = verbose
+                return self.parse_response(resp.raw)
+
+    def _build_url(self, host, handler):
+        """
+        Build a url for our request based on the host, handler and use_http
+        property
+        """
+        scheme = 'https' if self.use_https else 'http'
+        handler = handler[1:] if handler and handler[0] == "/" else handler
+        return '%s://%s/%s' % (scheme, host, handler)

@@ -144,7 +144,9 @@ def save_subtitles_to_metadata(videos, subtitles, is_forced=False):
             else:
                 mp = mediaPart
             pm = Proxy.Media(content, ext="srt", forced="1" if is_forced else None)
-            mp.subtitles[Locale.Language.Match(subtitle.language.alpha2)][subtitle.id] = pm
+            lang = Locale.Language.Match(subtitle.language.alpha2)
+            mp.subtitles[lang].validate_keys({})
+            mp.subtitles[lang]["subzero"] = pm
     return True
 
 
@@ -205,7 +207,7 @@ def save_subtitles(scanned_video_part_map, downloaded_subtitles, mode="a", bare_
         if not bare_save and save_successful and config.notify_executable:
             notify_executable(config.notify_executable, scanned_video_part_map, downloaded_subtitles, storage)
 
-    if not bare_save and (save_successful or not set_current):
+    if not bare_save and save_successful or not set_current:
         store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage, mode=mode, set_current=set_current)
 
     return save_successful

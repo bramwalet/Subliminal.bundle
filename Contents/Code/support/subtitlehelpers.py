@@ -196,7 +196,7 @@ def get_subtitles_from_metadata(part):
                 if p_type == "Media":
                     # metadata subtitle
                     Log.Debug(u"Found metadata subtitle: %s, %s" % (language, repr(proxy)))
-                    subs[language].append(key)
+                    subs[language] = [key]
     return subs
 
 

@@ -158,9 +158,14 @@ class SubtitleListingMixin(object):
                 continue
 
             # skip wrong season/episodes
-            if item_type == "episode" and not {"series", "season", "episode"}.issubset(matches):
-                Log.Debug(u"%s: Skipping %s, because it doesn't match our series/episode", self.name, s)
-                continue
+            if item_type == "episode":
+                can_verify_series = True
+                if not s.hash_verifiable and "hash" in matches:
+                    can_verify_series = False
+
+                if can_verify_series and not {"series", "season", "episode"}.issubset(matches):
+                    Log.Debug(u"%s: Skipping %s, because it doesn't match our series/episode", self.name, s)
+                    continue
 
             unsorted_subtitles.append(
                 (s, compute_score(matches, s, video, hearing_impaired=use_hearing_impaired), matches))

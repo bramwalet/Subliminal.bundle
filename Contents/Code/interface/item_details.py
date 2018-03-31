@@ -294,6 +294,7 @@ def SelectStoredSubForItemMenu(**kwargs):
     save_stored_sub(subtitle, rating_key, part_id, language, item_type, plex_item=plex_item, storage=storage,
                     stored_subs=stored_subs)
 
+    storage.save(stored_subs)
     storage.destroy()
 
     kwargs.pop("randomize")

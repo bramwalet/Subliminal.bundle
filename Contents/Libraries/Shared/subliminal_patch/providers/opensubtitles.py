@@ -2,6 +2,7 @@
 
 import logging
 import os
+import traceback
 
 from babelfish import language_converters
 from dogpile.cache.api import NO_VALUE
@@ -10,7 +11,7 @@ from subliminal.providers.opensubtitles import OpenSubtitlesProvider as _OpenSub
     OpenSubtitlesSubtitle as _OpenSubtitlesSubtitle, Episode, ServerProxy, Unauthorized, NoSession, \
     DownloadLimitReached, InvalidImdbid, UnknownUserAgent, DisabledUserAgent, OpenSubtitlesError
 from mixins import ProviderRetryMixin
-from subliminal_patch.http import SubZeroTransport
+from subliminal_patch.http import SubZeroTransport, SubZeroRequestsTransport
 from subliminal.cache import region
 from subliminal_patch.score import framerate_equal
 from subzero.language import Language
@@ -74,15 +75,16 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
     hearing_impaired_verifiable = True
     skip_wrong_fps = True
     is_vip = False
+    use_ssl = True
 
-    default_url = "https://api.opensubtitles.org/xml-rpc"
-    vip_url = "https://vip-api.opensubtitles.org/xml-rpc"
+    default_url = "//api.opensubtitles.org/xml-rpc"
+    vip_url = "//vip-api.opensubtitles.org/xml-rpc"
 
     languages = {Language.fromopensubtitles(l) for l in language_converters['szopensubtitles'].codes}# | {
         #Language.fromietf("sr-latn"), Language.fromietf("sr-cyrl")}
 
     def __init__(self, username=None, password=None, use_tag_search=False, only_foreign=False, skip_wrong_fps=True,
-                 is_vip=False):
+                 is_vip=False, use_ssl=True):
         if any((username, password)) and not all((username, password)):
             raise ConfigurationError('Username and password must be specified')
 
@@ -93,6 +95,13 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         self.skip_wrong_fps = skip_wrong_fps
         self.token = None
         self.is_vip = is_vip
+        self.use_ssl = use_ssl
+
+        if use_ssl:
+            logger.debug("Using HTTPS connection")
+
+        self.default_url = ("https:" if use_ssl else "http:") + self.default_url
+        self.vip_url = ("https:" if use_ssl else "http:") + self.vip_url
 
         if use_tag_search:
             logger.info("Using tag/exact filename search")
@@ -100,8 +109,9 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         if only_foreign:
             logger.info("Only searching for foreign/forced subtitles")
 
-    def get_server_proxy(self, url, timeout=10):
-        return ServerProxy(url, SubZeroTransport(timeout, url))
+    def get_server_proxy(self, url, timeout=15):
+        return ServerProxy(url, SubZeroRequestsTransport(use_https=self.use_ssl, timeout=timeout,
+                                                         user_agent=os.environ.get("SZ_USER_AGENT", "Sub-Zero/2")))
 
     def log_in(self, server_url=None):
         if server_url:
@@ -117,7 +127,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         )
 
         self.token = response['token']
-        logger.debug('Logged in with token %r', self.token)
+        logger.debug('Logged in with token %r', self.token[:10]+"X"*(len(self.token)-10))
 
         region.set("os_token", self.token)
 
@@ -143,9 +153,10 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         token = region.get("os_token", expiration_time=3600)
         if token is not NO_VALUE:
             try:
+                logger.debug('Trying previous token')
                 checked(self.server.NoOperation(token))
                 self.token = token
-                logger.info("Using previous login token: %s", self.token)
+                logger.debug("Using previous login token: %s", self.token)
                 return
             except:
                 pass
@@ -164,11 +175,16 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
                 
     def terminate(self):
         try:
-            if self.server:
-                self.server.close()
+            checked(self.server.LogOut(self.token))
         except:
-            pass
+            logger.error("Logout failed: %s", traceback.format_exc())
 
+        try:
+            self.server.close()
+        except:
+            logger.error("Logout failed (server close): %s", traceback.format_exc())
+
+        self.server = None
         self.token = None
 
     def list_subtitles(self, video, languages):

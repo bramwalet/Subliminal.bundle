@@ -636,6 +636,8 @@ class Config(object):
     providers = property(get_providers)
 
     def get_provider_settings(self):
+        os_use_https = self.advanced.providers.opensubtitles.use_https \
+            if self.advanced.providers.opensubtitles.use_https != None else True
         provider_settings = {'addic7ed': {'username': Prefs['provider.addic7ed.username'],
                                           'password': Prefs['provider.addic7ed.password'],
                                           'use_random_agents': cast_bool(Prefs['provider.addic7ed.use_random_agents1']),
@@ -644,7 +646,8 @@ class Config(object):
                                                'password': Prefs['provider.opensubtitles.password'],
                                                'use_tag_search': self.exact_filenames,
                                                'only_foreign': self.forced_only,
-                                               'is_vip': cast_bool(Prefs['provider.opensubtitles.is_vip'])
+                                               'is_vip': cast_bool(Prefs['provider.opensubtitles.is_vip']),
+                                               'use_ssl': os_use_https,
                                                },
                              'podnapisi': {
                                  'only_foreign': self.forced_only,

@@ -23,7 +23,7 @@ Because it doesn't deliver. Especially for very new media items it may pick up n
 This is just a tiny peek at the full feature-set of Sub-Zero.
 
 #### Searching/Matching
-It searches up to 8 individual subtitle provider sites and APIs, selects the best matching subtitle and downloads it for you.
+It searches up to 10 individual subtitle provider sites and APIs, selects the best matching subtitle and downloads it for you.
 
 The matching is done by looking at the filename of your media files, as well as media information inside the container.
 Every subtitle gets a score assigned, based on the matching algorithm. The one with the highest score gets picked automatically. The more information your media filenames have, the better. `Moviename.mkv` has a higher chance of getting bad subtitles than `Moviename.2015.720p.BluRay-RLSGRP`. If you like renaming your media files, you want to have a look at [SZ refiners](https://github.com/pannal/Sub-Zero.bundle/wiki/Refiners).
@@ -73,21 +73,28 @@ For further help or manual installation, [please go to the wiki](https://github.
 the.vbm, mmgoodnow, Vertig0ne, thliu78, tattoomees, ostman, count_confucius, 
 eherberg, tywilliams_88, Swanny, Jippo, Joost1991 / joost, Marik, Jon, AmbyDK, 
 Clay, mmgoodnow, Abenlog, michael, smikwily, shoghicp, Zuikkis, Isilorn, 
-Jacob K, Ninjouz, chopeta, fvb
+Jacob K, Ninjouz, chopeta, fvb, Jose
 
 ## Changelog
 
-2.5.3.2422
+2.5.3.2452
 
-- core: don't fail on embedded subtitle streams without language code set, fixes #473
-- providers: catch ResponseNotReady in list_subtitles_provider as well (partly fixes OpenSubtitles)
-- providers: don't use retry logic in case of ResponseNotReady
-- providers: addic7ed: use new search endpoint
-
+- core: update certifi to 2018.01.18
+- core: metadata storage: only allow one subtitle per language
+- core: metadata storage: only parse latest metadata subtitle in localmedia
+- core: metadata storage: kill existing metadata subtitles explicitly upon storing a new one
+- core: metadata storage: fix selecting current subtitle from menu
+- providers: opensubtitles: use new requests based transport by default, finally fixes ResponseNotReady properly
+- providers: opensubtitles: mask token in logs
+- providers: don't check for hash validity if it isn't verifiable (fixes napiprojekt, #478)
+- submod: common: extend non_word_only matching
+- submod: common: reduce multi spaces to one
+- submod: OCR: fix III'll=I'll
+- advanced settings: add option to use HTTP instead of HTTPS for OpenSubtitles
 
 
 
 [older changes](CHANGELOG.md)
 
 
-Subtitles provided by [OpenSubtitles.org](http://www.opensubtitles.org/), [Podnapisi.NET](https://www.podnapisi.net/), [TVSubtitles.net](http://www.tvsubtitles.net/), [Addic7ed.com](http://www.addic7ed.com/), [Legendas TV](http://legendas.tv/), [Napi Projekt](http://www.napiprojekt.pl/), [Titlovi](http://titlovi.com), [SubScene](https://subscene.com/), [aRGENTeaM](http://argenteam.net), [Hosszupuska](http://hosszupuskasub.com/)
+Subtitles provided by [OpenSubtitles.org](http://www.opensubtitles.org/), [Podnapisi.NET](https://www.podnapisi.net/), [TVSubtitles.net](http://www.tvsubtitles.net/), [Addic7ed.com](http://www.addic7ed.com/), [Legendas TV](http://legendas.tv/), [Napi Projekt](http://www.napiprojekt.pl/), [Shooter](http://shooter.cn/), [Titlovi](http://titlovi.com), [aRGENTeaM](http://argenteam.net), [SubScene](https://subscene.com/), [Hosszupuska](http://hosszupuskasub.com/)
