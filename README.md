@@ -23,7 +23,7 @@ Because it doesn't deliver. Especially for very new media items it may pick up n
 This is just a tiny peek at the full feature-set of Sub-Zero.
 
 #### Searching/Matching
-It searches up to 8 individual subtitle provider sites and APIs, selects the best matching subtitle and downloads it for you.
+It searches up to 10 individual subtitle provider sites and APIs, selects the best matching subtitle and downloads it for you.
 
 The matching is done by looking at the filename of your media files, as well as media information inside the container.
 Every subtitle gets a score assigned, based on the matching algorithm. The one with the highest score gets picked automatically. The more information your media filenames have, the better. `Moviename.mkv` has a higher chance of getting bad subtitles than `Moviename.2015.720p.BluRay-RLSGRP`. If you like renaming your media files, you want to have a look at [SZ refiners](https://github.com/pannal/Sub-Zero.bundle/wiki/Refiners).
@@ -97,4 +97,4 @@ Jacob K, Ninjouz, chopeta, fvb
 [older changes](CHANGELOG.md)
 
 
-Subtitles provided by [OpenSubtitles.org](http://www.opensubtitles.org/), [Podnapisi.NET](https://www.podnapisi.net/), [TVSubtitles.net](http://www.tvsubtitles.net/), [Addic7ed.com](http://www.addic7ed.com/), [Legendas TV](http://legendas.tv/), [Napi Projekt](http://www.napiprojekt.pl/), [Shooter](http://shooter.cn/), [Titlovi](http://titlovi.com), [SubScene](https://subscene.com/)
+Subtitles provided by [OpenSubtitles.org](http://www.opensubtitles.org/), [Podnapisi.NET](https://www.podnapisi.net/), [TVSubtitles.net](http://www.tvsubtitles.net/), [Addic7ed.com](http://www.addic7ed.com/), [Legendas TV](http://legendas.tv/), [Napi Projekt](http://www.napiprojekt.pl/), [Shooter](http://shooter.cn/), [Titlovi](http://titlovi.com), [SubScene](https://subscene.com/), [Hosszupuska](http://hosszupuskasub.com/)
