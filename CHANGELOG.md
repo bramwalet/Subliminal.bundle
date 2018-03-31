@@ -1,5 +1,13 @@
 
 
+2.5.3.2422
+
+- core: don't fail on embedded subtitle streams without language code set, fixes #473
+- providers: catch ResponseNotReady in list_subtitles_provider as well (partly fixes OpenSubtitles)
+- providers: don't use retry logic in case of ResponseNotReady
+- providers: addic7ed: use new search endpoint
+
+
 2.5.3.2414
 
 - core: expand user agent list
