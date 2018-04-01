@@ -208,28 +208,37 @@ class Config(object):
         self.initialized = True
 
     def init_libraries(self):
-        unrar_exe = "unrar"
-        if Core.runtime.os == "Windows":
-            unrar_exe = os.path.abspath(os.path.join(self.libraries_root, "Windows", "i386", "UnRAR", "UnRAR.exe"))
-
-        elif Core.runtime.os == "MacOSX":
-            unrar_exe = os.path.abspath(os.path.join(self.libraries_root, "MacOSX", "i386", "UnRAR", "unrar"))
-
-        elif Core.runtime.os == "Linux":
-            unrar_exe = os.path.abspath(os.path.join(self.libraries_root, "Linux", Core.runtime.cpu, "UnRAR", "unrar"))
+        default_unrar_exe = unrar_exe = "unrar"
 
         custom_unrar = os.environ.get("SZ_UNRAR_TOOL")
-        if custom_unrar and os.path.isfile(custom_unrar):
-            unrar_exe = custom_unrar
+        if custom_unrar:
+            if os.path.isfile(custom_unrar):
+                unrar_exe = custom_unrar
 
-        try:
-            out = subprocess.check_output(unrar_exe, stderr=subprocess.STDOUT)
-            if "UNRAR" in out:
-                Log.Info("Using UnRAR from: %s", unrar_exe)
-                rarfile.UNRAR_TOOL = unrar_exe
-                self.unrar = unrar_exe
-        except:
-            Log.Warn("UnRAR not found")
+        else:
+            if Core.runtime.os == "Windows":
+                unrar_exe = os.path.abspath(os.path.join(self.libraries_root, "Windows", "i386", "UnRAR", "UnRAR.exe"))
+
+            elif Core.runtime.os == "MacOSX":
+                unrar_exe = os.path.abspath(os.path.join(self.libraries_root, "MacOSX", "i386", "UnRAR", "unrar"))
+
+            elif Core.runtime.os == "Linux":
+                unrar_exe = os.path.abspath(os.path.join(self.libraries_root, "Linux", Core.runtime.cpu, "UnRAR", "unrar"))
+
+        try_executables = [unrar_exe]
+        if default_unrar_exe != unrar_exe:
+            try_executables.append(default_unrar_exe)
+
+        for exe in try_executables:
+            try:
+                out = subprocess.check_output(exe, stderr=subprocess.STDOUT)
+                if "UNRAR" in out:
+                    Log.Info("Using UnRAR from: %s", exe)
+                    rarfile.UNRAR_TOOL = exe
+                    self.unrar = exe
+                    return
+            except:
+                Log.Warn("UnRAR not found")
 
     def init_cache(self):
         if self.new_style_cache:
