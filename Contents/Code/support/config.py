@@ -136,6 +136,7 @@ class Config(object):
     only_one = False
     embedded_auto_extract = False
     ietf_as_alpha3 = False
+    unrar = None
 
     store_recently_played_amount = 40
 
@@ -207,7 +208,7 @@ class Config(object):
         self.initialized = True
 
     def init_libraries(self):
-        unrar_exe = None
+        unrar_exe = "unrar"
         if Core.runtime.os == "Windows":
             unrar_exe = os.path.abspath(os.path.join(self.libraries_root, "Windows", "i386", "UnRAR", "UnRAR.exe"))
 
@@ -221,11 +222,14 @@ class Config(object):
         if custom_unrar and os.path.isfile(custom_unrar):
             unrar_exe = custom_unrar
 
-        if os.path.isfile(unrar_exe):
+        try:
             out = subprocess.check_output(unrar_exe, stderr=subprocess.STDOUT)
             if "UNRAR" in out:
                 Log.Info("Using UnRAR from: %s", unrar_exe)
                 rarfile.UNRAR_TOOL = unrar_exe
+                self.unrar = unrar_exe
+        except:
+            Log.Warn("UnRAR not found")
 
     def init_cache(self):
         if self.new_style_cache:
