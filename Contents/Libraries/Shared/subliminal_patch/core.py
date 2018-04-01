@@ -280,6 +280,7 @@ class SZProviderPool(ProviderPool):
 
             except rarfile.BadRarFile:
                 logger.error('Malformed RAR file from provider %r, skipping subtitle.', subtitle.provider_name)
+                logger.debug("RAR Traceback: %s", traceback.format_exc())
                 return False
 
             except (TooManyRequests, DownloadLimitExceeded, ServiceUnavailable), e:
