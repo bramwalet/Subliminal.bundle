@@ -7,6 +7,7 @@ import sys
 import rarfile
 import jstyleson
 import datetime
+import subprocess
 
 import subliminal
 import subliminal_patch
@@ -206,22 +207,25 @@ class Config(object):
         self.initialized = True
 
     def init_libraries(self):
+        unrar_exe = None
         if Core.runtime.os == "Windows":
             unrar_exe = os.path.abspath(os.path.join(self.libraries_root, "Windows", "i386", "UnRAR", "UnRAR.exe"))
-            if os.path.isfile(unrar_exe):
-                rarfile.UNRAR_TOOL = unrar_exe
-                Log.Info("Using UnRAR from: %s", unrar_exe)
 
         elif Core.runtime.os == "MacOSX":
             unrar_exe = os.path.abspath(os.path.join(self.libraries_root, "MacOSX", "i386", "UnRAR", "unrar"))
-            if os.path.isfile(unrar_exe):
-                rarfile.UNRAR_TOOL = unrar_exe
-                Log.Info("Using UnRAR from: %s", unrar_exe)
+
+        elif Core.runtime.os == "Linux":
+            unrar_exe = os.path.abspath(os.path.join(self.libraries_root, "Linux", Core.runtime.cpu, "UnRAR", "unrar"))
 
         custom_unrar = os.environ.get("SZ_UNRAR_TOOL")
         if custom_unrar and os.path.isfile(custom_unrar):
-            rarfile.UNRAR_TOOL = custom_unrar
-            Log.Info("Using UnRAR from: %s", custom_unrar)
+            unrar_exe = custom_unrar
+
+        if os.path.isfile(unrar_exe):
+            out = subprocess.check_output(unrar_exe, stderr=subprocess.STDOUT)
+            if "UNRAR" in out:
+                Log.Info("Using UnRAR from: %s", unrar_exe)
+                rarfile.UNRAR_TOOL = unrar_exe
 
     def init_cache(self):
         if self.new_style_cache:
