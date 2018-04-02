@@ -194,5 +194,12 @@
   "%sRefreshing %s":"%sRefreshing %s",
   "Force-":"Force-",
   "Extracting subtitle %s of %s":"Extracting subtitle %s of %s",
-  "<< Back to home":"<< Back to home"
+  "<< Back to home":"<< Back to home",
+  "Extract missing %s embedded subtitles":"Extract missing %s embedded subtitles",
+  "Extracts the not yet extracted embedded subtitles of all episodes for the current season ":"Extracts the not yet extracted embedded subtitles of all episodes for the current season ",
+  "with all configured default modifications":"with all configured default modifications",
+  "Extract and activate %s embedded subtitles":"Extract and activate %s embedded subtitles",
+  "Extracts embedded subtitles of all episodes for the current season ":"Extracts embedded subtitles of all episodes for the current season ",
+  "Auto-Find subtitles: %s":"Auto-Find subtitles: %s",
+  "Extracting of embedded subtitles for %s triggered":"Extracting of embedded subtitles for %s triggered"  
 }

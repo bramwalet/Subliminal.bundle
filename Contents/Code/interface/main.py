@@ -1,7 +1,4 @@
 # coding=utf-8
-
-# i18n: Look at line 90, 122, 129, 130, 137, 145, 152
-
 from subzero.constants import PREFIX, TITLE, ART
 from support.config import config
 from support.helpers import pad_title, timestamp, df, display_language
@@ -87,8 +84,7 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
             oc.add(DirectoryObject(
                 key=Callback(RecentlyPlayedMenu),
                 title=pad_title(L("Recently played items")),
-                # summary=L("Shows the %s recently played items and allows you to individually (force-) refresh their metadata/subtitles.") % config.store_recently_played_amount,
-                summary="Shows the %s recently played items and allows you to individually (force-) refresh their metadata/subtitles." % config.store_recently_played_amount,
+                summary=F("Shows the %s recently played items and allows you to individually (force-) refresh their metadata/subtitles.", config.store_recently_played_amount),
                 thumb=R("icon-played.jpg")
             ))
         oc.add(DirectoryObject(
@@ -118,23 +114,22 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
         else:
             lr = scheduler.last_run(task_name)
             nr = scheduler.next_run(task_name)
-            task_state = "Last run: %s; Next scheduled run: %s; Last runtime: %s" % (
+            task_state = F("Last run: %s; Next scheduled run: %s; Last runtime: %s",
                 df(scheduler.last_run(task_name)) if lr else "never",
                 df(scheduler.next_run(task_name)) if nr else "never",
                 str(task.last_run_time).split(".")[0])
 
         oc.add(DirectoryObject(
             key=Callback(RefreshMissing, randomize=timestamp()),
-            title="Search for missing subtitles (in recently-added items, max-age: %s)" % Prefs[
-                "scheduler.item_is_recent_age"],
-            # summary=L("Automatically run periodically by the scheduler, if configured. %s") % task_state,
-            summary="Automatically run periodically by the scheduler, if configured. %s" % task_state,
+            title=F("Search for missing subtitles (in recently-added items, max-age: %s)", Prefs[
+                "scheduler.item_is_recent_age"]),
+            summary=F("Automatically run periodically by the scheduler, if configured. %s", task_state),
             thumb=R("icon-search.jpg")
         ))
 
         oc.add(DirectoryObject(
             key=Callback(IgnoreListMenu),
-            title="Display ignore list (%d)" % len(ignore_list),
+            title=F("Display ignore list (%d)", len(ignore_list)),
             summary=L("Show the current ignore list (mainly used for the automatic tasks)"),
             thumb=R("icon-ignore.jpg")
         ))
@@ -142,14 +137,14 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
         oc.add(DirectoryObject(
             key=Callback(HistoryMenu),
             title=L("History"),
-            summary="Show the last %i downloaded subtitles" % int(Prefs["history_size"]),
+            summary=F("Show the last %i downloaded subtitles", int(Prefs["history_size"])),
             thumb=R("icon-history.jpg")
         ))
 
     oc.add(DirectoryObject(
         key=Callback(fatality, force_title=" ", randomize=timestamp()),
         title=pad_title(L("Refresh")),
-        summary="Current state: %s; Last state: %s" % (
+        summary=F("Current state: %s; Last state: %s",
             (Dict["current_refresh_state"] or "Idle") if "current_refresh_state" in Dict else "Idle",
             (Dict["last_refresh_state"] or "None") if "last_refresh_state" in Dict else "None"
         ),

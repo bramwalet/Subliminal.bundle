@@ -89,7 +89,7 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
             oc.add(DirectoryObject(
                 key=Callback(MetadataMenu, rating_key=show.rating_key, title=show.title, base_title=show.section.title,
                              previous_item_type="section", display_items=True, randomize=timestamp()),
-                title=u"< Back to %s" % show.title,
+                title=L(u"< Back to %s") % show.title,
                 thumb=show.thumb or default_thumb
             ))
         elif current_kind == "series":
@@ -117,9 +117,9 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
                                  title=title,
                                  previous_item_type=previous_item_type, with_mods=True,
                                  previous_rating_key=previous_rating_key, randomize=timestamp()),
-                    title=u"Extract missing %s embedded subtitles" % display_language(lang),
-                    summary="Extracts the not yet extracted embedded subtitles of all episodes for the current season "
-                            "with all configured default modifications"
+                    title=L(u"Extract missing %s embedded subtitles") % display_language(lang),
+                    summary=L("Extracts the not yet extracted embedded subtitles of all episodes for the current season ") +
+                            L("with all configured default modifications")
                 ))
                 oc.add(DirectoryObject(
                     key=Callback(SeasonExtractEmbedded, rating_key=rating_key, language=lang,
@@ -127,24 +127,24 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
                                  title=title, force=True,
                                  previous_item_type=previous_item_type, with_mods=True,
                                  previous_rating_key=previous_rating_key, randomize=timestamp()),
-                    title=u"Extract and activate %s embedded subtitles" % display_language(lang),
-                    summary="Extracts embedded subtitles of all episodes for the current season "
-                            "with all configured default modifications"
+                    title=L(u"Extract and activate %s embedded subtitles") % display_language(lang),
+                    summary=L("Extracts embedded subtitles of all episodes for the current season ") +
+                            L("with all configured default modifications")
                 ))
 
         # add refresh
         oc.add(DirectoryObject(
             key=Callback(RefreshItem, rating_key=rating_key, item_title=title, refresh_kind=current_kind,
                          previous_rating_key=previous_rating_key, timeout=timeout * 1000, randomize=timestamp()),
-            title=u"Refresh: %s" % item_title,
-            summary="Refreshes the %s, possibly searching for missing and picking up new subtitles on disk" % current_kind
+            title=L(u"Refresh: %s") % item_title,
+            summary=L("Refreshes the %s, possibly searching for missing and picking up new subtitles on disk") % current_kind
         ))
         oc.add(DirectoryObject(
             key=Callback(RefreshItem, rating_key=rating_key, item_title=title, force=True,
                          refresh_kind=current_kind, previous_rating_key=previous_rating_key, timeout=timeout * 1000,
                          randomize=timestamp()),
-            title=u"Auto-Find subtitles: %s" % item_title,
-            summary="Issues a forced refresh, ignoring known subtitles and searching for new ones"
+            title=L(u"Auto-Find subtitles: %s") % item_title,
+            summary=L("Issues a forced refresh, ignoring known subtitles and searching for new ones")
         ))
     else:
         return ItemDetailsMenu(rating_key=rating_key, title=title, item_title=item_title)
@@ -164,8 +164,8 @@ def SeasonExtractEmbedded(**kwargs):
     Thread.Create(season_extract_embedded, **{"rating_key": rating_key, "requested_language": requested_language,
                                               "with_mods": with_mods, "force": force})
 
-    kwargs["header"] = 'Success'
-    kwargs["message"] = u"Extracting of embedded subtitles for %s triggered" % title
+    kwargs["header"] = L("Success")
+    kwargs["message"] = L(u"Extracting of embedded subtitles for %s triggered") % title
 
     kwargs.pop("randomize")
     return MetadataMenu(randomize=timestamp(), title=item_title, **kwargs)
@@ -231,7 +231,7 @@ def IgnoreListMenu():
 def HistoryMenu():
     from support.history import get_history
     history = get_history()
-    oc = SubFolderObjectContainer(title2="History", replace_parent=True)
+    oc = SubFolderObjectContainer(title2=L("History"), replace_parent=True)
 
     for item in history.items:
         possible_language = item.language
