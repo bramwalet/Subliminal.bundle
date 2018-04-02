@@ -15,9 +15,9 @@ def RefreshItem(rating_key=None, came_from="/recent", item_title=None, force=Fal
     from interface.main import fatality
     header = " "
     if trigger:
-        set_refresh_menu_state(u"Triggering %sRefresh for %s" % ("Force-" if force else "", item_title))
+        set_refresh_menu_state(F(u"Triggering %sRefresh for %s", L("Force-") if force else "", item_title))
         Thread.Create(refresh_item, rating_key=rating_key, force=force, refresh_kind=refresh_kind,
                       parent_rating_key=previous_rating_key, timeout=int(timeout))
 
-        header = u"%s of item %s triggered" % ("Refresh" if not force else "Forced-refresh", rating_key)
+        header = F(u"%s of item %s triggered", L("Refresh") if not force else L("Forced-refresh"), rating_key)
     return fatality(randomize=timestamp(), header=header, replace_parent=True)
