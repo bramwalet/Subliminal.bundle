@@ -1,7 +1,4 @@
 # coding=utf-8
-
-# i18n: Look at line 248 for problem
-
 import traceback
 import types
 import datetime
@@ -248,7 +245,7 @@ class SubFolderObjectContainer(ObjectContainer):
         self.add(DirectoryObject(
             key=Callback(fatality, force_title=" ", randomize=timestamp()),
             title=pad_title(L("<< Back to home")),
-            summary="Current state: %s; Last state: %s" % (
+            summary=F("Current state: %s; Last state: %s",
                 (Dict["current_refresh_state"] or "Idle") if "current_refresh_state" in Dict else "Idle",
                 (Dict["last_refresh_state"] or "None") if "last_refresh_state" in Dict else "None"
             )
