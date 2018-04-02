@@ -89,7 +89,7 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
             oc.add(DirectoryObject(
                 key=Callback(MetadataMenu, rating_key=show.rating_key, title=show.title, base_title=show.section.title,
                              previous_item_type="section", display_items=True, randomize=timestamp()),
-                title=L(u"< Back to %s") % show.title,
+                title=F(u"< Back to %s", show.title),
                 thumb=show.thumb or default_thumb
             ))
         elif current_kind == "series":
@@ -117,7 +117,7 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
                                  title=title,
                                  previous_item_type=previous_item_type, with_mods=True,
                                  previous_rating_key=previous_rating_key, randomize=timestamp()),
-                    title=L(u"Extract missing %s embedded subtitles") % display_language(lang),
+                    title=F(u"Extract missing %s embedded subtitles", display_language(lang)),
                     summary=L("Extracts the not yet extracted embedded subtitles of all episodes for the current season ") +
                             L("with all configured default modifications")
                 ))
@@ -127,7 +127,7 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
                                  title=title, force=True,
                                  previous_item_type=previous_item_type, with_mods=True,
                                  previous_rating_key=previous_rating_key, randomize=timestamp()),
-                    title=L(u"Extract and activate %s embedded subtitles") % display_language(lang),
+                    title=F(u"Extract and activate %s embedded subtitles", display_language(lang)),
                     summary=L("Extracts embedded subtitles of all episodes for the current season ") +
                             L("with all configured default modifications")
                 ))
@@ -136,14 +136,14 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
         oc.add(DirectoryObject(
             key=Callback(RefreshItem, rating_key=rating_key, item_title=title, refresh_kind=current_kind,
                          previous_rating_key=previous_rating_key, timeout=timeout * 1000, randomize=timestamp()),
-            title=L(u"Refresh: %s") % item_title,
-            summary=L("Refreshes the %s, possibly searching for missing and picking up new subtitles on disk") % current_kind
+            title=F(u"Refresh: %s", item_title),
+            summary=F("Refreshes the %s, possibly searching for missing and picking up new subtitles on disk", current_kind)
         ))
         oc.add(DirectoryObject(
             key=Callback(RefreshItem, rating_key=rating_key, item_title=title, force=True,
                          refresh_kind=current_kind, previous_rating_key=previous_rating_key, timeout=timeout * 1000,
                          randomize=timestamp()),
-            title=L(u"Auto-Find subtitles: %s") % item_title,
+            title=F(u"Auto-Find subtitles: %s", item_title),
             summary=L("Issues a forced refresh, ignoring known subtitles and searching for new ones")
         ))
     else:
@@ -165,7 +165,7 @@ def SeasonExtractEmbedded(**kwargs):
                                               "with_mods": with_mods, "force": force})
 
     kwargs["header"] = L("Success")
-    kwargs["message"] = L(u"Extracting of embedded subtitles for %s triggered") % title
+    kwargs["message"] = F(u"Extracting of embedded subtitles for %s triggered", title)
 
     kwargs.pop("randomize")
     return MetadataMenu(randomize=timestamp(), title=item_title, **kwargs)
@@ -241,7 +241,7 @@ def HistoryMenu():
             key=Callback(ItemDetailsMenu, title=item.title, item_title=item.item_title,
                          rating_key=item.rating_key),
             title=u"%s (%s)" % (item.item_title, item.mode_verbose),
-            summary=u"%s in %s (%s, score: %s), %s" % (language_display, item.section_title,
+            summary=F(u"%s in %s (%s, score: %s), %s", language_display, item.section_title,
                                                        item.provider_name, item.score, df(item.time))
         ))
 

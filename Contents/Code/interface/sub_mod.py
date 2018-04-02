@@ -31,7 +31,7 @@ def SubtitleModificationsMenu(**kwargs):
     from interface.item_details import SubtitleOptionsMenu
     oc.add(DirectoryObject(
         key=Callback(SubtitleOptionsMenu, randomize=timestamp(), **kwargs),
-        title=u"< Back to subtitle options for: %s" % kwargs["title"],
+        title=F(u"< Back to subtitle options for: %s", kwargs["title"]),
         summary=kwargs["current_data"],
         thumb=default_thumb
     ))
@@ -72,24 +72,24 @@ def SubtitleModificationsMenu(**kwargs):
     if current_mods:
         oc.add(DirectoryObject(
             key=Callback(SubtitleSetMods, mods=None, mode="remove_last", randomize=timestamp(), **kwargs),
-            title=pad_title("Remove last applied mod (%s)" % current_mods[-1]),
-            summary=u"Currently applied mods: %s" % (", ".join(current_mods) if current_mods else "none")
+            title=pad_title(F("Remove last applied mod (%s)", current_mods[-1])),
+            summary=F(u"Currently applied mods: %s", ", ".join(current_mods) if current_mods else L("none"))
         ))
         oc.add(DirectoryObject(
             key=Callback(SubtitleListMods, randomize=timestamp(), **kwargs),
-            title=pad_title("Manage applied mods"),
-            summary=u"Currently applied mods: %s" % (", ".join(current_mods))
+            title=pad_title(L("Manage applied mods")),
+            summary=F(u"Currently applied mods: %s", ", ".join(current_mods))
         ))
         oc.add(DirectoryObject(
             key=Callback(SubtitleReapplyMods, randomize=timestamp(), **kwargs),
-            title=pad_title("Reapply applied mods"),
-            summary=u"Currently applied mods: %s" % (", ".join(current_mods) if current_mods else "none")
+            title=pad_title(L("Reapply applied mods")),
+            summary=F(u"Currently applied mods: %s", ", ".join(current_mods) if current_mods else L("none"))
         ))
 
     oc.add(DirectoryObject(
         key=Callback(SubtitleSetMods, mods=None, mode="clear", randomize=timestamp(), **kwargs),
-        title=pad_title("Restore original version"),
-        summary=u"Currently applied mods: %s" % (", ".join(current_mods) if current_mods else "none")
+        title=pad_title(L("Restore original version")),
+        summary=F(u"Currently applied mods: %s", ", ".join(current_mods) if current_mods else L("none"))
     ))
 
     storage.destroy()
@@ -109,7 +109,7 @@ def SubtitleFPSModMenu(**kwargs):
 
     oc.add(DirectoryObject(
         key=Callback(SubtitleModificationsMenu, randomize=timestamp(), **kwargs),
-        title="< Back to subtitle modification menu"
+        title=L("< Back to subtitle modification menu")
     ))
 
     metadata = get_plex_metadata(rating_key, part_id, item_type)
@@ -123,14 +123,14 @@ def SubtitleFPSModMenu(**kwargs):
             continue
 
         if float(fps) > float(target_fps):
-            indicator = "subs constantly getting faster"
+            indicator = L("subs constantly getting faster")
         else:
-            indicator = "subs constantly getting slower"
+            indicator = L("subs constantly getting slower")
 
         mod_ident = SubtitleModifications.get_mod_signature("change_FPS", **{"from": fps, "to": target_fps})
         oc.add(DirectoryObject(
             key=Callback(SubtitleSetMods, mods=mod_ident, mode="add", randomize=timestamp(), **kwargs),
-            title="%s fps -> %s fps (%s)" % (fps, target_fps, indicator)
+            title=F("%s fps -> %s fps (%s)", fps, target_fps, indicator)
         ))
 
     return oc
@@ -148,13 +148,13 @@ def SubtitleShiftModUnitMenu(**kwargs):
 
     oc.add(DirectoryObject(
         key=Callback(SubtitleModificationsMenu, randomize=timestamp(), **kwargs),
-        title="< Back to subtitle modifications"
+        title=L("< Back to subtitle modifications")
     ))
 
     for unit, title in POSSIBLE_UNITS:
         oc.add(DirectoryObject(
             key=Callback(SubtitleShiftModMenu, unit=unit, randomize=timestamp(), **kwargs),
-            title="Adjust by %s" % title
+            title=F("Adjust by %s", title)
         ))
 
     return oc
@@ -171,7 +171,7 @@ def SubtitleShiftModMenu(unit=None, **kwargs):
 
     oc.add(DirectoryObject(
         key=Callback(SubtitleShiftModUnitMenu, randomize=timestamp(), **kwargs),
-        title="< Back to unit selection"
+        title=L("< Back to unit selection")
     ))
 
     rng = []
@@ -273,7 +273,7 @@ def SubtitleListMods(**kwargs):
     for identifier in current_sub.mods:
         oc.add(DirectoryObject(
             key=Callback(SubtitleSetMods, mods=identifier, mode="remove", randomize=timestamp(), **kwargs),
-            title="Remove: %s" % identifier
+            title=F("Remove: %s", identifier)
         ))
 
     storage.destroy()

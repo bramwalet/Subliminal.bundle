@@ -51,7 +51,7 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
                 oc.add(DirectoryObject(
                     key=Callback(fatality, randomize=timestamp()),
                     title=pad_title(L("Insufficient permissions")),
-                    summary=L("Insufficient permissions on library %s, folder: %s") % (title, path),
+                    summary=F("Insufficient permissions on library %s, folder: %s", title, path),
                 ))
         return oc
 
@@ -68,7 +68,7 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
             oc.add(DirectoryObject(
                 key=Callback(fatality, force_title=" ", randomize=timestamp()),
                 title=pad_title(L("Working ... refresh here")),
-                summary=L("Current state: %s; Last state: %s") % (
+                summary=F("Current state: %s; Last state: %s",
                     (Dict["current_refresh_state"] or "Idle") if "current_refresh_state" in Dict else "Idle",
                     (Dict["last_refresh_state"] or "None") if "last_refresh_state" in Dict else "None"
                 )
@@ -110,7 +110,7 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
         task = scheduler.task(task_name)
 
         if task.ready_for_display:
-            task_state = L("Running: %s/%s (%s%%)") % (task.items_done, task.items_searching, task.percentage)
+            task_state = F("Running: %s/%s (%s%%)", task.items_done, task.items_searching, task.percentage)
         else:
             lr = scheduler.last_run(task_name)
             nr = scheduler.next_run(task_name)
@@ -164,11 +164,11 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
             summary_data = []
             for provider, data in Dict["provider_throttle"].iteritems():
                 reason, until, desc = data
-                summary_data.append(L("%s until %s (%s)") % (provider, until.strftime("%y/%m/%d %H:%M"), reason))
+                summary_data.append(F("%s until %s (%s)", provider, until.strftime("%y/%m/%d %H:%M"), reason))
 
             oc.add(DirectoryObject(
                 key=Callback(fatality, force_title=" ", randomize=timestamp()),
-                title=pad_title(L("Throttled providers: %s") % ", ".join(Dict["provider_throttle"].keys())),
+                title=pad_title(F("Throttled providers: %s", ", ".join(Dict["provider_throttle"].keys()))),
                 summary=", ".join(summary_data),
                 thumb=R("icon-throttled.jpg")
             ))
@@ -259,7 +259,7 @@ def RecentMissingSubtitlesMenu(force=False, randomize=None):
                 key=Callback(ItemDetailsMenu, title=title + " > " + item_title, item_title=item_title,
                              rating_key=item_id),
                 title=item_title,
-                summary=L("Missing: %s") % ", ".join(display_language(l) for l in missing_languages),
+                summary=F("Missing: %s", ", ".join(display_language(l) for l in missing_languages)),
                 thumb=get_item_thumb(item) or default_thumb
             ))
 
@@ -317,7 +317,7 @@ def IgnoreMenu(kind, rating_key, title=None, sure=False, todo="not_set"):
     """
     is_ignored = rating_key in ignore_list[kind]
     if not sure:
-        oc = SubFolderObjectContainer(no_history=True, replace_parent=True, title1=L("%s %s %s %s the ignore list") % (
+        oc = SubFolderObjectContainer(no_history=True, replace_parent=True, title1=F("%s %s %s %s the ignore list", 
             L("Add") if not is_ignored else L("Remove"), ignore_list.verbose(kind), title,
             L("to") if not is_ignored else L("from")), title2=L("Are you sure?"))
         oc.add(DirectoryObject(
@@ -353,7 +353,7 @@ def IgnoreMenu(kind, rating_key, title=None, sure=False, todo="not_set"):
     if dont_change:
         return fatality(force_title=" ", header=L("Didn't change the ignore list"), no_history=True)
 
-    return fatality(force_title=" ", header=L("%s %s the ignore list") % (title, state), no_history=True)
+    return fatality(force_title=" ", header=F("%s %s the ignore list", title, state), no_history=True)
 
 
 @route(PREFIX + '/sections')

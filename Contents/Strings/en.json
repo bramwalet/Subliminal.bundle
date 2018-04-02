@@ -204,5 +204,21 @@
   "Extracting of embedded subtitles for %s triggered":"Extracting of embedded subtitles for %s triggered",
   "Triggering %sRefresh for %s":"Triggering %sRefresh for %s",
   "%s of item %s triggered":"%s of item %s triggered",
-  "Forced-refresh":"Forced-refresh"  
+  "Forced-refresh":"Forced-refresh",
+  "< Back to subtitle options for: %s":"< Back to subtitle options for: %s",
+  "Remove last applied mod (%s)":"Remove last applied mod (%s)",
+  "none":"none",
+  "Manage applied mods":"Manage applied mods",
+  "Reapply applied mods":"Reapply applied mods",
+  "Restore original version":"Restore original version",
+  "< Back to subtitle modification menu":"< Back to subtitle modification menu",
+  "subs constantly getting faster":"subs constantly getting faster",
+  "subs constantly getting slower":"subs constantly getting slower",
+  "%s fps -> %s fps (%s)":"%s fps -> %s fps (%s)",
+  "< Back to subtitle modifications":"< Back to subtitle modifications",
+  "Adjust by %s":"Adjust by %s",
+  "< Back to unit selection":"< Back to unit selection",
+  "added: %s, %s, Language: %s, Score: %i, Storage: %s":"added: %s, %s, Language: %s, Score: %i, Storage: %s",
+  "Remove: %s":"Remove: %s"
+  
 }

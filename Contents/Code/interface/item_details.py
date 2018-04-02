@@ -56,7 +56,7 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                     base_title=base_title,
                     item_title=item_title,
                     randomize=timestamp()),
-            title=L(u"Item not found: %s!") % item_title,
+            title=F(u"Item not found: %s!", item_title),
             summary=L("Plex didn't return any information about the item, please refresh it and come back later"),
             thumb=default_thumb
         ))
@@ -78,8 +78,8 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                     previous_rating_key=show.rating_key,
                     display_items=True,
                     randomize=timestamp()),
-            title=L(u"< Back to %s") % season.title,
-            summary=L("Back to %s > %s") % (show.title, season.title),
+            title=F(u"< Back to %s", season.title),
+            summary=F("Back to %s > %s", show.title, season.title),
             thumb=season.thumb or default_thumb
         ))
 
@@ -90,14 +90,14 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                 item_title=item_title,
                 randomize=timestamp(),
                 timeout=timeout * 1000),
-        title=L(u"Refresh: %s") % item_title,
-        summary=L("Refreshes the %s, possibly searching for missing and picking up new subtitles on disk") % current_kind,
+        title=F(u"Refresh: %s", item_title),
+        summary=F("Refreshes the %s, possibly searching for missing and picking up new subtitles on disk", current_kind),
         thumb=item.thumb or default_thumb
     ))
     oc.add(DirectoryObject(
         key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title, force=True, randomize=timestamp(),
                      timeout=timeout * 1000),
-        title=L(u"Force-find subtitles: %s") % item_title,
+        title=F(u"Force-find subtitles: %s", item_title),
         summary=L("Issues a forced refresh, ignoring known subtitles and searching for new ones"),
         thumb=item.thumb or default_thumb
     ))
@@ -121,7 +121,7 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
             part_index_addon = ""
             part_summary_addon = ""
             if has_multiple_parts:
-                part_index_addon = L(u"File %s: ") % part_index
+                part_index_addon = F(u"File %s: ", part_index)
                 part_summary_addon = "%s " % filename
 
             # iterate through all configured languages
@@ -131,14 +131,14 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                 current_sub_id = None
                 current_sub_provider_name = None
 
-                summary = L(u"%sNo current subtitle in storage") % part_summary_addon
+                summary = F(u"%sNo current subtitle in storage", part_summary_addon)
                 current_score = None
                 if current_sub:
                     current_sub_id = current_sub.id
                     current_sub_provider_name = current_sub.provider_name
                     current_score = current_sub.score
 
-                    summary = L(u"%sCurrent subtitle: %s (added: %s, %s), Language: %s, Score: %i, Storage: %s") % (
+                    summary = F(u"%sCurrent subtitle: %s (added: %s, %s), Language: %s, Score: %i, Storage: %s",
                         part_summary_addon, current_sub.provider_name,
                         df(current_sub.date_added), current_sub.mode_verbose,
                         display_language(lang), current_sub.score,
@@ -151,7 +151,7 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                                      item_type=plex_item.type, filename=filename, current_data=summary,
                                      randomize=timestamp(), current_provider=current_sub_provider_name,
                                      current_score=current_score),
-                        title=L(u"%sManage %s subtitle") % (part_index_addon, display_language(lang)),
+                        title=F(u"%sManage %s subtitle", part_index_addon, display_language(lang)),
                         summary=summary
                     ))
                 else:
@@ -162,7 +162,7 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                                      item_type=plex_item.type, filename=filename, current_data=summary,
                                      randomize=timestamp(), current_provider=current_sub_provider_name,
                                      current_score=current_score),
-                        title=L(u"%sList %s subtitles") % (part_index_addon, display_language(lang)),
+                        title=F(u"%sList %s subtitles", part_index_addon, display_language(lang)),
                         summary=summary
                     ))
 
@@ -187,7 +187,7 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                         key=Callback(ListEmbeddedSubsForItemMenu, rating_key=rating_key, part_id=part_id, title=title,
                                      item_type=plex_item.type, item_title=item_title, base_title=base_title,
                                      randomize=timestamp()),
-                        title=L(u"%sEmbedded subtitles (%s)") % (
+                        title=F(u"%sEmbedded subtitles (%s)",
                                 part_index_addon,
                                 ", ".join(display_language(l) for l in set(embedded_langs))),
                         summary=L(u"Extract and activate embedded subtitle streams")
@@ -218,33 +218,33 @@ def SubtitleOptionsMenu(**kwargs):
     oc.add(DirectoryObject(
         key=Callback(ItemDetailsMenu, rating_key=kwargs["rating_key"], item_title=kwargs["item_title"],
                      title=kwargs["title"], randomize=timestamp()),
-        title=L(u"< Back to %s") % kwargs["title"],
+        title=F(u"< Back to %s", kwargs["title"]),
         summary=kwargs["current_data"],
         thumb=default_thumb
     ))
     if subs_count:
         oc.add(DirectoryObject(
             key=Callback(ListStoredSubsForItemMenu, randomize=timestamp(), **kwargs),
-            title=L(u"Select active %s subtitle") % kwargs["language_name"],
-            summary=L(u"%d subtitles in storage") % subs_count
+            title=F(u"Select active %s subtitle", kwargs["language_name"]),
+            summary=F(u"%d subtitles in storage", subs_count)
         ))
 
     oc.add(DirectoryObject(
         key=Callback(ListAvailableSubsForItemMenu, randomize=timestamp(), **kwargs),
-        title=L(u"List available %s subtitles") % kwargs["language_name"],
+        title=F(u"List available %s subtitles", kwargs["language_name"]),
         summary=kwargs["current_data"]
     ))
     if current_sub:
         oc.add(DirectoryObject(
             key=Callback(SubtitleModificationsMenu, randomize=timestamp(), **kwargs),
-            title=L(u"Modify current %s subtitle") % kwargs["language_name"],
-            summary=L(u"Currently applied mods: %s") % (", ".join(current_sub.mods) if current_sub.mods else "none")
+            title=F(u"Modify current %s subtitle", kwargs["language_name"]),
+            summary=F(u"Currently applied mods: %s", (", ".join(current_sub.mods) if current_sub.mods else "none"))
         ))
 
         if current_sub.provider_name != "embedded":
             oc.add(DirectoryObject(
                 key=Callback(BlacklistSubtitleMenu, randomize=timestamp(), **kwargs),
-                title=L(u"Blacklist current %s subtitle and search for a new one") % kwargs["language_name"],
+                title=F(u"Blacklist current %s subtitle and search for a new one", kwargs["language_name"]),
                 summary=current_data
             ))
 
@@ -252,7 +252,7 @@ def SubtitleOptionsMenu(**kwargs):
         if current_bl:
             oc.add(DirectoryObject(
                 key=Callback(ManageBlacklistMenu, randomize=timestamp(), **kwargs),
-                title=L(u"Manage blacklist (%s contained)") % len(current_bl),
+                title=F(u"Manage blacklist (%s contained)", len(current_bl)),
                 summary=L(u"Inspect currently blacklisted subtitles")
             ))
 
@@ -275,10 +275,11 @@ def ListStoredSubsForItemMenu(**kwargs):
                                 key=lambda x: x[1].date_added, reverse=True):
         is_current = key == all_subs["current"]
 
-        summary = u"added: %s, %s, Language: %s, Score: %i, Storage: %s" % \
+        summary = F(u"added: %s, %s, Language: %s, Score: %i, Storage: %s",
                   (df(subtitle.date_added),
-                   subtitle.mode_verbose, display_language(language), subtitle.score,
-                   subtitle.storage_type)
+                   subtitle.mode_verbose, display_language(language),
+                   subtitle.score,
+                   subtitle.storage_type))
 
         sub_name = subtitle.provider_name
         if sub_name == "embedded":
@@ -286,7 +287,7 @@ def ListStoredSubsForItemMenu(**kwargs):
 
         oc.add(DirectoryObject(
             key=Callback(SelectStoredSubForItemMenu, randomize=timestamp(), sub_key="__".join(key), **kwargs),
-            title=L(u"%s%s, Score: %s") % ("Current: " if is_current else "Stored: ", sub_name,
+            title=F(u"%s%s, Score: %s", "Current: " if is_current else "Stored: ", sub_name,
                                         subtitle.score),
             summary=summary
         ))
@@ -424,7 +425,7 @@ def ManageBlacklistMenu(**kwargs):
     oc.add(DirectoryObject(
         key=Callback(ItemDetailsMenu, rating_key=kwargs["rating_key"], item_title=kwargs["item_title"],
                      title=kwargs["title"], randomize=timestamp()),
-        title=L(u"< Back to %s") % kwargs["title"],
+        title=F(u"< Back to %s", kwargs["title"]),
         summary=kwargs["current_data"],
         thumb=default_thumb
     ))
@@ -435,10 +436,11 @@ def ManageBlacklistMenu(**kwargs):
 
     for sub_key, data in sorted(current_bl.iteritems(), key=sorter, reverse=True):
         provider_name, subtitle_id = sub_key
-        title = L(u"%s, %s (added: %s, %s), Language: %s, Score: %i, Storage: %s") % (provider_name, subtitle_id, df(data["date_added"]),
-                                                 current_sub.get_mode_verbose(data["mode"]),
-                                                 display_language(Language.fromietf(language)), data["score"],
-                                                 data["storage_type"])
+        title = F(u"%s, %s (added: %s, %s), Language: %s, Score: %i, Storage: %s",
+                provider_name, subtitle_id, df(data["date_added"]),
+                current_sub.get_mode_verbose(data["mode"]),
+                display_language(Language.fromietf(language)), data["score"],
+                data["storage_type"])
         oc.add(DirectoryObject(
             key=Callback(ManageBlacklistMenu, remove_sub_key="__".join(sub_key), randomize=timestamp(), **kwargs),
             title=title,
@@ -469,7 +471,7 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
     oc = SubFolderObjectContainer(title2=unicode(title), replace_parent=True)
     oc.add(DirectoryObject(
         key=Callback(ItemDetailsMenu, rating_key=rating_key, item_title=item_title, title=title, randomize=timestamp()),
-        title=L(u"< Back to %s") % title,
+        title=F(u"< Back to %s", title),
         summary=current_data,
         thumb=default_thumb
     ))
@@ -487,20 +489,20 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
 
         video_display_data = [video.format] if video.format else []
         if video.release_group:
-            video_display_data.append(L(u"by %s") % video.release_group)
+            video_display_data.append(F(u"by %s", video.release_group))
         video_display_data = " ".join(video_display_data)
     else:
         video_display_data = metadata["filename"]
 
-    current_display = (L(u"Current: %s (%s) ") % (current_provider, current_score) if current_provider else "")
+    current_display = (F(u"Current: %s (%s) ", current_provider, current_score if current_provider else ""))
     if not running:
         oc.add(DirectoryObject(
             key=Callback(ListAvailableSubsForItemMenu, rating_key=rating_key, item_title=item_title, language=language,
                          filename=filename, part_id=part_id, title=title, current_id=current_id, force=True,
                          current_provider=current_provider, current_score=current_score,
                          current_data=current_data, item_type=item_type, randomize=timestamp()),
-            title=L(u"Search for %s subs (%s)") % (get_language(language).name, video_display_data),
-            summary=L(u"%sFilename: %s") % (current_display, filename),
+            title=F(u"Search for %s subs (%s)", get_language(language).name, video_display_data),
+            summary=F(u"%sFilename: %s", current_display, filename),
             thumb=default_thumb
         ))
 
@@ -512,7 +514,7 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
                              current_provider=current_provider, current_score=current_score,
                              randomize=timestamp()),
                 title=L(u"No subtitles found"),
-                summary=L(u"%sFilename: %s") % (current_display, filename),
+                summary=F(u"%sFilename: %s", current_display, filename),
                 thumb=default_thumb
             ))
     else:
@@ -522,9 +524,10 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
                          part_id=part_id, title=title, current_id=current_id, item_type=item_type,
                          current_provider=current_provider, current_score=current_score,
                          randomize=timestamp()),
-            title=L(u"Searching for %s subs (%s), refresh here ...") % (display_language(get_language(language)),
-                                                                     video_display_data),
-            summary=L(u"%sFilename: %s") % (current_display, filename),
+            title=F(u"Searching for %s subs (%s), refresh here ...",
+                    display_language(get_language(language)),
+                    video_display_data),
+            summary=F(u"%sFilename: %s", current_display, filename),
             thumb=default_thumb
         ))
 
@@ -546,16 +549,16 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
         wrong_fps_addon = ""
         if subtitle.wrong_fps:
             if plex_part:
-                wrong_fps_addon = L(" (wrong FPS, sub: %s, media: %s)") % (subtitle.fps, plex_part.fps)
+                wrong_fps_addon = F(" (wrong FPS, sub: %s, media: %s)", subtitle.fps, plex_part.fps)
             else:
-                wrong_fps_addon = L(" (wrong FPS, sub: %s, media: unknown, low impact mode)") % subtitle.fps
+                wrong_fps_addon = F(" (wrong FPS, sub: %s, media: unknown, low impact mode)", subtitle.fps)
 
         oc.add(DirectoryObject(
             key=Callback(TriggerDownloadSubtitle, rating_key=rating_key, randomize=timestamp(), item_title=item_title,
                          subtitle_id=str(subtitle.id), language=language),
-            title=L(u"%s%s: %s, score: %s%s") % (bl_addon, "Available" if current_id != subtitle.id else "Current",
+            title=F(u"%s%s: %s, score: %s%s", bl_addon, "Available" if current_id != subtitle.id else "Current",
                                               subtitle.provider_name, subtitle.score, wrong_fps_addon),
-            summary=L(u"Release: %s, Matches: %s") % (subtitle.release_info, ", ".join(subtitle.matches)),
+            summary=F(u"Release: %s, Matches: %s", subtitle.release_info, ", ".join(subtitle.matches)),
             thumb=default_thumb
         ))
 
@@ -569,7 +572,7 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
 def TriggerDownloadSubtitle(rating_key=None, subtitle_id=None, item_title=None, language=None, randomize=None):
     from interface.main import fatality
 
-    set_refresh_menu_state(L("Downloading subtitle for %s") % item_title or rating_key)
+    set_refresh_menu_state(F("Downloading subtitle for %s", item_title or rating_key))
     search_results = get_item_task_data("AvailableSubsForItem", rating_key, language)
 
     download_subtitle = None
@@ -600,7 +603,7 @@ def ListEmbeddedSubsForItemMenu(**kwargs):
     oc.add(DirectoryObject(
         key=Callback(ItemDetailsMenu, rating_key=kwargs["rating_key"], item_title=kwargs["item_title"],
                      base_title=kwargs["base_title"], title=kwargs["item_title"], randomize=timestamp()),
-        title=u"< Back to %s" % kwargs["title"],
+        title=F("< Back to %s", kwargs["title"]),
         thumb=default_thumb
     ))
 
@@ -618,18 +621,20 @@ def ListEmbeddedSubsForItemMenu(**kwargs):
                 oc.add(DirectoryObject(
                     key=Callback(TriggerExtractEmbeddedSubForItemMenu, randomize=timestamp(),
                                  stream_index=str(stream.index), language=language, with_mods=True, **kwargs),
-                    title=L(u"Extract stream %s, %s%s%s%s with default mods") % (stream.index, display_language(language),
-                                                           L(" (unknown)") if is_unknown else "",
-                                                           L(" (forced)") if is_forced else "",
-                                                           " (\"%s\")" % stream.title if stream.title else ""),
+                    title=F(u"Extract stream %s, %s%s%s%s with default mods",
+                            stream.index, display_language(language),
+                            L(" (unknown)") if is_unknown else "",
+                            L(" (forced)") if is_forced else "",
+                            " (\"%s\")" % stream.title if stream.title else ""),
                 ))
                 oc.add(DirectoryObject(
                     key=Callback(TriggerExtractEmbeddedSubForItemMenu, randomize=timestamp(),
                                  stream_index=str(stream.index), language=language, **kwargs),
-                    title=L(u"Extract stream %s, %s%s%s%s") % (stream.index, display_language(language),
-                                                            L(" (unknown)") if is_unknown else "",
-                                                            L(" (forced)") if is_forced else "",
-                                                            " (\"%s\")" % stream.title if stream.title else ""),
+                    title=F(u"Extract stream %s, %s%s%s%s",
+                            stream.index, display_language(language),
+                            L(" (unknown)") if is_unknown else "",
+                            L(" (forced)") if is_forced else "",
+                            " (\"%s\")" % stream.title if stream.title else ""),
                 ))
     return oc
 
@@ -642,7 +647,8 @@ def TriggerExtractEmbeddedSubForItemMenu(**kwargs):
     stream_index = kwargs.get("stream_index")
 
     Thread.Create(extract_embedded_sub, **kwargs)
-    header = L(u"Extracting of embedded subtitle %s of part %s:%s triggered") % (stream_index, rating_key, part_id)
+    header = F(u"Extracting of embedded subtitle %s of part %s:%s triggered",
+            stream_index, rating_key, part_id)
 
     kwargs.pop("randomize")
     kwargs.pop("item_type")

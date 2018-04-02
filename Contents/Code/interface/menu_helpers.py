@@ -110,7 +110,9 @@ def set_refresh_menu_state(state_or_media, media_type="movies"):
     intent = get_intent()
     force_refresh = intent.get("force", media_id)
 
-    Dict["current_refresh_state"] = L(u"%sRefreshing %s") % (L("Force-") if force_refresh else "", unicode(title))
+    Dict["current_refresh_state"] = F(u"%sRefreshing %s",
+                                    L("Force-") if force_refresh else "",
+                                    unicode(title))
 
 
 def get_item_task_data(task_name, rating_key, language):
@@ -178,7 +180,7 @@ def extract_embedded_sub(**kwargs):
                 is_forced = is_stream_forced(stream)
                 bn = os.path.basename(part.file)
 
-                set_refresh_menu_state(L(u"Extracting subtitle %s of %s") % (stream_index, bn))
+                set_refresh_menu_state(F(u"Extracting subtitle %s of %s", stream_index, bn))
                 Log.Info(u"Extracting stream %s (%s) of %s", stream_index, display_language(language), bn)
 
                 out_codec = stream.codec if stream.codec != "mov_text" else "srt"

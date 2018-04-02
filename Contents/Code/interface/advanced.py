@@ -163,7 +163,7 @@ def ResetStorage(key, randomize=None, sure=False):
     return AdvancedMenu(
         randomize=timestamp(),
         header=L("Success"),
-        message=L("Information Storage (%s) reset") % key
+        message=F("Information Storage (%s) reset", key)
     )
 
 
@@ -173,7 +173,7 @@ def LogStorage(key, randomize=None):
     return AdvancedMenu(
         randomize=timestamp(),
         header=L("Success"),
-        message=L("Information Storage (%s) logged") % key
+        message=F("Information Storage (%s) logged", key)
     )
 
 
