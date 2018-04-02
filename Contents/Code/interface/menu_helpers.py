@@ -1,6 +1,6 @@
 # coding=utf-8
 
-# i18n: Look at line 248
+# i18n: Look at line 248 for problem
 
 import traceback
 import types

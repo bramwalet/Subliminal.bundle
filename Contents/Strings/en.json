@@ -186,5 +186,13 @@
   "Didn't change the ignore list":"Didn't change the ignore list",
   "%s %s the ignore list":"%s %s the ignore list",
   "Sections":"Sections",
-  "All":"All"
+  "All":"All",
+  "Un-Ignore":"Un-Ignore",
+  "Ignore":"Ignore",
+  "show":"show",
+  "movie":"movie",
+  "%sRefreshing %s":"%sRefreshing %s",
+  "Force-":"Force-",
+  "Extracting subtitle %s of %s":"Extracting subtitle %s of %s",
+  "<< Back to home":"<< Back to home"
 }
