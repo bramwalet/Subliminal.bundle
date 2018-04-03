@@ -24,15 +24,15 @@
         <string>0</string>
         <key>PlexPluginDevMode</key>
         <string>1</string>
-        <key>PlexPluginCodePolicy</key>
-        <!-- this allows channels to access some python methods which are otherwise blocked, as well as import external code libraries, and interact with the PMS HTTP API -->
-        <string>Elevated</string>
+         <key>PlexPluginCodePolicy</key>
+            <!-- this allows channels to access some python methods which are otherwise blocked, as well as import external code libraries, and interact with the PMS HTTP API -->
+            <string>Elevated</string>
 	<key>PlexAgentAttributionText</key>
 	<string>&lt;div style=&quot;white-space: pre;&quot;&gt;&lt;img src=&quot;https://raw.githubusercontent.com/pannal/Sub-Zero.bundle/master/Contents/Resources/subzero.gif&quot; /&gt;
 
 &lt;h1&gt;Sub-Zero for Plex&lt;/h1&gt;&lt;i&gt;Subtitles done right&lt;/i&gt;
 
-Version 2.5.3.2452
+Version 2.5.3.2452 DEV
 
 Originally based on @bramwalet's awesome &lt;a href=&quot;https://github.com/bramwalet/Subliminal.bundle&quot;&gt;Subliminal.bundle&lt;/a&gt;
 
