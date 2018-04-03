@@ -138,7 +138,8 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
             key=Callback(RefreshItem, rating_key=rating_key, item_title=title, refresh_kind=current_kind,
                          previous_rating_key=previous_rating_key, timeout=timeout * 1000, randomize=timestamp()),
             title=_(u"Refresh: %s", item_title),
-            summary=_("Refreshes the %s, possibly searching for missing and picking up new subtitles on disk", current_kind)
+            summary=_("Refreshes the %(current_kind)s, possibly searching for missing and picking up "
+                      "new subtitles on disk", current_kind=current_kind)
         ))
         oc.add(DirectoryObject(
             key=Callback(RefreshItem, rating_key=rating_key, item_title=title, force=True,

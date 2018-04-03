@@ -98,7 +98,7 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
     oc.add(DirectoryObject(
         key=Callback(RefreshItem, rating_key=rating_key, item_title=item_title, force=True, randomize=timestamp(),
                      timeout=timeout * 1000),
-        title=_(u"Force-find subtitles: %s", item_title),
+        title=_(u"Force-find subtitles: %(item_title)s", item_title=item_title),
         summary=_("Issues a forced refresh, ignoring known subtitles and searching for new ones"),
         thumb=item.thumb or default_thumb
     ))
@@ -122,7 +122,7 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
             part_index_addon = ""
             part_summary_addon = ""
             if has_multiple_parts:
-                part_index_addon = _(u"File %s: ", part_index)
+                part_index_addon = _(u"File %(file_part_index)s: ", file_part_index=part_index)
                 part_summary_addon = "%s " % filename
 
             # iterate through all configured languages
@@ -132,18 +132,22 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                 current_sub_id = None
                 current_sub_provider_name = None
 
-                summary = _(u"%sNo current subtitle in storage", part_summary_addon)
+                summary = _(u"%(part_summary)sNo current subtitle in storage", part_summary=part_summary_addon)
                 current_score = None
                 if current_sub:
                     current_sub_id = current_sub.id
                     current_sub_provider_name = current_sub.provider_name
                     current_score = current_sub.score
 
-                    summary = _(u"%sCurrent subtitle: %s (added: %s, %s), Language: %s, Score: %i, Storage: %s",
-                        part_summary_addon, current_sub.provider_name,
-                        df(current_sub.date_added), current_sub.mode_verbose,
-                        display_language(lang), current_sub.score,
-                        current_sub.storage_type)
+                    summary = _(u"%(part_summary)sCurrent subtitle: %(provider_name)s (added: %(date_added)s, "
+                                u"%(mode)s), Language: %(language)s, Score: %(score)i, Storage: %(storage_type)s",
+                                part_summary=part_summary_addon,
+                                provider_name=current_sub.provider_name,
+                                date_added=df(current_sub.date_added),
+                                mode=current_sub.mode_verbose,
+                                language=display_language(lang),
+                                score=current_sub.score,
+                                storage_type=current_sub.storage_type)
 
                     oc.add(DirectoryObject(
                         key=Callback(SubtitleOptionsMenu, rating_key=rating_key, part_id=part_id, title=title,
@@ -152,7 +156,8 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                                      item_type=plex_item.type, filename=filename, current_data=summary,
                                      randomize=timestamp(), current_provider=current_sub_provider_name,
                                      current_score=current_score),
-                        title=_(u"%sManage %s subtitle", part_index_addon, display_language(lang)),
+                        title=_(u"%(part_summary)sManage %(language)s subtitle", part_summary=part_index_addon,
+                                language=display_language(lang)),
                         summary=summary
                     ))
                 else:
@@ -163,7 +168,8 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                                      item_type=plex_item.type, filename=filename, current_data=summary,
                                      randomize=timestamp(), current_provider=current_sub_provider_name,
                                      current_score=current_score),
-                        title=_(u"%sList %s subtitles", part_index_addon, display_language(lang)),
+                        title=_(u"%(part_summary)sList %(language)s subtitles", part_summary=part_index_addon,
+                                language=display_language(lang)),
                         summary=summary
                     ))
 
@@ -188,9 +194,9 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                         key=Callback(ListEmbeddedSubsForItemMenu, rating_key=rating_key, part_id=part_id, title=title,
                                      item_type=plex_item.type, item_title=item_title, base_title=base_title,
                                      randomize=timestamp()),
-                        title=_(u"%sEmbedded subtitles (%s)",
-                                part_index_addon,
-                                ", ".join(display_language(l) for l in set(embedded_langs))),
+                        title=_(u"%(part_summary)sEmbedded subtitles (%(languages)s)",
+                                part_summary=part_index_addon,
+                                languages=", ".join(display_language(l) for l in set(embedded_langs))),
                         summary=_(u"Extract and activate embedded subtitle streams")
                     ))
 
@@ -226,26 +232,28 @@ def SubtitleOptionsMenu(**kwargs):
     if subs_count:
         oc.add(DirectoryObject(
             key=Callback(ListStoredSubsForItemMenu, randomize=timestamp(), **kwargs),
-            title=_(u"Select active %s subtitle", kwargs["language_name"]),
-            summary=_(u"%d subtitles in storage", subs_count)
+            title=_(u"Select active %(language)s subtitle", language=kwargs["language_name"]),
+            summary=_(u"%(count)d subtitles in storage", count=subs_count)
         ))
 
     oc.add(DirectoryObject(
         key=Callback(ListAvailableSubsForItemMenu, randomize=timestamp(), **kwargs),
-        title=_(u"List available %s subtitles", kwargs["language_name"]),
+        title=_(u"List available %(language)s subtitles", language=kwargs["language_name"]),
         summary=kwargs["current_data"]
     ))
     if current_sub:
         oc.add(DirectoryObject(
             key=Callback(SubtitleModificationsMenu, randomize=timestamp(), **kwargs),
-            title=_(u"Modify current %s subtitle", kwargs["language_name"]),
-            summary=_(u"Currently applied mods: %s", (", ".join(current_sub.mods) if current_sub.mods else "none"))
+            title=_(u"Modify current %(language)s subtitle", language=kwargs["language_name"]),
+            summary=_(u"Currently applied mods: %(mod_list)s",
+                      mod_list=(", ".join(current_sub.mods) if current_sub.mods else "none"))
         ))
 
         if current_sub.provider_name != "embedded":
             oc.add(DirectoryObject(
                 key=Callback(BlacklistSubtitleMenu, randomize=timestamp(), **kwargs),
-                title=_(u"Blacklist current %s subtitle and search for a new one", kwargs["language_name"]),
+                title=_(u"Blacklist current %(language)s subtitle and search for a new one",
+                        language=kwargs["language_name"]),
                 summary=current_data
             ))
 
@@ -253,7 +261,7 @@ def SubtitleOptionsMenu(**kwargs):
         if current_bl:
             oc.add(DirectoryObject(
                 key=Callback(ManageBlacklistMenu, randomize=timestamp(), **kwargs),
-                title=_(u"Manage blacklist (%s contained)", len(current_bl)),
+                title=_(u"Manage blacklist (%(amount)s contained)", amount=len(current_bl)),
                 summary=_(u"Inspect currently blacklisted subtitles")
             ))
 
@@ -288,8 +296,10 @@ def ListStoredSubsForItemMenu(**kwargs):
 
         oc.add(DirectoryObject(
             key=Callback(SelectStoredSubForItemMenu, randomize=timestamp(), sub_key="__".join(key), **kwargs),
-            title=_(u"%s%s, Score: %s", "Current: " if is_current else "Stored: ", sub_name,
-                                        subtitle.score),
+            title=_(u"%(current_state)s%(subtitle_name)s, Score: %(score)s",
+                    current_state=_("Current: ") if is_current else _("Stored: "),
+                    subtitle_name=sub_name,
+                    score=subtitle.score),
             summary=summary
         ))
 
@@ -490,20 +500,24 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
 
         video_display_data = [video.format] if video.format else []
         if video.release_group:
-            video_display_data.append(_(u"by %s", video.release_group))
+            video_display_data.append(unicode(_(u"by %(release_group)s", release_group=video.release_group)))
         video_display_data = " ".join(video_display_data)
     else:
         video_display_data = metadata["filename"]
 
-    current_display = (_(u"Current: %s (%s) ", current_provider, current_score if current_provider else ""))
+    current_display = (_(u"Current: %(provider_name)s (%(score)s) ",
+                         provider_name=current_provider,
+                         score=current_score if current_provider else ""))
     if not running:
         oc.add(DirectoryObject(
             key=Callback(ListAvailableSubsForItemMenu, rating_key=rating_key, item_title=item_title, language=language,
                          filename=filename, part_id=part_id, title=title, current_id=current_id, force=True,
                          current_provider=current_provider, current_score=current_score,
                          current_data=current_data, item_type=item_type, randomize=timestamp()),
-            title=_(u"Search for %s subs (%s)", get_language(language).name, video_display_data),
-            summary=_(u"%sFilename: %s", current_display, filename),
+            title=_(u"Search for %(language)s subs (%(video_data)s)",
+                    language=get_language(language).name,
+                    video_data=video_display_data),
+            summary=_(u"%(current_info)sFilename: %(filename)s", current_info=current_display, filename=filename),
             thumb=default_thumb
         ))
 
@@ -515,7 +529,7 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
                              current_provider=current_provider, current_score=current_score,
                              randomize=timestamp()),
                 title=_(u"No subtitles found"),
-                summary=_(u"%sFilename: %s", current_display, filename),
+                summary=_(u"%(current_info)sFilename: %(filename)s", current_info=current_display, filename=filename),
                 thumb=default_thumb
             ))
     else:
@@ -525,10 +539,10 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
                          part_id=part_id, title=title, current_id=current_id, item_type=item_type,
                          current_provider=current_provider, current_score=current_score,
                          randomize=timestamp()),
-            title=_(u"Searching for %s subs (%s), refresh here ...",
-                    display_language(get_language(language)),
-                    video_display_data),
-            summary=_(u"%sFilename: %s", current_display, filename),
+            title=_(u"Searching for %(language)s subs (%(video_data)s), refresh here ...",
+                    language=display_language(get_language(language)),
+                    video_data=video_display_data),
+            summary=_(u"%(current_info)sFilename: %(filename)s", current_info=current_display, filename=filename),
             thumb=default_thumb
         ))
 
@@ -550,16 +564,25 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
         wrong_fps_addon = ""
         if subtitle.wrong_fps:
             if plex_part:
-                wrong_fps_addon = _(" (wrong FPS, sub: %s, media: %s)", subtitle.fps, plex_part.fps)
+                wrong_fps_addon = _(" (wrong FPS, sub: %(subtitle_fps)s, media: %(media_fps)s)",
+                                    subtitle_fps=subtitle.fps,
+                                    media_fps=plex_part.fps)
             else:
-                wrong_fps_addon = _(" (wrong FPS, sub: %s, media: unknown, low impact mode)", subtitle.fps)
+                wrong_fps_addon = _(" (wrong FPS, sub: %(subtitle_fps)s, media: unknown, low impact mode)",
+                                    subtitle_fps=subtitle.fps)
 
         oc.add(DirectoryObject(
             key=Callback(TriggerDownloadSubtitle, rating_key=rating_key, randomize=timestamp(), item_title=item_title,
                          subtitle_id=str(subtitle.id), language=language),
-            title=_(u"%s%s: %s, score: %s%s", bl_addon, "Available" if current_id != subtitle.id else "Current",
-                                              subtitle.provider_name, subtitle.score, wrong_fps_addon),
-            summary=_(u"Release: %s, Matches: %s", subtitle.release_info, ", ".join(subtitle.matches)),
+            title=_(u"%(blacklisted_state)s%(current_state)s: %(provider_name)s, score: %(score)s%(wrong_fps_state)s",
+                    blacklisted_state=bl_addon,
+                    current_state="Available" if current_id != subtitle.id else "Current",
+                    provider_name=subtitle.provider_name,
+                    score=subtitle.score,
+                    wrong_fps_state=wrong_fps_addon),
+            summary=_(u"Release: %(release_info)s, Matches: %(matches)s",
+                      release_info=subtitle.release_info,
+                      matches=", ".join(subtitle.matches)),
             thumb=default_thumb
         ))
 
@@ -573,7 +596,7 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
 def TriggerDownloadSubtitle(rating_key=None, subtitle_id=None, item_title=None, language=None, randomize=None):
     from interface.main import fatality
 
-    set_refresh_menu_state(_("Downloading subtitle for %s", item_title or rating_key))
+    set_refresh_menu_state(_("Downloading subtitle for %(title_or_id)s", title_or_id=item_title or rating_key))
     search_results = get_item_task_data("AvailableSubsForItem", rating_key, language)
 
     download_subtitle = None
@@ -622,20 +645,24 @@ def ListEmbeddedSubsForItemMenu(**kwargs):
                 oc.add(DirectoryObject(
                     key=Callback(TriggerExtractEmbeddedSubForItemMenu, randomize=timestamp(),
                                  stream_index=str(stream.index), language=language, with_mods=True, **kwargs),
-                    title=_(u"Extract stream %s, %s%s%s%s with default mods",
-                            stream.index, display_language(language),
-                            _(" (unknown)") if is_unknown else "",
-                            _(" (forced)") if is_forced else "",
-                            " (\"%s\")" % stream.title if stream.title else ""),
+                    title=_(u"Extract stream %(stream_index)s, %(language)s%(unknown_state)s%(forced_state)s"
+                            u"%(stream_title)s with default mods",
+                            stream_index=stream.index,
+                            language=display_language(language),
+                            unknown_state=_(" (unknown)") if is_unknown else "",
+                            forced_state=_(" (forced)") if is_forced else "",
+                            stream_title=" (\"%s\")" % stream.title if stream.title else ""),
                 ))
                 oc.add(DirectoryObject(
                     key=Callback(TriggerExtractEmbeddedSubForItemMenu, randomize=timestamp(),
                                  stream_index=str(stream.index), language=language, **kwargs),
-                    title=_(u"Extract stream %s, %s%s%s%s",
-                            stream.index, display_language(language),
-                            _(" (unknown)") if is_unknown else "",
-                            _(" (forced)") if is_forced else "",
-                            " (\"%s\")" % stream.title if stream.title else ""),
+                    title=_(u"Extract stream %(stream_index)s, %(language)s%(unknown_state)s%(forced_state)s"
+                            u"%(stream_title)s",
+                            stream_index=stream.index,
+                            language=display_language(language),
+                            unknown_state=_(" (unknown)") if is_unknown else "",
+                            forced_state=_(" (forced)") if is_forced else "",
+                            stream_title=" (\"%s\")" % stream.title if stream.title else ""),
                 ))
     return oc
 
