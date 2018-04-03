@@ -220,6 +220,7 @@
   "< Back to unit selection":"< Back to unit selection",
   "added: %s, %s, Language: %s, Score: %i, Storage: %s":"added: %s, %s, Language: %s, Score: %i, Storage: %s",
   "Remove: %s":"Remove: %s",
+  "%s: Subtitle download failed (%s)": "%s: Subtitle download failed (%s)",
   "Subtitle Language (1)":"Subtitle Language (1)",
   "Subtitle Language (2)":"Subtitle Language (2)",
   "Subtitle Language (3)":"Subtitle Language (3)",
