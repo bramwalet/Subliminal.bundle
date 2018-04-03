@@ -209,7 +209,7 @@ def SubtitleColorModMenu(**kwargs):
 
     oc.add(DirectoryObject(
         key=Callback(SubtitleModificationsMenu, randomize=timestamp(), **kwargs),
-        title="< Back to subtitle modification menu"
+        title=_("< Back to subtitle modification menu")
     ))
 
     for color, code in color_mod.colors.iteritems():
@@ -271,7 +271,7 @@ def SubtitleListMods(**kwargs):
 
     oc.add(DirectoryObject(
         key=Callback(SubtitleModificationsMenu, randomize=timestamp(), **kwargs),
-        title="< Back to subtitle modifications"
+        title=_("< Back to subtitle modifications")
     ))
 
     for identifier in current_sub.mods:

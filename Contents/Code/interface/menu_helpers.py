@@ -52,7 +52,8 @@ def add_ignore_options(oc, kind, callback_menu=None, title=None, rating_key=None
     oc.add(DirectoryObject(
         key=Callback(callback_menu, kind=use_kind, rating_key=rating_key, title=title),
         title=u"%s %s \"%s\"" % (
-            _("Un-Ignore") if in_list else _("Ignore"), ignore_list.verbose(kind) if add_kind else "", unicode(title))
+            unicode(_("Un-Ignore") if in_list else _("Ignore")), ignore_list.verbose(kind) if add_kind else "",
+            unicode(title))
     )
     )
 
@@ -251,8 +252,8 @@ class SubFolderObjectContainer(ObjectContainer):
             key=Callback(fatality, force_title=" ", randomize=timestamp()),
             title=pad_title(_("<< Back to home")),
             summary=_("Current state: %s; Last state: %s",
-                (Dict["current_refresh_state"] or "Idle") if "current_refresh_state" in Dict else "Idle",
-                (Dict["last_refresh_state"] or "None") if "last_refresh_state" in Dict else "None"
+                (Dict["current_refresh_state"] or _("Idle")) if "current_refresh_state" in Dict else _("Idle"),
+                (Dict["last_refresh_state"] or _("None")) if "last_refresh_state" in Dict else _("None")
             )
         ))
 

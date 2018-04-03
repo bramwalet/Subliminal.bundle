@@ -208,6 +208,8 @@
   "< Back to subtitle options for: %s":"< Back to subtitle options for: %s",
   "Remove last applied mod (%s)":"Remove last applied mod (%s)",
   "none":"none",
+  "None":"None",
+  "Idle":"Idle",
   "Manage applied mods":"Manage applied mods",
   "Reapply applied mods":"Reapply applied mods",
   "Restore original version":"Restore original version",
