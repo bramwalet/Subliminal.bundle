@@ -7,7 +7,7 @@ import logging
 import requests
 import xmlrpclib
 
-from xmlrpclib import SafeTransport, ProtocolError, Fault, Transport
+from xmlrpclib import SafeTransport, Transport
 from requests import Session, exceptions
 from retry.api import retry_call
 
@@ -158,8 +158,8 @@ class SubZeroRequestsTransport(xmlrpclib.SafeTransport):
             try:
                 resp.raise_for_status()
             except requests.RequestException as e:
-                raise xmlrpclib.ProtocolError(url, resp.status_code,
-                                              str(e), resp.headers)
+                return {"status": str(resp.status_code)}
+
             else:
                 self.verbose = verbose
                 return self.parse_response(resp.raw)
