@@ -1,4 +1,5 @@
 # coding=utf-8
+
 from subzero.constants import PREFIX, TITLE, ART
 from support.config import config
 from support.helpers import pad_title, timestamp, df, display_language
@@ -7,6 +8,7 @@ from support.ignore import ignore_list
 from support.items import get_item_thumb, get_on_deck_items, get_all_items, get_items_info, get_item, get_item_title
 from menu_helpers import main_icon, debounce, SubFolderObjectContainer, default_thumb, dig_tree, add_ignore_options, \
     ObjectContainer, route, handler
+from support.i18n import _
 from item_details import ItemDetailsMenu
 
 
@@ -34,8 +36,8 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
     if config.lock_menu and not config.pin_correct:
         oc.add(DirectoryObject(
             key=Callback(PinMenu, randomize=timestamp()),
-            title=pad_title(L("Enter PIN")),
-            summary=L("The owner has restricted the access to this menu. Please enter the correct pin"),
+            title=pad_title(_("Enter PIN")),
+            summary=_("The owner has restricted the access to this menu. Please enter the correct pin"),
         ))
         return oc
 
@@ -43,23 +45,23 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
         if not isinstance(config.missing_permissions, list):
             oc.add(DirectoryObject(
                 key=Callback(fatality, randomize=timestamp()),
-                title=pad_title(L("Insufficient permissions")),
+                title=pad_title(_("Insufficient permissions")),
                 summary=config.missing_permissions,
             ))
         else:
             for title, path in config.missing_permissions:
                 oc.add(DirectoryObject(
                     key=Callback(fatality, randomize=timestamp()),
-                    title=pad_title(L("Insufficient permissions")),
-                    summary=F("Insufficient permissions on library %s, folder: %s", title, path),
+                    title=pad_title(_("Insufficient permissions")),
+                    summary=_("Insufficient permissions on library %s, folder: %s", title, path),
                 ))
         return oc
 
     if not config.enabled_sections:
         oc.add(DirectoryObject(
             key=Callback(fatality, randomize=timestamp()),
-            title=pad_title(L("I'm not enabled!")),
-            summary=L("Please enable me for some of your libraries in your server settings; currently I do nothing"),
+            title=pad_title(_("I'm not enabled!")),
+            summary=_("Please enable me for some of your libraries in your server settings; currently I do nothing"),
         ))
         return oc
 
@@ -67,8 +69,8 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
         if Dict["current_refresh_state"]:
             oc.add(DirectoryObject(
                 key=Callback(fatality, force_title=" ", randomize=timestamp()),
-                title=pad_title(L("Working ... refresh here")),
-                summary=F("Current state: %s; Last state: %s",
+                title=pad_title(_("Working ... refresh here")),
+                summary=_("Current state: %s; Last state: %s",
                     (Dict["current_refresh_state"] or "Idle") if "current_refresh_state" in Dict else "Idle",
                     (Dict["last_refresh_state"] or "None") if "last_refresh_state" in Dict else "None"
                 )
@@ -76,33 +78,33 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
 
         oc.add(DirectoryObject(
             key=Callback(OnDeckMenu),
-            title=L("On-deck items"),
-            summary=L("Shows the current on deck items and allows you to individually (force-) refresh their metadata subtitles."),
+            title=_("On-deck items"),
+            summary=_("Shows the current on deck items and allows you to individually (force-) refresh their metadata subtitles."),
             thumb=R("icon-ondeck.jpg")
         ))
         if "last_played_items" in Dict and Dict["last_played_items"]:
             oc.add(DirectoryObject(
                 key=Callback(RecentlyPlayedMenu),
-                title=pad_title(L("Recently played items")),
-                summary=F("Shows the %s recently played items and allows you to individually (force-) refresh their metadata/subtitles.", config.store_recently_played_amount),
+                title=pad_title(_("Recently played items")),
+                summary=_("Shows the %s recently played items and allows you to individually (force-) refresh their metadata/subtitles.", config.store_recently_played_amount),
                 thumb=R("icon-played.jpg")
             ))
         oc.add(DirectoryObject(
             key=Callback(RecentlyAddedMenu),
-            title=L("Recently-added items"),
-            summary=L("Shows the recently added items per section."),
+            title=_("Recently-added items"),
+            summary=_("Shows the recently added items per section."),
             thumb=R("icon-added.jpg")
         ))
         oc.add(DirectoryObject(
             key=Callback(RecentMissingSubtitlesMenu, randomize=timestamp()),
-            title=L("Show recently added items with missing subtitles"),
-            summary=L("Lists items with missing subtitles. Click on Find recent items with missing subs to update list"),
+            title=_("Show recently added items with missing subtitles"),
+            summary=_("Lists items with missing subtitles. Click on Find recent items with missing subs to update list"),
             thumb=R("icon-missing.jpg")
         ))
         oc.add(DirectoryObject(
             key=Callback(SectionsMenu),
-            title=L("Browse all items"),
-            summary=L("Go through your whole library and manage your ignore list. You can also (force-) refresh the metadata/subtitles of individual items."),
+            title=_("Browse all items"),
+            summary=_("Go through your whole library and manage your ignore list. You can also (force-) refresh the metadata/subtitles of individual items."),
             thumb=R("icon-browse.jpg")
         ))
 
@@ -110,41 +112,41 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
         task = scheduler.task(task_name)
 
         if task.ready_for_display:
-            task_state = F("Running: %s/%s (%s%%)", task.items_done, task.items_searching, task.percentage)
+            task_state = _("Running: %s/%s (%s%%)", task.items_done, task.items_searching, task.percentage)
         else:
             lr = scheduler.last_run(task_name)
             nr = scheduler.next_run(task_name)
-            task_state = F("Last run: %s; Next scheduled run: %s; Last runtime: %s",
+            task_state = _("Last run: %s; Next scheduled run: %s; Last runtime: %s",
                 df(scheduler.last_run(task_name)) if lr else "never",
                 df(scheduler.next_run(task_name)) if nr else "never",
                 str(task.last_run_time).split(".")[0])
 
         oc.add(DirectoryObject(
             key=Callback(RefreshMissing, randomize=timestamp()),
-            title=F("Search for missing subtitles (in recently-added items, max-age: %s)", Prefs[
+            title=_("Search for missing subtitles (in recently-added items, max-age: %s)", Prefs[
                 "scheduler.item_is_recent_age"]),
-            summary=F("Automatically run periodically by the scheduler, if configured. %s", task_state),
+            summary=_("Automatically run periodically by the scheduler, if configured. %s", task_state),
             thumb=R("icon-search.jpg")
         ))
 
         oc.add(DirectoryObject(
             key=Callback(IgnoreListMenu),
-            title=F("Display ignore list (%d)", len(ignore_list)),
-            summary=L("Show the current ignore list (mainly used for the automatic tasks)"),
+            title=_("Display ignore list (%d)", len(ignore_list)),
+            summary=_("Show the current ignore list (mainly used for the automatic tasks)"),
             thumb=R("icon-ignore.jpg")
         ))
 
         oc.add(DirectoryObject(
             key=Callback(HistoryMenu),
-            title=L("History"),
-            summary=F("Show the last %i downloaded subtitles", int(Prefs["history_size"])),
+            title=_("History"),
+            summary=_("Show the last %i downloaded subtitles", int(Prefs["history_size"])),
             thumb=R("icon-history.jpg")
         ))
 
     oc.add(DirectoryObject(
         key=Callback(fatality, force_title=" ", randomize=timestamp()),
-        title=pad_title(L("Refresh")),
-        summary=F("Current state: %s; Last state: %s",
+        title=pad_title(_("Refresh")),
+        summary=_("Current state: %s; Last state: %s",
             (Dict["current_refresh_state"] or "Idle") if "current_refresh_state" in Dict else "Idle",
             (Dict["last_refresh_state"] or "None") if "last_refresh_state" in Dict else "None"
         ),
@@ -155,8 +157,8 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
     if config.pin:
         oc.add(DirectoryObject(
             key=Callback(ClearPin, randomize=timestamp()),
-            title=pad_title(L("Re-lock menu(s)")),
-            summary=L("Enabled the PIN again for menu(s)")
+            title=pad_title(_("Re-lock menu(s)")),
+            summary=_("Enabled the PIN again for menu(s)")
         ))
 
     if not only_refresh:
@@ -164,19 +166,19 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
             summary_data = []
             for provider, data in Dict["provider_throttle"].iteritems():
                 reason, until, desc = data
-                summary_data.append(F("%s until %s (%s)", provider, until.strftime("%y/%m/%d %H:%M"), reason))
+                summary_data.append(_("%s until %s (%s)", provider, until.strftime("%y/%m/%d %H:%M"), reason))
 
             oc.add(DirectoryObject(
                 key=Callback(fatality, force_title=" ", randomize=timestamp()),
-                title=pad_title(F("Throttled providers: %s", ", ".join(Dict["provider_throttle"].keys()))),
+                title=pad_title(_("Throttled providers: %s", ", ".join(Dict["provider_throttle"].keys()))),
                 summary=", ".join(summary_data),
                 thumb=R("icon-throttled.jpg")
             ))
 
         oc.add(DirectoryObject(
             key=Callback(AdvancedMenu),
-            title=pad_title(L("Advanced functions")),
-            summary=L("Use at your own risk"),
+            title=pad_title(_("Advanced functions")),
+            summary=_("Use at your own risk"),
             thumb=R("icon-advanced.jpg")
         ))
 
@@ -190,12 +192,12 @@ def OnDeckMenu(message=None):
     :param message:
     :return:
     """
-    return mergedItemsMenu(title=L("Items On Deck"), base_title=L("Items On Deck"), itemGetter=get_on_deck_items)
+    return mergedItemsMenu(title=_("Items On Deck"), base_title=_("Items On Deck"), itemGetter=get_on_deck_items)
 
 
 @route(PREFIX + '/recently_played')
 def RecentlyPlayedMenu():
-    base_title = L("Recently Played")
+    base_title = _("Recently Played")
     oc = SubFolderObjectContainer(title2=base_title, replace_parent=True)
 
     for item in [get_item(rating_key) for rating_key in Dict["last_played_items"]]:
@@ -223,13 +225,13 @@ def RecentlyAddedMenu(message=None):
     :param message:
     :return:
     """
-    return SectionsMenu(base_title=L("Recently added"), section_items_key="recently_added", ignore_options=False)
+    return SectionsMenu(base_title=_("Recently added"), section_items_key="recently_added", ignore_options=False)
 
 
 @route(PREFIX + '/recent', force=bool)
 @debounce
 def RecentMissingSubtitlesMenu(force=False, randomize=None):
-    title = L("Items with missing subtitles")
+    title = _("Items with missing subtitles")
     oc = SubFolderObjectContainer(title2=title, no_cache=True, no_history=True)
 
     running = scheduler.is_task_running("MissingSubtitles")
@@ -243,13 +245,13 @@ def RecentMissingSubtitlesMenu(force=False, randomize=None):
     if not running:
         oc.add(DirectoryObject(
             key=Callback(RecentMissingSubtitlesMenu, force=True, randomize=timestamp()),
-            title=L(u"Find recent items with missing subtitles"),
+            title=_(u"Find recent items with missing subtitles"),
             thumb=default_thumb
         ))
     else:
         oc.add(DirectoryObject(
             key=Callback(RecentMissingSubtitlesMenu, force=False, randomize=timestamp()),
-            title=L(u"Updating, refresh here ..."),
+            title=_(u"Updating, refresh here ..."),
             thumb=default_thumb
         ))
 
@@ -259,7 +261,7 @@ def RecentMissingSubtitlesMenu(force=False, randomize=None):
                 key=Callback(ItemDetailsMenu, title=title + " > " + item_title, item_title=item_title,
                              rating_key=item_id),
                 title=item_title,
-                summary=F("Missing: %s", ", ".join(display_language(l) for l in missing_languages)),
+                summary=_("Missing: %s", ", ".join(display_language(l) for l in missing_languages)),
                 thumb=get_item_thumb(item) or default_thumb
             ))
 
@@ -317,13 +319,13 @@ def IgnoreMenu(kind, rating_key, title=None, sure=False, todo="not_set"):
     """
     is_ignored = rating_key in ignore_list[kind]
     if not sure:
-        oc = SubFolderObjectContainer(no_history=True, replace_parent=True, title1=F("%s %s %s %s the ignore list", 
-            L("Add") if not is_ignored else L("Remove"), ignore_list.verbose(kind), title,
-            L("to") if not is_ignored else L("from")), title2=L("Are you sure?"))
+        oc = SubFolderObjectContainer(no_history=True, replace_parent=True, title1=_("%s %s %s %s the ignore list",
+            _("Add") if not is_ignored else _("Remove"), ignore_list.verbose(kind), title,
+            _("to") if not is_ignored else _("from")), title2=_("Are you sure?"))
         oc.add(DirectoryObject(
             key=Callback(IgnoreMenu, kind=kind, rating_key=rating_key, title=title, sure=True,
-                         todo=L("add") if not is_ignored else L("remove")),
-            title=pad_title(L("Are you sure?")),
+                         todo=_("add") if not is_ignored else _("remove")),
+            title=pad_title(_("Are you sure?")),
         ))
         return oc
 
@@ -337,7 +339,7 @@ def IgnoreMenu(kind, rating_key, title=None, sure=False, todo="not_set"):
             Log.Info("Removed %s (%s) from the ignore list", title, rating_key)
             ignore_list.remove_title(kind, rating_key)
             ignore_list.save()
-            state = L("removed from")
+            state = _("removed from")
     elif todo == "add":
         if is_ignored:
             dont_change = True
@@ -346,25 +348,25 @@ def IgnoreMenu(kind, rating_key, title=None, sure=False, todo="not_set"):
             Log.Info("Added %s (%s) to the ignore list", title, rating_key)
             ignore_list.add_title(kind, rating_key, title)
             ignore_list.save()
-            state = L("added to")
+            state = _("added to")
     else:
         dont_change = True
 
     if dont_change:
-        return fatality(force_title=" ", header=L("Didn't change the ignore list"), no_history=True)
+        return fatality(force_title=" ", header=_("Didn't change the ignore list"), no_history=True)
 
-    return fatality(force_title=" ", header=F("%s %s the ignore list", title, state), no_history=True)
+    return fatality(force_title=" ", header=_("%s %s the ignore list", title, state), no_history=True)
 
 
 @route(PREFIX + '/sections')
-def SectionsMenu(base_title=L("Sections"), section_items_key="all", ignore_options=True):
+def SectionsMenu(base_title=_("Sections"), section_items_key="all", ignore_options=True):
     """
     displays the menu for all sections
     :return:
     """
     items = get_all_items("sections")
 
-    return dig_tree(SubFolderObjectContainer(title2=L("Sections"), no_cache=True, no_history=True), items, None,
+    return dig_tree(SubFolderObjectContainer(title2=_("Sections"), no_cache=True, no_history=True), items, None,
                     menu_determination_callback=determine_section_display, pass_kwargs={"base_title": base_title,
                                                                                         "section_items_key": section_items_key,
                                                                                         "ignore_options": ignore_options},
@@ -425,7 +427,7 @@ def SectionFirstLetterMenu(rating_key, title=None, base_title=None, section_titl
     add_ignore_options(oc, "sections", title=section_title, rating_key=rating_key, callback_menu=IgnoreMenu)
 
     oc.add(DirectoryObject(
-        key=Callback(SectionMenu, title=L("All"), base_title=title, rating_key=rating_key, ignore_options=False),
+        key=Callback(SectionMenu, title=_("All"), base_title=title, rating_key=rating_key, ignore_options=False),
         title="All"
     )
     )

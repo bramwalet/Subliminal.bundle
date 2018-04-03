@@ -7,7 +7,7 @@ import os
 
 from func import enable_channel_wrapper
 from subzero.language import Language
-from support.i18n import is_localized_string
+from support.i18n import is_localized_string, _
 from support.items import get_kind, get_item_thumb, get_item, get_item_kind_from_item, refresh_item
 from support.helpers import get_video_display_title, pad_title, display_language, quote_args, is_stream_forced
 from support.ignore import ignore_list
@@ -52,7 +52,7 @@ def add_ignore_options(oc, kind, callback_menu=None, title=None, rating_key=None
     oc.add(DirectoryObject(
         key=Callback(callback_menu, kind=use_kind, rating_key=rating_key, title=title),
         title=u"%s %s \"%s\"" % (
-            L("Un-Ignore") if in_list else L("Ignore"), ignore_list.verbose(kind) if add_kind else "", unicode(title))
+            _("Un-Ignore") if in_list else _("Ignore"), ignore_list.verbose(kind) if add_kind else "", unicode(title))
     )
     )
 
@@ -104,15 +104,15 @@ def set_refresh_menu_state(state_or_media, media_type="movies"):
             for episode in media.seasons[season].episodes:
                 ep = media.seasons[season].episodes[episode]
                 media_id = ep.id
-                title = get_video_display_title(L("show"), ep.title, parent_title=media.title, season=int(season), episode=int(episode))
+                title = get_video_display_title(_("show"), ep.title, parent_title=media.title, season=int(season), episode=int(episode))
     else:
-        title = get_video_display_title(L("movie"), media.title)
+        title = get_video_display_title(_("movie"), media.title)
 
     intent = get_intent()
     force_refresh = intent.get("force", media_id)
 
-    Dict["current_refresh_state"] = F(u"%sRefreshing %s",
-                                    L("Force-") if force_refresh else "",
+    Dict["current_refresh_state"] = _(u"%sRefreshing %s",
+                                    _("Force-") if force_refresh else "",
                                     unicode(title))
 
 
@@ -181,7 +181,7 @@ def extract_embedded_sub(**kwargs):
                 is_forced = is_stream_forced(stream)
                 bn = os.path.basename(part.file)
 
-                set_refresh_menu_state(F(u"Extracting subtitle %s of %s", stream_index, bn))
+                set_refresh_menu_state(_(u"Extracting subtitle %s of %s", stream_index, bn))
                 Log.Info(u"Extracting stream %s (%s) of %s", stream_index, display_language(language), bn)
 
                 out_codec = stream.codec if stream.codec != "mov_text" else "srt"
@@ -247,8 +247,8 @@ class SubFolderObjectContainer(ObjectContainer):
         from support.helpers import pad_title, timestamp
         self.add(DirectoryObject(
             key=Callback(fatality, force_title=" ", randomize=timestamp()),
-            title=pad_title(L("<< Back to home")),
-            summary=F("Current state: %s; Last state: %s",
+            title=pad_title(_("<< Back to home")),
+            summary=_("Current state: %s; Last state: %s",
                 (Dict["current_refresh_state"] or "Idle") if "current_refresh_state" in Dict else "Idle",
                 (Dict["last_refresh_state"] or "None") if "last_refresh_state" in Dict else "None"
             )

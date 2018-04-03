@@ -20,6 +20,7 @@ from support.items import get_recent_items, get_item, is_ignored, get_item_title
 from support.helpers import track_usage, get_title_for_video_metadata, cast_bool, PartUnknownException
 from support.plex_media import get_plex_metadata
 from support.scanning import scan_videos
+from support.i18n import _
 from download import download_best_subtitles, pre_download_hook, post_download_hook, language_hook
 
 PROVIDER_SLACK = 30
@@ -242,7 +243,7 @@ class DownloadSubtitleMixin(object):
                     if not scheduler.is_task_running("MissingSubtitles"):
                         scheduler.clear_task_data("MissingSubtitles")
         else:
-            set_refresh_menu_state(F(u"%s: Subtitle download failed (%s)", self.name, rating_key))
+            set_refresh_menu_state(_(u"%s: Subtitle download failed (%s)", self.name, rating_key))
         return download_successful
 
 

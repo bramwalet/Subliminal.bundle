@@ -20,93 +20,94 @@ from support.lib import Plex
 from support.storage import reset_storage, log_storage, get_subtitle_storage
 from support.scheduler import scheduler
 from support.items import set_mods_for_part, get_item_kind_from_rating_key
+from support.i18n import _
 
 
 @route(PREFIX + '/advanced')
 def AdvancedMenu(randomize=None, header=None, message=None):
     oc = SubFolderObjectContainer(
-            header=header or L("Internal stuff, pay attention!"),
+            header=header or _("Internal stuff, pay attention!"),
             message=message,
             no_cache=True,
             no_history=True,
             replace_parent=False,
-            title2=L("Advanced"))
+            title2=_("Advanced"))
 
     if config.lock_advanced_menu and not config.pin_correct:
         oc.add(DirectoryObject(
             key=Callback(
                     PinMenu,
                     randomize=timestamp(),
-                    success_go_to=L("advanced")),
-            title=pad_title(L("Enter PIN")),
-            summary=L("The owner has restricted the access to this menu. Please enter the correct pin"),
+                    success_go_to=_("advanced")),
+            title=pad_title(_("Enter PIN")),
+            summary=_("The owner has restricted the access to this menu. Please enter the correct pin"),
         ))
         return oc
 
     oc.add(DirectoryObject(
         key=Callback(TriggerRestart, randomize=timestamp()),
-        title=pad_title(L("Restart the plugin")),
+        title=pad_title(_("Restart the plugin")),
     ))
     oc.add(DirectoryObject(
         key=Callback(GetLogsLink),
-        title=L("Get my logs (copy the appearing link and open it in your browser, please)"),
-        summary=L("Copy the appearing link and open it in your browser, please"),
+        title=_("Get my logs (copy the appearing link and open it in your browser, please)"),
+        summary=_("Copy the appearing link and open it in your browser, please"),
     ))
     oc.add(DirectoryObject(
         key=Callback(TriggerBetterSubtitles, randomize=timestamp()),
-        title=pad_title(L("Trigger find better subtitles")),
+        title=pad_title(_("Trigger find better subtitles")),
     ))
     oc.add(DirectoryObject(
         key=Callback(SkipFindBetterSubtitles, randomize=timestamp()),
-        title=pad_title(L("Skip next find better subtitles (sets last run to now)")),
+        title=pad_title(_("Skip next find better subtitles (sets last run to now)")),
     ))
     oc.add(DirectoryObject(
         key=Callback(TriggerStorageMaintenance, randomize=timestamp()),
-        title=pad_title(L("Trigger subtitle storage maintenance")),
+        title=pad_title(_("Trigger subtitle storage maintenance")),
     ))
     oc.add(DirectoryObject(
         key=Callback(TriggerStorageMigration, randomize=timestamp()),
-        title=pad_title(L("Trigger subtitle storage migration (expensive)")),
+        title=pad_title(_("Trigger subtitle storage migration (expensive)")),
     ))
     oc.add(DirectoryObject(
         key=Callback(TriggerCacheMaintenance, randomize=timestamp()),
-        title=pad_title(L("Trigger cache maintenance (refiners, providers and packs/archives)")),
+        title=pad_title(_("Trigger cache maintenance (refiners, providers and packs/archives)")),
     ))
     oc.add(DirectoryObject(
         key=Callback(ApplyDefaultMods, randomize=timestamp()),
-        title=pad_title(L("Apply configured default subtitle mods to all (active) stored subtitles")),
+        title=pad_title(_("Apply configured default subtitle mods to all (active) stored subtitles")),
     ))
     oc.add(DirectoryObject(
         key=Callback(ReApplyMods, randomize=timestamp()),
-        title=pad_title(L("Re-Apply mods of all stored subtitles")),
+        title=pad_title(_("Re-Apply mods of all stored subtitles")),
     ))
     oc.add(DirectoryObject(
         key=Callback(LogStorage, key="tasks", randomize=timestamp()),
-        title=pad_title(L("Log the plugin's scheduled tasks state storage")),
+        title=pad_title(_("Log the plugin's scheduled tasks state storage")),
     ))
     oc.add(DirectoryObject(
         key=Callback(LogStorage, key="ignore", randomize=timestamp()),
-        title=pad_title(L("Log the plugin's internal ignorelist storage")),
+        title=pad_title(_("Log the plugin's internal ignorelist storage")),
     ))
     oc.add(DirectoryObject(
         key=Callback(LogStorage, key=None, randomize=timestamp()),
-        title=pad_title(L("Log the plugin's complete state storage")),
+        title=pad_title(_("Log the plugin's complete state storage")),
     ))
     oc.add(DirectoryObject(
         key=Callback(ResetStorage, key="tasks", randomize=timestamp()),
-        title=pad_title(L("Reset the plugin's scheduled tasks state storage")),
+        title=pad_title(_("Reset the plugin's scheduled tasks state storage")),
     ))
     oc.add(DirectoryObject(
         key=Callback(ResetStorage, key="ignore", randomize=timestamp()),
-        title=pad_title(L("Reset the plugin's internal ignorelist storage")),
+        title=pad_title(_("Reset the plugin's internal ignorelist storage")),
     ))
     oc.add(DirectoryObject(
         key=Callback(InvalidateCache, randomize=timestamp()),
-        title=pad_title(L("Invalidate Sub-Zero metadata caches (subliminal)")),
+        title=pad_title(_("Invalidate Sub-Zero metadata caches (subliminal)")),
     ))
     oc.add(DirectoryObject(
         key=Callback(ResetProviderThrottle, randomize=timestamp()),
-        title=pad_title(L("Reset provider throttle states")),
+        title=pad_title(_("Reset provider throttle states")),
     ))
     return oc
 
@@ -118,10 +119,10 @@ def DispatchRestart():
 @route(PREFIX + '/advanced/restart/trigger')
 @debounce
 def TriggerRestart(randomize=None):
-    set_refresh_menu_state(L("Restarting the plugin"))
+    set_refresh_menu_state(_("Restarting the plugin"))
     DispatchRestart()
     return fatality(
-            header=L("Restart triggered, please wait about 5 seconds"),
+            header=_("Restart triggered, please wait about 5 seconds"),
             force_title=" ",
             only_refresh=True,
             replace_parent=True,
@@ -140,15 +141,15 @@ def ResetStorage(key, randomize=None, sure=False):
     if not sure:
         oc = SubFolderObjectContainer(
                 no_history=True,
-                title1=L("Reset subtitle storage"),
-                title2=L("Are you sure?"))
+                title1=_("Reset subtitle storage"),
+                title2=_("Are you sure?"))
         oc.add(DirectoryObject(
             key=Callback(
                     ResetStorage,
                     key=key,
                     sure=True,
                     randomize=timestamp()),
-            title=pad_title(L("Are you really sure?")),
+            title=pad_title(_("Are you really sure?")),
 
         ))
         return oc
@@ -162,8 +163,8 @@ def ResetStorage(key, randomize=None, sure=False):
 
     return AdvancedMenu(
         randomize=timestamp(),
-        header=L("Success"),
-        message=F("Information Storage (%s) reset", key)
+        header=_("Success"),
+        message=_("Information Storage (%s) reset", key)
     )
 
 
@@ -172,8 +173,8 @@ def LogStorage(key, randomize=None):
     log_storage(key)
     return AdvancedMenu(
         randomize=timestamp(),
-        header=L("Success"),
-        message=F("Information Storage (%s) logged", key)
+        header=_("Success"),
+        message=_("Information Storage (%s) logged", key)
     )
 
 
@@ -183,8 +184,8 @@ def TriggerBetterSubtitles(randomize=None):
     scheduler.dispatch_task("FindBetterSubtitles")
     return AdvancedMenu(
         randomize=timestamp(),
-        header=L("Success"),
-        message=L("FindBetterSubtitles triggered")
+        header=_("Success"),
+        message=_("FindBetterSubtitles triggered")
     )
 
 
@@ -196,8 +197,8 @@ def SkipFindBetterSubtitles(randomize=None):
 
     return AdvancedMenu(
         randomize=timestamp(),
-        header=L("Success"),
-        message=L("FindBetterSubtitles skipped")
+        header=_("Success"),
+        message=_("FindBetterSubtitles skipped")
     )
 
 
@@ -207,8 +208,8 @@ def TriggerStorageMaintenance(randomize=None):
     scheduler.dispatch_task("SubtitleStorageMaintenance")
     return AdvancedMenu(
         randomize=timestamp(),
-        header=L("Success"),
-        message=L("SubtitleStorageMaintenance triggered")
+        header=_("Success"),
+        message=_("SubtitleStorageMaintenance triggered")
     )
 
 
@@ -218,8 +219,8 @@ def TriggerStorageMigration(randomize=None):
     scheduler.dispatch_task("MigrateSubtitleStorage")
     return AdvancedMenu(
         randomize=timestamp(),
-        header=L("Success"),
-        message=L("MigrateSubtitleStorage triggered")
+        header=_("Success"),
+        message=_("MigrateSubtitleStorage triggered")
     )
 
 
@@ -229,8 +230,8 @@ def TriggerCacheMaintenance(randomize=None):
     scheduler.dispatch_task("CacheMaintenance")
     return AdvancedMenu(
         randomize=timestamp(),
-        header=L("Success"),
-        message=L("TriggerCacheMaintenance triggered")
+        header=_("Success"),
+        message=_("TriggerCacheMaintenance triggered")
     )
 
 
@@ -282,8 +283,8 @@ def ApplyDefaultMods(randomize=None):
     Thread.CreateTimer(1.0, apply_default_mods)
     return AdvancedMenu(
         randomize=timestamp(),
-        header=L("Success"),
-        message=L("This may take some time ...")
+        header=_("Success"),
+        message=_("This may take some time ...")
     )
 
 
@@ -293,8 +294,8 @@ def ReApplyMods(randomize=None):
     Thread.CreateTimer(1.0, apply_default_mods, reapply_current=True)
     return AdvancedMenu(
         randomize=timestamp(),
-        header=L("Success"),
-        message=L("This may take some time ...")
+        header=_("Success"),
+        message=_("This may take some time ...")
     )
 
 
@@ -302,11 +303,11 @@ def ReApplyMods(randomize=None):
 def GetLogsLink():
     if not config.plex_token:
         oc = ObjectContainer(
-                title2=L("Download Logs"),
+                title2=_("Download Logs"),
                 no_cache=True,
                 no_history=True,
-                header=L("Sorry, feature unavailable"),
-                message=L("Universal Plex token not available"))
+                header=_("Sorry, feature unavailable"),
+                message=_("Universal Plex token not available"))
         return oc
 
     # try getting the link base via the request in context, first, otherwise use the public ip
@@ -335,7 +336,7 @@ def GetLogsLink():
             title2=logs_link,
             no_cache=True,
             no_history=True,
-            header=L("Copy this link and open this in your browser, please"),
+            header=_("Copy this link and open this in your browser, please"),
             message=logs_link)
     return oc
 
@@ -366,15 +367,15 @@ def InvalidateCache(randomize=None):
         region.invalidate()
     return AdvancedMenu(
         randomize=timestamp(),
-        header=L("Success"),
-        message=L("Cache invalidated")
+        header=_("Success"),
+        message=_("Cache invalidated")
     )
 
 
 @route(PREFIX + '/pin')
 def PinMenu(pin="", randomize=None, success_go_to="channel"):
     oc = ObjectContainer(
-            title2=L("Enter PIN number ") + str(len(pin) + 1),
+            title2=_("Enter PIN number ") + str(len(pin) + 1),
             no_cache=True,
             no_history=True,
             skip_pin_lock=True)
@@ -384,8 +385,8 @@ def PinMenu(pin="", randomize=None, success_go_to="channel"):
         config.locked = False
         if success_go_to == "channel":
             return fatality(
-                force_title=L("PIN correct"),
-                header=L("PIN correct"),
+                force_title=_("PIN correct"),
+                header=_("PIN correct"),
                 no_history=True)
         elif success_go_to == "advanced":
             return AdvancedMenu(randomize=timestamp())
@@ -404,7 +405,7 @@ def PinMenu(pin="", randomize=None, success_go_to="channel"):
                 PinMenu,
                 randomize=timestamp(),
                 success_go_to=success_go_to),
-        title=pad_title(L("Reset")),
+        title=pad_title(_("Reset")),
     ))
     return oc
 
@@ -413,7 +414,7 @@ def PinMenu(pin="", randomize=None, success_go_to="channel"):
 def ClearPin(randomize=None):
     Dict["pin_correct_time"] = None
     config.locked = True
-    return fatality(force_title=L("Menu locked"), header=" ", no_history=True)
+    return fatality(force_title=_("Menu locked"), header=" ", no_history=True)
 
 
 @route(PREFIX + '/reset_throttle')
@@ -422,6 +423,6 @@ def ResetProviderThrottle(randomize=None):
     Dict.Save()
     return AdvancedMenu(
         randomize=timestamp(),
-        header=L("Success"),
-        message=L("Provider throttles reset")
+        header=_("Success"),
+        message=_("Provider throttles reset")
     )

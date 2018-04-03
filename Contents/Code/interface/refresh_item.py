@@ -4,6 +4,7 @@ from subzero.constants import PREFIX
 from menu_helpers import debounce, set_refresh_menu_state, route
 from support.items import refresh_item
 from support.helpers import timestamp
+from support.i18n import _
 
 
 @route(PREFIX + '/item/refresh/{rating_key}/force', force=True)
@@ -15,9 +16,9 @@ def RefreshItem(rating_key=None, came_from="/recent", item_title=None, force=Fal
     from interface.main import fatality
     header = " "
     if trigger:
-        set_refresh_menu_state(F(u"Triggering %sRefresh for %s", L("Force-") if force else "", item_title))
+        set_refresh_menu_state(_(u"Triggering %sRefresh for %s", _("Force-") if force else "", item_title))
         Thread.Create(refresh_item, rating_key=rating_key, force=force, refresh_kind=refresh_kind,
                       parent_rating_key=previous_rating_key, timeout=int(timeout))
 
-        header = F(u"%s of item %s triggered", L("Refresh") if not force else L("Forced-refresh"), rating_key)
+        header = _(u"%s of item %s triggered", _("Refresh") if not force else _("Forced-refresh"), rating_key)
     return fatality(randomize=timestamp(), header=header, replace_parent=True)
