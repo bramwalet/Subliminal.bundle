@@ -7,6 +7,7 @@ import os
 
 from func import enable_channel_wrapper
 from subzero.language import Language
+from support.i18n import is_localized_string
 from support.items import get_kind, get_item_thumb, get_item, get_item_kind_from_item, refresh_item
 from support.helpers import get_video_display_title, pad_title, display_language, quote_args, is_stream_forced
 from support.ignore import ignore_list
@@ -91,8 +92,8 @@ def set_refresh_menu_state(state_or_media, media_type="movies"):
         Dict["current_refresh_state"] = None
         return
 
-    if isinstance(state_or_media, types.StringTypes):
-        Dict["current_refresh_state"] = state_or_media
+    if isinstance(state_or_media, types.StringTypes) or is_localized_string(state_or_media):
+        Dict["current_refresh_state"] = unicode(state_or_media)
         return
 
     media = state_or_media

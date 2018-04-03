@@ -242,7 +242,7 @@ class DownloadSubtitleMixin(object):
                     if not scheduler.is_task_running("MissingSubtitles"):
                         scheduler.clear_task_data("MissingSubtitles")
         else:
-            set_refresh_menu_state(u"%s: Subtitle download failed (%s)" % (self.name, rating_key))
+            set_refresh_menu_state(F(u"%s: Subtitle download failed (%s)", self.name, rating_key))
         return download_successful
 
 
