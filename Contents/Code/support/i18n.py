@@ -30,9 +30,14 @@ class SmartLocalStringFormatter(plex_i18n_module.LocalStringFormatter):
         setattr(self, "_locale", locale)
 
 
-def local_string_with_optional_format(key, *args):
+def local_string_with_optional_format(key, *args, **kwargs):
+    if kwargs:
+        args = (kwargs,)
+    else:
+        args = tuple(args)
+
     if args:
-        return SmartLocalStringFormatter(plex_i18n_module.LocalString(core, key, Locale.CurrentLocale), tuple(args))
+        return SmartLocalStringFormatter(plex_i18n_module.LocalString(core, key, Locale.CurrentLocale), args)
 
     if ("%s" in key or "%(" in key) and not args:
         raise ValueError(u"%s requires a arguments for formatting" % key)
