@@ -2,6 +2,9 @@
 
 import inspect
 
+from support.config import config
+
+
 core = getattr(Data, "_core")
 
 
@@ -22,9 +25,11 @@ class SmartLocalStringFormatter(plex_i18n_module.LocalStringFormatter):
         setattr(self, "_string1", string1)
 
         if isinstance(string2, tuple) and len(string2) == 1 and hasattr(string2[0], "iteritems"):
-            if not is_localized_string(string1) and "%(" not in string1:
-                Log.Error(u"%s requires a dictionary for formatting" % string1)
             string2 = string2[0]
+            if config.debug_i18n:
+                if "%(" not in string1.__str__():
+                    Log.Error(u"%r: dictionary for non-named format string supplied" % string1)
+                    string2 = "BROKEN STRING"
 
         setattr(self, "_string2", string2)
         setattr(self, "_locale", locale)
@@ -40,8 +45,11 @@ def local_string_with_optional_format(key, *args, **kwargs):
         return SmartLocalStringFormatter(plex_i18n_module.LocalString(core, key, Locale.CurrentLocale), args)
 
     # check string instances for arguments
-    if not is_localized_string(key) and ("%s" in key or "%(" in key) and not args:
-        raise Log.Error(u"%s requires a arguments for formatting" % key)
+    if config.debug_i18n:
+        k = key.__str__().replace("%%", "")
+        if ("%s" in k or "%(" in k) and not args:
+            Log.Error(u"%r requires a arguments for formatting" % k)
+            return "NEEDS FORMAT ARGUMENTS"
 
     return plex_i18n_module.LocalString(core, key, Locale.CurrentLocale)
 

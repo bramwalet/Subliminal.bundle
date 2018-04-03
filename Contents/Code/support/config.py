@@ -94,6 +94,7 @@ class Config(object):
     new_style_cache = False
     pack_cache_dir = None
     advanced = None
+    debug_i18n = False
 
     enable_channel = True
     enable_agent = True
@@ -167,6 +168,7 @@ class Config(object):
         self.new_style_cache = cast_bool(Prefs['new_style_cache'])
         self.pack_cache_dir = self.get_pack_cache_dir()
         self.advanced = self.get_advanced_config()
+        self.debug_i18n = self.advanced.debug_i18n
 
         os.environ["SZ_USER_AGENT"] = self.get_user_agent()
 
