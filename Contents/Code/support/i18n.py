@@ -22,7 +22,7 @@ class SmartLocalStringFormatter(plex_i18n_module.LocalStringFormatter):
         setattr(self, "_string1", string1)
 
         if isinstance(string2, tuple) and len(string2) == 1 and hasattr(string2[0], "iteritems"):
-            if "%(" not in string1:
+            if not is_localized_string(string1) and "%(" not in string1:
                 Log.Error(u"%s requires a dictionary for formatting" % string1)
             string2 = string2[0]
 
@@ -39,7 +39,8 @@ def local_string_with_optional_format(key, *args, **kwargs):
     if args:
         return SmartLocalStringFormatter(plex_i18n_module.LocalString(core, key, Locale.CurrentLocale), args)
 
-    if ("%s" in key or "%(" in key) and not args:
+    # check string instances for arguments
+    if not is_localized_string(key) and ("%s" in key or "%(" in key) and not args:
         raise Log.Error(u"%s requires a arguments for formatting" % key)
 
     return plex_i18n_module.LocalString(core, key, Locale.CurrentLocale)
