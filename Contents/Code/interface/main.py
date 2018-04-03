@@ -53,7 +53,9 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
                 oc.add(DirectoryObject(
                     key=Callback(fatality, randomize=timestamp()),
                     title=pad_title(_("Insufficient permissions")),
-                    summary=_("Insufficient permissions on library %s, folder: %s", title, path),
+                    summary=_("Insufficient permissions on library %(title)s, folder: %(path)s",
+                              title=title,
+                              path=path),
                 ))
         return oc
 
@@ -112,7 +114,10 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
         task = scheduler.task(task_name)
 
         if task.ready_for_display:
-            task_state = _("Running: %s/%s (%s%%)", task.items_done, task.items_searching, task.percentage)
+            task_state = _("Running: %(items_done)s/%(items_searching)s (%(percentage)s%%)",
+                           items_done=task.items_done,
+                           items_searching=task.items_searching,
+                           percentage=task.percentage)
         else:
             lr = scheduler.last_run(task_name)
             nr = scheduler.next_run(task_name)
@@ -131,7 +136,7 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
 
         oc.add(DirectoryObject(
             key=Callback(IgnoreListMenu),
-            title=_("Display ignore list (%d)", len(ignore_list)),
+            title=_("Display ignore list (%(ignored_count)d)", ignored_count=len(ignore_list)),
             summary=_("Show the current ignore list (mainly used for the automatic tasks)"),
             thumb=R("icon-ignore.jpg")
         ))
@@ -166,7 +171,10 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
             summary_data = []
             for provider, data in Dict["provider_throttle"].iteritems():
                 reason, until, desc = data
-                summary_data.append(_("%s until %s (%s)", provider, until.strftime("%y/%m/%d %H:%M"), reason))
+                summary_data.append(unicode(_("%(throttled_provider)s until %(until_date)s (%(reason)s)",
+                                              throttled_provider=provider,
+                                              until_date=until.strftime("%y/%m/%d %H:%M"),
+                                              reason=reason)))
 
             oc.add(DirectoryObject(
                 key=Callback(fatality, force_title=" ", randomize=timestamp()),
@@ -319,9 +327,13 @@ def IgnoreMenu(kind, rating_key, title=None, sure=False, todo="not_set"):
     """
     is_ignored = rating_key in ignore_list[kind]
     if not sure:
-        oc = SubFolderObjectContainer(no_history=True, replace_parent=True, title1=_("%s %s %s %s the ignore list",
-            _("Add") if not is_ignored else _("Remove"), ignore_list.verbose(kind), title,
-            _("to") if not is_ignored else _("from")), title2=_("Are you sure?"))
+        oc = SubFolderObjectContainer(no_history=True, replace_parent=True,
+                                      title1=_("%(add_or_remove)s %(kind)s %(title)s %(to_or_from)s the ignore list",
+                                               add_or_remove=_("Add") if not is_ignored else _("Remove"),
+                                               kind=ignore_list.verbose(kind),
+                                               title=title,
+                                               to_or_from=_("to") if not is_ignored else _("from")),
+                                      title2=_("Are you sure?"))
         oc.add(DirectoryObject(
             key=Callback(IgnoreMenu, kind=kind, rating_key=rating_key, title=title, sure=True,
                          todo=_("add") if not is_ignored else _("remove")),
@@ -355,7 +367,10 @@ def IgnoreMenu(kind, rating_key, title=None, sure=False, todo="not_set"):
     if dont_change:
         return fatality(force_title=" ", header=_("Didn't change the ignore list"), no_history=True)
 
-    return fatality(force_title=" ", header=_("%s %s the ignore list", title, state), no_history=True)
+    return fatality(force_title=" ", header=_("%(title)s %(added_to_or_removed_from)s the ignore list",
+                                              title=title,
+                                              added_to_or_removed_from=state),
+                    no_history=True)
 
 
 @route(PREFIX + '/sections')

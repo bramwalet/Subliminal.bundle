@@ -284,11 +284,13 @@ def ListStoredSubsForItemMenu(**kwargs):
                                 key=lambda x: x[1].date_added, reverse=True):
         is_current = key == all_subs["current"]
 
-        summary = _(u"added: %s, %s, Language: %s, Score: %i, Storage: %s",
-                  (df(subtitle.date_added),
-                   subtitle.mode_verbose, display_language(language),
-                   subtitle.score,
-                   subtitle.storage_type))
+        summary = _(u"added: %(date_added)s, %(mode)s, Language: %(language)s, Score: %(score)i, Storage: "
+                    u"%(storage_type)s",
+                    date_added=df(subtitle.date_added),
+                    mode=subtitle.mode_verbose,
+                    language=display_language(language),
+                    score=subtitle.score,
+                    storage_type=subtitle.storage_type)
 
         sub_name = subtitle.provider_name
         if sub_name == "embedded":
@@ -447,11 +449,15 @@ def ManageBlacklistMenu(**kwargs):
 
     for sub_key, data in sorted(current_bl.iteritems(), key=sorter, reverse=True):
         provider_name, subtitle_id = sub_key
-        title = _(u"%s, %s (added: %s, %s), Language: %s, Score: %i, Storage: %s",
-                provider_name, subtitle_id, df(data["date_added"]),
-                current_sub.get_mode_verbose(data["mode"]),
-                display_language(Language.fromietf(language)), data["score"],
-                data["storage_type"])
+        title = _(u"%(provider_name)s, %(subtitle_id)s (added: %(date_added)s, %(mode)s), Language: %(language)s, "
+                  u"Score: %(score)i, Storage: %(storage_type)s",
+                  provider_name=provider_name,
+                  subtitle_id=subtitle_id,
+                  date_added=df(data["date_added"]),
+                  mode=current_sub.get_mode_verbose(data["mode"]),
+                  language=display_language(Language.fromietf(language)),
+                  score=data["score"],
+                  storage_type=data["storage_type"])
         oc.add(DirectoryObject(
             key=Callback(ManageBlacklistMenu, remove_sub_key="__".join(sub_key), randomize=timestamp(), **kwargs),
             title=title,

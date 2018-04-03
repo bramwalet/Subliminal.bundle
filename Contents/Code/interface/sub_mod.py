@@ -131,7 +131,10 @@ def SubtitleFPSModMenu(**kwargs):
         mod_ident = SubtitleModifications.get_mod_signature("change_FPS", **{"from": fps, "to": target_fps})
         oc.add(DirectoryObject(
             key=Callback(SubtitleSetMods, mods=mod_ident, mode="add", randomize=timestamp(), **kwargs),
-            title=_("%s fps -> %s fps (%s)", fps, target_fps, indicator)
+            title=_("%(from_fps)s fps -> %(to_fps)s fps (%(slower_or_faster_indicator)s)",
+                    from_fps=fps,
+                    to_fps=target_fps,
+                    slower_or_faster_indicator=indicator)
         ))
 
     return oc
@@ -155,7 +158,7 @@ def SubtitleShiftModUnitMenu(**kwargs):
     for unit, title in POSSIBLE_UNITS:
         oc.add(DirectoryObject(
             key=Callback(SubtitleShiftModMenu, unit=unit, randomize=timestamp(), **kwargs),
-            title=_("Adjust by %s", title)
+            title=_("Adjust by %(time_and_unit)s", time_and_unit=title)
         ))
 
     return oc
@@ -274,7 +277,7 @@ def SubtitleListMods(**kwargs):
     for identifier in current_sub.mods:
         oc.add(DirectoryObject(
             key=Callback(SubtitleSetMods, mods=identifier, mode="remove", randomize=timestamp(), **kwargs),
-            title=_("Remove: %s", identifier)
+            title=_("Remove: %(mod_name)s", mod_name=identifier)
         ))
 
     storage.destroy()

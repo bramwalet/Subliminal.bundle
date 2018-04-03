@@ -118,7 +118,7 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
                                  title=title,
                                  previous_item_type=previous_item_type, with_mods=True,
                                  previous_rating_key=previous_rating_key, randomize=timestamp()),
-                    title=_(u"Extract missing %s embedded subtitles", display_language(lang)),
+                    title=_(u"Extract missing %(language)s embedded subtitles", language=display_language(lang)),
                     summary=_("Extracts the not yet extracted embedded subtitles of all episodes for the current season ") +
                             _("with all configured default modifications")
                 ))
@@ -128,7 +128,7 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
                                  title=title, force=True,
                                  previous_item_type=previous_item_type, with_mods=True,
                                  previous_rating_key=previous_rating_key, randomize=timestamp()),
-                    title=_(u"Extract and activate %s embedded subtitles", display_language(lang)),
+                    title=_(u"Extract and activate %(language)s embedded subtitles", language=display_language(lang)),
                     summary=_("Extracts embedded subtitles of all episodes for the current season ") +
                             _("with all configured default modifications")
                 ))
