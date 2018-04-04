@@ -1,3 +1,16 @@
 {
-
+    "sq": "Albanisch",
+    "ar": "Arabisch",
+    "be": "Weißrussisch",
+    "bs": "Bosnisch",
+    "bg": "Bulgarisch",
+    "ca": "Katalanisch",
+    "zh": "Chinesisch",
+    "hr": "Kroatisch",
+    "cs": "Tschechisch",
+    "da": "Dänisch",
+    "nl": "Holländisch",
+    "en": "Englisch",
+    "Re-Apply mods of all stored subtitles": "Alle Mods aller gespeicherten Untertitel abermals anwenden",
+    "%(count)d subtitles in storage": "%(count)d Untertitel im Speicher"
 }
