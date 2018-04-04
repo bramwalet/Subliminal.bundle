@@ -12,5 +12,6 @@
     "nl": "Holländisch",
     "en": "Englisch",
     "Re-Apply mods of all stored subtitles": "Alle Mods aller gespeicherten Untertitel abermals anwenden",
-    "%(count)d subtitles in storage": "%(count)d Untertitel im Speicher"
+    "%(count)d subtitles in storage": "%(count)d Untertitel im Speicher",
+    "List available %(language)s subtitles": "List available %(language)s subtitles; Umlauttest ÜÜÜ ß 😁"
 }
