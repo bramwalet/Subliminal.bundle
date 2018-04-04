@@ -12,7 +12,7 @@ If you like this, buy me a beer: <br>[![Donate](https://www.paypalobjects.com/en
 
 ## Introduction
 #### What's Sub-Zero?
-Sub-Zero is a metadata agent and channel at the same time, for the popular Plex Media Server environment.
+Sub-Zero is a metadata agent and interface-plugin at the same time, for the popular Plex Media Server environment.
 
 #### Why not use the builtin OpenSubtitles agent?
 Because it doesn't deliver. Especially for very new media items it may pick up none or bad subtitles for your media. Also it doesn't know when "better" subtitles get released for your media file.
@@ -42,8 +42,8 @@ Via the preferences you can configure almost every parameter Sub-Zero uses when 
 
 From an infinite number of different languages to search for, to hearing impaired settings, foreign/forced-only captions, embedded subtitle handling and many more.
 
-#### Channel menu
-The automatic matching Sub-Zero does has been improved massively over the last years and reaches an extremely high accuracy for recently-released items, in the first 6 hours. It still might be, that you want some manual managability over your library and its subtitles. This is where the channel menu comes into play.
+#### Interface
+The automatic matching Sub-Zero does has been improved massively over the last years and reaches an extremely high accuracy for recently-released items, in the first 6 hours. It still might be, that you want some manual managability over your library and its subtitles. This is where the interface comes into play.
 
 It allows you to trigger background tasks, browse your library based on several different starting points, adds a recently-viewed menu for instant access to your recently played media and allows you to list and select available subtitles for any item in your library.
 
@@ -58,7 +58,7 @@ They currently consist of six individual mods:
 - **OCR**: fixes problems in subtitles introduced by OCR (custom implementation of [SubtitleEdit](https://github.com/SubtitleEdit/subtitleedit)'s dictionaries) (`hands agaInst the waII!` -> `hands against the wall!`)
 - **Remove Tags**: removes any font style tags from the subtitles (bold, italic, underline, colors, ...)
 
-Hearing Impaired, Common, OCR and Color can be applied automatically on every subtitle downloaded. All mods are manually managable via the channel menu.
+Hearing Impaired, Common, OCR and Color can be applied automatically on every subtitle downloaded. All mods are manually managable via the interface.
 
 Mods are applied on-the-fly, the original content of the subtitle stays available, so mods are completely reversible.
 
