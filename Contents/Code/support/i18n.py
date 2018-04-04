@@ -78,7 +78,8 @@ def local_string_with_optional_format(key, *args, **kwargs):
         args = tuple(args)
 
     if args:
-        return SmartLocalStringFormatter(plex_i18n_module.LocalString(core, key, Locale.CurrentLocale), args)
+        # fixme: may not be the best idea as this evaluates the string early
+        return unicode(SmartLocalStringFormatter(plex_i18n_module.LocalString(core, key, Locale.CurrentLocale), args))
 
     # check string instances for arguments
     if config.debug_i18n:
@@ -86,7 +87,7 @@ def local_string_with_optional_format(key, *args, **kwargs):
         if msg:
             return msg
 
-    return plex_i18n_module.LocalString(core, key, Locale.CurrentLocale)
+    return unicode(plex_i18n_module.LocalString(core, key, Locale.CurrentLocale))
 
 
 _ = local_string_with_optional_format
