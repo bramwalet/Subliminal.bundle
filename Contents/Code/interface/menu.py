@@ -292,7 +292,7 @@ def ValidatePrefs():
         update_dict = True
 
     elif Dict["channel_enabled"] != config.enable_channel:
-        Log.Debug("Channel features %s, restarting plugin", "enabled" if config.enable_channel else "disabled")
+        Log.Debug("Interface features %s, restarting plugin", "enabled" if config.enable_channel else "disabled")
         update_dict = True
         restart = True
 

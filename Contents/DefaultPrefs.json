@@ -713,11 +713,11 @@
     "label": "Sub-Zero mode",
     "type": "enum",
     "values": [
-      "agent + channel",
+      "agent + interface",
       "only agent",
-      "only channel"
+      "only interface"
     ],
-    "default": "agent + channel"
+    "default": "agent + interface"
   },
   {
     "id": "plugin_pin",
@@ -739,7 +739,7 @@
     "type": "enum",
     "values": [
       "disabled",
-      "channel menu",
+      "interface",
       "advanced menu"
     ],
     "default": "disabled"

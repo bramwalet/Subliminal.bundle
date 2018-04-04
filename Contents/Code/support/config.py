@@ -356,16 +356,16 @@ class Config(object):
         if not self.providers:
             self.enable_agent = False
             self.enable_channel = False
-            Log.Warn("No providers enabled, disabling agent and channel!")
+            Log.Warn("No providers enabled, disabling agent and interface!")
             return
 
         if Prefs["plugin_mode"] == "only agent":
             self.enable_channel = False
-        elif Prefs["plugin_mode"] == "only channel":
+        elif Prefs["plugin_mode"] == "only interface":
             self.enable_agent = False
 
     def set_plugin_lock(self):
-        if Prefs["plugin_pin_mode"] in ("channel menu", "advanced menu"):
+        if Prefs["plugin_pin_mode"] in ("interface", "advanced menu"):
             # check pin
             pin = Prefs["plugin_pin"]
             if not pin or not len(pin):
@@ -379,7 +379,7 @@ class Config(object):
                 Log.Warn("PIN has to be an integer (0-9)")
             self.pin = pin
             self.lock_advanced_menu = Prefs["plugin_pin_mode"] == "advanced menu"
-            self.lock_menu = Prefs["plugin_pin_mode"] == "channel menu"
+            self.lock_menu = Prefs["plugin_pin_mode"] == "interface"
 
             try:
                 self.pin_valid_minutes = int(Prefs["plugin_pin_valid_for"].strip())
