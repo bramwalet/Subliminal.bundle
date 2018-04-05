@@ -119,8 +119,8 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
                                  previous_item_type=previous_item_type, with_mods=True,
                                  previous_rating_key=previous_rating_key, randomize=timestamp()),
                     title=_(u"Extract missing %(language)s embedded subtitles", language=display_language(lang)),
-                    summary=_("Extracts the not yet extracted embedded subtitles of all episodes for the current season ") +
-                            _("with all configured default modifications")
+                    summary=_("Extracts the not yet extracted embedded subtitles of all episodes for the current "
+                              "season with all configured default modifications")
                 ))
                 oc.add(DirectoryObject(
                     key=Callback(SeasonExtractEmbedded, rating_key=rating_key, language=lang,
@@ -129,8 +129,8 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
                                  previous_item_type=previous_item_type, with_mods=True,
                                  previous_rating_key=previous_rating_key, randomize=timestamp()),
                     title=_(u"Extract and activate %(language)s embedded subtitles", language=display_language(lang)),
-                    summary=_("Extracts embedded subtitles of all episodes for the current season ") +
-                            _("with all configured default modifications")
+                    summary=_("Extracts embedded subtitles of all episodes for the current season "
+                              "with all configured default modifications")
                 ))
 
         # add refresh
