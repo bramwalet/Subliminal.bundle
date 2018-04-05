@@ -338,7 +338,7 @@ def IgnoreMenu(kind, rating_key, title=None, sure=False, todo="not_set"):
                                       title2=_("Are you sure?"))
         oc.add(DirectoryObject(
             key=Callback(IgnoreMenu, kind=kind, rating_key=rating_key, title=title, sure=True,
-                         todo=_("add") if not is_ignored else _("remove")),
+                         todo="add" if not is_ignored else "remove"),
             title=pad_title(_("Are you sure?")),
         ))
         return oc
@@ -353,7 +353,6 @@ def IgnoreMenu(kind, rating_key, title=None, sure=False, todo="not_set"):
             Log.Info("Removed %s (%s) from the ignore list", title, rating_key)
             ignore_list.remove_title(kind, rating_key)
             ignore_list.save()
-            state = _("removed from")
     elif todo == "add":
         if is_ignored:
             dont_change = True
@@ -362,7 +361,6 @@ def IgnoreMenu(kind, rating_key, title=None, sure=False, todo="not_set"):
             Log.Info("Added %s (%s) to the ignore list", title, rating_key)
             ignore_list.add_title(kind, rating_key, title)
             ignore_list.save()
-            state = _("added to")
     else:
         dont_change = True
 
