@@ -81,7 +81,7 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
         oc.add(DirectoryObject(
             key=Callback(OnDeckMenu),
             title=_("On-deck items"),
-            summary=_("Shows the current on deck items and allows you to individually (force-) refresh their metadata subtitles."),
+            summary=_("Shows the current on deck items and allows you to individually (force-) refresh their metadata/subtitles."),
             thumb=R("icon-ondeck.jpg")
         ))
         if "last_played_items" in Dict and Dict["last_played_items"]:
@@ -327,12 +327,14 @@ def IgnoreMenu(kind, rating_key, title=None, sure=False, todo="not_set"):
     """
     is_ignored = rating_key in ignore_list[kind]
     if not sure:
+        t = "Add %(kind)s %(title)s to the ignore list"
+        if is_ignored:
+            t = "Remove %(kind)s %(title)s from the ignore list"
         oc = SubFolderObjectContainer(no_history=True, replace_parent=True,
-                                      title1=_("%(add_or_remove)s %(kind)s %(title)s %(to_or_from)s the ignore list",
-                                               add_or_remove=_("Add") if not is_ignored else _("Remove"),
+                                      title1=_(t,
                                                kind=ignore_list.verbose(kind),
-                                               title=title,
-                                               to_or_from=_("to") if not is_ignored else _("from")),
+                                               title=title
+                                               ),
                                       title2=_("Are you sure?"))
         oc.add(DirectoryObject(
             key=Callback(IgnoreMenu, kind=kind, rating_key=rating_key, title=title, sure=True,
@@ -367,9 +369,11 @@ def IgnoreMenu(kind, rating_key, title=None, sure=False, todo="not_set"):
     if dont_change:
         return fatality(force_title=" ", header=_("Didn't change the ignore list"), no_history=True)
 
-    return fatality(force_title=" ", header=_("%(title)s %(added_to_or_removed_from)s the ignore list",
-                                              title=title,
-                                              added_to_or_removed_from=state),
+    t = "%(title)s added to the ignore list"
+    if todo == "remove":
+        t = "%(title)s removed from the ignore list"
+    return fatality(force_title=" ", header=_(t,
+                                              title=title,),
                     no_history=True)
 
 
