@@ -99,6 +99,8 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         self.use_ssl = use_ssl
         self.timeout = timeout
 
+        logger.debug("Using timeout: %d", timeout)
+
         if use_ssl:
             logger.debug("Using HTTPS connection")
 
