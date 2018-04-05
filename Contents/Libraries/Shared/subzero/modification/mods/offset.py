@@ -17,7 +17,7 @@ class ShiftOffset(SubtitleModification):
     modifies_whole_file = True
 
     long_description = """\
-    Adds or substracts a certain amount of time from the whole subtitle to match your media 
+    Adds or substracts a certain amount of time from the whole subtitle to match your media
     """
 
     @classmethod

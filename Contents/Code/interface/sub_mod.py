@@ -49,25 +49,25 @@ def SubtitleModificationsMenu(**kwargs):
 
         oc.add(DirectoryObject(
             key=Callback(SubtitleSetMods, mods=identifier, mode="add", randomize=timestamp(), **kwargs),
-            title=pad_title(mod.description), summary=mod.long_description or ""
+            title=pad_title(_(mod.description)), summary=_(mod.long_description) or ""
         ))
 
     fps_mod = SubtitleModifications.get_mod_class("change_FPS")
     oc.add(DirectoryObject(
         key=Callback(SubtitleFPSModMenu, randomize=timestamp(), **kwargs),
-        title=pad_title(fps_mod.description), summary=fps_mod.long_description or ""
+        title=pad_title(_(fps_mod.description)), summary=_(fps_mod.long_description) or ""
     ))
 
     shift_mod = SubtitleModifications.get_mod_class("shift_offset")
     oc.add(DirectoryObject(
         key=Callback(SubtitleShiftModUnitMenu, randomize=timestamp(), **kwargs),
-        title=pad_title(shift_mod.description), summary=shift_mod.long_description or ""
+        title=pad_title(_(shift_mod.description)), summary=_(shift_mod.long_description) or ""
     ))
 
     color_mod = SubtitleModifications.get_mod_class("color")
     oc.add(DirectoryObject(
         key=Callback(SubtitleColorModMenu, randomize=timestamp(), **kwargs),
-        title=pad_title(color_mod.description), summary=color_mod.long_description or ""
+        title=pad_title(_(color_mod.description)), summary=_(color_mod.long_description) or ""
     ))
 
     if current_mods:

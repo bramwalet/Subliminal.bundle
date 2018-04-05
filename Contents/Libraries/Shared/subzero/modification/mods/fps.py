@@ -16,7 +16,7 @@ class ChangeFPS(SubtitleModification):
     modifies_whole_file = True
 
     long_description = """\
-    Re-syncs the subtitle to the framerate of the current media file. 
+    Re-syncs the subtitle to the framerate of the current media file.
     """
 
     def modify(self, content, debug=False, parent=None, **kwargs):
