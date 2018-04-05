@@ -19,7 +19,7 @@ plex_i18n_module = get_localization_module()
 
 def old_style_placeholders_count(s):
     # fixme: incomplete, use regex
-    return sum(s.count(c) for c in ["%s", "%d", "%r", "%f"])
+    return sum(s.count(c) for c in ["%s", "%d", "%r", "%f", "%i"])
 
 
 def check_old_style_placeholders(k, args):
