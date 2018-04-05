@@ -4,12 +4,12 @@ import logging
 import types
 import os
 import datetime
-import requests
 
 from guessit import guessit
 from requests.compat import urljoin, quote
 from subliminal import Episode, Movie, region
 from subliminal_patch.core import remove_crap_from_fn
+from subliminal_patch.http import CertifiSession
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +22,7 @@ class DroneAPIClient(object):
         headers = dict(headers or {}, **{"X-Api-Key": api_key})
 
         #: Session for the requests
-        self.session = session or requests.Session()
+        self.session = session or CertifiSession()
         self.session.timeout = timeout
         self.session.headers.update(headers or {})
 

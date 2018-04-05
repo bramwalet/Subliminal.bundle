@@ -22,11 +22,17 @@ except AttributeError:
     default_ssl_context = None
 
 
-class RetryingSession(Session):
+class CertifiSession(Session):
+    def __init__(self):
+        super(CertifiSession, self).__init__()
+        self.verify = pem_file
+
+
+class RetryingSession(CertifiSession):
     proxied_functions = ("get", "post")
 
     def __init__(self):
-        super(RetryingSession, self).__init__()
+        super(CertifiSession, self).__init__()
         self.verify = pem_file
 
         proxy = os.environ.get('SZ_HTTP_PROXY')
@@ -41,7 +47,7 @@ class RetryingSession(Session):
             # fixme: may be a little loud
             logger.debug("Using proxy %s for: %s", self.proxies["http"], args[0])
 
-        return retry_call(getattr(super(RetryingSession, self), method), fargs=args, fkwargs=kwargs, tries=3, delay=5,
+        return retry_call(getattr(super(CertifiSession, self), method), fargs=args, fkwargs=kwargs, tries=3, delay=5,
                           exceptions=(exceptions.ConnectionError,
                                       exceptions.ProxyError,
                                       exceptions.SSLError,
