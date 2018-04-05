@@ -66,5 +66,16 @@ Don't expect support if you mess this up.
         "argenteam": {
             "enabled_for": ["series", "movies"],
         }
+    },
+
+    "refiners": {
+        "sonarr": {
+            // verify HTTPS certificates? Disable for self-signed
+            "ssl_no_verify": false,
+        },
+        "radarr": {
+            // verify HTTPS certificates? Disable for self-signed
+            "ssl_no_verify": false,
+        },
     }
 }

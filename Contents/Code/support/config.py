@@ -855,8 +855,11 @@ class Config(object):
             if Prefs["drone_api.sonarr.url"] and Prefs["drone_api.sonarr.api_key"]:
                 self.refiner_settings["sonarr"] = {
                     "base_url": Prefs["drone_api.sonarr.url"],
-                    "api_key": Prefs["drone_api.sonarr.api_key"]
+                    "api_key": Prefs["drone_api.sonarr.api_key"],
                 }
+                if self.advanced.refiners.sonarr:
+                    self.refiner_settings["sonarr"].update(self.advanced.refiners.sonarr)
+
                 self.exact_filenames = True
 
             if Prefs["drone_api.radarr.url"] and Prefs["drone_api.radarr.api_key"]:
@@ -864,6 +867,9 @@ class Config(object):
                     "base_url": Prefs["drone_api.radarr.url"],
                     "api_key": Prefs["drone_api.radarr.api_key"]
                 }
+                if self.advanced.refiners.radarr:
+                    self.refiner_settings["radarr"].update(self.advanced.refiners.radarr)
+
                 self.exact_filenames = True
 
     @property

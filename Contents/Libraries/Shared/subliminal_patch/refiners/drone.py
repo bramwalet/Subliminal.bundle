@@ -18,11 +18,15 @@ class DroneAPIClient(object):
     api_url = None
     _fill_attrs = None
 
-    def __init__(self, version=1, session=None, headers=None, timeout=10, base_url=None, api_key=None):
+    def __init__(self, version=1, session=None, headers=None, timeout=10, base_url=None, api_key=None,
+                 ssl_no_verify=False):
         headers = dict(headers or {}, **{"X-Api-Key": api_key})
 
         #: Session for the requests
         self.session = session or CertifiSession()
+        if ssl_no_verify:
+            self.session.verify = False
+
         self.session.timeout = timeout
         self.session.headers.update(headers or {})
 
