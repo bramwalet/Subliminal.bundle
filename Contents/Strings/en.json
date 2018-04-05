@@ -393,5 +393,7 @@
   "Fix common OCR issues":"Fix common OCR issues",
   "Fix issues that happen when a subtitle gets converted from bitmap to text through OCR":"Fix issues that happen when a subtitle gets converted from bitmap to text through OCR",
   "Change the timing of the subtitle":"Change the timing of the subtitle",
-  "Adds or substracts a certain amount of time from the whole subtitle to match your media":"Adds or substracts a certain amount of time from the whole subtitle to match your media"
+  "Adds or substracts a certain amount of time from the whole subtitle to match your media":"Adds or substracts a certain amount of time from the whole subtitle to match your media",
+  "Available":"Available",
+  "Current":"Current"
 }

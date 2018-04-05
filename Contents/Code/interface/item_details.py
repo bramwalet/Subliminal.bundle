@@ -119,11 +119,11 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
             part_id = str(part.id)
             part_index += 1
 
-            part_index_addon = ""
-            part_summary_addon = ""
+            part_index_addon = u""
+            part_summary_addon = u""
             if has_multiple_parts:
                 part_index_addon = _(u"File %(file_part_index)s: ", file_part_index=part_index)
-                part_summary_addon = "%s " % filename
+                part_summary_addon = u"%s " % filename
 
             # iterate through all configured languages
             for lang in config.lang_list:
@@ -216,7 +216,7 @@ def SubtitleOptionsMenu(**kwargs):
     rating_key = kwargs["rating_key"]
     part_id = kwargs["part_id"]
     language = kwargs["language"]
-    current_data = kwargs["current_data"]
+    current_data = unicode(kwargs["current_data"])
 
     current_sub, stored_subs, storage = get_current_sub(rating_key, part_id, language)
     subs_count = stored_subs.count(part_id, language)
@@ -226,7 +226,7 @@ def SubtitleOptionsMenu(**kwargs):
         key=Callback(ItemDetailsMenu, rating_key=kwargs["rating_key"], item_title=kwargs["item_title"],
                      title=kwargs["title"], randomize=timestamp()),
         title=_(u"< Back to %s", kwargs["title"]),
-        summary=kwargs["current_data"],
+        summary=current_data,
         thumb=default_thumb
     ))
     if subs_count:
@@ -239,7 +239,7 @@ def SubtitleOptionsMenu(**kwargs):
     oc.add(DirectoryObject(
         key=Callback(ListAvailableSubsForItemMenu, randomize=timestamp(), **kwargs),
         title=_(u"List available %(language)s subtitles", language=kwargs["language_name"]),
-        summary=kwargs["current_data"]
+        summary=current_data
     ))
     if current_sub:
         oc.add(DirectoryObject(
@@ -423,6 +423,7 @@ def ManageBlacklistMenu(**kwargs):
     part_id = kwargs["part_id"]
     language = kwargs["language"]
     remove_sub_key = kwargs.pop("remove_sub_key", None)
+    current_data = unicode(kwargs["current_data"])
 
     current_sub, stored_subs, storage = get_current_sub(rating_key, part_id, language)
     current_bl, subs = stored_subs.get_blacklist(part_id, language)
@@ -439,7 +440,7 @@ def ManageBlacklistMenu(**kwargs):
         key=Callback(ItemDetailsMenu, rating_key=kwargs["rating_key"], item_title=kwargs["item_title"],
                      title=kwargs["title"], randomize=timestamp()),
         title=_(u"< Back to %s", kwargs["title"]),
-        summary=kwargs["current_data"],
+        summary=current_data,
         thumb=default_thumb
     ))
 
@@ -479,6 +480,8 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
 
     running = scheduler.is_task_running("AvailableSubsForItem")
     search_results = get_item_task_data("AvailableSubsForItem", rating_key, language)
+
+    current_data = unicode(current_data) if current_data else None
 
     if (search_results is None or force) and not running:
         scheduler.dispatch_task("AvailableSubsForItem", rating_key=rating_key, item_type=item_type, part_id=part_id,
@@ -582,7 +585,7 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
                          subtitle_id=str(subtitle.id), language=language),
             title=_(u"%(blacklisted_state)s%(current_state)s: %(provider_name)s, score: %(score)s%(wrong_fps_state)s",
                     blacklisted_state=bl_addon,
-                    current_state="Available" if current_id != subtitle.id else "Current",
+                    current_state=_("Available") if current_id != subtitle.id else _("Current"),
                     provider_name=subtitle.provider_name,
                     score=subtitle.score,
                     wrong_fps_state=wrong_fps_addon),
