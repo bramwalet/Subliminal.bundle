@@ -76,6 +76,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
     skip_wrong_fps = True
     is_vip = False
     use_ssl = True
+    timeout = 15
 
     default_url = "//api.opensubtitles.org/xml-rpc"
     vip_url = "//vip-api.opensubtitles.org/xml-rpc"
@@ -84,7 +85,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         #Language.fromietf("sr-latn"), Language.fromietf("sr-cyrl")}
 
     def __init__(self, username=None, password=None, use_tag_search=False, only_foreign=False, skip_wrong_fps=True,
-                 is_vip=False, use_ssl=True):
+                 is_vip=False, use_ssl=True, timeout=15):
         if any((username, password)) and not all((username, password)):
             raise ConfigurationError('Username and password must be specified')
 
@@ -96,6 +97,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         self.token = None
         self.is_vip = is_vip
         self.use_ssl = use_ssl
+        self.timeout = timeout
 
         if use_ssl:
             logger.debug("Using HTTPS connection")
@@ -109,8 +111,8 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         if only_foreign:
             logger.info("Only searching for foreign/forced subtitles")
 
-    def get_server_proxy(self, url, timeout=15):
-        return ServerProxy(url, SubZeroRequestsTransport(use_https=self.use_ssl, timeout=timeout,
+    def get_server_proxy(self, url, timeout=None):
+        return ServerProxy(url, SubZeroRequestsTransport(use_https=self.use_ssl, timeout=timeout or self.timeout,
                                                          user_agent=os.environ.get("SZ_USER_AGENT", "Sub-Zero/2")))
 
     def log_in(self, server_url=None):

@@ -41,6 +41,7 @@ Don't expect support if you mess this up.
         "opensubtitles": {
             "enabled_for": ["series", "movies"],
             "use_https": true,
+            "timeout": 15,
         },
         "podnapisi": {
             "enabled_for": ["series", "movies"],

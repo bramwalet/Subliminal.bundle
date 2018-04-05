@@ -671,6 +671,7 @@ class Config(object):
                                                'only_foreign': self.forced_only,
                                                'is_vip': cast_bool(Prefs['provider.opensubtitles.is_vip']),
                                                'use_ssl': os_use_https,
+                                               'timeout': self.advanced.providers.opensubtitles.timeout or 15
                                                },
                              'podnapisi': {
                                  'only_foreign': self.forced_only,
