@@ -49,10 +49,14 @@ def add_ignore_options(oc, kind, callback_menu=None, title=None, rating_key=None
 
     in_list = rating_key in ignore_list[use_kind]
 
+    t = u"Ignore %(kind)s \"%(title)s\""
+    if in_list:
+        t = u"Un-ignore %(kind)s \"%(title)s\""
+
     oc.add(DirectoryObject(
         key=Callback(callback_menu, kind=use_kind, rating_key=rating_key, title=title),
-        title=u"%s %s \"%s\"" % (
-            unicode(_("Un-Ignore") if in_list else _("Ignore")), ignore_list.verbose(kind) if add_kind else "",
+        title=t % (
+            ignore_list.verbose(kind) if add_kind else "",
             unicode(title))
     )
     )
@@ -112,8 +116,11 @@ def set_refresh_menu_state(state_or_media, media_type="movies"):
     intent = get_intent()
     force_refresh = intent.get("force", media_id)
 
-    Dict["current_refresh_state"] = unicode(_(u"%(force_state)sRefreshing %(title)s",
-                                              force_state=_("Force-") if force_refresh else "",
+    t = u"Refreshing %(title)s"
+    if force_refresh:
+        t = u"Force-refreshing %(title)s"
+
+    Dict["current_refresh_state"] = unicode(_(t,
                                               title=unicode(title)))
 
 
