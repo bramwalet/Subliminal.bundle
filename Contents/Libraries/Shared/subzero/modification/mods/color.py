@@ -39,9 +39,7 @@ class Color(SubtitleModification):
 
     colors = COLOR_MAP
 
-    long_description = """\
-    Adds the requested color to every line of the subtitle. Support depends on player.
-    """
+    long_description = "Adds the requested color to every line of the subtitle. Support depends on player."
 
     def modify(self, content, debug=False, parent=None, **kwargs):
         color = self.colors.get(kwargs.get("name"))

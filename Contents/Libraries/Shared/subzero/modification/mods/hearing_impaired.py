@@ -22,9 +22,7 @@ class HearingImpaired(SubtitleTextModification):
     exclusive = True
     order = 20
 
-    long_description = """\
-    Removes tags, text and characters from subtitles that are meant for hearing impaired people
-    """
+    long_description = "Removes tags, text and characters from subtitles that are meant for hearing impaired people"
 
     processors = [
         # full bracket entry, single or multiline; starting with brackets and ending with brackets

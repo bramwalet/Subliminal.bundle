@@ -33,7 +33,7 @@ def SubtitleModificationsMenu(**kwargs):
     oc.add(DirectoryObject(
         key=Callback(SubtitleOptionsMenu, randomize=timestamp(), **kwargs),
         title=_(u"< Back to subtitle options for: %s", kwargs["title"]),
-        summary=kwargs["current_data"],
+        summary=unicode(kwargs["current_data"]),
         thumb=default_thumb
     ))
 
@@ -74,23 +74,23 @@ def SubtitleModificationsMenu(**kwargs):
         oc.add(DirectoryObject(
             key=Callback(SubtitleSetMods, mods=None, mode="remove_last", randomize=timestamp(), **kwargs),
             title=pad_title(_("Remove last applied mod (%s)", current_mods[-1])),
-            summary=_(u"Currently applied mods: %s", ", ".join(current_mods) if current_mods else _("none"))
+            summary=_(u"Currently applied mods: %(mod_list)s", mod_list=", ".join(current_mods) if current_mods else _("none"))
         ))
         oc.add(DirectoryObject(
             key=Callback(SubtitleListMods, randomize=timestamp(), **kwargs),
             title=pad_title(_("Manage applied mods")),
-            summary=_(u"Currently applied mods: %s", ", ".join(current_mods))
+            summary=_(u"Currently applied mods: %(mod_list)s", mod_list=", ".join(current_mods))
         ))
         oc.add(DirectoryObject(
             key=Callback(SubtitleReapplyMods, randomize=timestamp(), **kwargs),
             title=pad_title(_("Reapply applied mods")),
-            summary=_(u"Currently applied mods: %s", ", ".join(current_mods) if current_mods else _("none"))
+            summary=_(u"Currently applied mods: %(mod_list)s", mod_list=", ".join(current_mods) if current_mods else _("none"))
         ))
 
     oc.add(DirectoryObject(
         key=Callback(SubtitleSetMods, mods=None, mode="clear", randomize=timestamp(), **kwargs),
         title=pad_title(_("Restore original version")),
-        summary=_(u"Currently applied mods: %s", ", ".join(current_mods) if current_mods else _("none"))
+        summary=_(u"Currently applied mods: %(mod_list)s", mod_list=", ".join(current_mods) if current_mods else _("none"))
     ))
 
     storage.destroy()

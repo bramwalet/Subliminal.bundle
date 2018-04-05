@@ -15,9 +15,7 @@ class CommonFixes(SubtitleTextModification):
     exclusive = True
     order = 40
 
-    long_description = """\
-    Fix common and whitespace/punctuation issues in subtitles
-    """
+    long_description = "Fix common and whitespace/punctuation issues in subtitles"
 
     processors = [
         # -- = em dash
@@ -105,9 +103,7 @@ class RemoveTags(SubtitleModification):
     exclusive = True
     modifies_whole_file = True
 
-    long_description = """\
-    Removes all possible style tags from the subtitle, such as font, bold, color etc.
-    """
+    long_description = "Removes all possible style tags from the subtitle, such as font, bold, color etc."
 
     def modify(self, content, debug=False, parent=None, **kwargs):
         for entry in parent.f:
@@ -122,10 +118,8 @@ class ReverseRTL(SubtitleModification):
     order = 50
     languages = [Language("heb")]
 
-    long_description = """\
-    Some playback devices don't properly handle right-to-left markers for punctuation. Physically swap punctuation.
-    Applicable to languages: hebrew
-    """
+    long_description = "Some playback devices don't properly handle right-to-left markers for punctuation. " \
+                       "Physically swap punctuation. Applicable to languages: hebrew"
 
     processors = [
         # new? (?u)(^([\s.!?]*)(.+?)(\s*)(-?\s*)$); \5\4\3\2
