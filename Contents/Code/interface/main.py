@@ -73,8 +73,8 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
                 key=Callback(fatality, force_title=" ", randomize=timestamp()),
                 title=pad_title(_("Working ... refresh here")),
                 summary=_("Current state: %s; Last state: %s",
-                    (Dict["current_refresh_state"] or "Idle") if "current_refresh_state" in Dict else "Idle",
-                    (Dict["last_refresh_state"] or "None") if "last_refresh_state" in Dict else "None"
+                    (Dict["current_refresh_state"] or _("Idle")) if "current_refresh_state" in Dict else _("Idle"),
+                    (Dict["last_refresh_state"] or _("None")) if "last_refresh_state" in Dict else _("None")
                 )
             ))
 
@@ -152,8 +152,8 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
         key=Callback(fatality, force_title=" ", randomize=timestamp()),
         title=pad_title(_("Refresh")),
         summary=_("Current state: %s; Last state: %s",
-            (Dict["current_refresh_state"] or "Idle") if "current_refresh_state" in Dict else "Idle",
-            (Dict["last_refresh_state"] or "None") if "last_refresh_state" in Dict else "None"
+            (Dict["current_refresh_state"] or _("Idle")) if "current_refresh_state" in Dict else _("Idle"),
+            (Dict["last_refresh_state"] or _("None")) if "last_refresh_state" in Dict else _("None")
         ),
         thumb=R("icon-refresh.jpg")
     ))

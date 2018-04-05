@@ -370,13 +370,7 @@ def get_language(lang_short):
 
 
 def display_language(l):
-    addons = []
-    if l.country:
-        addons.append(l.country.alpha2)
-    if l.script:
-        addons.append(l.script.code)
-
-    return l.name if not addons else "%s (%s)" % (l.name, ", ".join(addons))
+    return _(str(l))
 
 
 def is_stream_forced(stream):
