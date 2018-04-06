@@ -210,6 +210,13 @@ class Config(object):
     def init_libraries(self):
         default_unrar_exe = unrar_exe = "unrar"
 
+        check_unrar_tool = getattr(rarfile, "_check_unrar_tool")
+
+        if check_unrar_tool():
+            self.unrar = "unrar"
+            Log.Info("Using UnRAR from: unrar")
+            return
+
         custom_unrar = os.environ.get("SZ_UNRAR_TOOL")
         if custom_unrar:
             if os.path.isfile(custom_unrar):
@@ -230,19 +237,16 @@ class Config(object):
             try_executables.append(default_unrar_exe)
 
         for exe in try_executables:
-            try:
-                out = subprocess.check_output(exe, stderr=subprocess.STDOUT)
-                if "UNRAR" in out:
-                    orig_unrar_tool = rarfile.UNRAR_TOOL
-                    rarfile.UNRAR_TOOL = exe
-                    if getattr(rarfile, "_check_unrar_tool")():
-                        Log.Info("Using UnRAR from: %s", exe)
-                        self.unrar = exe
-                    else:
-                        rarfile.UNRAR_TOOL = orig_unrar_tool
-                    return
-            except:
-                Log.Warn("UnRAR not found")
+            orig_unrar_tool = rarfile.UNRAR_TOOL
+            rarfile.UNRAR_TOOL = exe
+            if check_unrar_tool():
+                Log.Info("Using UnRAR from: %s", exe)
+                self.unrar = exe
+                return
+            else:
+                rarfile.UNRAR_TOOL = orig_unrar_tool
+
+        Log.Warn("UnRAR not found")
 
     def init_cache(self):
         if self.new_style_cache:
@@ -628,6 +632,10 @@ class Config(object):
             providers["hosszupuska"] = False
             providers["titlovi"] = False
             providers["argenteam"] = False
+
+        if not self.unrar and providers["legendastv"]:
+            providers["legendastv"] = False
+            Log.Info("Disabling LegendasTV, because UnRAR wasn't found")
 
         # advanced settings
         if media_type and self.advanced.providers:
