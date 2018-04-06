@@ -23,7 +23,6 @@ from subzero.language import Language
 from subliminal.cli import MutexLock
 from subzero.lib.io import FileIO, get_viable_encoding
 from subzero.lib.dict import Dicked
-from subzero.lib import rar
 from subzero.util import get_root_path
 from subzero.constants import PLUGIN_NAME, PLUGIN_IDENTIFIER, MOVIE, SHOW, MEDIA_TYPE_TO_STRING
 from dogpile.cache.region import register_backend as register_cache_backend
@@ -236,6 +235,8 @@ class Config(object):
                 if "UNRAR" in out:
                     Log.Info("Using UnRAR from: %s", exe)
                     rarfile.UNRAR_TOOL = exe
+
+                    from subzero.lib import rar
                     rar.UNRAR_TOOL = exe
                     self.unrar = exe
                     return
