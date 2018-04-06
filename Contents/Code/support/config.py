@@ -235,9 +235,6 @@ class Config(object):
                 if "UNRAR" in out:
                     Log.Info("Using UnRAR from: %s", exe)
                     rarfile.UNRAR_TOOL = exe
-
-                    from subzero.lib import rar
-                    rar.UNRAR_TOOL = exe
                     self.unrar = exe
                     return
             except:
