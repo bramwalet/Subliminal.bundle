@@ -370,7 +370,7 @@ def get_language(lang_short):
 
 
 def display_language(l):
-    return _(str(l))
+    return _(str(l).lower())
 
 
 def is_stream_forced(stream):
