@@ -10,7 +10,6 @@ from subliminal_patch.http import RetryingSession
 from subliminal_patch.subtitle import Subtitle, guess_matches
 
 from subzero.lib.io import get_viable_encoding
-from subzero.lib.rar import RarFile
 
 
 class Provider(_Provider):
@@ -76,5 +75,4 @@ for name in os.listdir(os.path.dirname(unicode(__file__, get_viable_encoding()))
     else:
         subliminal_mod.Session = RetryingSession
         subliminal_mod.guess_matches = guess_matches
-        subliminal_mod.RarFile = RarFile
 

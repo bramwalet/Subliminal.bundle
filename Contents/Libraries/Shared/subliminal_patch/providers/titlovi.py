@@ -9,7 +9,7 @@ import rarfile
 
 from bs4 import BeautifulSoup
 from zipfile import ZipFile, is_zipfile
-from rarfile import is_rarfile
+from rarfile import RarFile, is_rarfile
 from babelfish import language_converters, Script
 from requests import Session
 from guessit import guessit
@@ -23,7 +23,6 @@ from subliminal.utils import sanitize_release_group
 from subliminal.subtitle import guess_matches
 from subliminal.video import Episode, Movie
 from subzero.language import Language
-from subzero.lib.rar import RarFile
 
 # parsing regex definitions
 title_re = re.compile(r'(?P<title>(?:.+(?= [Aa][Kk][Aa] ))|.+)(?:(?:.+)(?P<altitle>(?<= [Aa][Kk][Aa] ).+))?')

@@ -19,10 +19,9 @@ from subliminal_patch.subtitle import Subtitle, guess_matches
 from subliminal.utils import sanitize, sanitize_release_group
 from subliminal.video import Episode
 from zipfile import ZipFile, is_zipfile
-from rarfile import is_rarfile
+from rarfile import RarFile, is_rarfile
 from subliminal_patch.utils import sanitize, fix_inconsistent_naming as _fix_inconsistent_naming
 from guessit import guessit
-from subzero.lib.rar import RarFile
 
 
 def fix_inconsistent_naming(title):
