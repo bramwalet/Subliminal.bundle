@@ -229,7 +229,6 @@ class Config(object):
         try_executables.append("unrar")
 
         for exe in try_executables:
-            Log.Debug("setting rarfile params: %s", exe)
             rarfile.UNRAR_TOOL = exe
             rarfile.ORIG_UNRAR_TOOL = exe
             try:
@@ -238,11 +237,12 @@ class Config(object):
                 Log.Exception("custom check failed for: %s", exe)
                 continue
 
-            if getattr(rarfile, "_check_unrar_tool")():
-                Log.Info("Using UnRAR from: %s", exe)
-                Log.Debug("rarfile params: %s", [rarfile.UNRAR_TOOL, rarfile.ORIG_UNRAR_TOOL, rarfile.OPEN_ARGS])
-                self.unrar = exe
-                return
+            rarfile.OPEN_ARGS = rarfile.ORIG_OPEN_ARGS
+            rarfile.EXTRACT_ARGS = rarfile.ORIG_EXTRACT_ARGS
+            rarfile.TEST_ARGS = rarfile.ORIG_TEST_ARGS
+            Log.Info("Using UnRAR from: %s", exe)
+            self.unrar = exe
+            return
 
         Log.Warn("UnRAR not found")
 
