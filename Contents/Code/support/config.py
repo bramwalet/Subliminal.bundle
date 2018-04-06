@@ -233,9 +233,13 @@ class Config(object):
             try:
                 out = subprocess.check_output(exe, stderr=subprocess.STDOUT)
                 if "UNRAR" in out:
-                    Log.Info("Using UnRAR from: %s", exe)
+                    orig_unrar_tool = rarfile.UNRAR_TOOL
                     rarfile.UNRAR_TOOL = exe
-                    self.unrar = exe
+                    if rarfile._check_unrar_tool():
+                        Log.Info("Using UnRAR from: %s", exe)
+                        self.unrar = exe
+                    else:
+                        rarfile.UNRAR_TOOL = orig_unrar_tool
                     return
             except:
                 Log.Warn("UnRAR not found")
