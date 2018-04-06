@@ -7,7 +7,6 @@ import sys
 import rarfile
 import jstyleson
 import datetime
-import subprocess
 
 import subliminal
 import subliminal_patch
@@ -230,17 +229,15 @@ class Config(object):
             try_executables.append(unrar_exe)
 
         for exe in try_executables:
-            o_unrar_tool = rarfile.UNRAR_TOOL
-            o_orig_unrar_tool = rarfile.ORIG_UNRAR_TOOL
-            rarfile.UNRAR_TOOL = rarfile.ORIG_UNRAR_TOOL = exe
+            Log.Debug("setting rarfile params: %s", [rarfile.UNRAR_TOOL, rarfile.ORIG_UNRAR_TOOL])
+            rarfile.UNRAR_TOOL = exe
+            rarfile.ORIG_UNRAR_TOOL = exe
+            Log.Debug("unrar output: %s", rarfile.custom_check([rarfile.UNRAR_TOOL], True))
             if check_unrar_tool():
                 Log.Info("Using UnRAR from: %s", exe)
                 Log.Debug("rarfile params: %s", [rarfile.UNRAR_TOOL, rarfile.ORIG_UNRAR_TOOL, rarfile.OPEN_ARGS])
                 self.unrar = exe
                 return
-            else:
-                rarfile.UNRAR_TOOL = o_unrar_tool
-                rarfile.ORIG_UNRAR_TOOL = o_orig_unrar_tool
 
         Log.Warn("UnRAR not found")
 
