@@ -14,7 +14,7 @@ class RarFile(rarfile.RarFile):
         :param psw:
         :return:
         """
-        cmd = [rarfile.UNRAR_TOOL] + list(rarfile.OPEN_ARGS)
+        cmd = [rarfile.UNRAR_TOOL] + list(rarfile.ORIG_OPEN_ARGS)
 
         with rarfile.XTempFile(self._rarfile) as rf:
             log.debug(u"RAR CMD: %s", cmd + [rf, fname])
