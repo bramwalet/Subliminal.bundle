@@ -231,7 +231,7 @@ class Config(object):
 
         for exe in try_executables:
             orig_unrar_tool = rarfile.UNRAR_TOOL
-            rarfile.UNRAR_TOOL = exe
+            rarfile.UNRAR_TOOL = rarfile.ORIG_UNRAR_TOOL = exe
             if check_unrar_tool():
                 Log.Info("Using UnRAR from: %s", exe)
                 self.unrar = exe
