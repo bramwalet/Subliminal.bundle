@@ -234,6 +234,7 @@ class Config(object):
             rarfile.UNRAR_TOOL = rarfile.ORIG_UNRAR_TOOL = exe
             if check_unrar_tool():
                 Log.Info("Using UnRAR from: %s", exe)
+                Log.Debug("rarfile params: %s", [rarfile.UNRAR_TOOL, rarfile.ORIG_UNRAR_TOOL, rarfile.OPEN_ARGS])
                 self.unrar = exe
                 return
             else:
