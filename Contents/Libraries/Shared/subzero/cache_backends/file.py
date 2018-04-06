@@ -45,4 +45,7 @@ class SZFileBackend(CacheBackend):
 
     def clear(self):
         self._cache.clear()
+        if not hasattr(self._cache, "_buffer") or self._cache._sync:
+            self._cache._sync = False
+            self._cache._buffer = {}
 
