@@ -709,7 +709,7 @@
     "default": ""
   },
   {
-    "id": "plugin_mode",
+    "id": "plugin_mode2",
     "label": "Sub-Zero mode",
     "type": "enum",
     "values": [
@@ -734,7 +734,7 @@
     "default": "10"
   },
   {
-    "id": "plugin_pin_mode",
+    "id": "plugin_pin_mode2",
     "label": "Use PIN to restrict access to (needs plugin or PMS restart)",
     "type": "enum",
     "values": [
