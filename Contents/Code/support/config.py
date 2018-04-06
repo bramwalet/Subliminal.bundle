@@ -208,33 +208,26 @@ class Config(object):
         self.initialized = True
 
     def init_libraries(self):
-        default_unrar_exe = unrar_exe = "unrar"
-
         check_unrar_tool = getattr(rarfile, "_check_unrar_tool")
 
-        if check_unrar_tool():
-            self.unrar = "unrar"
-            Log.Info("Using UnRAR from: unrar")
-            return
-
         custom_unrar = os.environ.get("SZ_UNRAR_TOOL")
+        try_executables = ["unrar"]
         if custom_unrar:
             if os.path.isfile(custom_unrar):
-                unrar_exe = custom_unrar
+                try_executables.insert(0, custom_unrar)
 
-        else:
-            if Core.runtime.os == "Windows":
-                unrar_exe = os.path.abspath(os.path.join(self.libraries_root, "Windows", "i386", "UnRAR", "UnRAR.exe"))
+        unrar_exe = None
+        if Core.runtime.os == "Windows":
+            unrar_exe = os.path.abspath(os.path.join(self.libraries_root, "Windows", "i386", "UnRAR", "UnRAR.exe"))
 
-            elif Core.runtime.os == "MacOSX":
-                unrar_exe = os.path.abspath(os.path.join(self.libraries_root, "MacOSX", "i386", "UnRAR", "unrar"))
+        elif Core.runtime.os == "MacOSX":
+            unrar_exe = os.path.abspath(os.path.join(self.libraries_root, "MacOSX", "i386", "UnRAR", "unrar"))
 
-            elif Core.runtime.os == "Linux":
-                unrar_exe = os.path.abspath(os.path.join(self.libraries_root, "Linux", Core.runtime.cpu, "UnRAR", "unrar"))
+        elif Core.runtime.os == "Linux":
+            unrar_exe = os.path.abspath(os.path.join(self.libraries_root, "Linux", Core.runtime.cpu, "UnRAR", "unrar"))
 
-        try_executables = [unrar_exe]
-        if default_unrar_exe != unrar_exe:
-            try_executables.append(default_unrar_exe)
+        if unrar_exe and os.path.isfile(unrar_exe):
+            try_executables.append(unrar_exe)
 
         for exe in try_executables:
             orig_unrar_tool = rarfile.UNRAR_TOOL
