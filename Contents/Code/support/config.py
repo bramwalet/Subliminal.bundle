@@ -207,8 +207,8 @@ class Config(object):
         self.initialized = True
 
     def init_libraries(self):
-        custom_unrar = os.environ.get("SZ_UNRAR_TOOL")
         try_executables = ["unrar"]
+        custom_unrar = os.environ.get("SZ_UNRAR_TOOL")
         if custom_unrar:
             if os.path.isfile(custom_unrar):
                 try_executables.insert(0, custom_unrar)
@@ -230,7 +230,11 @@ class Config(object):
             Log.Debug("setting rarfile params: %s", exe)
             rarfile.UNRAR_TOOL = exe
             rarfile.ORIG_UNRAR_TOOL = exe
-            Log.Debug("unrar output: %s", rarfile.custom_check([rarfile.UNRAR_TOOL], True))
+            try:
+                Log.Debug("unrar output: %s", rarfile.custom_check([rarfile.UNRAR_TOOL], True))
+            except:
+                Log.Exception("custom check failed")
+
             if getattr(rarfile, "_check_unrar_tool")():
                 Log.Info("Using UnRAR from: %s", exe)
                 Log.Debug("rarfile params: %s", [rarfile.UNRAR_TOOL, rarfile.ORIG_UNRAR_TOOL, rarfile.OPEN_ARGS])
