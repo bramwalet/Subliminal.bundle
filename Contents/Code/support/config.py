@@ -230,7 +230,8 @@ class Config(object):
             try_executables.append(unrar_exe)
 
         for exe in try_executables:
-            orig_unrar_tool = rarfile.UNRAR_TOOL
+            o_unrar_tool = rarfile.UNRAR_TOOL
+            o_orig_unrar_tool = rarfile.ORIG_UNRAR_TOOL
             rarfile.UNRAR_TOOL = rarfile.ORIG_UNRAR_TOOL = exe
             if check_unrar_tool():
                 Log.Info("Using UnRAR from: %s", exe)
@@ -238,7 +239,8 @@ class Config(object):
                 self.unrar = exe
                 return
             else:
-                rarfile.UNRAR_TOOL = orig_unrar_tool
+                rarfile.UNRAR_TOOL = o_unrar_tool
+                rarfile.ORIG_UNRAR_TOOL = o_orig_unrar_tool
 
         Log.Warn("UnRAR not found")
 
