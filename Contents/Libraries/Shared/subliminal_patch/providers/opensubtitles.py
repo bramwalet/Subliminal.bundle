@@ -11,7 +11,7 @@ from subliminal.providers.opensubtitles import OpenSubtitlesProvider as _OpenSub
     OpenSubtitlesSubtitle as _OpenSubtitlesSubtitle, Episode, ServerProxy, Unauthorized, NoSession, \
     DownloadLimitReached, InvalidImdbid, UnknownUserAgent, DisabledUserAgent, OpenSubtitlesError
 from mixins import ProviderRetryMixin
-from subliminal_patch.http import SubZeroTransport, SubZeroRequestsTransport
+from subliminal_patch.http import SubZeroRequestsTransport
 from subliminal.cache import region
 from subliminal_patch.score import framerate_equal
 from subzero.language import Language

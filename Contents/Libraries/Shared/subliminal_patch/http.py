@@ -67,60 +67,6 @@ class RetryingSession(CertifiSession):
         return self.retry_method("post", *args, **kwargs)
 
 
-class TimeoutTransport(Transport):
-    """Timeout support for ``xmlrpc.client.SafeTransport``."""
-    def __init__(self, timeout, *args, **kwargs):
-        Transport.__init__(self, *args, **kwargs)
-        self.timeout = timeout
-
-    def make_connection(self, host):
-        c = Transport.make_connection(self, host)
-        c.timeout = self.timeout
-
-        return c
-
-
-class SubZeroTransport(SafeTransport):
-    """
-    Timeout and proxy support for ``xmlrpc.client.(Safe)Transport``
-    """
-    def __init__(self, timeout, url, *args, **kwargs):
-        SafeTransport.__init__(self, *args, **kwargs)
-        self.timeout = timeout
-        self.host = None
-        self.proxy = None
-        self.scheme = url.split('://', 1)[0]
-        self.https = url.startswith('https')
-        self.proxy = os.environ.get('SZ_HTTP_PROXY')
-
-        if self.https:
-            self.context = default_ssl_context
-
-        if self.proxy:
-            logger.debug("Using proxy %s for: %s", self.proxy, url)
-            self.https = self.proxy.startswith('https')
-
-            if self.timeout:
-                self.timeout = self.timeout * 3
-
-    def make_connection(self, host):
-        self.host = host
-        if self.proxy:
-            host = self.proxy.split('://', 1)[-1]
-        if self.https:
-            c = SafeTransport.make_connection(self, host)
-        else:
-            c = Transport.make_connection(self, host)
-
-        c.timeout = self.timeout
-
-        return c
-
-    def send_request(self, connection, handler, request_body):
-        handler = '%s://%s%s' % (self.scheme, self.host, handler)
-        Transport.send_request(self, connection, handler, request_body)
-
-
 class SubZeroRequestsTransport(xmlrpclib.SafeTransport):
     """
     Drop in Transport for xmlrpclib that uses Requests instead of httplib
