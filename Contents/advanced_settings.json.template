@@ -71,11 +71,10 @@ Don't expect support if you mess this up.
 
     "refiners": {
         "sonarr": {
-            // verify HTTPS certificates? Disable for self-signed
+            // don't verify HTTPS certificates? Set to True for self-signed certificates
             "ssl_no_verify": false,
         },
         "radarr": {
-            // verify HTTPS certificates? Disable for self-signed
             "ssl_no_verify": false,
         },
     }
