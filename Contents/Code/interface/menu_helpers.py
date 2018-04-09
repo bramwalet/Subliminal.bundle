@@ -4,6 +4,7 @@ import types
 import datetime
 import subprocess
 import os
+import operator
 
 from func import enable_channel_wrapper
 from subzero.language import Language
@@ -141,6 +142,11 @@ def debounce(func):
             else:
                 # fixme: set limit
                 Dict["menu_history"][key] = datetime.datetime.now() + datetime.timedelta(hours=6)
+
+                # limit to 25 items
+                Dict["menu_history"] = dict(sorted(Dict["menu_history"].items(), key=operator.itemgetter(1),
+                                                   reverse=True)[:25])
+
                 try:
                     Dict.Save()
                 except TypeError:
