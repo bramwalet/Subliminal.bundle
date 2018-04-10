@@ -234,7 +234,7 @@ class Config(object):
             try:
                 rarfile.custom_check([rarfile.UNRAR_TOOL], True)
             except:
-                Log.Exception("custom check failed for: %s", exe)
+                Log.Debug("custom check failed for: %s", exe)
                 continue
 
             rarfile.OPEN_ARGS = rarfile.ORIG_OPEN_ARGS
