@@ -1,14 +1,14 @@
 # coding=utf-8
 import logging
 import re
-
+import datetime
 import subliminal
 from random import randint
 
 from subliminal.exceptions import ServiceUnavailable, DownloadLimitExceeded
 from subliminal.providers.addic7ed import Addic7edProvider as _Addic7edProvider, \
     Addic7edSubtitle as _Addic7edSubtitle, ParserBeautifulSoup, show_cells_re
-from subliminal.cache import SHOW_EXPIRATION_TIME, region
+from subliminal.cache import region
 from subliminal.subtitle import fix_line_ending
 from subliminal_patch.utils import sanitize
 from subliminal_patch.exceptions import TooManyRequests
@@ -19,6 +19,8 @@ logger = logging.getLogger(__name__)
 
 #: Series header parsing regex
 series_year_re = re.compile(r'^(?P<series>[ \w\'.:(),*&!?-]+?)(?: \((?P<year>\d{4})\))?$')
+
+SHOW_EXPIRATION_TIME = datetime.timedelta(weeks=1).total_seconds()
 
 
 class Addic7edSubtitle(_Addic7edSubtitle):
