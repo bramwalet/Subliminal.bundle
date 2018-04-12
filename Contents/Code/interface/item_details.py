@@ -21,7 +21,6 @@ from support.storage import get_subtitle_storage
 # fixme: needs kwargs cleanup
 
 @route(PREFIX + '/item/{rating_key}/actions')
-@debounce
 def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, randomize=None, header=None,
                     message=None):
     """
@@ -432,7 +431,6 @@ def ManageBlacklistMenu(**kwargs):
 
 
 @route(PREFIX + '/item/search/{rating_key}/{part_id}', force=bool)
-@debounce
 def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item_title=None, filename=None,
                                  item_type="episode", language=None, language_name=None, force=False, current_id=None,
                                  current_data=None,
