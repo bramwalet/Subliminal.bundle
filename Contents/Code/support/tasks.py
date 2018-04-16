@@ -384,7 +384,7 @@ class SearchAllRecentlyAddedMissing(Task):
 
         def skip_item():
             self.items_searching = self.items_searching - 1
-            self.percentage = int(self.items_done * 100 / self.items_searching)
+            self.percentage = int(self.items_done * 100 / self.items_searching) if self.items_searching > 0 else 100
 
         # search for subtitles in viable items
         try:
@@ -491,7 +491,7 @@ class SearchAllRecentlyAddedMissing(Task):
                     videos_with_downloads += 1
 
                 self.items_done = self.items_done + 1
-                self.percentage = int(self.items_done * 100 / self.items_searching)
+                self.percentage = int(self.items_done * 100 / self.items_searching) if self.items_searching > 0 else 100
 
                 stored_subs = None
 
@@ -580,7 +580,7 @@ class LegacySearchAllRecentlyAddedMissing(Task):
             while 1:
                 if item_id in self.items_done:
                     items_done_count += 1
-                    self.percentage = int(items_done_count * 100 / missing_count)
+                    self.percentage = int(items_done_count * 100 / missing_count) if missing_count > 0 else 100
                     Log.Debug(u"Task: %s, item %s done (%s%%, %s/%s)", self.name, item_id, self.percentage,
                               items_done_count, missing_count)
                     break
