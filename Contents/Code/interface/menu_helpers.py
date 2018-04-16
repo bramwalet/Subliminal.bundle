@@ -6,7 +6,7 @@ import subprocess
 import os
 import operator
 
-from func import enable_channel_wrapper, get_lookup_key, route_wrapper
+from func import enable_channel_wrapper, route_wrapper, register_route_function
 from subzero.language import Language
 from support.items import get_kind, get_item_thumb, get_item, get_item_kind_from_item, refresh_item
 from support.helpers import get_video_display_title, pad_title, display_language, quote_args, is_stream_forced
