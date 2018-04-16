@@ -313,7 +313,11 @@ class Config(object):
         return pack_cache_dir
 
     def get_advanced_config(self):
-        path = os.path.join(config.data_path, "advanced_settings.json")
+        if Prefs['path_to_advanced_settings']:
+            path = Prefs['path_to_advanced_settings']
+        else:
+            path = os.path.join(config.data_path, "advanced_settings.json")
+
         if os.path.isfile(path):
             data = FileIO.read(path, "r")
 
