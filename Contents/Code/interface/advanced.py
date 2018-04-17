@@ -94,6 +94,10 @@ def AdvancedMenu(randomize=None, header=None, message=None):
         title=pad_title("Reset the plugin's internal ignorelist storage"),
     ))
     oc.add(DirectoryObject(
+        key=Callback(ResetStorage, key="menu_history", randomize=timestamp()),
+        title=pad_title("Reset the plugin's menu history storage"),
+    ))
+    oc.add(DirectoryObject(
         key=Callback(InvalidateCache, randomize=timestamp()),
         title=pad_title("Invalidate Sub-Zero metadata caches (subliminal)"),
     ))
@@ -119,7 +123,8 @@ def TriggerRestart(randomize=None):
 
 
 @route(PREFIX + '/advanced/restart/execute')
-def Restart():
+@debounce
+def Restart(randomize=None):
     Plex[":/plugins"].restart(PLUGIN_IDENTIFIER)
 
 

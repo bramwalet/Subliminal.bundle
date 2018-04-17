@@ -4,8 +4,9 @@ import types
 import datetime
 import subprocess
 import os
+import operator
 
-from func import enable_channel_wrapper
+from func import enable_channel_wrapper, route_wrapper, register_route_function
 from subzero.language import Language
 from support.items import get_kind, get_item_thumb, get_item, get_item_kind_from_item, refresh_item
 from support.helpers import get_video_display_title, pad_title, display_language, quote_args, is_stream_forced
@@ -24,7 +25,7 @@ default_thumb = R(ICON_SUB)
 main_icon = ICON if not config.is_development else "icon-dev.jpg"
 
 # noinspection PyUnboundLocalVariable
-route = enable_channel_wrapper(route)
+route = route_wrapper
 # noinspection PyUnboundLocalVariable
 handler = enable_channel_wrapper(handler)
 
@@ -125,30 +126,10 @@ def debounce(func):
     :param func:
     :return:
     """
-    def get_lookup_key(args, kwargs):
-        func_name = list(args).pop(0).__name__
-        return tuple([func_name] + [(key, value) for key, value in kwargs.iteritems()])
 
-    def wrap(*args, **kwargs):
-        if "randomize" in kwargs:
-            if "menu_history" not in Dict:
-                Dict["menu_history"] = {}
+    func.debounce = True
 
-            key = get_lookup_key([func] + list(args), kwargs)
-            if key in Dict["menu_history"]:
-                Log.Debug("not triggering %s twice with %s, %s" % (func, args, kwargs))
-                return ObjectContainer()
-            else:
-                Dict["menu_history"][key] = datetime.datetime.now() + datetime.timedelta(hours=6)
-                try:
-                    Dict.Save()
-                except TypeError:
-                    Log.Error("Can't save menu history for: %r", key)
-                    del Dict["menu_history"][key]
-
-        return func(*args, **kwargs)
-
-    return wrap
+    return func
 
 
 def extract_embedded_sub(**kwargs):

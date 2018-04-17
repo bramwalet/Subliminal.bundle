@@ -135,6 +135,7 @@ class Config(object):
     only_one = False
     embedded_auto_extract = False
     ietf_as_alpha3 = False
+    unrar = None
 
     store_recently_played_amount = 40
 
@@ -206,16 +207,44 @@ class Config(object):
         self.initialized = True
 
     def init_libraries(self):
+        try_executables = []
+        custom_unrar = os.environ.get("SZ_UNRAR_TOOL")
+        if custom_unrar:
+            if os.path.isfile(custom_unrar):
+                try_executables.append(custom_unrar)
+
+        unrar_exe = None
         if Core.runtime.os == "Windows":
             unrar_exe = os.path.abspath(os.path.join(self.libraries_root, "Windows", "i386", "UnRAR", "UnRAR.exe"))
-            if os.path.isfile(unrar_exe):
-                rarfile.UNRAR_TOOL = unrar_exe
-                Log.Info("Using UnRAR from: %s", unrar_exe)
 
-        custom_unrar = os.environ.get("SZ_UNRAR_TOOL")
-        if custom_unrar and os.path.isfile(custom_unrar):
-            rarfile.UNRAR_TOOL = custom_unrar
-            Log.Info("Using UnRAR from: %s", custom_unrar)
+        elif Core.runtime.os == "MacOSX":
+            unrar_exe = os.path.abspath(os.path.join(self.libraries_root, "MacOSX", "i386", "UnRAR", "unrar"))
+
+        elif Core.runtime.os == "Linux":
+            unrar_exe = os.path.abspath(os.path.join(self.libraries_root, "Linux", Core.runtime.cpu, "UnRAR", "unrar"))
+
+        if unrar_exe and os.path.isfile(unrar_exe):
+            try_executables.append(unrar_exe)
+
+        try_executables.append("unrar")
+
+        for exe in try_executables:
+            rarfile.UNRAR_TOOL = exe
+            rarfile.ORIG_UNRAR_TOOL = exe
+            try:
+                rarfile.custom_check([rarfile.UNRAR_TOOL], True)
+            except:
+                Log.Debug("custom check failed for: %s", exe)
+                continue
+
+            rarfile.OPEN_ARGS = rarfile.ORIG_OPEN_ARGS
+            rarfile.EXTRACT_ARGS = rarfile.ORIG_EXTRACT_ARGS
+            rarfile.TEST_ARGS = rarfile.ORIG_TEST_ARGS
+            Log.Info("Using UnRAR from: %s", exe)
+            self.unrar = exe
+            return
+
+        Log.Warn("UnRAR not found")
 
     def init_cache(self):
         if self.new_style_cache:
@@ -284,7 +313,11 @@ class Config(object):
         return pack_cache_dir
 
     def get_advanced_config(self):
-        path = os.path.join(config.data_path, "advanced_settings.json")
+        if Prefs['path_to_advanced_settings']:
+            path = Prefs['path_to_advanced_settings']
+        else:
+            path = os.path.join(config.data_path, "advanced_settings.json")
+
         if os.path.isfile(path):
             data = FileIO.read(path, "r")
 
@@ -602,6 +635,10 @@ class Config(object):
             providers["titlovi"] = False
             providers["argenteam"] = False
 
+        if not self.unrar and providers["legendastv"]:
+            providers["legendastv"] = False
+            Log.Info("Disabling LegendasTV, because UnRAR wasn't found")
+
         # advanced settings
         if media_type and self.advanced.providers:
             for provider, data in self.advanced.providers.iteritems():
@@ -648,6 +685,7 @@ class Config(object):
                                                'only_foreign': self.forced_only,
                                                'is_vip': cast_bool(Prefs['provider.opensubtitles.is_vip']),
                                                'use_ssl': os_use_https,
+                                               'timeout': self.advanced.providers.opensubtitles.timeout or 15
                                                },
                              'podnapisi': {
                                  'only_foreign': self.forced_only,
@@ -832,8 +870,11 @@ class Config(object):
             if Prefs["drone_api.sonarr.url"] and Prefs["drone_api.sonarr.api_key"]:
                 self.refiner_settings["sonarr"] = {
                     "base_url": Prefs["drone_api.sonarr.url"],
-                    "api_key": Prefs["drone_api.sonarr.api_key"]
+                    "api_key": Prefs["drone_api.sonarr.api_key"],
                 }
+                if self.advanced.refiners.sonarr:
+                    self.refiner_settings["sonarr"].update(self.advanced.refiners.sonarr)
+
                 self.exact_filenames = True
 
             if Prefs["drone_api.radarr.url"] and Prefs["drone_api.radarr.api_key"]:
@@ -841,6 +882,9 @@ class Config(object):
                     "base_url": Prefs["drone_api.radarr.url"],
                     "api_key": Prefs["drone_api.radarr.api_key"]
                 }
+                if self.advanced.refiners.radarr:
+                    self.refiner_settings["radarr"].update(self.advanced.refiners.radarr)
+
                 self.exact_filenames = True
 
     @property

@@ -31,7 +31,7 @@ from subliminal.core import guessit, ProviderPool, io, is_windows_special_path, 
 from subliminal_patch.exceptions import TooManyRequests
 
 from subzero.language import Language
-from subzero.lib.io import scandir
+from scandir import scandir
 
 logger = logging.getLogger(__name__)
 
@@ -280,6 +280,7 @@ class SZProviderPool(ProviderPool):
 
             except rarfile.BadRarFile:
                 logger.error('Malformed RAR file from provider %r, skipping subtitle.', subtitle.provider_name)
+                logger.debug("RAR Traceback: %s", traceback.format_exc())
                 return False
 
             except (TooManyRequests, DownloadLimitExceeded, ServiceUnavailable), e:

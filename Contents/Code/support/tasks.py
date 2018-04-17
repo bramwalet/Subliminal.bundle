@@ -22,9 +22,6 @@ from support.plex_media import get_plex_metadata
 from support.scanning import scan_videos
 from download import download_best_subtitles, pre_download_hook, post_download_hook, language_hook
 
-PROVIDER_SLACK = 30
-DL_PROVIDER_SLACK = 30
-
 
 class Task(object):
     name = None
@@ -33,6 +30,9 @@ class Task(object):
     running = False
     time_start = None
     data = None
+
+    PROVIDER_SLACK = 30
+    DL_PROVIDER_SLACK = 30
 
     stored_attributes = ("last_run", "last_run_time", "running")
     default_data = {"last_run": None, "last_run_time": None, "running": False, "data": {}}
@@ -384,7 +384,7 @@ class SearchAllRecentlyAddedMissing(Task):
 
         def skip_item():
             self.items_searching = self.items_searching - 1
-            self.percentage = int(self.items_done * 100 / self.items_searching)
+            self.percentage = int(self.items_done * 100 / self.items_searching) if self.items_searching > 0 else 100
 
         # search for subtitles in viable items
         try:
@@ -482,8 +482,8 @@ class SearchAllRecentlyAddedMissing(Task):
                             except:
                                 Log.Error(u"%s: DEBUG HIT: %s", self.name, traceback.format_exc())
 
-                        Log.Debug(u"%s: Waiting %s seconds before continuing", self.name, PROVIDER_SLACK)
-                        Thread.Sleep(PROVIDER_SLACK)
+                        Log.Debug(u"%s: Waiting %s seconds before continuing", self.name, self.PROVIDER_SLACK)
+                        Thread.Sleep(self.PROVIDER_SLACK)
 
                 download_count += downloads_per_video
 
@@ -491,18 +491,18 @@ class SearchAllRecentlyAddedMissing(Task):
                     videos_with_downloads += 1
 
                 self.items_done = self.items_done + 1
-                self.percentage = int(self.items_done * 100 / self.items_searching)
+                self.percentage = int(self.items_done * 100 / self.items_searching) if self.items_searching > 0 else 100
 
                 stored_subs = None
 
                 if downloads_per_video:
                     Log.Debug(u"%s: Subtitles have been downloaded, "
-                              u"waiting %s seconds before continuing", self.name, DL_PROVIDER_SLACK)
-                    Thread.Sleep(DL_PROVIDER_SLACK)
+                              u"waiting %s seconds before continuing", self.name, self.DL_PROVIDER_SLACK)
+                    Thread.Sleep(self.DL_PROVIDER_SLACK)
                 else:
                     if hit_providers:
-                        Log.Debug(u"%s: Waiting %s seconds before continuing", self.name, PROVIDER_SLACK)
-                        Thread.Sleep(PROVIDER_SLACK)
+                        Log.Debug(u"%s: Waiting %s seconds before continuing", self.name, self.PROVIDER_SLACK)
+                        Thread.Sleep(self.PROVIDER_SLACK)
         finally:
             subtitle_storage.destroy()
             history.destroy()
@@ -580,7 +580,7 @@ class LegacySearchAllRecentlyAddedMissing(Task):
             while 1:
                 if item_id in self.items_done:
                     items_done_count += 1
-                    self.percentage = int(items_done_count * 100 / missing_count)
+                    self.percentage = int(items_done_count * 100 / missing_count) if missing_count > 0 else 100
                     Log.Debug(u"Task: %s, item %s done (%s%%, %s/%s)", self.name, item_id, self.percentage,
                               items_done_count, missing_count)
                     break
@@ -763,8 +763,8 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
                                         Log.Debug(u"%s: Couldn't download/save subtitle. "
                                                   u"Continuing to the next one", self.name)
                                         Log.Debug(u"%s: Waiting %s seconds before continuing",
-                                                  self.name, DL_PROVIDER_SLACK)
-                                        Thread.Sleep(DL_PROVIDER_SLACK)
+                                                  self.name, self.DL_PROVIDER_SLACK)
+                                        Thread.Sleep(self.DL_PROVIDER_SLACK)
                                 better_visited += 1
 
                             if better_tried_download and not better_downloaded:
@@ -775,19 +775,19 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
                                 Log.Debug(u"%s: Better subtitle downloaded for %s", self.name, video_id)
 
                             if better_tried_download or better_downloaded:
-                                Log.Debug(u"%s: Waiting %s seconds before continuing", self.name, DL_PROVIDER_SLACK)
-                                Thread.Sleep(DL_PROVIDER_SLACK)
+                                Log.Debug(u"%s: Waiting %s seconds before continuing", self.name, self.DL_PROVIDER_SLACK)
+                                Thread.Sleep(self.DL_PROVIDER_SLACK)
 
                             elif better_visited:
-                                Log.Debug(u"%s: Waiting %s seconds before continuing", self.name, PROVIDER_SLACK)
-                                Thread.Sleep(PROVIDER_SLACK)
+                                Log.Debug(u"%s: Waiting %s seconds before continuing", self.name, self.PROVIDER_SLACK)
+                                Thread.Sleep(self.PROVIDER_SLACK)
 
                             subs = None
 
                         elif hit_providers:
                             # hit the providers but didn't try downloading? wait.
-                            Log.Debug(u"%s: Waiting %s seconds before continuing", self.name, PROVIDER_SLACK)
-                            Thread.Sleep(PROVIDER_SLACK)
+                            Log.Debug(u"%s: Waiting %s seconds before continuing", self.name, self.PROVIDER_SLACK)
+                            Thread.Sleep(self.PROVIDER_SLACK)
 
                 if ditch_parts:
                     for part_id in ditch_parts:

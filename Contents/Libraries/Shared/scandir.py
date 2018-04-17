@@ -556,7 +556,13 @@ elif sys.platform.startswith(('linux', 'darwin', 'sunos5')) or 'bsd' in sys.plat
                     name = entry.d_name
                     if name not in (b'.', b'..'):
                         if not is_bytes:
-                            name = name.decode(file_system_encoding)
+                            try:
+                                name = name.decode(file_system_encoding)
+                            except UnicodeDecodeError:
+                                try:
+                                    name = name.decode("utf-8")
+                                except UnicodeDecodeError:
+                                    pass
                         yield PosixDirEntry(path, name, entry.d_type, entry.d_ino)
             finally:
                 if closedir(dir_p):
@@ -667,5 +673,8 @@ else:
 
     def walk(top, topdown=True, onerror=None, followlinks=False):
         if isinstance(top, bytes):
-            top = top.decode(file_system_encoding)
+            try:
+                top = top.decode(file_system_encoding)
+            except UnicodeDecodeError:
+                top = top.decode("utf-8")
         return _walk(top, topdown, onerror, followlinks)

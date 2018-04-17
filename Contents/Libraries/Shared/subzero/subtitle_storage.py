@@ -12,7 +12,7 @@ import sys
 
 from json_tricks.nonp import loads
 from subzero.lib.json import dumps
-from subzero.lib.io import scandir
+from scandir import scandir
 from constants import mode_map
 
 logger = logging.getLogger(__name__)

@@ -41,6 +41,7 @@ Don't expect support if you mess this up.
         "opensubtitles": {
             "enabled_for": ["series", "movies"],
             "use_https": true,
+            "timeout": 15,
         },
         "podnapisi": {
             "enabled_for": ["series", "movies"],
@@ -66,5 +67,15 @@ Don't expect support if you mess this up.
         "argenteam": {
             "enabled_for": ["series", "movies"],
         }
+    },
+
+    "refiners": {
+        "sonarr": {
+            // don't verify HTTPS certificates? Set to True for self-signed certificates
+            "ssl_no_verify": false,
+        },
+        "radarr": {
+            "ssl_no_verify": false,
+        },
     }
 }

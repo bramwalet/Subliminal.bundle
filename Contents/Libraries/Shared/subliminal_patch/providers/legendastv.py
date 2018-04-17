@@ -1,5 +1,7 @@
 # coding=utf-8
 import logging
+import rarfile
+from subliminal.exceptions import ConfigurationError
 
 from subliminal.providers.legendastv import LegendasTVSubtitle as _LegendasTVSubtitle, \
     LegendasTVProvider as _LegendasTVProvider, Episode, Movie, guess_matches, guessit, sanitize
@@ -59,6 +61,22 @@ class LegendasTVSubtitle(_LegendasTVSubtitle):
 
 class LegendasTVProvider(_LegendasTVProvider):
     subtitle_class = LegendasTVSubtitle
+
+    def __init__(self, username=None, password=None):
+
+        # Provider needs UNRAR installed. If not available raise ConfigurationError
+        try:
+            rarfile.custom_check([rarfile.UNRAR_TOOL], True)
+        except rarfile.RarExecError:
+            raise ConfigurationError('UNRAR tool not available')
+
+        if any((username, password)) and not all((username, password)):
+            raise ConfigurationError('Username and password must be specified')
+
+        self.username = username
+        self.password = password
+        self.logged_in = False
+        self.session = None
 
     def download_subtitle(self, subtitle):
         super(LegendasTVProvider, self).download_subtitle(subtitle)

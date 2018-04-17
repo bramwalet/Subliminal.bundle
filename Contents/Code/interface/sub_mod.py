@@ -15,7 +15,6 @@ from support.items import get_current_sub, set_mods_for_part
 
 
 @route(PREFIX + '/item/sub_mods/{rating_key}/{part_id}', force=bool)
-@debounce
 def SubtitleModificationsMenu(**kwargs):
     rating_key = kwargs["rating_key"]
     part_id = kwargs["part_id"]
