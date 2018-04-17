@@ -1,4 +1,19 @@
 
+2.5.3.2452
+
+- core: update certifi to 2018.01.18
+- core: metadata storage: only allow one subtitle per language
+- core: metadata storage: only parse latest metadata subtitle in localmedia
+- core: metadata storage: kill existing metadata subtitles explicitly upon storing a new one
+- core: metadata storage: fix selecting current subtitle from menu
+- providers: opensubtitles: use new requests based transport by default, finally fixes ResponseNotReady properly
+- providers: opensubtitles: mask token in logs
+- providers: don't check for hash validity if it isn't verifiable (fixes napiprojekt, #478)
+- submod: common: extend non_word_only matching
+- submod: common: reduce multi spaces to one
+- submod: OCR: fix III'll=I'll
+- advanced settings: add option to use HTTP instead of HTTPS for OpenSubtitles
+
 
 2.5.3.2422
 
