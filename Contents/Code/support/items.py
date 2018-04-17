@@ -16,6 +16,7 @@ from lib import Plex, get_intent
 from config import config, IGNORE_FN
 from subliminal_patch.subtitle import ModifiedSubtitle
 from subzero.modification import registry as mod_registry, SubtitleModifications
+from socket import timeout
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,11 @@ def get_item(key):
     except ValueError:
         return
 
-    item_container = Plex["library"].metadata(item_id)
+    try:
+        item_container = Plex["library"].metadata(item_id)
+    except timeout:
+        Log.Debug("PMS API timed out when querying information about item %d", item_id)
+        return
 
     try:
         return list(item_container)[0]
