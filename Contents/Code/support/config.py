@@ -612,6 +612,7 @@ class Config(object):
                      'legendastv': cast_bool(Prefs['provider.legendastv.enabled']),
                      'napiprojekt': cast_bool(Prefs['provider.napiprojekt.enabled']),
                      'hosszupuska': cast_bool(Prefs['provider.hosszupuska.enabled']),
+                     'supersubtitles': cast_bool(Prefs['provider.supersubtitles.enabled']),
                      'shooter': False,
                      'subscene': cast_bool(Prefs['provider.subscene.enabled']),
                      'argenteam': cast_bool(Prefs['provider.argenteam.enabled']),
@@ -632,6 +633,7 @@ class Config(object):
             providers["napiprojekt"] = False
             providers["shooter"] = False
             providers["hosszupuska"] = False
+            providers["supersubtitles"] = False
             providers["titlovi"] = False
             providers["argenteam"] = False
 

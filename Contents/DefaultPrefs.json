@@ -381,6 +381,12 @@
     "default": "true"
   },
   {
+    "id": "provider.supersubtitles.enabled",
+    "label": "Provider: Enable feliratok.info (Hungarian)",
+    "type": "bool",
+    "default": "false"
+  },
+  {
     "id": "provider.hosszupuska.enabled",
     "label": "Provider: Enable hosszupuskasub.com (Hungarian)",
     "type": "bool",
