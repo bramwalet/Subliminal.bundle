@@ -24,23 +24,7 @@ from zipfile import ZipFile, is_zipfile
 from rarfile import RarFile, is_rarfile
 from subliminal_patch.utils import sanitize, fix_inconsistent_naming as _fix_inconsistent_naming
 from guessit import guessit
-'''
-import types
 
-
-from babelfish import Language, language_converters
-from requests import Session
-from . import ParserBeautifulSoup, Provider
-# from ..exceptions import ProviderError
-from ..score import get_equivalent_release_groups
-from ..subtitle import Subtitle, fix_line_ending
-
-from ..utils import sanitize, sanitize_release_group
-from ..video import Episode, Movie
-
-'''
-# import ProviderSubtitleArchiveMixin
-# from mixins import ProviderSubtitleArchiveMixin
 
 logger = logging.getLogger(__name__)
 
