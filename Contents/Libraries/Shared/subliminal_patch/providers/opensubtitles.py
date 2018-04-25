@@ -4,6 +4,8 @@ import logging
 import os
 import traceback
 
+import requests
+
 from babelfish import language_converters
 from dogpile.cache.api import NO_VALUE
 from subliminal.exceptions import ConfigurationError, ServiceUnavailable
@@ -125,8 +127,8 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
 
         response = self.retry(
             lambda: checked(
-                self.server.LogIn(self.username, self.password, 'eng',
-                                  os.environ.get("SZ_USER_AGENT", "Sub-Zero/2"))
+                lambda: self.server.LogIn(self.username, self.password, 'eng',
+                                          os.environ.get("SZ_USER_AGENT", "Sub-Zero/2"))
             )
         )
 
@@ -158,7 +160,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         if token is not NO_VALUE:
             try:
                 logger.debug('Trying previous token')
-                checked(self.server.NoOperation(token))
+                checked(lambda: self.server.NoOperation(token))
                 self.token = token
                 logger.debug("Using previous login token: %s", self.token)
                 return
@@ -179,7 +181,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
                 
     def terminate(self):
         try:
-            checked(self.server.LogOut(self.token))
+            checked(lambda: self.server.LogOut(self.token))
         except:
             logger.error("Logout failed: %s", traceback.format_exc())
 
@@ -247,7 +249,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         # query the server
         logger.info('Searching subtitles %r', criteria)
         response = self.use_token_or_login(
-            lambda: self.retry(lambda: checked(self.server.SearchSubtitles(self.token, criteria)))
+            lambda: self.retry(lambda: checked(lambda: self.server.SearchSubtitles(self.token, criteria)))
         )
 
         subtitles = []
@@ -308,15 +310,22 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         return self.use_token_or_login(lambda: super(OpenSubtitlesProvider, self).download_subtitle(subtitle))
 
 
-def checked(response):
-    """Check a response status before returning it.
+def checked(fn):
+    """Run :fn: and check the response status before returning it.
 
-    :param response: a response from a XMLRPC call to OpenSubtitles.
+    :param fn: the function to make an XMLRPC call to OpenSubtitles.
     :return: the response.
     :raise: :class:`OpenSubtitlesError`
 
     """
-    status_code = int(response['status'][:3])
+    response = None
+    try:
+        response = fn()
+    except requests.RequestException as e:
+        status_code = response.status_code
+    else:
+        status_code = int(response['status'][:3])
+
     if status_code == 401:
         raise Unauthorized
     if status_code == 406:

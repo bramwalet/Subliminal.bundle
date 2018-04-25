@@ -107,14 +107,10 @@ class SubZeroRequestsTransport(xmlrpclib.SafeTransport):
         except Exception:
             raise  # something went wrong
         else:
-            try:
-                resp.raise_for_status()
-            except requests.RequestException as e:
-                return {"status": str(resp.status_code)}
+            resp.raise_for_status()
 
-            else:
-                self.verbose = verbose
-                return self.parse_response(resp.raw)
+            self.verbose = verbose
+            return self.parse_response(resp.raw)
 
     def _build_url(self, host, handler):
         """
