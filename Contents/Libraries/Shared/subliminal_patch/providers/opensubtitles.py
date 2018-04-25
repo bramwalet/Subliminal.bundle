@@ -1,8 +1,9 @@
 # coding=utf-8
-
+import base64
 import logging
 import os
 import traceback
+import zlib
 
 import requests
 
@@ -13,6 +14,7 @@ from subliminal.providers.opensubtitles import OpenSubtitlesProvider as _OpenSub
     OpenSubtitlesSubtitle as _OpenSubtitlesSubtitle, Episode, ServerProxy, Unauthorized, NoSession, \
     DownloadLimitReached, InvalidImdbid, UnknownUserAgent, DisabledUserAgent, OpenSubtitlesError
 from mixins import ProviderRetryMixin
+from subliminal.subtitle import fix_line_ending
 from subliminal_patch.http import SubZeroRequestsTransport
 from subliminal.cache import region
 from subliminal_patch.score import framerate_equal
@@ -307,7 +309,13 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         return subtitles
 
     def download_subtitle(self, subtitle):
-        return self.use_token_or_login(lambda: super(OpenSubtitlesProvider, self).download_subtitle(subtitle))
+        logger.info('Downloading subtitle %r', subtitle)
+        response = self.use_token_or_login(
+            lambda: checked(
+                lambda: self.server.DownloadSubtitles(self.token, [str(subtitle.subtitle_id)])
+            )
+        )
+        subtitle.content = fix_line_ending(zlib.decompress(base64.b64decode(response['data'][0]['data']), 47))
 
 
 def checked(fn):
