@@ -136,6 +136,7 @@ class Config(object):
     embedded_auto_extract = False
     ietf_as_alpha3 = False
     unrar = None
+    adv_cfg_path = None
 
     store_recently_played_amount = 40
 
@@ -321,7 +322,10 @@ class Config(object):
         if os.path.isfile(path):
             data = FileIO.read(path, "r")
 
-            return Dicked(**jstyleson.loads(data))
+            d = Dicked(**jstyleson.loads(data))
+            self.adv_cfg_path = path
+            Log.Info(u"Using advanced settings from: %s", path)
+            return d
 
         return Dicked()
 
