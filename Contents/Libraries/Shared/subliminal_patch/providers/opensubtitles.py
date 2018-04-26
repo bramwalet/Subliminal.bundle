@@ -330,7 +330,7 @@ def checked(fn):
     try:
         response = fn()
     except requests.RequestException as e:
-        status_code = response.status_code
+        status_code = e.response.status_code
     else:
         status_code = int(response['status'][:3])
 
