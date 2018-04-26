@@ -395,5 +395,6 @@
   "Change the timing of the subtitle":"Change the timing of the subtitle",
   "Adds or substracts a certain amount of time from the whole subtitle to match your media":"Adds or substracts a certain amount of time from the whole subtitle to match your media",
   "Available":"Available",
-  "Current":"Current"
+  "Current":"Current",
+  "Custom path to advanced_settings.json":"Custom path to advanced_settings.json"
 }
