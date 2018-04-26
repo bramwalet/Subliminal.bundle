@@ -395,5 +395,6 @@
     "Change the timing of the subtitle": "Die zeitliche Abstimmung des Untertitels ändern",
     "Adds or substracts a certain amount of time from the whole subtitle to match your media": "Verschiebt den Untertitel um eine bestimmte Zeiteinheit",
     "Available": "Verfügbar",
-    "Current": "Aktuell"
+    "Current": "Aktuell",
+    "Custom path to advanced_settings.json": "Spezifischer Pfad zu advanced_settings.json"
 }
