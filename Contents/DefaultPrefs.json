@@ -781,6 +781,12 @@
     "default": ""
   },
   {
+    "id": "path_to_advanced_settings",
+    "label": "Custom path to advanced_settings.json",
+    "type": "text",
+    "default": ""
+  },
+  {
     "id": "log_level",
     "label": "How verbose should the logging be?",
     "type": "enum",

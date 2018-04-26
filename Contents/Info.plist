@@ -9,11 +9,11 @@
         <key>CFBundleInfoDictionaryVersion</key>
         <string>6.0</string>
         <key>CFBundleShortVersionString</key>
-        <string>2.5.3</string>
+        <string>2.5.4</string>
         <key>CFBundleSignature</key>
         <string>????</string>
         <key>CFBundleVersion</key>
-        <string>2.5.3.2452</string>
+        <string>2.5.4.2532</string>
         <key>PlexFrameworkVersion</key>
         <string>2</string>
         <key>PlexPluginClass</key>
@@ -32,7 +32,7 @@
 
 &lt;h1&gt;Sub-Zero for Plex&lt;/h1&gt;&lt;i&gt;Subtitles done right&lt;/i&gt;
 
-Version 2.5.3.2452 DEV
+Version 2.5.4.2532 DEV
 
 Originally based on @bramwalet's awesome &lt;a href=&quot;https://github.com/bramwalet/Subliminal.bundle&quot;&gt;Subliminal.bundle&lt;/a&gt;
 
@@ -43,6 +43,8 @@ Wiki: &lt;a href=&quot;http://v.ht/szwiki&quot;&gt;http://v.ht/szwiki&lt;/a&gt;
 Score info: &lt;a href=&quot;http://v.ht/szscores&quot;&gt;http://v.ht/szscores&lt;/a&gt;
 Plex thread: &lt;a href=&quot;https://forums.plex.tv/discussion/186575&quot;>https://forums.plex.tv/discussion/186575&lt;/a&gt;
 Github: &lt;a href=&quot;https://github.com/pannal/Sub-Zero.bundle&quot;&gt;https://github.com/pannal/Sub-Zero&lt;/a&gt;
+
+3rd party licenses: &lt;a href=&quot;https://github.com/pannal/Sub-Zero.bundle/tree/master/Licenses&quot;&gt;https://github.com/pannal/Sub-Zero.bundle/tree/master/Licenses&lt;/a&gt;
 
 panni, 2018
 &lt;/div&gt;

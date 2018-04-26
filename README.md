@@ -77,20 +77,25 @@ Jacob K, Ninjouz, chopeta, fvb, Jose
 
 ## Changelog
 
-2.5.3.2452
+2.5.4.2527
 
-- core: update certifi to 2018.01.18
-- core: metadata storage: only allow one subtitle per language
-- core: metadata storage: only parse latest metadata subtitle in localmedia
-- core: metadata storage: kill existing metadata subtitles explicitly upon storing a new one
-- core: metadata storage: fix selecting current subtitle from menu
-- providers: opensubtitles: use new requests based transport by default, finally fixes ResponseNotReady properly
-- providers: opensubtitles: mask token in logs
-- providers: don't check for hash validity if it isn't verifiable (fixes napiprojekt, #478)
-- submod: common: extend non_word_only matching
-- submod: common: reduce multi spaces to one
-- submod: OCR: fix III'll=I'll
-- advanced settings: add option to use HTTP instead of HTTPS for OpenSubtitles
+- core: bugfixes
+- core: get_item: don't fail on socket timeout; fixes #498
+- core: fix scandir encoding errors; #453 #461 #441
+- core: clamp menu history to 25 items
+- add UnRAR for aarch64 (untested), arm (armv5tel, untested), linux/i386, MacOSX/i386; fixes #311
+- add 3rd party licenses
+- menu: new debounce/history mechanism; fixes the back button usage
+- config: add custom path option for advanced_settings.json
+- providers: opensubtitles: re-add support for throttling based on HTTP response codes, which got ditched due to new connection interface
+- providers: legendastv: disable if unrar wasn't found
+- providers: addic7ed: reduce show cache to 1 week
+- advanced settings: sonarr/radarr: make ssl verification optional
+- advanced settings: opensubtitles: add configurable connection timeout
+- refiners: drone: use certifi for HTTPS connections
+- tasks: SearchAllRecentlyAddedMissing: fix ZeroDivisionError in edgecases; fixes #496
+
+
 
 
 
@@ -98,3 +103,5 @@ Jacob K, Ninjouz, chopeta, fvb, Jose
 
 
 Subtitles provided by [OpenSubtitles.org](http://www.opensubtitles.org/), [Podnapisi.NET](https://www.podnapisi.net/), [TVSubtitles.net](http://www.tvsubtitles.net/), [Addic7ed.com](http://www.addic7ed.com/), [Legendas TV](http://legendas.tv/), [Napi Projekt](http://www.napiprojekt.pl/), [Shooter](http://shooter.cn/), [Titlovi](http://titlovi.com), [aRGENTeaM](http://argenteam.net), [SubScene](https://subscene.com/), [Hosszupuska](http://hosszupuskasub.com/)
+
+[3rd party licenses](https://github.com/pannal/Sub-Zero.bundle/tree/master/Licenses)

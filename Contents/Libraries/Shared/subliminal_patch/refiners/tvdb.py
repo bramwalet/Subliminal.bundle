@@ -53,7 +53,7 @@ def refine(video, **kwargs):
     """
     # only deal with Episode videos
     if not isinstance(video, Episode):
-        logger.error('Cannot refine episodes')
+        logger.error('Can only refine episodes')
         return
 
     # exit if the information is complete

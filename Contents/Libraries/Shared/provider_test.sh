@@ -4,8 +4,11 @@ python -c "import logging; logging.basicConfig(level=logging.DEBUG); logging.get
 # addic7ed download_best
 python -c "import logging; logging.basicConfig(level=logging.DEBUG); logging.getLogger('rebulk').setLevel(logging.WARNING); import os; os.environ['U1pfT01EQl9LRVk'] = '789CF30DAC2C8B0AF433F5C9AD34290A712DF30D7135F12D0FB3E502006FDE081E'; import subliminal_patch, subliminal; from subliminal_patch.core import SZProviderPool, download_best_subtitles; from subliminal_patch.score import compute_score; from babelfish import Language; subliminal.region.configure('dogpile.cache.memory'); from subzero.video import parse_video; video = parse_video('FILE_NAME', hints={'type': 'episode'}, dry_run=True); download_best_subtitles([video], pool_class=SZProviderPool, compute_score=compute_score, providers=['addic7ed'], provider_configs={'addic7ed': {'use_random_agents': True}}, languages={Language('fra')} )"
 
-# opensubtitles
+# opensubtitles:list
 python -c "import logging; logging.basicConfig(level=logging.DEBUG); logging.getLogger('rebulk').setLevel(logging.WARNING); import subliminal_patch, subliminal; subliminal.region.configure('dogpile.cache.memory'); from subliminal_patch.core import SZProviderPool; from babelfish import Language; from subzero.video import parse_video; SZProviderPool(providers=['opensubtitles'], )['opensubtitles'].list_subtitles(parse_video('FULL_PATH', {}, {'type': 'episode'}), languages=[Language('eng')])"
+
+# opensubtitles:download
+python -c "import logging; logging.basicConfig(level=logging.DEBUG); logging.getLogger('rebulk').setLevel(logging.WARNING); import subliminal_patch, subliminal; subliminal.region.configure('dogpile.cache.memory'); from subliminal_patch.core import SZProviderPool, download_best_subtitles; from subliminal_patch.score import compute_score; from babelfish import Language; from subzero.video import parse_video; video = parse_video('FILE_NAME', hints={'type': 'movie'}, dry_run=True); download_best_subtitles([video], pool_class=SZProviderPool, compute_score=compute_score, providers=['opensubtitles'], languages={Language('srp')} )"
 
 # podnapisi
 python -c "import logging; logging.basicConfig(level=logging.DEBUG); import subliminal_patch, subliminal; subliminal.region.configure('dogpile.cache.memory'); from subliminal_patch.core import SZProviderPool; from babelfish import Language; SZProviderPool(providers=['podnapisi'], )['podnapisi'].query([Language('eng')], 'Game of Thrones', season=2, episode=1)"

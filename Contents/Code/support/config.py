@@ -7,7 +7,6 @@ import sys
 import rarfile
 import jstyleson
 import datetime
-import subprocess
 
 import subliminal
 import subliminal_patch
@@ -138,6 +137,7 @@ class Config(object):
     embedded_auto_extract = False
     ietf_as_alpha3 = False
     unrar = None
+    adv_cfg_path = None
 
     store_recently_played_amount = 40
 
@@ -210,37 +210,44 @@ class Config(object):
         self.initialized = True
 
     def init_libraries(self):
-        default_unrar_exe = unrar_exe = "unrar"
-
+        try_executables = []
         custom_unrar = os.environ.get("SZ_UNRAR_TOOL")
         if custom_unrar:
             if os.path.isfile(custom_unrar):
-                unrar_exe = custom_unrar
+                try_executables.append(custom_unrar)
 
-        else:
-            if Core.runtime.os == "Windows":
-                unrar_exe = os.path.abspath(os.path.join(self.libraries_root, "Windows", "i386", "UnRAR", "UnRAR.exe"))
+        unrar_exe = None
+        if Core.runtime.os == "Windows":
+            unrar_exe = os.path.abspath(os.path.join(self.libraries_root, "Windows", "i386", "UnRAR", "UnRAR.exe"))
 
-            elif Core.runtime.os == "MacOSX":
-                unrar_exe = os.path.abspath(os.path.join(self.libraries_root, "MacOSX", "i386", "UnRAR", "unrar"))
+        elif Core.runtime.os == "MacOSX":
+            unrar_exe = os.path.abspath(os.path.join(self.libraries_root, "MacOSX", "i386", "UnRAR", "unrar"))
 
-            elif Core.runtime.os == "Linux":
-                unrar_exe = os.path.abspath(os.path.join(self.libraries_root, "Linux", Core.runtime.cpu, "UnRAR", "unrar"))
+        elif Core.runtime.os == "Linux":
+            unrar_exe = os.path.abspath(os.path.join(self.libraries_root, "Linux", Core.runtime.cpu, "UnRAR", "unrar"))
 
-        try_executables = [unrar_exe]
-        if default_unrar_exe != unrar_exe:
-            try_executables.append(default_unrar_exe)
+        if unrar_exe and os.path.isfile(unrar_exe):
+            try_executables.append(unrar_exe)
+
+        try_executables.append("unrar")
 
         for exe in try_executables:
+            rarfile.UNRAR_TOOL = exe
+            rarfile.ORIG_UNRAR_TOOL = exe
             try:
-                out = subprocess.check_output(exe, stderr=subprocess.STDOUT)
-                if "UNRAR" in out:
-                    Log.Info("Using UnRAR from: %s", exe)
-                    rarfile.UNRAR_TOOL = exe
-                    self.unrar = exe
-                    return
+                rarfile.custom_check([rarfile.UNRAR_TOOL], True)
             except:
-                Log.Warn("UnRAR not found")
+                Log.Debug("custom check failed for: %s", exe)
+                continue
+
+            rarfile.OPEN_ARGS = rarfile.ORIG_OPEN_ARGS
+            rarfile.EXTRACT_ARGS = rarfile.ORIG_EXTRACT_ARGS
+            rarfile.TEST_ARGS = rarfile.ORIG_TEST_ARGS
+            Log.Info("Using UnRAR from: %s", exe)
+            self.unrar = exe
+            return
+
+        Log.Warn("UnRAR not found")
 
     def init_cache(self):
         if self.new_style_cache:
@@ -309,11 +316,23 @@ class Config(object):
         return pack_cache_dir
 
     def get_advanced_config(self):
-        path = os.path.join(config.data_path, "advanced_settings.json")
-        if os.path.isfile(path):
-            data = FileIO.read(path, "r")
+        paths = []
+        if Prefs['path_to_advanced_settings']:
+            paths = [
+                Prefs['path_to_advanced_settings'],
+                os.path.join(Prefs['path_to_advanced_settings'], "advanced_settings.json")
+            ]
 
-            return Dicked(**jstyleson.loads(data))
+        paths.append(os.path.join(config.data_path, "advanced_settings.json"))
+
+        for path in paths:
+            if os.path.isfile(path):
+                data = FileIO.read(path, "r")
+
+                d = Dicked(**jstyleson.loads(data))
+                self.adv_cfg_path = path
+                Log.Info(u"Using advanced settings from: %s", path)
+                return d
 
         return Dicked()
 
@@ -627,6 +646,10 @@ class Config(object):
             providers["titlovi"] = False
             providers["argenteam"] = False
 
+        if not self.unrar and providers["legendastv"]:
+            providers["legendastv"] = False
+            Log.Info("Disabling LegendasTV, because UnRAR wasn't found")
+
         # advanced settings
         if media_type and self.advanced.providers:
             for provider, data in self.advanced.providers.iteritems():
@@ -673,6 +696,7 @@ class Config(object):
                                                'only_foreign': self.forced_only,
                                                'is_vip': cast_bool(Prefs['provider.opensubtitles.is_vip']),
                                                'use_ssl': os_use_https,
+                                               'timeout': self.advanced.providers.opensubtitles.timeout or 15
                                                },
                              'podnapisi': {
                                  'only_foreign': self.forced_only,
@@ -857,8 +881,11 @@ class Config(object):
             if Prefs["drone_api.sonarr.url"] and Prefs["drone_api.sonarr.api_key"]:
                 self.refiner_settings["sonarr"] = {
                     "base_url": Prefs["drone_api.sonarr.url"],
-                    "api_key": Prefs["drone_api.sonarr.api_key"]
+                    "api_key": Prefs["drone_api.sonarr.api_key"],
                 }
+                if self.advanced.refiners.sonarr:
+                    self.refiner_settings["sonarr"].update(self.advanced.refiners.sonarr)
+
                 self.exact_filenames = True
 
             if Prefs["drone_api.radarr.url"] and Prefs["drone_api.radarr.api_key"]:
@@ -866,6 +893,9 @@ class Config(object):
                     "base_url": Prefs["drone_api.radarr.url"],
                     "api_key": Prefs["drone_api.radarr.api_key"]
                 }
+                if self.advanced.refiners.radarr:
+                    self.refiner_settings["radarr"].update(self.advanced.refiners.radarr)
+
                 self.exact_filenames = True
 
     @property

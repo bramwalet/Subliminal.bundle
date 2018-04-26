@@ -1,8 +1,11 @@
 # coding=utf-8
-
+import base64
 import logging
 import os
 import traceback
+import zlib
+
+import requests
 
 from babelfish import language_converters
 from dogpile.cache.api import NO_VALUE
@@ -11,7 +14,8 @@ from subliminal.providers.opensubtitles import OpenSubtitlesProvider as _OpenSub
     OpenSubtitlesSubtitle as _OpenSubtitlesSubtitle, Episode, ServerProxy, Unauthorized, NoSession, \
     DownloadLimitReached, InvalidImdbid, UnknownUserAgent, DisabledUserAgent, OpenSubtitlesError
 from mixins import ProviderRetryMixin
-from subliminal_patch.http import SubZeroTransport, SubZeroRequestsTransport
+from subliminal.subtitle import fix_line_ending
+from subliminal_patch.http import SubZeroRequestsTransport
 from subliminal.cache import region
 from subliminal_patch.score import framerate_equal
 from subzero.language import Language
@@ -76,6 +80,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
     skip_wrong_fps = True
     is_vip = False
     use_ssl = True
+    timeout = 15
 
     default_url = "//api.opensubtitles.org/xml-rpc"
     vip_url = "//vip-api.opensubtitles.org/xml-rpc"
@@ -84,7 +89,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         #Language.fromietf("sr-latn"), Language.fromietf("sr-cyrl")}
 
     def __init__(self, username=None, password=None, use_tag_search=False, only_foreign=False, skip_wrong_fps=True,
-                 is_vip=False, use_ssl=True):
+                 is_vip=False, use_ssl=True, timeout=15):
         if any((username, password)) and not all((username, password)):
             raise ConfigurationError('Username and password must be specified')
 
@@ -96,6 +101,9 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         self.token = None
         self.is_vip = is_vip
         self.use_ssl = use_ssl
+        self.timeout = timeout
+
+        logger.debug("Using timeout: %d", timeout)
 
         if use_ssl:
             logger.debug("Using HTTPS connection")
@@ -109,8 +117,8 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         if only_foreign:
             logger.info("Only searching for foreign/forced subtitles")
 
-    def get_server_proxy(self, url, timeout=15):
-        return ServerProxy(url, SubZeroRequestsTransport(use_https=self.use_ssl, timeout=timeout,
+    def get_server_proxy(self, url, timeout=None):
+        return ServerProxy(url, SubZeroRequestsTransport(use_https=self.use_ssl, timeout=timeout or self.timeout,
                                                          user_agent=os.environ.get("SZ_USER_AGENT", "Sub-Zero/2")))
 
     def log_in(self, server_url=None):
@@ -121,8 +129,8 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
 
         response = self.retry(
             lambda: checked(
-                self.server.LogIn(self.username, self.password, 'eng',
-                                  os.environ.get("SZ_USER_AGENT", "Sub-Zero/2"))
+                lambda: self.server.LogIn(self.username, self.password, 'eng',
+                                          os.environ.get("SZ_USER_AGENT", "Sub-Zero/2"))
             )
         )
 
@@ -154,7 +162,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         if token is not NO_VALUE:
             try:
                 logger.debug('Trying previous token')
-                checked(self.server.NoOperation(token))
+                checked(lambda: self.server.NoOperation(token))
                 self.token = token
                 logger.debug("Using previous login token: %s", self.token)
                 return
@@ -175,7 +183,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
                 
     def terminate(self):
         try:
-            checked(self.server.LogOut(self.token))
+            checked(lambda: self.server.LogOut(self.token))
         except:
             logger.error("Logout failed: %s", traceback.format_exc())
 
@@ -243,7 +251,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         # query the server
         logger.info('Searching subtitles %r', criteria)
         response = self.use_token_or_login(
-            lambda: self.retry(lambda: checked(self.server.SearchSubtitles(self.token, criteria)))
+            lambda: self.retry(lambda: checked(lambda: self.server.SearchSubtitles(self.token, criteria)))
         )
 
         subtitles = []
@@ -301,18 +309,31 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         return subtitles
 
     def download_subtitle(self, subtitle):
-        return self.use_token_or_login(lambda: super(OpenSubtitlesProvider, self).download_subtitle(subtitle))
+        logger.info('Downloading subtitle %r', subtitle)
+        response = self.use_token_or_login(
+            lambda: checked(
+                lambda: self.server.DownloadSubtitles(self.token, [str(subtitle.subtitle_id)])
+            )
+        )
+        subtitle.content = fix_line_ending(zlib.decompress(base64.b64decode(response['data'][0]['data']), 47))
 
 
-def checked(response):
-    """Check a response status before returning it.
+def checked(fn):
+    """Run :fn: and check the response status before returning it.
 
-    :param response: a response from a XMLRPC call to OpenSubtitles.
+    :param fn: the function to make an XMLRPC call to OpenSubtitles.
     :return: the response.
     :raise: :class:`OpenSubtitlesError`
 
     """
-    status_code = int(response['status'][:3])
+    response = None
+    try:
+        response = fn()
+    except requests.RequestException as e:
+        status_code = e.response.status_code
+    else:
+        status_code = int(response['status'][:3])
+
     if status_code == 401:
         raise Unauthorized
     if status_code == 406:
