@@ -3,6 +3,7 @@ import logging
 import re
 import datetime
 import subliminal
+import time
 from random import randint
 
 from subliminal.exceptions import ServiceUnavailable, DownloadLimitExceeded
@@ -142,10 +143,21 @@ class Addic7edProvider(_Addic7edProvider):
 
         # make the search
         logger.info('Searching show ids with %r', params)
-        r = self.session.get(self.server_url + 'srch.php', params=params, timeout=10)
-        r.raise_for_status()
+
+        # currently addic7ed searches via srch.php from the front page, then a re-search is needed which calls
+        # search.php
+        for endpoint in ("srch.php", "search.php",):
+            r = self.session.get(self.server_url + endpoint, params=params, timeout=10)
+            r.raise_for_status()
+
+            if "Sorry, your search" not in r.content:
+                break
+
+            time.sleep(4)
+
         if r.status_code == 304:
             raise TooManyRequests()
+
         soup = ParserBeautifulSoup(r.content, ['lxml', 'html.parser'])
 
         suggestion = None
@@ -174,7 +186,8 @@ class Addic7edProvider(_Addic7edProvider):
 
         # get the page of the season of the show
         logger.info('Getting the page of show id %d, season %d', show_id, season)
-        r = self.session.get(self.server_url + 'show/%d' % show_id, params={'season': season}, timeout=10)
+        r = self.session.get(self.server_url + 'ajax_loadShow.php', params={'show': show_id, 'season': season},
+                             timeout=10)
         r.raise_for_status()
 
         if r.status_code == 304:
