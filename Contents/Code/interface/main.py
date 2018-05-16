@@ -322,7 +322,7 @@ def IgnoreMenu(kind, rating_key, title=None, sure=False, todo="not_set"):
     """
     is_ignored = rating_key in ignore_list[kind]
     if not sure:
-        oc = SubFolderObjectContainer(no_history=True, replace_parent=True, title1="%s %s %s %s the ignore list" % (
+        oc = SubFolderObjectContainer(no_history=True, replace_parent=True, title1=u"%s %s %s %s the ignore list" % (
             "Add" if not is_ignored else "Remove", ignore_list.verbose(kind), title,
             "to" if not is_ignored else "from"), title2="Are you sure?")
         oc.add(DirectoryObject(
@@ -334,6 +334,7 @@ def IgnoreMenu(kind, rating_key, title=None, sure=False, todo="not_set"):
 
     rel = ignore_list[kind]
     dont_change = False
+    state = None
     if todo == "remove":
         if not is_ignored:
             dont_change = True
@@ -356,9 +357,9 @@ def IgnoreMenu(kind, rating_key, title=None, sure=False, todo="not_set"):
         dont_change = True
 
     if dont_change:
-        return fatality(force_title=" ", header="Didn't change the ignore list", no_history=True)
+        return fatality(force_title=" ", header=u"Didn't change the ignore list", no_history=True)
 
-    return fatality(force_title=" ", header="%s %s the ignore list" % (title, state), no_history=True)
+    return fatality(force_title=" ", header=u"%s %s the ignore list" % (title, state), no_history=True)
 
 
 @route(PREFIX + '/sections')
