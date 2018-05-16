@@ -150,7 +150,7 @@ class Addic7edProvider(_Addic7edProvider):
             r = self.session.get(self.server_url + endpoint, params=params, timeout=10)
             r.raise_for_status()
 
-            if "Sorry, your search" not in r.content:
+            if r.content and "Sorry, your search" not in r.content:
                 break
 
             time.sleep(4)
