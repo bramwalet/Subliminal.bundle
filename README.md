@@ -77,7 +77,7 @@ Jacob K, Ninjouz, chopeta, fvb, Jose
 
 ## Changelog
 
-2.5.4.2540
+2.5.4.2541
 
 - core: try retrieving advanced_settings.json from the path given, which may be a file path or a directory
 - menu: ignore options: fix plugin not responding, fix unicode strings; resolve #509
