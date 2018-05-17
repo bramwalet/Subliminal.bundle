@@ -1,4 +1,23 @@
 
+2.5.4.2527
+
+- core: bugfixes
+- core: get_item: don't fail on socket timeout; fixes #498
+- core: fix scandir encoding errors; #453 #461 #441
+- core: clamp menu history to 25 items
+- add UnRAR for aarch64 (untested), arm (armv5tel, untested), linux/i386, MacOSX/i386; fixes #311
+- add 3rd party licenses
+- menu: new debounce/history mechanism; fixes the back button usage
+- config: add custom path option for advanced_settings.json
+- providers: opensubtitles: re-add support for throttling based on HTTP response codes, which got ditched due to new connection interface
+- providers: legendastv: disable if unrar wasn't found
+- providers: addic7ed: reduce show cache to 1 week
+- advanced settings: sonarr/radarr: make ssl verification optional
+- advanced settings: opensubtitles: add configurable connection timeout
+- refiners: drone: use certifi for HTTPS connections
+- tasks: SearchAllRecentlyAddedMissing: fix ZeroDivisionError in edgecases; fixes #496
+
+
 2.5.3.2452
 
 - core: update certifi to 2018.01.18
