@@ -91,7 +91,8 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                 randomize=timestamp(),
                 timeout=timeout * 1000),
         title=_(u"Refresh: %s", item_title),
-        summary=_("Refreshes the %s, possibly searching for missing and picking up new subtitles on disk", current_kind),
+        summary=_("Refreshes %(the_movie_series_season_episode)s, possibly searching for missing and picking up "
+                  "new subtitles on disk", the_movie_series_season_episode=_(u"the %s" % current_kind)),
         thumb=item.thumb or default_thumb
     ))
     oc.add(DirectoryObject(
