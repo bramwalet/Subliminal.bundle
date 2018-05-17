@@ -77,24 +77,12 @@ Jacob K, Ninjouz, chopeta, fvb, Jose
 
 ## Changelog
 
-2.5.4.2527
+2.5.4.2541
 
-- core: bugfixes
-- core: get_item: don't fail on socket timeout; fixes #498
-- core: fix scandir encoding errors; #453 #461 #441
-- core: clamp menu history to 25 items
-- add UnRAR for aarch64 (untested), arm (armv5tel, untested), linux/i386, MacOSX/i386; fixes #311
-- add 3rd party licenses
-- menu: new debounce/history mechanism; fixes the back button usage
-- config: add custom path option for advanced_settings.json
-- providers: opensubtitles: re-add support for throttling based on HTTP response codes, which got ditched due to new connection interface
-- providers: legendastv: disable if unrar wasn't found
-- providers: addic7ed: reduce show cache to 1 week
-- advanced settings: sonarr/radarr: make ssl verification optional
-- advanced settings: opensubtitles: add configurable connection timeout
-- refiners: drone: use certifi for HTTPS connections
-- tasks: SearchAllRecentlyAddedMissing: fix ZeroDivisionError in edgecases; fixes #496
-
+- core: try retrieving advanced_settings.json from the path given, which may be a file path or a directory
+- menu: ignore options: fix plugin not responding, fix unicode strings; resolve #509
+- providers: addic7ed: fix usage/adapt to new show search method
+- providers: opensubtitles: properly handle responses again, re-enable automatic throttling based on those (broken since XMLRPC handler rewrite)
 
 
 

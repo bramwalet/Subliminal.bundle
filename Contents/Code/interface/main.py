@@ -327,9 +327,9 @@ def IgnoreMenu(kind, rating_key, title=None, sure=False, todo="not_set"):
     """
     is_ignored = rating_key in ignore_list[kind]
     if not sure:
-        t = "Add %(kind)s %(title)s to the ignore list"
+        t = u"Add %(kind)s %(title)s to the ignore list"
         if is_ignored:
-            t = "Remove %(kind)s %(title)s from the ignore list"
+            t = u"Remove %(kind)s %(title)s from the ignore list"
         oc = SubFolderObjectContainer(no_history=True, replace_parent=True,
                                       title1=_(t,
                                                kind=ignore_list.verbose(kind),
@@ -345,6 +345,7 @@ def IgnoreMenu(kind, rating_key, title=None, sure=False, todo="not_set"):
 
     rel = ignore_list[kind]
     dont_change = False
+    state = None
     if todo == "remove":
         if not is_ignored:
             dont_change = True
