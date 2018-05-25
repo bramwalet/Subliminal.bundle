@@ -84,8 +84,8 @@ def get_filebot_attrs(fn):
             output, errors = proc.communicate()
 
             if proc.returncode == 1:
-                logger.info(u"%s: Couldn't get filebot original filename, args: %r, error: %s", fn, args,
-                            errors.decode())
+                logger.info(u"%s: Couldn't get filebot original filename, args: %r, output: %r, error: %r", fn, args,
+                            output, errors)
                 return
 
             output = output.decode()
