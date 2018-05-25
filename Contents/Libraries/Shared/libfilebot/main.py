@@ -83,7 +83,8 @@ def get_filebot_attrs(fn):
             output = subprocess.check_output(quote_args(args), stderr=subprocess.PIPE, shell=True)
         except subprocess.CalledProcessError, e:
             if e.returncode == 1:
-                logger.info(u"%s: Couldn't get filebot original filename", fn)
+                logger.info(u"%s: Couldn't get filebot original filename, args: %r, error: %s", fn, args,
+                            traceback.format_exc())
             else:
                 logger.error(u"%s: Unexpected error while getting filebot original filename: %s", fn,
                              traceback.format_exc())
