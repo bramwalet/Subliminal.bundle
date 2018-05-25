@@ -48,15 +48,15 @@ XATTR_MAP = {
         lambda result: re.search('(?um)(net\.filebot\.filename(?=="|: )[=:" ]+|Attribute.+:\s)([^"\n\r\0]+)',
                                  result).group(2)
     ),
-    "darwin": {
+    "darwin": (
         lambda fn: ["xattr", "-p", "net.filebot.filename", fn],
         lambda result: binascii.unhexlify(result.strip().replace(' ', '').replace('\r\n', '').replace('\r', '')
                                           .replace('\n', '')).strip("\x00")
-    },
-    "win32": {
+    ),
+    "win32": (
         lambda fn: fn,
         win32_xattr,
-    }
+    )
 }
 
 if sys.platform not in XATTR_MAP:
