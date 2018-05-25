@@ -96,6 +96,7 @@ def get_filebot_attrs(fn):
         return orig_fn.strip()
     except:
         logger.info(u"%s: Couldn't get filebot original filename" % fn)
+        logger.debug(u"%s: Result: %r" % (fn, output))
 
 
 if __name__ == "__main__":
