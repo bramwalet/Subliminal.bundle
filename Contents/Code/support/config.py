@@ -502,9 +502,14 @@ class Config(object):
         if not fn:
             return
 
-        splitted_fn = fn.split()
-        exe_fn = splitted_fn[0]
-        arguments = [arg.strip() for arg in splitted_fn[1:]]
+        got_args = "%(" in fn
+        if got_args:
+            first_arg_pos = fn.index("%(")
+            exe_fn = fn[:first_arg_pos].strip()
+            arguments = [arg.strip() for arg in fn[first_arg_pos:].split()]
+        else:
+            exe_fn = fn
+            arguments = []
 
         if os.path.isfile(exe_fn) and os.access(exe_fn, os.X_OK):
             return exe_fn, arguments
