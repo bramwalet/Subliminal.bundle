@@ -115,6 +115,7 @@ def refine_video(video, no_refining=False, refiner_settings=None):
         video.year = year
 
     refine(video, **refine_kwargs)
+    logger.info(u"Using filename: %s", video.original_name)
 
     if hints["type"] == "movie" and not video.imdb_id:
         if plex_title:

@@ -14,9 +14,12 @@ def refine(video, **kwargs):
     :param kwargs:
     :return:
     """
-    orig_fn = get_filebot_attrs(video.name)
+    try:
+        orig_fn = get_filebot_attrs(video.name)
 
-    if orig_fn:
-        update_video(video, orig_fn)
-    else:
-        logger.info(u"%s: Filebot didn't return an original filename", orig_fn)
+        if orig_fn:
+            update_video(video, orig_fn)
+        else:
+            logger.info(u"%s: Filebot didn't return an original filename", video.name)
+    except:
+        logger.exception(u"%s: Something went wrong when retrieving filebot attributes:", video.name)
