@@ -50,7 +50,8 @@ XATTR_MAP = {
     ),
     "darwin": {
         lambda fn: ["xattr", "-p", "net.filebot.filename", fn],
-        lambda result: binascii.unhexlify(result.replace(' ', '').replace('\n', '')).strip("\x00")
+        lambda result: binascii.unhexlify(result.strip().replace(' ', '').replace('\r\n', '').replace('\r', '')
+                                          .replace('\n', '')).strip("\x00")
     },
     "win32": {
         lambda fn: fn,
