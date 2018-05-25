@@ -7,11 +7,14 @@ import logging
 import re
 import binascii
 import types
+import os
 
 from pipes import quote
 from lib import find_executable
 
+mswindows = False
 if sys.platform == "win32":
+    mswindows = True
     from pyads import ADS
 
 logger = logging.getLogger(__name__)
@@ -80,7 +83,22 @@ def get_filebot_attrs(fn):
     args = args_func(fn)
     if isinstance(args, types.ListType):
         try:
-            proc = subprocess.Popen(quote_args(args), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+            env = dict(os.environ)
+            if not mswindows:
+                env_path = {"PATH": os.pathsep.join(
+                    [
+                        "/usr/local/bin",
+                        "/usr/bin",
+                        os.environ.get("PATH", "")
+                    ]
+                )
+                }
+                env = dict(os.environ, **env_path)
+
+            env.pop("LD_LIBRARY_PATH", None)
+
+            proc = subprocess.Popen(quote_args(args), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True,
+                                    env=env)
             output, errors = proc.communicate()
 
             if proc.returncode == 1:
