@@ -63,7 +63,8 @@ XATTR_MAP = {
 }
 
 if sys.platform not in XATTR_MAP:
-    default_xattr_bin = find_executable("getfattr") or find_executable("attr") or find_executable("filebot")
+    default_xattr_bin = find_executable("getfattr") or find_executable("attr") or find_executable("filebot") \
+                        or "filebot"
 
 
 def get_filebot_attrs(fn):
