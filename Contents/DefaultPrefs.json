@@ -399,6 +399,18 @@
     "default": "false"
   },
   {
+    "id": "provider.assrt.enabled",
+    "label": "Provider: Enable assrt.net (Chinese)",
+    "type": "bool",
+    "default": "false"
+  },
+  {
+    "id": "provider.assrt.token",
+    "label": "Assrt API Token",
+    "type": "text",
+    "default": ""
+  },
+  {
     "id": "providers.multithreading",
     "label": "Search enabled providers simultaneously (multithreading)",
     "type": "bool",

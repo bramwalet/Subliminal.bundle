@@ -625,6 +625,7 @@ class Config(object):
                      'subscene': cast_bool(Prefs['provider.subscene.enabled']),
                      'argenteam': cast_bool(Prefs['provider.argenteam.enabled']),
                      'subscenter': False,
+                     'assrt': cast_bool(Prefs['provider.assrt.enabled']),
                      }
 
         providers_by_prefs = copy.deepcopy(providers)
@@ -643,6 +644,7 @@ class Config(object):
             providers["hosszupuska"] = False
             providers["titlovi"] = False
             providers["argenteam"] = False
+            providers["assrt"] = False
 
         if not self.unrar and providers["legendastv"]:
             providers["legendastv"] = False
@@ -701,7 +703,8 @@ class Config(object):
                              },
                              'legendastv': {'username': Prefs['provider.legendastv.username'],
                                             'password': Prefs['provider.legendastv.password'],
-                                            }
+                                            },
+                             'assrt': {'token': Prefs['provider.assrt.token'], }
                              }
 
         return provider_settings
