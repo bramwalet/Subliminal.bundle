@@ -307,12 +307,21 @@ def notify_executable(exe_info, videos, subtitles, storage):
             env.pop("LD_LIBRARY_PATH", None)
 
             try:
-                output = subprocess.check_output(quote_args([exe] + prepared_arguments),
-                                                 stderr=subprocess.STDOUT, shell=True, env=env)
-            except subprocess.CalledProcessError:
-                Log.Error(u"Calling %s failed: %s" % (exe, traceback.format_exc()))
+                proc = subprocess.Popen(quote_args([exe] + prepared_arguments), stdout=subprocess.PIPE,
+                                        stderr=subprocess.PIPE, shell=True, env=env)
+                output, errors = proc.communicate()
+
+                if proc.returncode == 1:
+                    Log.Info(u"Calling %s failed: %s, args: %r, output: %r, error: %r", exe, prepared_arguments,
+                             output, errors)
+                    return
+
+                output = output.decode()
+
+            except:
+                Log.Error(u"Calling %s failed: %s", exe, traceback.format_exc())
             else:
-                Log.Debug(u"Process output: %s" % output)
+                Log.Debug(u"Process output: %s", output)
 
 
 def track_usage(category=None, action=None, label=None, value=None):
