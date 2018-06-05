@@ -1,4 +1,4 @@
-# coding: iso8859_2
+# coding=utf-8
 import io
 import six
 import os
@@ -199,35 +199,31 @@ class SuperSubtitlesProvider(Provider, ProviderSubtitleArchiveMixin):
         url = self.server_url + "index.php?term=" + series + "&nyelv=0&action=autoname"
         # url = self.server_url + "index.php?term=" + "fla"+ "&nyelv=0&action=autoname"
         logger.info('Get series id from URL %s', url)
-        r = self.session.get(url, timeout=10).content
+        r = self.session.get(url, timeout=10)
 
         # r is something like this:
         # [{"name":"DC\u2019s Legends of Tomorrow (2016)","ID":"3725"},{"name":"Miles from Tomorrowland (2015)","ID":"3789"}
         # ,{"name":"No Tomorrow (2016)","ID":"4179"}]
 
-        # We create a list from the data between { }
-        # "name":"DC\u2019s Legends of Tomorrow (2016)","ID":"3725"
-        # "name":"Miles from Tomorrowland (2015)","ID":"3789"
-        # ...
-        results = re.findall(r"(?<={).*?(?=})", str(r))
+        results = r.json()
 
         # check all of the results:
         for result in results:
             try:
                 # "name":"Miles from Tomorrowland (2015)","ID":"3789"
-                result_year = re.findall(r"(?<=\()\d\d\d\d(?=\))", result)[0]
+                result_year = re.findall(r"(?<=\()\d\d\d\d(?=\))", result['name'])[0]
             except IndexError:
                 result_year = ""
 
             try:
                 # "name":"Miles from Tomorrowland (2015)","ID":"3789"
-                result_title = re.findall(r"(?<=name\":\").*(?=\()", result)[0]
-                result_id = re.findall(r"(?<=ID\":\").*(?=\")", result)[0]
+                result_title = re.findall(r".*(?=\(\d\d\d\d\))", result['name'])[0]
+                result_id = result['ID']
             except IndexError:
                 continue
 
-            result_title = result_title.strip().replace("u2019", "").replace("\\\\u2019", "").replace("'", "").replace("\\",
-                                                                                "").replace(" ", ".")
+            result_title = result_title.strip().replace("’", "").replace(" ", ".")
+
             guessable = result_title.strip() + ".s01e01." + result_year
             guess = guessit(guessable, {'type': "episode"})
 
