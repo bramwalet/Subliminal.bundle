@@ -11,8 +11,6 @@
       "bg",
       "ca",
       "zh",
-      "zh-hans",
-      "zh-hant",
       "cs",
       "da",
       "nl",
@@ -52,7 +50,9 @@
       "tr",
       "uk",
       "vi",
-      "hr"
+      "hr",
+      "zh-hans",
+      "zh-hant"
     ],
     "default": "en"
   },
@@ -69,8 +69,6 @@
       "bg",
       "ca",
       "zh",
-      "zh-hans",
-      "zh-hant",
       "cs",
       "da",
       "nl",
@@ -110,7 +108,9 @@
       "tr",
       "uk",
       "vi",
-      "hr"
+      "hr",
+      "zh-hans",
+      "zh-hant"
     ],
     "default": "None"
   },
@@ -127,8 +127,6 @@
       "bg",
       "ca",
       "zh",
-      "zh-hans",
-      "zh-hant",
       "cs",
       "da",
       "nl",
@@ -168,7 +166,9 @@
       "tr",
       "uk",
       "vi",
-      "hr"
+      "hr",
+      "zh-hans",
+      "zh-hant"
     ],
     "default": "None"
   },
