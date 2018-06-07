@@ -312,7 +312,7 @@ def notify_executable(exe_info, videos, subtitles, storage):
                 output, errors = proc.communicate()
 
                 if proc.returncode == 1:
-                    Log.Info(u"Calling %s failed: %s, args: %r, output: %r, error: %r", exe, prepared_arguments,
+                    Log.Info(u"Calling %s with args %s failed: output: %r, error: %r", exe, prepared_arguments,
                              output, errors)
                     return
 
