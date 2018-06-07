@@ -374,6 +374,7 @@ class SuperSubtitlesProvider(Provider, ProviderSubtitleArchiveMixin):
                 return subs
 
             time.sleep(self.multi_result_throttle)
+            return []
 
     def download_subtitle(self, subtitle):
 
