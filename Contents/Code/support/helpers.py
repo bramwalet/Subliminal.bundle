@@ -292,7 +292,6 @@ def notify_executable(exe_info, videos, subtitles, storage):
             prepared_arguments = [arg % prepared_data for arg in arguments]
 
             Log.Debug(u"Calling %s with arguments: %s" % (exe, prepared_arguments))
-            env = dict(os.environ)
             if not mswindows:
                 env_path = {"PATH": os.pathsep.join(
                                         [
@@ -303,12 +302,13 @@ def notify_executable(exe_info, videos, subtitles, storage):
                                     )
                             }
                 env = dict(os.environ, **env_path)
-
-            env.pop("LD_LIBRARY_PATH", None)
+                env.pop("LD_LIBRARY_PATH", None)
+            else:
+                env = None
 
             try:
                 proc = subprocess.Popen(quote_args([exe] + prepared_arguments), stdout=subprocess.PIPE,
-                                        stderr=subprocess.PIPE, shell=True, env=env)
+                                        stderr=subprocess.PIPE, shell=True, env=env, cwd=os.path.dirname(exe))
                 output, errors = proc.communicate()
 
                 if proc.returncode == 1:
