@@ -304,7 +304,9 @@ def notify_executable(exe_info, videos, subtitles, storage):
                 env = dict(os.environ, **env_path)
                 env.pop("LD_LIBRARY_PATH", None)
             else:
-                env = None
+                env = dict(os.environ)
+                if "PYTHONPATH" in env and "Plex" in env["PYTHONPATH"]:
+                    del env["PYTHONPATH"]
 
             try:
                 proc = subprocess.Popen(quote_args([exe] + prepared_arguments), stdout=subprocess.PIPE,
