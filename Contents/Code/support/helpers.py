@@ -303,9 +303,22 @@ def notify_executable(exe_info, videos, subtitles, storage):
                             }
                 env = dict(os.environ, **env_path)
                 env.pop("LD_LIBRARY_PATH", None)
+                pp_sep = ":"
             else:
                 env = dict(os.environ)
-                if "PYTHONPATH" in env and "Plex" in env["PYTHONPATH"]:
+                pp_sep = ";"
+
+            # clean out any Plex-PYTHONPATH additions that may bleed through the spawned process
+            if "PYTHONPATH" in env and "plex" in env["PYTHONPATH"].lower():
+                pp = []
+                for path in env["PYTHONPATH"].split(pp_sep):
+                    path_stripped = path.strip()
+                    if path_stripped and "plex" not in path_stripped.lower():
+                        pp.append(path_stripped)
+
+                if pp:
+                    env["PYTHONPATH"] = pp_sep.join(pp)
+                else:
                     del env["PYTHONPATH"]
 
             try:
@@ -314,7 +327,7 @@ def notify_executable(exe_info, videos, subtitles, storage):
                 output, errors = proc.communicate()
 
                 if proc.returncode == 1:
-                    Log.Info(u"Calling %s with args %s failed: output: %r, error: %r", exe, prepared_arguments,
+                    Log.Error(u"Calling %s with args %s failed: output:\n%s, error:\n%s", exe, prepared_arguments,
                              output, errors)
                     return
 
