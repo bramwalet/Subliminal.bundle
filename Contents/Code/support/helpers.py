@@ -303,23 +303,12 @@ def notify_executable(exe_info, videos, subtitles, storage):
                             }
                 env = dict(os.environ, **env_path)
                 env.pop("LD_LIBRARY_PATH", None)
-                pp_sep = ":"
             else:
                 env = dict(os.environ)
-                pp_sep = ";"
 
-            # clean out any Plex-PYTHONPATH additions that may bleed through the spawned process
+            # clean out any Plex-PYTHONPATH that may bleed through the spawned process
             if "PYTHONPATH" in env and "plex" in env["PYTHONPATH"].lower():
-                pp = []
-                for path in env["PYTHONPATH"].split(pp_sep):
-                    path_stripped = path.strip()
-                    if path_stripped and "plex" not in path_stripped.lower():
-                        pp.append(path_stripped)
-
-                if pp:
-                    env["PYTHONPATH"] = pp_sep.join(pp)
-                else:
-                    del env["PYTHONPATH"]
+                del env["PYTHONPATH"]
 
             try:
                 proc = subprocess.Popen(quote_args([exe] + prepared_arguments), stdout=subprocess.PIPE,
