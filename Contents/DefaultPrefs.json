@@ -50,7 +50,9 @@
       "tr",
       "uk",
       "vi",
-      "hr"
+      "hr",
+      "zh-hans",
+      "zh-hant"
     ],
     "default": "en"
   },
@@ -106,7 +108,9 @@
       "tr",
       "uk",
       "vi",
-      "hr"
+      "hr",
+      "zh-hans",
+      "zh-hant"
     ],
     "default": "None"
   },
@@ -162,7 +166,9 @@
       "tr",
       "uk",
       "vi",
-      "hr"
+      "hr",
+      "zh-hans",
+      "zh-hant"
     ],
     "default": "None"
   },
@@ -391,6 +397,18 @@
     "label": "Provider: Enable aRGENTeaM (Spanish)",
     "type": "bool",
     "default": "false"
+  },
+  {
+    "id": "provider.assrt.enabled",
+    "label": "Provider: Enable assrt.net (Chinese)",
+    "type": "bool",
+    "default": "false"
+  },
+  {
+    "id": "provider.assrt.token",
+    "label": "Assrt API Token",
+    "type": "text",
+    "default": ""
   },
   {
     "id": "providers.multithreading",
