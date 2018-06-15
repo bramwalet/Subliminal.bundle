@@ -100,8 +100,8 @@ class Addic7edProvider(_Addic7edProvider):
                 data = {'username': self.username, 'password': self.password, 'Submit': 'Log in'}
                 r = self.session.post(self.server_url + 'dologin.php', data, allow_redirects=False, timeout=10)
 
-                #if "relax, slow down" in r.content:
-                #    pass
+                if "relax, slow down" in r.content:
+                    raise TooManyRequests(self.username)
 
                 if r.status_code != 302:
                     raise AuthenticationError(self.username)
