@@ -12,7 +12,7 @@ import subliminal
 import subliminal_patch
 import subzero.constants
 import lib
-from subliminal.exceptions import ServiceUnavailable, DownloadLimitExceeded
+from subliminal.exceptions import ServiceUnavailable, DownloadLimitExceeded, AuthenticationError
 
 from subliminal_patch.core import is_windows_special_path
 from whichdb import whichdb
@@ -70,6 +70,7 @@ PROVIDER_THROTTLE_MAP = {
     },
     "addic7ed": {
         DownloadLimitExceeded: (datetime.timedelta(hours=24), "24 hours"),
+        AuthenticationError: (datetime.timedelta(minutes=10), "5 minutes"),
     }
 }
 

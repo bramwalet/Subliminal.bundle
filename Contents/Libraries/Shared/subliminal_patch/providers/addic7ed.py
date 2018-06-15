@@ -5,8 +5,10 @@ import datetime
 import subliminal
 import time
 from random import randint
+from dogpile.cache.api import NO_VALUE
+from requests import Session
 
-from subliminal.exceptions import ServiceUnavailable, DownloadLimitExceeded
+from subliminal.exceptions import ServiceUnavailable, DownloadLimitExceeded, AuthenticationError
 from subliminal.providers.addic7ed import Addic7edProvider as _Addic7edProvider, \
     Addic7edSubtitle as _Addic7edSubtitle, ParserBeautifulSoup, show_cells_re
 from subliminal.cache import region
@@ -70,13 +72,45 @@ class Addic7edProvider(_Addic7edProvider):
         self.USE_ADDICTED_RANDOM_AGENTS = use_random_agents
 
     def initialize(self):
-        # patch: add optional user agent randomization
-        super(Addic7edProvider, self).initialize()
+        self.session = Session()
+        self.session.headers['User-Agent'] = 'Subliminal/%s' % subliminal.__short_version__
+
         if self.USE_ADDICTED_RANDOM_AGENTS:
             from .utils import FIRST_THOUSAND_OR_SO_USER_AGENTS as AGENT_LIST
-            logger.debug("addic7ed: using random user agents")
+            logger.debug("Addic7ed: using random user agents")
             self.session.headers['User-Agent'] = AGENT_LIST[randint(0, len(AGENT_LIST) - 1)]
             self.session.headers['Referer'] = self.server_url
+
+        # login
+        if self.username and self.password:
+            ccks = region.get("addic7ed_cookies", expiration_time=86400)
+            do_login = False
+            if ccks != NO_VALUE:
+                self.session.cookies.update(ccks)
+                r = self.session.get(self.server_url + 'panel.php', allow_redirects=False, timeout=10)
+                if r.status_code == 302:
+                    logger.info('Addic7ed: Login expired')
+                    do_login = True
+                else:
+                    logger.info('Addic7ed: Reusing old login')
+                    self.logged_in = True
+
+            if do_login:
+                logger.info('Addic7ed: Logging in')
+                data = {'username': self.username, 'password': self.password, 'Submit': 'Log in'}
+                r = self.session.post(self.server_url + 'dologin.php', data, allow_redirects=False, timeout=10)
+
+                #if "relax, slow down" in r.content:
+                #    pass
+
+                if r.status_code != 302:
+                    raise AuthenticationError(self.username)
+
+                region.set("addic7ed_cookies", r.cookies)
+
+                logger.debug('Addic7ed: Logged in')
+                self.logged_in = True
+
 
     @region.cache_on_arguments(expiration_time=SHOW_EXPIRATION_TIME)
     def _get_show_ids(self):
