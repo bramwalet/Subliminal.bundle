@@ -69,7 +69,7 @@ class SuperSubtitlesSubtitle(Subtitle):
         self.is_pack = True
 
     def numeric_id(self):
-        return subtitle_id
+        return self.subtitle_id
 
     def __repr__(self):
         ep_addon = (" S%02dE%02d" % (self.season, self.episode)) if self.episode else ""
@@ -179,7 +179,7 @@ class SuperSubtitlesProvider(Provider, ProviderSubtitleArchiveMixin):
         for value in links:
             if "imdb.com" in str(value):
                 # <a alt="iMDB" href="http://www.imdb.com/title/tt2357547/" target="_blank"><img alt="iMDB" src="img/adatlap/imdb.png"/></a>
-                imdb_id = re.findall(r"(?<=www.imdb.com\/title\/).*(?=\/\")", str(value))[0]
+                imdb_id = re.findall(r'(?<=www\.imdb\.com/title/).*(?=/")', str(value))[0]
                 return imdb_id
 
         return None
@@ -222,7 +222,7 @@ class SuperSubtitlesProvider(Provider, ProviderSubtitleArchiveMixin):
             except IndexError:
                 continue
 
-            result_title = result_title.strip().replace("’", "").replace(" ", ".")
+            result_title = result_title.strip().replace("ï¿½", "").replace(" ", ".")
 
             guessable = result_title.strip() + ".s01e01." + result_year
             guess = guessit(guessable, {'type': "episode"})
@@ -235,50 +235,44 @@ class SuperSubtitlesProvider(Provider, ProviderSubtitleArchiveMixin):
 
     def query(self, series, video=None):
         year = video.year
+        subtitle = None
         if isinstance(video, Episode):
             series = video.series
             season = video.season
             episode = video.episode
-            guess = guessit(series, {'type': "episode"})
-            series_id = None
             #seriesa = series.replace(' ', '+')
 
-            title = series + str(season) + str(episode)
             # Get ID of series with original name
             series_id = self.find_id(series, year, series)
             if not series_id:
                 # If not founded try without ' char
                 modified_series = series.replace(' ', '+').replace('\'', '')
                 series_id = self.find_id(modified_series, year, series)
-            if not series_id:
-                # If still not founded try with the longest word is series title
-                modified_series = modified_series.split('+')
-                modified_series = max(modified_series, key=len)
-                series_id = self.find_id(modified_series, year, series)
-            if not series_id:
-                return None
+                if not series_id and modified_series:
+                    # If still not founded try with the longest word is series title
+                    modified_series = modified_series.split('+')
+                    modified_series = max(modified_series, key=len)
+                    series_id = self.find_id(modified_series, year, series)
 
-        if isinstance(video, Movie):
-            guess = guessit(series, {'type': "movie"})
-            season = None
-            episode = None
-            title = series.replace(" ", "+")
-
-        # get the episode page
-        if isinstance(video, Episode):
+                    if not series_id:
+                        return None
 
             # https://www.feliratok.info/index.php?search=&soriSorszam=&nyelv=&sorozatnev=&sid=2075&complexsearch=true&knyelv=0&evad=6&epizod1=16&cimke=0&minoseg=0&rlsr=0&tab=all
             url = self.server_url + "index.php?search=&soriSorszam=&nyelv=&sorozatnev=&sid=" + \
-                  str(series_id) + "&complexsearch=true&knyelv=0&evad=" + str(season) + "&epizod1="+str(episode)+"&cimke=0&minoseg=0&rlsr=0&tab=all"
+                  str(series_id) + "&complexsearch=true&knyelv=0&evad=" + str(season) + "&epizod1=" + str(
+                episode) + "&cimke=0&minoseg=0&rlsr=0&tab=all"
             subtitle = self.process_subs(series, video, url)
 
-            if subtitle == []:
+            if not subtitle:
                 # No Subtitle found. Maybe already archived to season pack
                 url = self.server_url + "index.php?search=&soriSorszam=&nyelv=&sorozatnev=&sid=" + \
-                      str(series_id) + "&complexsearch=true&knyelv=0&evad=" + str( season) + "&epizod1=&evadpakk=on&cimke=0&minoseg=0&rlsr=0&tab=all"
+                      str(series_id) + "&complexsearch=true&knyelv=0&evad=" + str(
+                    season) + "&epizod1=&evadpakk=on&cimke=0&minoseg=0&rlsr=0&tab=all"
                 subtitle = self.process_subs(series, video, url)
 
         if isinstance(video, Movie):
+            title = series.replace(" ", "+")
+
             # https://www.feliratok.info/index.php?search=The+Hitman%27s+BodyGuard&soriSorszam=&nyelv=&tab=film
             url = self.server_url + "index.php?search=" + title + "&soriSorszam=&nyelv=&tab=film"
             subtitle = self.process_subs(series, video, url)
@@ -287,7 +281,6 @@ class SuperSubtitlesProvider(Provider, ProviderSubtitleArchiveMixin):
 
     def process_subs(self, series, video, url):
 
-        year = video.year
         subtitles = []
 
         logger.info('URL for subtitles %s', url)
@@ -304,52 +297,52 @@ class SuperSubtitlesProvider(Provider, ProviderSubtitleArchiveMixin):
                     sub_hun_name = table.findAll("div", {"class": "magyar"})[0]
                     if isinstance(video, Episode):
                         if "vad)" not in str(sub_hun_name):
-                            # <div class="magyar">A pletykafészek (3. évad)</div>
-                            sub_hun_name = re.findall(r"(?<=\<div class=\"magyar\"\>).*(?= -)", str(sub_hun_name))[0]
+                            # <div class="magyar">A pletykafï¿½szek (3. ï¿½vad)</div>
+                            sub_hun_name = re.findall(r'(?<=<div class="magyar">).*(?= -)', str(sub_hun_name))[0]
                         else:
-                            # <div class="magyar">A holnap legendái - 3x11</div>
-                            sub_hun_name = re.findall(r"(?<=\<div class=\"magyar\"\>).*(?= \()", str(sub_hun_name))[0]
+                            # <div class="magyar">A holnap legendï¿½i - 3x11</div>
+                            sub_hun_name = re.findall(r'(?<=<div class="magyar">).*(?= \()', str(sub_hun_name))[0]
                     if isinstance(video, Movie):
-                        sub_hun_name = re.findall(r"(?<=<div class=\"magyar\">).*(?=<\/div)", str(sub_hun_name))[0]
+                        sub_hun_name = re.findall(r'(?<=<div class="magyar">).*(?=</div)', str(sub_hun_name))[0]
                 except IndexError:
                     sub_hun_name = ""
 
+                asked_for_episode = None
+                sub_season = None
+                sub_episode = None
                 sub_english = table.findAll("div", {"class": "eredeti"})
                 if isinstance(video, Episode):
                     asked_for_episode = video.episode
                     if "Season" not in str(sub_english):
                         # [<div class="eredeti">Gossip Girl (Season 3) (DVDRip-REWARD)</div>]
-                        sub_english_name = re.findall(r"(?<=\<div class=\"eredeti\"\>).*?(?= -)", str(sub_english))[0]
+                        sub_english_name = re.findall(r'(?<=<div class="eredeti">).*?(?= -)', str(sub_english))[0]
                         sub_season = int((re.findall(r"(?<=- ).*?(?= - )", str(sub_english))[0].split('x')[0]).strip())
                         sub_episode = int((re.findall(r"(?<=- ).*?(?= - )", str(sub_english))[0].split('x')[1]).strip())
 
                     else:
                         # [<div class="eredeti">DC's Legends of Tomorrow - 3x11 - Here I Go Again (HDTV-AFG, HDTV-RMX, 720p-SVA, 720p-PSA </div>]
                         sub_english_name = \
-                            re.findall(r"(?<=\<div class=\"eredeti\"\>).*?(?=\(Season)", str(sub_english))[0]
+                            re.findall(r'(?<=<div class="eredeti">).*?(?=\(Season)', str(sub_english))[0]
                         sub_season = int(re.findall(r"(?<=Season )\d+(?=\))", str(sub_english))[0])
                         sub_episode = int(video.episode)
                 if isinstance(video, Movie):
-                    asked_for_episode = None
-                    sub_english_name = re.findall(r"(?<=\<div class=\"eredeti\"\>).*?(?=\()", str(sub_english))[0]
-                    sub_season = None
-                    sub_episode = None
+                    sub_english_name = re.findall(r'(?<=<div class="eredeti">).*?(?=\()', str(sub_english))[0]
 
                 sub_version = (str(sub_english).split('(')[len(str(sub_english).split('(')) - 1]).split(')')[0]
                 # <small>Angol</small>
                 lang = table.findAll("small")[0]
-                sub_language = self.get_language(re.findall(r"(?<=<small>).*(?=<\/small>)", str(lang))[0])
+                sub_language = self.get_language(re.findall(r"(?<=<small>).*(?=</small>)", str(lang))[0])
 
                 # <a href="/index.php?action=letolt&amp;fnev=DCs Legends of Tomorrow - 03x11 - Here I Go Again.SVA.English.C.orig.Addic7ed.com.srt&amp;felirat=1519162191">
                 link = str(table.findAll("a")[len(table.findAll("a")) - 1]).replace("amp;", "")
-                sub_downloadlink = self.server_url + re.findall(r"(?<=href=\"\/).*(?=\"\>)", link)[0]
+                sub_downloadlink = self.server_url + re.findall(r'(?<=href="/).*(?=">)', link)[0]
 
                 sub_id = re.findall(r"(?<=felirat\=).*(?=\"\>)", link)[0]
                 sub_year = video.year
                 sub_releases = [s.strip() for s in sub_version.split(',')]
 
                 # For episodes we open the series page so all subtitles imdb_id must be the same. no need to check all
-                if (isinstance(video, Episode) and series_imdb_id is not None):
+                if isinstance(video, Episode) and series_imdb_id is not None:
                     sub_imdb_id = series_imdb_id
                 else:
                     sub_imdb_id = self.find_imdb_id(sub_id)

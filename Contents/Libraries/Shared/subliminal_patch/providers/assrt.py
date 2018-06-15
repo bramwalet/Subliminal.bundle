@@ -22,6 +22,7 @@ language_converters.register('assrt = subliminal_patch.converters.assrt:AssrtCon
 server_url = 'https://api.assrt.net/v1'
 supported_languages = language_converters['assrt'].to_assrt.keys()
 
+
 class AssrtSubtitle(Subtitle):
     """Assrt Sbutitle."""
     provider_name = 'assrt'
@@ -89,6 +90,7 @@ class AssrtSubtitle(Subtitle):
     def get_matches(self, video):
         matches = guess_matches(video, guessit(self.video_name))
         return matches
+
 
 class AssrtProvider(Provider):
     """Assrt Provider."""
