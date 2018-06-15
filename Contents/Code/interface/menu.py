@@ -296,16 +296,16 @@ def ValidatePrefs():
         update_dict = True
         restart = True
 
-    if "plugin_pin_mode" not in Dict:
+    if "plugin_pin_mode2" not in Dict:
         update_dict = True
 
-    elif Dict["plugin_pin_mode"] != Prefs["plugin_pin_mode"]:
+    elif Dict["plugin_pin_mode2"] != Prefs["plugin_pin_mode2"]:
         update_dict = True
         restart = True
 
     if update_dict:
         Dict["channel_enabled"] = config.enable_channel
-        Dict["plugin_pin_mode"] = Prefs["plugin_pin_mode"]
+        Dict["plugin_pin_mode2"] = Prefs["plugin_pin_mode2"]
         Dict.Save()
 
     if restart:
