@@ -182,10 +182,11 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
             logger.error("Login failed, please check your credentials")
                 
     def terminate(self):
-        try:
-            checked(lambda: self.server.LogOut(self.token))
-        except:
-            logger.error("Logout failed: %s", traceback.format_exc())
+        if self.token:
+            try:
+                checked(lambda: self.server.LogOut(self.token))
+            except:
+                logger.error("Logout failed: %s", traceback.format_exc())
 
         try:
             self.server.close()

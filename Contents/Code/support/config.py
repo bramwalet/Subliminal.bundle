@@ -504,12 +504,30 @@ class Config(object):
         if not fn:
             return
 
-        splitted_fn = fn.split()
-        exe_fn = splitted_fn[0]
-        arguments = [arg.strip() for arg in splitted_fn[1:]]
+        got_args = "%(" in fn
+        if got_args:
+            first_arg_pos = fn.index("%(")
+            exe_fn = fn[:first_arg_pos].strip()
+            arguments = [arg.strip() for arg in fn[first_arg_pos:].split()]
+        else:
+            exe_fn = fn
+            arguments = []
 
         if os.path.isfile(exe_fn) and os.access(exe_fn, os.X_OK):
             return exe_fn, arguments
+
+        # try finding the executable itself, the path might contain spaces and there might have been other arguments
+        fn_split = exe_fn.split(u" ")
+        tmp_exe_fn = fn_split[0]
+
+        for offset in range(1, len(fn_split)+1):
+            if os.path.isfile(tmp_exe_fn) and os.access(tmp_exe_fn, os.X_OK):
+                exe_fn = tmp_exe_fn.strip()
+                arguments = [arg.strip() for arg in fn_split[offset:]] + arguments
+                return exe_fn, arguments
+
+            tmp_exe_fn = u" ".join(fn_split[:offset+1])
+
         Log.Error("Notify executable not existing or not executable: %s" % exe_fn)
 
     def refresh_enabled_sections(self):

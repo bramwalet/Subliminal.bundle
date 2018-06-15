@@ -7,6 +7,7 @@ from babelfish import Language as Language_
 repl_map = {
     "dk": "da",
     "nld": "nl",
+    "english": "en",
 }
 
 
@@ -24,8 +25,9 @@ def language_from_stream(l):
 class Language(Language_):
     @classmethod
     def fromietf(cls, ietf):
-        if ietf in repl_map:
-            ietf = repl_map[ietf]
+        ietf_lower = ietf.lower()
+        if ietf_lower in repl_map:
+            ietf = repl_map[ietf_lower]
 
         return Language_.fromietf(ietf)
 
