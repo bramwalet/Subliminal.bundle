@@ -396,5 +396,7 @@
     "Adds or substracts a certain amount of time from the whole subtitle to match your media": "Verschiebt den Untertitel um eine bestimmte Zeiteinheit",
     "Available": "Verfügbar",
     "Current": "Aktuell",
-    "Custom path to advanced_settings.json": "Spezifischer Pfad zu advanced_settings.json"
+    "Custom path to advanced_settings.json": "Spezifischer Pfad zu advanced_settings.json",
+    "zh-hant": "Chinesisch (traditionell)",
+    "zh-hans": "Chinesisch (vereinfacht)"
 }
