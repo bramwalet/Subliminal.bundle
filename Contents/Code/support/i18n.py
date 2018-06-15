@@ -79,7 +79,11 @@ def local_string_with_optional_format(key, *args, **kwargs):
 
     if args:
         # fixme: may not be the best idea as this evaluates the string early
-        return unicode(SmartLocalStringFormatter(plex_i18n_module.LocalString(core, key, Locale.CurrentLocale), args))
+        try:
+            return unicode(SmartLocalStringFormatter(plex_i18n_module.LocalString(core, key, Locale.CurrentLocale), args))
+        except TypeError:
+            Log.Exception("Broken translation!")
+            return unicode(SmartLocalStringFormatter(plex_i18n_module.LocalString(core, key, "en"), args))
 
     # check string instances for arguments
     if config.debug_i18n:
@@ -87,7 +91,12 @@ def local_string_with_optional_format(key, *args, **kwargs):
         if msg:
             return msg
 
-    return unicode(plex_i18n_module.LocalString(core, key, Locale.CurrentLocale))
+    try:
+        return unicode(plex_i18n_module.LocalString(core, key, Locale.CurrentLocale))
+
+    except TypeError:
+        Log.Exception("Broken translation!")
+        return unicode(plex_i18n_module.LocalString(core, key, "en"))
 
 
 _ = local_string_with_optional_format
