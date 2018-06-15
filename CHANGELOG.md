@@ -1,4 +1,12 @@
 
+2.5.4.2541
+
+- core: try retrieving advanced_settings.json from the path given, which may be a file path or a directory
+- menu: ignore options: fix plugin not responding, fix unicode strings; resolve #509
+- providers: addic7ed: fix usage/adapt to new show search method
+- providers: opensubtitles: properly handle responses again, re-enable automatic throttling based on those (broken since XMLRPC handler rewrite)
+
+
 2.5.4.2527
 
 - core: bugfixes
