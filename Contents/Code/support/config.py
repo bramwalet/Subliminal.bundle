@@ -69,7 +69,7 @@ PROVIDER_THROTTLE_MAP = {
         DownloadLimitExceeded: (datetime.timedelta(hours=6), "6 hours"),
     },
     "addic7ed": {
-        DownloadLimitExceeded: (datetime.timedelta(hours=24), "24 hours"),
+        DownloadLimitExceeded: (datetime.timedelta(hours=2), "3 hours"),
         AuthenticationError: (datetime.timedelta(minutes=10), "5 minutes"),
     }
 }
