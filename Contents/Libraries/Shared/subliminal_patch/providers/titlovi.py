@@ -4,6 +4,7 @@ import io
 import logging
 import math
 import re
+import platform
 
 import rarfile
 
@@ -126,13 +127,17 @@ class TitloviSubtitle(Subtitle):
 
 class TitloviProvider(Provider, ProviderSubtitleArchiveMixin):
     subtitle_class = TitloviSubtitle
-    languages = {Language.fromtitlovi(l) for l in language_converters['titlovi'].codes} | {Language.fromietf('sr')}
-    server_url = 'http://titlovi.com'
+    languages = {Language.fromtitlovi(l) for l in language_converters['titlovi'].codes} | {Language.fromietf('sr-Latn')}
+    server_url = 'https://titlovi.com'
     search_url = server_url + '/titlovi/?'
     download_url = server_url + '/download/?type=1&mediaid='
 
     def initialize(self):
         self.session = Session()
+        self.session.headers['User-Agent'] = 'Mozilla / Sub-Zero for Plex 2.5 / ' + platform.platform()
+        logger.info('User-Agent set to %s', self.session.headers['User-Agent'])
+        self.session.headers['Referer'] = self.server_url
+        logger.info('Referer set to %s', self.session.headers['Referer'])
 
     def terminate(self):
         self.session.close()
@@ -141,9 +146,18 @@ class TitloviProvider(Provider, ProviderSubtitleArchiveMixin):
         items_per_page = 10
         current_page = 1
 
+        used_languages = languages
+        lang_strings = [str(lang) for lang in used_languages]
+
+        # handle possible duplicate use of Serbian Latin
+        if "sr" in lang_strings and "sr-Latn" in lang_strings:
+            logger.info('Duplicate entries <Language [sr]> and <Language [sr-Latn]> found, filtering languages')
+            used_languages = filter(lambda l: l != Language.fromietf('sr-Latn'), used_languages)
+            logger.info('Filtered language list %r', used_languages)
+
         # convert list of languages into search string
-        langs = '|'.join(
-            map(str, [l.titlovi if l != Language.fromietf('sr') else 'cirilica' for l in languages]))
+        langs = '|'.join(map(str, [l.titlovi for l in used_languages]))
+
         # set query params
         params = {'prijevod': title, 'jezik': langs}
         is_episode = False
@@ -207,10 +221,8 @@ class TitloviProvider(Provider, ProviderSubtitleArchiveMixin):
                     match = lang_re.search(sub.select_one('.lang').attrs['src'])
                     if match:
                         try:
-                            lang = Language.fromtitlovi(match.group('lang'))
-                            script = match.group('script')
-                            if script:
-                                lang.script = Script(script)
+                            # decode language
+                            lang = Language.fromtitlovi(match.group('lang')+match.group('script'))
                         except ValueError:
                             continue
 
