@@ -23,6 +23,7 @@ from subliminal.score import get_equivalent_release_groups
 from subliminal.utils import sanitize_release_group
 from subliminal.subtitle import guess_matches
 from subliminal.video import Episode, Movie
+from subliminal.subtitle import fix_line_ending
 from subzero.language import Language
 
 # parsing regex definitions
@@ -309,4 +310,34 @@ class TitloviProvider(Provider, ProviderSubtitleArchiveMixin):
         else:
             raise ProviderError('Unidentified archive type')
 
-        subtitle.content = self.get_subtitle_from_archive(subtitle, archive)
+        subs_in_archive = archive.namelist()
+
+        # if Serbian lat and cyr versions are packed together, try to find right version
+        if len(subs_in_archive) > 1 and (subtitle.language == 'sr' or subtitle.language == 'sr-Cyrl'):
+            self.get_subtitle_from_boundled_archive(subtitle, subs_in_archive, archive)
+        else:
+            # use dfault method for everything else
+            subtitle.content = self.get_subtitle_from_archive(subtitle, archive)
+
+    def get_subtitle_from_boundled_archive(self, subtitle, subs_in_archive, archive):
+        sr_lat_subs = []
+        sr_cyr_subs = []
+        sub_to_extract = None
+
+        for sub_name in subs_in_archive:
+            if 'lat' in sub_name and not 'cyr' in sub_name:
+                sr_lat_subs.append(sub_name)
+
+            if 'cyr' in sub_name and not 'lat' in sub_name:
+                sr_cyr_subs.append(sub_name)
+
+        if subtitle.language == 'sr':
+            if len(sr_lat_subs) > 0:
+                sub_to_extract = sr_lat_subs[0]
+
+        if subtitle.language == 'sr-Cyrl':
+            if len(sr_cyr_subs) > 0:
+                sub_to_extract = sr_cyr_subs[0]
+
+        logger.info(u'Using %s from the archive', sub_to_extract)
+        subtitle.content = fix_line_ending(archive.read(sub_to_extract))
