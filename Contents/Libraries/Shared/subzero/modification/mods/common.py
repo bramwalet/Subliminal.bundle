@@ -125,7 +125,7 @@ class ReverseRTL(SubtitleModification):
         # new? (?u)(^([\s.!?]*)(.+?)(\s*)(-?\s*)$); \5\4\3\2
         #NReProcessor(re.compile(ur"(?u)((?=(?<=\b|^)|(?<=\s))([.!?-]+)([^.!?-]+)(?=\b|$|\s))"), r"\3\2",
         #             name="CM_RTL_reverse")
-        NReProcessor(re.compile(ur"(?u)(^([\s.!?]*)(.+?)(\s*)(-?\s*)$)"), r"\5\4\3\2",
+        NReProcessor(re.compile(ur"(?u)(^([\s.!?:,'-]*)(.+?)(\s*)(-?\s*)$)"), r"\5\4\3\2",
                      name="CM_RTL_reverse")
     ]
 
