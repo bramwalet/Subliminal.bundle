@@ -23,6 +23,8 @@ of signal, drawing the Tardis off.... course.</b>
 00:00:16,099 --> 00:00:17,224
 this <font color="#000000">is a"subtitle" test</font> "with a"text before colons and "peter"following: Where are we?."
 Mah numbar is wrong: 1 91 7
+:
+: Peter is funny!
 
 5
 00:00:17,225 --> 00:00:19,684

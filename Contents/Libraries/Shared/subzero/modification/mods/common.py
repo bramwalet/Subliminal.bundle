@@ -25,7 +25,10 @@ class CommonFixes(SubtitleTextModification):
         NReProcessor(re.compile(r'(?u)(\w|\b|\s|^)(-\s?-{1,2})'), ur"\1—", name="CM_multidash"),
 
         # line = _/-/\s
-        NReProcessor(re.compile(r'(?u)(^\W*[-_.]+\W*$)'), "", name="CM_non_word_only"),
+        NReProcessor(re.compile(r'(?u)(^\W*[-_.:]+\W*$)'), "", name="CM_non_word_only"),
+
+        # line = : text
+        NReProcessor(re.compile(r'(?u)(^\W*:\s*(?=\w+))'), "", name="CM_empty_colon_start"),
 
         # multi space
         NReProcessor(re.compile(r'(?u)(\s{2,})'), " ", name="CM_multi_space"),
