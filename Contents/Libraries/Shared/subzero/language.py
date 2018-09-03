@@ -23,12 +23,21 @@ def language_from_stream(l):
 
 
 def wrap_forced(f):
-    def inner(*args):
-        args = list(args)[1:]
+    def inner(*args, **kwargs):
+        """
+        classmethod wrapper
+        :param args: args[0] = cls
+        :param kwargs:
+        :return:
+        """
+        args = list(args)
+        cls = args[0]
+        args = args[1:]
         s = args.pop(0)
-        base, forced = s.split(":")
-        instance = f(base, *args)
-        instance.forced = forced == "forced"
+        base, forced = s.split(":") if ":" in s else s, False
+        instance = f(cls, base, *args, **kwargs)
+        if isinstance(instance, Language):
+            instance.forced = forced == "forced"
         return instance
 
     return inner
@@ -55,9 +64,9 @@ class Language(Language_):
 
     def __getattr__(self, name):
         ret = super(Language, self).__getattr__(name)
-        if ret:
+        if ret and isinstance(ret, Language):
             ret.forced = self.forced
-            return ret
+        return ret
 
     @classmethod
     def fromlanguage(cls, instance, **replkw):
