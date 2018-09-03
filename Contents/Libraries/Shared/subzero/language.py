@@ -54,10 +54,19 @@ class Language(Language_):
         return super(Language, self).__str__() + (":forced" if self.forced else "")
 
     def __getattr__(self, name):
-        ret = super(Language, self).__getattr(name)
+        ret = super(Language, self).__getattr__(name)
         if ret:
             ret.forced = self.forced
             return ret
+
+    @classmethod
+    def fromlanguage(cls, instance, **replkw):
+        state = instance.__getstate__()
+        attrs = ("country", "script", "forced")
+        language = state[0]
+        kwa = dict(zip(attrs, state[1:]))
+        kwa.update(replkw)
+        return cls(language, **kwa)
 
     @classmethod
     @wrap_forced
