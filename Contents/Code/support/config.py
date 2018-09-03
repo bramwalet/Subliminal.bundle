@@ -825,8 +825,8 @@ class Config(object):
         throttle_until = datetime.datetime.now() + throttle_delta
         Dict["provider_throttle"][name] = (cls_name, throttle_until, throttle_description)
 
-        Log.Info("Throttling %s for %s, until %s, because of: %s", name, throttle_description,
-                 throttle_until.strftime("%y/%m/%d %H:%M"), cls_name)
+        Log.Info("Throttling %s for %s, until %s, because of: %s. Exception info: %r", name, throttle_description,
+                 throttle_until.strftime("%y/%m/%d %H:%M"), cls_name, exception.message)
         Dict.Save()
 
     @property

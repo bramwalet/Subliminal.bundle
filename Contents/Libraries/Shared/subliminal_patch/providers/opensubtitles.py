@@ -353,10 +353,10 @@ def checked(fn):
     if status_code == 429:
         raise TooManyRequests
     if status_code == 503:
-        raise ServiceUnavailable
+        raise ServiceUnavailable(str(status_code))
     if status_code != 200:
         if response and "status" in response:
             raise OpenSubtitlesError(response['status'])
-        raise ServiceUnavailable("Unknown Error, empty response")
+        raise ServiceUnavailable("Unknown Error, empty response: %s: %r" % (status_code, response))
 
     return response
