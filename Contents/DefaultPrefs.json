@@ -184,11 +184,16 @@
     "type": "enum",
     "values": [
       "Always",
+      "Always, also download foreign/forced",
       "Only foreign/forced",
       "When main audio stream is not Subtitle Language (1)",
+      "When main audio stream is not Subtitle Language (1), also download foreign/forced",
       "When main audio stream is not any configured language",
+      "When main audio stream is not any configured language, also download foreign/forced",
       "When any audio stream is not Subtitle Language (1)",
-      "When any audio stream is not any configured language"
+      "When any audio stream is not Subtitle Language (1), also download foreign/forced",
+      "When any audio stream is not any configured language",
+      "When any audio stream is not any configured language, also download foreign/forced"
     ],
     "default": "Always"
   },

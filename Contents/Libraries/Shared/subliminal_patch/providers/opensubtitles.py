@@ -74,6 +74,7 @@ class OpenSubtitlesSubtitle(_OpenSubtitlesSubtitle):
 
 class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
     only_foreign = False
+    also_foreign = False
     subtitle_class = OpenSubtitlesSubtitle
     hash_verifiable = True
     hearing_impaired_verifiable = True
@@ -85,11 +86,10 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
     default_url = "//api.opensubtitles.org/xml-rpc"
     vip_url = "//vip-api.opensubtitles.org/xml-rpc"
 
-    languages = {Language.fromopensubtitles(l) for l in language_converters['szopensubtitles'].codes}# | {
-        #Language.fromietf("sr-latn"), Language.fromietf("sr-cyrl")}
+    languages = {Language.fromopensubtitles(l) for l in language_converters['szopensubtitles'].codes}
 
-    def __init__(self, username=None, password=None, use_tag_search=False, only_foreign=False, skip_wrong_fps=True,
-                 is_vip=False, use_ssl=True, timeout=15):
+    def __init__(self, username=None, password=None, use_tag_search=False, only_foreign=False, also_foreign=False,
+                 skip_wrong_fps=True, is_vip=False, use_ssl=True, timeout=15):
         if any((username, password)) and not all((username, password)):
             raise ConfigurationError('Username and password must be specified')
 
@@ -97,6 +97,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         self.password = password or ''
         self.use_tag_search = use_tag_search
         self.only_foreign = only_foreign
+        self.also_foreign = also_foreign
         self.skip_wrong_fps = skip_wrong_fps
         self.token = None
         self.is_vip = is_vip
@@ -223,10 +224,11 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
 
         return self.query(languages, hash=video.hashes.get('opensubtitles'), size=video.size, imdb_id=video.imdb_id,
                           query=query, season=season, episode=episode, tag=video.original_name,
-                          use_tag_search=self.use_tag_search, only_foreign=self.only_foreign)
+                          use_tag_search=self.use_tag_search, only_foreign=self.only_foreign,
+                          also_foreign=self.also_foreign)
 
     def query(self, languages, hash=None, size=None, imdb_id=None, query=None, season=None, episode=None, tag=None,
-              use_tag_search=False, only_foreign=False):
+              use_tag_search=False, only_foreign=False, also_foreign=False):
         # fill the search criteria
         criteria = []
         if hash and size:
@@ -294,8 +296,12 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
                 continue
 
             # foreign/forced not wanted
-            if not only_foreign and foreign_parts_only:
+            elif not only_foreign and not also_foreign and foreign_parts_only:
                 continue
+
+            # foreign/forced *also* wanted
+            elif also_foreign and foreign_parts_only:
+                language = Language.fromlanguage(language, forced=True)
 
             query_parameters = _subtitle_item.get("QueryParameters")
 

@@ -126,6 +126,7 @@ class Config(object):
     colors = ""
     chmod = None
     forced_only = False
+    forced_also = False
     exotic_ext = False
     treat_und_as_first = False
     subtitle_sub_dir = None, None
@@ -192,6 +193,7 @@ class Config(object):
         self.subtitle_destination_folder = self.get_subtitle_destination_folder()
         self.subtitle_formats = self.get_subtitle_formats()
         self.forced_only = Prefs["subtitles.when"] == "Only foreign/forced"
+        self.forced_also = not self.forced_only and "foreign/forced" in Prefs["subtitles.when"]
         self.max_recent_items_per_library = int_or_default(Prefs["scheduler.max_recent_items_per_library"], 2000)
         self.sections = list(Plex["library"].sections())
         self.missing_permissions = []
@@ -667,6 +669,10 @@ class Config(object):
                         continue
                 l.update({real_lang})
 
+        if self.forced_also:
+            for lang in list(l):
+                l.add(Language.fromlanguage(lang, forced=True))
+
         return l
 
     lang_list = property(get_lang_list)
@@ -777,12 +783,14 @@ class Config(object):
                                                'password': Prefs['provider.opensubtitles.password'],
                                                'use_tag_search': self.exact_filenames,
                                                'only_foreign': self.forced_only,
+                                               'also_foreign': self.forced_also,
                                                'is_vip': cast_bool(Prefs['provider.opensubtitles.is_vip']),
                                                'use_ssl': os_use_https,
                                                'timeout': self.advanced.providers.opensubtitles.timeout or 15
                                                },
                              'podnapisi': {
                                  'only_foreign': self.forced_only,
+                                 'also_foreign': self.forced_also,
                              },
                              'subscene': {
                                  'only_foreign': self.forced_only,
