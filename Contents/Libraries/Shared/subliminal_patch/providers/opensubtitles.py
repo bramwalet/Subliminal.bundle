@@ -364,7 +364,10 @@ def checked(fn, raise_api_limit=False):
     if status_code == 415:
         raise DisabledUserAgent
     if status_code == 429:
-        raise TooManyRequests
+        if not raise_api_limit:
+            raise TooManyRequests
+        else:
+            raise APIThrottled
     if status_code == 503:
         raise ServiceUnavailable(str(status_code))
     if status_code != 200:
