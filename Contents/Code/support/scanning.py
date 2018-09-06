@@ -9,7 +9,7 @@ from support.storage import get_subtitle_storage
 from support.config import config, TEXT_SUBTITLE_EXTS
 
 from subzero.video import parse_video, set_existing_languages
-from subzero.language import language_from_stream
+from subzero.language import language_from_stream, Language
 
 
 def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, providers=None, skip_hashing=False):
@@ -56,7 +56,7 @@ def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, pr
 
                 # treat unknown language as lang1?
                 if not lang and config.treat_und_as_first:
-                    lang = list(config.lang_list)[0]
+                    lang = Language.rebuild(list(config.lang_list)[0])
 
                 audio_languages.append(lang)
 
@@ -64,9 +64,7 @@ def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, pr
             elif stream.stream_type == 3 and embedded_subtitles:
                 is_forced = helpers.is_stream_forced(stream)
 
-                if (config.forced_only and is_forced) or \
-                        (not config.forced_only and not is_forced):
-
+                if ((config.forced_only or config.forced_also) and is_forced) or not is_forced:
                     # embedded subtitle
                     # fixme: tap into external subtitles here instead of scanning for ourselves later?
                     if stream.codec and getattr(stream, "index", None):
@@ -79,10 +77,12 @@ def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, pr
 
                             # treat unknown language as lang1?
                             if not lang and config.treat_und_as_first:
-                                lang = list(config.lang_list)[0]
+                                lang = Language.rebuild(list(config.lang_list)[0])
 
                             if lang:
-                                known_embedded.append(lang.alpha3)
+                                if is_forced:
+                                    lang.forced = True
+                                known_embedded.append(lang)
     else:
         Log.Warn("Part %s missing of %s, not able to scan internal streams", plex_part.id, rating_key)
 
@@ -105,7 +105,7 @@ def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, pr
         if not ignore_all:
             set_existing_languages(video, pms_video_info, external_subtitles=external_subtitles,
                                    embedded_subtitles=embedded_subtitles, known_embedded=known_embedded,
-                                   forced_only=config.forced_only, stored_subs=stored_subs, languages=config.lang_list,
+                                   stored_subs=stored_subs, languages=config.lang_list,
                                    only_one=config.only_one)
 
         # add video fps info

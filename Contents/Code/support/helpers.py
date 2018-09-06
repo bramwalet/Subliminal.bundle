@@ -404,7 +404,7 @@ def get_language(lang_short):
 
 
 def display_language(l):
-    return _(str(l).lower())
+    return _(str(l.basename).lower())
 
 
 def is_stream_forced(stream):

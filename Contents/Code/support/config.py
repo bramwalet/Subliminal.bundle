@@ -189,7 +189,7 @@ class Config(object):
         self.set_activity_modes()
         self.parse_rename_mode()
 
-        self.include = Prefs["subtitles.include_exclude_mode"] == "manual include"
+        self.include = Prefs["subtitles.include_exclude_mode"] == "enable SZ for all items by default, use ignore lists"
         self.subtitle_destination_folder = self.get_subtitle_destination_folder()
         self.subtitle_formats = self.get_subtitle_formats()
         self.forced_only = Prefs["subtitles.when"] == "Only foreign/forced"
@@ -671,7 +671,11 @@ class Config(object):
 
         if self.forced_also:
             for lang in list(l):
-                l.add(Language.fromlanguage(lang, forced=True))
+                l.add(Language.rebuild(lang, forced=True))
+
+        elif self.forced_only:
+            for lang in l:
+                lang.forced = True
 
         return l
 

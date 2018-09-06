@@ -184,7 +184,7 @@ class PodnapisiProvider(_PodnapisiProvider, ProviderSubtitleArchiveMixin):
                     continue
 
                 elif also_foreign and foreign:
-                    language = Language.fromlanguage(language, forced=True)
+                    language = Language.rebuild(language, forced=True)
 
                 page_link = subtitle_xml.find('url').text
                 releases = []

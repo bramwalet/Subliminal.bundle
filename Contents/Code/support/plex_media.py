@@ -4,6 +4,7 @@ import os
 
 import helpers
 from items import get_item
+from subzero.language import Language
 from lib import Plex
 from support.config import TEXT_SUBTITLE_EXTS, config
 
@@ -171,27 +172,23 @@ def get_all_parts(plex_item):
     return parts
 
 
-def get_embedded_subtitle_streams(part, requested_language=None, skip_duplicate_unknown=True, get_forced=None):
+def get_embedded_subtitle_streams(part, requested_language=None, skip_duplicate_unknown=True):
     streams = []
     has_unknown = False
     for stream in part.streams:
         # subtitle stream
         if stream.stream_type == 3 and not stream.stream_key and stream.codec in TEXT_SUBTITLE_EXTS:
-            language = helpers.get_language_from_stream(stream.language_code)
+            is_forced = helpers.is_stream_forced(stream)
+            language = Language.rebuild(helpers.get_language_from_stream(stream.language_code), forced=is_forced)
             is_unknown = False
             found_requested_language = requested_language and requested_language == language
-            is_forced = helpers.is_stream_forced(stream)
-
-            if get_forced is not None:
-                if (get_forced and not is_forced) or (not get_forced and is_forced):
-                    continue
 
             if not language and config.treat_und_as_first:
                 # only consider first unknown subtitle stream
                 if has_unknown and skip_duplicate_unknown:
                     continue
 
-                language = list(config.lang_list)[0]
+                language = Language.rebuild(list(config.lang_list)[0], forced=is_forced)
                 is_unknown = True
                 has_unknown = True
 

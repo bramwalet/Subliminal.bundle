@@ -735,17 +735,17 @@
   },
   {
     "id": "subtitles.include_exclude_mode",
-    "label": "Do you want to manually exclude or include items SZ should work with? (impacts the settings below and the plugin menu)",
+    "label": "Should SZ be enabled or disabled for by default? (impacts the settings below and the plugin menu)",
     "type": "enum",
     "values": [
-      "manual exclude",
-      "manual include"
+      "enable SZ for all items by default, use ignore lists",
+      "disable SZ for all items by default, use include lists"
     ],
-    "default": "manual exclude"
+    "default": "enable SZ for all items by default, use ignore lists"
   },
   {
     "id": "subtitles.include_exclude_paths",
-    "label": "Enable/disable Sub-Zero in the following paths (comma-separated; the setting above impact this)",
+    "label": "Enable/disable Sub-Zero in the following paths (comma-separated; the setting above impacts this)",
     "type": "text",
     "default": ""
   },

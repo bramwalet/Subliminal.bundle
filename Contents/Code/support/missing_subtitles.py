@@ -7,7 +7,7 @@ import os
 from babelfish import LanguageReverseError
 
 from support.config import config, TEXT_SUBTITLE_EXTS
-from support.helpers import get_plex_item_display_title, cast_bool, get_language_from_stream
+from support.helpers import get_plex_item_display_title, cast_bool, get_language_from_stream, is_stream_forced
 from support.items import get_item
 from support.lib import Plex
 from support.storage import get_subtitle_storage
@@ -31,7 +31,7 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
     subtitle_target_dir, tdir_is_absolute = config.subtitle_sub_dir
 
     missing = set()
-    languages_set = set([Language.fromietf(str(l)) for l in languages])
+    languages_set = set([Language.rebuild(l) for l in languages])
     for media in item.media:
         existing_subs = {"internal": [], "external": [], "own_external": [], "count": 0}
         for part in media.parts:
@@ -79,6 +79,7 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
 
             for stream in part.streams:
                 if stream.stream_type == 3:
+                    is_forced = is_stream_forced(stream)
                     if stream.index:
                         key = "internal"
                     else:
@@ -89,7 +90,7 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
 
                     # treat unknown language as lang1?
                     if not stream.language_code and config.treat_und_as_first:
-                        lang = Language.fromietf(str(list(config.lang_list)[0]))
+                        lang = Language.rebuild(list(config.lang_list)[0])
 
                     # we can't parse empty language codes
                     elif not stream.language_code or not stream.codec:
@@ -101,7 +102,7 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
                             lang = get_language_from_stream(stream.language_code)
                             if not lang:
                                 if config.treat_und_as_first:
-                                    lang = Language.fromietf(str(list(config.lang_list)[0]))
+                                    lang = Language.rebuild(list(config.lang_list)[0])
                                 else:
                                     continue
 
@@ -110,10 +111,11 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
 
                     if lang:
                         # Log.Debug("Found babelfish language: %r", lang)
+                        lang.forced = is_forced
                         existing_subs[key].append(lang)
                         existing_subs["count"] = existing_subs["count"] + 1
 
-        missing_from_part = set([Language.fromietf(str(l)) for l in languages])
+        missing_from_part = set([Language.rebuild(l) for l in languages])
         if existing_subs["count"]:
 
             # fixme: this is actually somewhat broken with IETF, as Plex doesn't store the country portion
@@ -123,7 +125,7 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
                                 + (existing_subs["external"] if external else [])
                                 + existing_subs["own_external"])
 
-            check_languages = set([Language.fromietf(str(l)) for l in languages])
+            check_languages = set([Language.rebuild(l) for l in languages])
             alpha3_map = {}
             if config.ietf_as_alpha3:
                 for language in existing_flat:

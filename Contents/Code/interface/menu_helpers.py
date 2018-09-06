@@ -173,7 +173,7 @@ def extract_embedded_sub(**kwargs):
                 set_refresh_menu_state(_(u"Extracting subtitle %(stream_index)s of %(filename)s",
                                          stream_index=stream_index,
                                          filename=bn))
-                Log.Info(u"Extracting stream %s (%s) of %s", stream_index, display_language(language), bn)
+                Log.Info(u"Extracting stream %s (%s) of %s", stream_index, str(language), bn)
 
                 out_codec = stream.codec if stream.codec != "mov_text" else "srt"
 
@@ -196,7 +196,7 @@ def extract_embedded_sub(**kwargs):
 
                     # fixme: speedup video; only video.name is needed
                     save_successful = save_subtitles(scanned_videos, {scanned_videos.keys()[0]: [subtitle]}, mode="m",
-                                                     set_current=set_current, is_forced=is_forced)
+                                                     set_current=set_current)
                     set_refresh_menu_state(None)
 
                     if save_successful and refresh:

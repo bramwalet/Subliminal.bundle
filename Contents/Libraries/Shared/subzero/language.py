@@ -34,7 +34,7 @@ def wrap_forced(f):
         cls = args[0]
         args = args[1:]
         s = args.pop(0)
-        base, forced = s.split(":") if ":" in s else s, False
+        base, forced = s.split(":") if ":" in s else (s, False)
         instance = f(cls, base, *args, **kwargs)
         if isinstance(instance, Language):
             instance.forced = forced == "forced"
@@ -44,9 +44,11 @@ def wrap_forced(f):
 
 
 class Language(Language_):
+    forced = False
+
     def __init__(self, language, country=None, script=None, unknown=None, forced=False):
-        super(Language, self).__init__(language, country=country, script=script, unknown=unknown)
         self.forced = forced
+        super(Language, self).__init__(language, country=country, script=script, unknown=unknown)
 
     def __getstate__(self):
         return self.alpha3, self.country, self.script, self.forced
@@ -62,14 +64,18 @@ class Language(Language_):
     def __str__(self):
         return super(Language, self).__str__() + (":forced" if self.forced else "")
 
+    @property
+    def basename(self):
+        return super(Language, self).__str__()
+
     def __getattr__(self, name):
         ret = super(Language, self).__getattr__(name)
-        if ret and isinstance(ret, Language):
+        if isinstance(ret, Language):
             ret.forced = self.forced
         return ret
 
     @classmethod
-    def fromlanguage(cls, instance, **replkw):
+    def rebuild(cls, instance, **replkw):
         state = instance.__getstate__()
         attrs = ("country", "script", "forced")
         language = state[0]
@@ -80,7 +86,7 @@ class Language(Language_):
     @classmethod
     @wrap_forced
     def fromcode(cls, code, converter):
-        return Language_.fromcode(code, converter)
+        return Language(*Language_.fromcode(code, converter).__getstate__())
 
     @classmethod
     @wrap_forced
@@ -89,13 +95,13 @@ class Language(Language_):
         if ietf_lower in repl_map:
             ietf = repl_map[ietf_lower]
 
-        return Language_.fromietf(ietf)
+        return Language(*Language_.fromietf(ietf).__getstate__())
 
     @classmethod
     @wrap_forced
     def fromalpha3b(cls, s):
         if s in repl_map:
             s = repl_map[s]
-            return Language_.fromietf(s)
+            return Language(*Language_.fromietf(s).__getstate__())
 
-        return Language_.fromalpha3b(s)
+        return Language(*Language_.fromalpha3b(s).__getstate__())

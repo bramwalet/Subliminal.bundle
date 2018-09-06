@@ -301,7 +301,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
 
             # foreign/forced *also* wanted
             elif also_foreign and foreign_parts_only:
-                language = Language.fromlanguage(language, forced=True)
+                language = Language.rebuild(language, forced=True)
 
             query_parameters = _subtitle_item.get("QueryParameters")
 

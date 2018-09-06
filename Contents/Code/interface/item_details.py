@@ -10,7 +10,7 @@ from menu_helpers import debounce, SubFolderObjectContainer, default_thumb, add_
 from refresh_item import RefreshItem
 from subzero.constants import PREFIX
 from support.config import config, TEXT_SUBTITLE_EXTS
-from support.helpers import timestamp, df, get_language, display_language, get_language_from_stream
+from support.helpers import timestamp, df, get_language, display_language, get_language_from_stream, is_stream_forced
 from support.items import get_item_kind_from_rating_key, get_item, get_current_sub, get_item_title, save_stored_sub
 from support.plex_media import get_plex_metadata, get_part, get_embedded_subtitle_streams
 from support.scanning import scan_videos
@@ -181,11 +181,13 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                     # subtitle stream
                     if stream.stream_type == 3 and not stream.stream_key and stream.codec in TEXT_SUBTITLE_EXTS:
                         lang = get_language_from_stream(stream.language_code)
+                        is_forced = is_stream_forced(stream)
 
                         if not lang and config.treat_und_as_first:
                             lang = list(config.lang_list)[0]
 
                         if lang:
+                            lang = Language.rebuild(lang, forced=is_forced)
                             embedded_langs.append(lang)
                             embedded_count += 1
 
