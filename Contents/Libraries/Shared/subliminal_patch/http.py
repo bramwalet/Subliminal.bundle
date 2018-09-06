@@ -10,6 +10,7 @@ import xmlrpclib
 from xmlrpclib import SafeTransport, Transport
 from requests import Session, exceptions
 from retry.api import retry_call
+from exceptions import APIThrottled
 
 from subzero.lib.io import get_viable_encoding
 
@@ -108,6 +109,9 @@ class SubZeroRequestsTransport(xmlrpclib.SafeTransport):
             raise  # something went wrong
         else:
             resp.raise_for_status()
+
+            if 'x-ratelimit-remaining' in resp.headers and resp.headers['x-ratelimit-remaining'] <= 2:
+                raise APIThrottled()
 
             self.verbose = verbose
             try:

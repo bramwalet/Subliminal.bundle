@@ -20,7 +20,7 @@ from subliminal.cache import region
 from subliminal_patch.score import framerate_equal
 from subzero.language import Language
 
-from ..exceptions import TooManyRequests
+from ..exceptions import TooManyRequests, APIThrottled
 
 logger = logging.getLogger(__name__)
 
@@ -337,6 +337,8 @@ def checked(fn):
     try:
         try:
             response = fn()
+        except APIThrottled:
+            raise
         except requests.RequestException as e:
             status_code = e.response.status_code
         else:

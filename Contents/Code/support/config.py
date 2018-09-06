@@ -17,7 +17,7 @@ from subliminal.exceptions import ServiceUnavailable, DownloadLimitExceeded, Aut
 from subliminal_patch.core import is_windows_special_path
 from whichdb import whichdb
 
-from subliminal_patch.exceptions import TooManyRequests
+from subliminal_patch.exceptions import TooManyRequests, APIThrottled
 from subzero.language import Language
 from subliminal.cli import MutexLock
 from subzero.lib.io import FileIO, get_viable_encoding
@@ -58,17 +58,19 @@ def int_or_default(s, default):
         return default
 
 
-VALID_THROTTLE_EXCEPTIONS = (TooManyRequests, DownloadLimitExceeded, ServiceUnavailable)
+VALID_THROTTLE_EXCEPTIONS = (TooManyRequests, DownloadLimitExceeded, ServiceUnavailable, APIThrottled)
 
 PROVIDER_THROTTLE_MAP = {
     "default": {
         TooManyRequests: (datetime.timedelta(hours=1), "1 hour"),
         DownloadLimitExceeded: (datetime.timedelta(hours=3), "3 hours"),
         ServiceUnavailable: (datetime.timedelta(minutes=20), "20 minutes"),
+        APIThrottled: (datetime.timedelta(minutes=10), "10 minutes"),
     },
     "opensubtitles": {
         TooManyRequests: (datetime.timedelta(hours=3), "3 hours"),
         DownloadLimitExceeded: (datetime.timedelta(hours=6), "6 hours"),
+        APIThrottled: (datetime.timedelta(seconds=15), "15 seconds"),
     },
     "addic7ed": {
         DownloadLimitExceeded: (datetime.timedelta(hours=3), "3 hours"),

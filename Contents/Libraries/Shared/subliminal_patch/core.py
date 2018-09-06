@@ -28,7 +28,7 @@ from subliminal.utils import hash_napiprojekt, hash_opensubtitles, hash_shooter,
 from subliminal.video import VIDEO_EXTENSIONS, Video, Episode, Movie
 from subliminal.core import guessit, ProviderPool, io, is_windows_special_path, \
     ThreadPoolExecutor, check_video
-from subliminal_patch.exceptions import TooManyRequests
+from subliminal_patch.exceptions import TooManyRequests, APIThrottled
 
 from subzero.language import Language
 from scandir import scandir, scandir_generic as _scandir_generic
@@ -186,7 +186,7 @@ class SZProviderPool(ProviderPool):
         except (requests.Timeout, socket.timeout):
             logger.error('Provider %r timed out', provider)
 
-        except (TooManyRequests, DownloadLimitExceeded, ServiceUnavailable), e:
+        except (TooManyRequests, DownloadLimitExceeded, ServiceUnavailable, APIThrottled), e:
             self.throttle_callback(provider, e)
             return
 
@@ -283,7 +283,7 @@ class SZProviderPool(ProviderPool):
                 logger.debug("RAR Traceback: %s", traceback.format_exc())
                 return False
 
-            except (TooManyRequests, DownloadLimitExceeded, ServiceUnavailable), e:
+            except (TooManyRequests, DownloadLimitExceeded, ServiceUnavailable, APIThrottled), e:
                 self.throttle_callback(subtitle.provider_name, e)
                 self.discarded_providers.add(subtitle.provider_name)
                 return False
