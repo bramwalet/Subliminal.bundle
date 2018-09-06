@@ -164,7 +164,7 @@
     "Display languages with country attribute as ISO 639-1 (e.g. pt-BR = pt)": "Sprachen mit Landesattribut als ISO 639-1 anzeigen (z. B. pt-BR = pt)",
     "Treat languages with country attribute as ISO 639-1 (e.g. don't download pt-BR if pt subtitle exists)": "Sprachen mit Landesattribut als ISO 639-1 behandeln (pt-BR nicht herunterladen, wenn ein pt Untertitel existiert)",
     "Restrict to one language (skips adding \".lang.\" to the subtitle filename; only uses \"Subtitle Language (1)\")": "Auf eine Sprache beschränken (fügt dem Dateinamen kein \".lang.\"-Suffix hinzu; benutzt nur \"Untertitel Sprache (1)\")",
-    "Embedded subtitles: Treat \"Undefined\" (und) as language 1": "Eingebettete Untertitel: behandle Unbekannte Sprache als Sprache 1",
+    "Embedded streams: Treat \"Undefined\" (und) as language 1": "Eingebettete Streams: behandle Unbekannte Sprache als Sprache 1",
     "I rename my files using": "Ich benenne meine Dateien um, mit:",
     "Retrieve original filename from .file_info/file_info index files (see wiki)": "Originale Dateinamen von .file_info/file_info Indexdateien beziehen (siehe Wiki)",
     "Sonarr URL (add URL base if configured)": "Sonarr URL (URL-Basis hinzufügen, wenn konfiguriert)",

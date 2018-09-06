@@ -217,7 +217,7 @@
   },
   {
     "id": "subtitles.language.treat_und_as_first",
-    "label": "Embedded subtitles: Treat \"Undefined\" (und) as language 1",
+    "label": "Embedded streams: Treat \"Undefined\" (und) as language 1",
     "type": "bool",
     "default": "true"
   },
