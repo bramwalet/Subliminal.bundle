@@ -52,7 +52,7 @@ def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, pr
                 try:
                     lang = language_from_stream(stream.language_code)
                 except LanguageError:
-                    Log.Debug("Couldn't detect embedded subtitle stream language: %s", stream.language_code)
+                    Log.Debug("Couldn't detect embedded audio stream language: %s", stream.language_code)
 
                 # treat unknown language as lang1?
                 if not lang and config.treat_und_as_first:
