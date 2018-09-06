@@ -4,7 +4,7 @@ import logging
 import os
 import traceback
 import zlib
-
+import time
 import requests
 
 from babelfish import language_converters
@@ -325,7 +325,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         subtitle.content = fix_line_ending(zlib.decompress(base64.b64decode(response['data'][0]['data']), 47))
 
 
-def checked(fn):
+def checked(fn, raise_api_limit=False):
     """Run :fn: and check the response status before returning it.
 
     :param fn: the function to make an XMLRPC call to OpenSubtitles.
@@ -338,7 +338,12 @@ def checked(fn):
         try:
             response = fn()
         except APIThrottled:
+            if not raise_api_limit:
+                logger.info("API request limit hit, waiting and trying again once.")
+                time.sleep(12)
+                return checked(fn, raise_api_limit=True)
             raise
+
         except requests.RequestException as e:
             status_code = e.response.status_code
         else:
