@@ -1,7 +1,7 @@
 # coding=utf-8
 from babelfish.exceptions import LanguageError
 
-from babelfish import Language as Language_
+from babelfish import Language as Language_, basestr
 
 
 repl_map = {
@@ -57,9 +57,14 @@ class Language(Language_):
         self.alpha3, self.country, self.script, self.forced = state
 
     def __eq__(self, other):
-        if isinstance(other, Language):
-            return super(Language, self).__eq__(other) and other.forced == self.forced
-        return super(Language, self).__eq__(other)
+        if isinstance(other, basestr):
+            return str(self) == other
+        if not isinstance(other, Language):
+            return False
+        return (self.alpha3 == other.alpha3 and
+                self.country == other.country and
+                self.script == other.script and
+                bool(self.forced) == bool(other.forced))
 
     def __str__(self):
         return super(Language, self).__str__() + (":forced" if self.forced else "")
