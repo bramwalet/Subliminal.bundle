@@ -110,8 +110,11 @@ class SubZeroRequestsTransport(xmlrpclib.SafeTransport):
         else:
             resp.raise_for_status()
 
-            if 'x-ratelimit-remaining' in resp.headers and resp.headers['x-ratelimit-remaining'] <= 2:
-                raise APIThrottled()
+            try:
+                if 'x-ratelimit-remaining' in resp.headers and int(resp.headers['x-ratelimit-remaining']) <= 2:
+                    raise APIThrottled()
+            except ValueError:
+                logger.info('Couldn\'t parse "x-ratelimit-remaining": %r' % resp.headers['x-ratelimit-remaining'])
 
             self.verbose = verbose
             try:
