@@ -81,8 +81,11 @@ def local_string_with_optional_format(key, *args, **kwargs):
         # fixme: may not be the best idea as this evaluates the string early
         try:
             return unicode(SmartLocalStringFormatter(plex_i18n_module.LocalString(core, key, Locale.CurrentLocale), args))
-        except TypeError:
+        except (TypeError, ValueError):
             Log.Exception("Broken translation!")
+            Log.Debug("EN string: %s", plex_i18n_module.LocalString(core, key, "en"))
+            Log.Debug("%s string: %r", Locale.CurrentLocale,
+                      unicode(plex_i18n_module.LocalString(core, key, Locale.CurrentLocale)))
             return unicode(SmartLocalStringFormatter(plex_i18n_module.LocalString(core, key, "en"), args))
 
     # check string instances for arguments
