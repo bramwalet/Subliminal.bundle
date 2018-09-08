@@ -133,10 +133,10 @@ class ReverseRTL(SubtitleModification):
     description = "Reverse punctuation in RTL languages"
     exclusive = True
     order = 50
-    languages = [Language("heb")]
+    languages = [Language(l) for l in ('heb', 'ara', 'fas', 'per')]
 
     long_description = "Some playback devices don't properly handle right-to-left markers for punctuation. " \
-                       "Physically swap punctuation. Applicable to languages: hebrew"
+                       "Physically swap punctuation. Applicable to languages: hebrew, arabic, farsi, persian"
 
     processors = [
         # new? (?u)(^([\s.!?]*)(.+?)(\s*)(-?\s*)$); \5\4\3\2
