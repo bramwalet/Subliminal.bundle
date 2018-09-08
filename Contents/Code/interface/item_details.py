@@ -684,7 +684,7 @@ def TriggerExtractEmbeddedSubForItemMenu(**kwargs):
     part_id = kwargs.get("part_id")
     stream_index = kwargs.get("stream_index")
 
-    Thread.Create(extract_embedded_sub, **kwargs)
+    Thread.Create(extract_embedded_sub, extract_mode="m", **kwargs)
     header = _(u"Extracting of embedded subtitle %s of part %s:%s triggered",
             stream_index, rating_key, part_id)
 

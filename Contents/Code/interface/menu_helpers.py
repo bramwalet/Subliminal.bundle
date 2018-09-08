@@ -10,7 +10,9 @@ from func import enable_channel_wrapper, route_wrapper, register_route_function
 from subzero.language import Language
 from support.i18n import is_localized_string, _
 from support.items import get_kind, get_item_thumb, get_item, get_item_kind_from_item, refresh_item
-from support.helpers import get_video_display_title, pad_title, display_language, quote_args, is_stream_forced
+from support.helpers import get_video_display_title, pad_title, display_language, quote_args, is_stream_forced, \
+    get_title_for_video_metadata
+from support.history import get_history
 from support.ignore import exclude_list
 from support.lib import get_intent
 from support.config import config
@@ -156,6 +158,7 @@ def extract_embedded_sub(**kwargs):
     item_type = get_item_kind_from_item(plex_item)
     part = kwargs.pop("part", get_part(plex_item, part_id))
     scanned_videos = kwargs.pop("scanned_videos", None)
+    extract_mode = kwargs.pop("extract_mode", "a")
 
     any_successful = False
 
@@ -195,12 +198,21 @@ def extract_embedded_sub(**kwargs):
                     subtitle.set_encoding("utf-8")
 
                     # fixme: speedup video; only video.name is needed
-                    save_successful = save_subtitles(scanned_videos, {scanned_videos.keys()[0]: [subtitle]}, mode="m",
+                    video = scanned_videos.keys()[0]
+                    save_successful = save_subtitles(scanned_videos, {video: [subtitle]}, mode="m",
                                                      set_current=set_current)
                     set_refresh_menu_state(None)
 
                     if save_successful and refresh:
                         refresh_item(rating_key)
+
+                    # add item to history
+                    item_title = get_title_for_video_metadata(video.plexapi_metadata,
+                                                              add_section_title=False)
+                    history = get_history()
+                    history.add(item_title, video.id, section_title=video.plexapi_metadata["section"],
+                                subtitle=subtitle, mode=extract_mode)
+                    history.destroy()
 
                     any_successful = True
 
