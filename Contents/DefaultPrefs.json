@@ -526,7 +526,7 @@
   },
   {
     "id": "subtitles.reverse_rtl",
-    "label": "Reverse punctuation in RTL languages (heb, ara, fas, per)",
+    "label": "Reverse punctuation in RTL languages (heb, ara, fas)",
     "type": "bool",
     "default": "false"
   },

@@ -204,7 +204,7 @@
     "Remove style tags from downloaded subtitles (bold, italic, underline, colors, ...)": "Textformatierungen von heruntergeladenen Untertiteln entfernen (fett, kursiv, unterstrichen, Farben, ...)",
     "Fix common issues in subtitles": "Häufige Probleme in Untertiteln beheben",
     "Fix common OCR errors in downloaded subtitles": "Häufige Texterkennungsfehler in Untertiteln beheben",
-    "Reverse punctuation in RTL languages (heb, ara, fas, per)": "Zeichensetzung in linksläufigen Schriften umkehren (heb, ara, fas, per)",
+    "Reverse punctuation in RTL languages (heb, ara, fas)": "Zeichensetzung in linksläufigen Schriften umkehren (heb, ara, fas)",
     "Change colors of subtitles to": "Farbe der Untertitel ändern zu",
     "Store subtitles next to media files (instead of metadata)": "Speichere Untertitel neben den Medien (anstatt im Metadatenspeicher)",
     "Subtitle formats to save (non-SRT only works if the previous option is enabled)": "Zu speichernde Untertitelformate (Nicht-SRT funktioniert nur, wenn die vorherige Option aktiv ist)",

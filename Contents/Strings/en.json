@@ -271,7 +271,7 @@
   "Remove style tags from downloaded subtitles (bold, italic, underline, colors, ...)":"Remove style tags from downloaded subtitles (bold, italic, underline, colors, ...)",
   "Fix common issues in subtitles":"Fix common issues in subtitles",
   "Fix common OCR errors in downloaded subtitles":"Fix common OCR errors in downloaded subtitles",
-  "Reverse punctuation in RTL languages (heb, ara, fas, per)":"Reverse punctuation in RTL languages (heb, ara, fas, per)",
+  "Reverse punctuation in RTL languages (heb, ara, fas)":"Reverse punctuation in RTL languages (heb, ara, fas)",
   "Change colors of subtitles to":"Change colors of subtitles to",
   "Store subtitles next to media files (instead of metadata)":"Store subtitles next to media files (instead of metadata)",
   "Subtitle formats to save (non-SRT only works if the previous option is enabled)":"Subtitle formats to save (non-SRT only works if the previous option is enabled)",
