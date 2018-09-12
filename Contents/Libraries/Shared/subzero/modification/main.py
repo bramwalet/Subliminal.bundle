@@ -123,10 +123,27 @@ class SubtitleModifications(object):
 
     def detect_uppercase(self):
         orig = []
-        for entry in self.f[:20]:
-            orig.append(entry.text.strip())
+        entries_used = 0
+        for entry in self.f:
+            entry_used = False
+            for sub in entry.text.strip().split("\N"):
+                # try skipping HI bracket entries, those might actually be lowercase
+                sub = sub.strip()
+                if not sub[0] in ("[", "(") and not sub[-1] in ("]", ")"):
+                    orig.append(sub)
+                    entry_used = True
+                else:
+                    # skip full entry
+                    break
+
+            if entry_used:
+                entries_used += 1
+
+            if entries_used == 20:
+                break
 
         orig = "".join(orig)
+
         if not orig:
             return False
 
@@ -136,6 +153,9 @@ class SubtitleModifications(object):
         new_entries = []
         start = time.time()
         self.only_uppercase = self.detect_uppercase()
+
+        if self.only_uppercase and self.debug:
+            logger.debug("Full-uppercase subtitle found")
 
         line_mods, non_line_mods = self.prepare_mods(*mods)
 
