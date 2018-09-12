@@ -105,6 +105,8 @@ class SubsceneProvider(Provider, ProviderSubtitleArchiveMixin):
     """
     subtitle_class = SubsceneSubtitle
     languages = supported_languages
+    languages.update(set(Language.rebuild(l, forced=True) for l in languages))
+
     session = None
     skip_wrong_fps = False
     hearing_impaired_verifiable = True
@@ -179,6 +181,9 @@ class SubsceneProvider(Provider, ProviderSubtitleArchiveMixin):
             subtitle.asked_for_release_group = video.release_group
             if isinstance(video, Episode):
                 subtitle.asked_for_episode = video.episode
+
+            if self.only_foreign:
+                subtitle.language = Language.rebuild(subtitle.language, forced=True)
 
             subtitles.append(subtitle)
             logger.debug('Found subtitle %r', subtitle)

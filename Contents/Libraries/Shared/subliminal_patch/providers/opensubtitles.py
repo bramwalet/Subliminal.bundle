@@ -87,6 +87,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
     vip_url = "//vip-api.opensubtitles.org/xml-rpc"
 
     languages = {Language.fromopensubtitles(l) for l in language_converters['szopensubtitles'].codes}
+    languages.update(set(Language.rebuild(l, forced=True) for l in languages))
 
     def __init__(self, username=None, password=None, use_tag_search=False, only_foreign=False, also_foreign=False,
                  skip_wrong_fps=True, is_vip=False, use_ssl=True, timeout=15):
@@ -188,11 +189,6 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
                 checked(lambda: self.server.LogOut(self.token))
             except:
                 logger.error("Logout failed: %s", traceback.format_exc())
-
-        try:
-            checked(lambda: self.server.close())
-        except:
-            logger.error("Logout failed (server close): %s", traceback.format_exc())
 
         self.server = None
         self.token = None

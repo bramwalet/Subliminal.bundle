@@ -45,7 +45,7 @@ def get_missing_languages(video, part):
                 alpha3_map[language.alpha3] = language.country
                 language.country = None
 
-    missing_languages = (set(str(l) for l in languages) - set(str(l) for l in have_languages))
+    missing_languages = (languages - have_languages)
 
     # all languages are found if we either really have subs for all languages or we only want to have exactly one language
     # and we've only found one (the case for a selected language, Prefs['subtitles.only_one'] (one found sub matches any language))
@@ -90,7 +90,7 @@ def language_hook(provider):
 
 def download_best_subtitles(video_part_map, min_score=0, throttle_time=None, providers=None):
     hearing_impaired = Prefs['subtitles.search.hearingImpaired']
-    languages = set([Language.fromietf(str(l)) for l in config.lang_list])
+    languages = set([Language.rebuild(l) for l in config.lang_list])
     missing_languages = []
     if not languages:
         return

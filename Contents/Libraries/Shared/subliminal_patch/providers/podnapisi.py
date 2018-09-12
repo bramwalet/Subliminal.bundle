@@ -89,6 +89,7 @@ class PodnapisiSubtitle(_PodnapisiSubtitle):
 class PodnapisiProvider(_PodnapisiProvider, ProviderSubtitleArchiveMixin):
     languages = ({Language('por', 'BR'), Language('srp', script='Latn'), Language('srp', script='Cyrl')} |
                  {Language.fromalpha2(l) for l in language_converters['alpha2'].codes})
+    languages.update(set(Language.rebuild(l, forced=True) for l in languages))
 
     server_url = 'https://podnapisi.net/subtitles/'
     only_foreign = False
