@@ -16,6 +16,7 @@ class SubtitleModifications(object):
     debug = False
     language = None
     initialized_mods = {}
+    only_uppercase = False
     f = None
 
     font_style_tag_start = u"{\\"
@@ -115,9 +116,22 @@ class SubtitleModifications(object):
 
         return line_mods, non_line_mods
 
+    def detect_uppercase(self):
+        orig = []
+        for entry in self.f[:20]:
+            orig.append(entry.text.strip())
+
+        orig = "".join(orig)
+        if not orig:
+            return False
+
+        return orig.isupper()
+
     def modify(self, *mods):
         new_entries = []
         start = time.time()
+        self.only_uppercase = self.detect_uppercase()
+
         line_mods, non_line_mods = self.prepare_mods(*mods)
 
         # apply non-last file mods

@@ -68,14 +68,15 @@ class HearingImpaired(SubtitleTextModification):
         #             name="HI_brackets_special"),
 
         # all caps line (at least 4 consecutive uppercase chars)
-        NReProcessor(re.compile(ur'(?u)(^(?=.*[A-ZÀ-Ž&+]{4,})[A-ZÀ-Ž-_\s&+]+$)'), "", name="HI_all_caps"),
+        NReProcessor(re.compile(ur'(?u)(^(?=.*[A-ZÀ-Ž&+]{4,})[A-ZÀ-Ž-_\s&+]+$)'), "", name="HI_all_caps",
+                     supported=lambda p: not p.only_uppercase),
 
         # dash in front
         # NReProcessor(re.compile(r'(?u)^\s*-\s*'), "", name="HI_starting_dash"),
 
         # all caps at start before new sentence
         NReProcessor(re.compile(ur'(?u)^(?=[A-ZÀ-Ž]{4,})[A-ZÀ-Ž-_\s]+\s([A-ZÀ-Ž][a-zà-ž].+)'), r"\1",
-                     name="HI_starting_upper_then_sentence"),
+                     name="HI_starting_upper_then_sentence", supported=lambda p: not p.only_uppercase),
 
         # remove music symbols
         NReProcessor(re.compile(ur'(?u)(^%(t)s[*#¶♫♪\s]*%(t)s[*#¶♫♪\s]+%(t)s[*#¶♫♪\s]*%(t)s$)' % {"t": TAG}),

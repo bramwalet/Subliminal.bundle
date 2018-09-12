@@ -7,10 +7,12 @@ class Processor(object):
     """
     name = None
     parent = None
+    supported = None
 
-    def __init__(self, name=None, parent=None):
+    def __init__(self, name=None, parent=None, supported=None):
         self.name = name
         self.parent = parent
+        self.supported = supported if supported else lambda parent: True
 
     @property
     def info(self):
