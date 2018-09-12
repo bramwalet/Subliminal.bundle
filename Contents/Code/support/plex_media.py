@@ -179,7 +179,10 @@ def get_embedded_subtitle_streams(part, requested_language=None, skip_duplicate_
         # subtitle stream
         if stream.stream_type == 3 and not stream.stream_key and stream.codec in TEXT_SUBTITLE_EXTS:
             is_forced = helpers.is_stream_forced(stream)
-            language = Language.rebuild(helpers.get_language_from_stream(stream.language_code), forced=is_forced)
+            language = helpers.get_language_from_stream(stream.language_code)
+            if language:
+                language = Language.rebuild(language, forced=is_forced)
+
             is_unknown = False
             found_requested_language = requested_language and requested_language == language
 
