@@ -147,7 +147,7 @@ class ReverseRTL(SubtitleModification):
     ]
 
 
-split_upper_re = re.compile(ur"(\s*[.!?♪]\s*)")
+split_upper_re = re.compile(ur"(\s*[.!?♪\-]\s*)")
 
 
 class FixUppercase(SubtitleModification):
