@@ -190,7 +190,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
                 logger.error("Logout failed: %s", traceback.format_exc())
 
         try:
-            self.server.close()
+            checked(lambda: self.server.close())
         except:
             logger.error("Logout failed (server close): %s", traceback.format_exc())
 
