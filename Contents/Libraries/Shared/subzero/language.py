@@ -85,7 +85,7 @@ class Language(Language_):
         attrs = ("country", "script", "forced")
         language = state[0]
         kwa = dict(zip(attrs, state[1:]))
-        kwa.update(dict((key, value) for key, value in replkw.iteritems() if value is not None))
+        kwa.update(replkw)
         return cls(language, **kwa)
 
     @classmethod
