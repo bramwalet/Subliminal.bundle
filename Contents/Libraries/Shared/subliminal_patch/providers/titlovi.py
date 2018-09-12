@@ -314,12 +314,12 @@ class TitloviProvider(Provider, ProviderSubtitleArchiveMixin):
 
         # if Serbian lat and cyr versions are packed together, try to find right version
         if len(subs_in_archive) > 1 and (subtitle.language == 'sr' or subtitle.language == 'sr-Cyrl'):
-            self.get_subtitle_from_boundled_archive(subtitle, subs_in_archive, archive)
+            self.get_subtitle_from_bundled_archive(subtitle, subs_in_archive, archive)
         else:
-            # use dfault method for everything else
+            # use default method for everything else
             subtitle.content = self.get_subtitle_from_archive(subtitle, archive)
 
-    def get_subtitle_from_boundled_archive(self, subtitle, subs_in_archive, archive):
+    def get_subtitle_from_bundled_archive(self, subtitle, subs_in_archive, archive):
         sr_lat_subs = []
         sr_cyr_subs = []
         sub_to_extract = None
