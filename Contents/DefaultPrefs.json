@@ -188,7 +188,7 @@
       "When main audio stream is not Subtitle Language (1)",
       "When main audio stream is not any configured language",
       "When any audio stream is not Subtitle Language (1)",
-      "When any audio stream is not any configured language",
+      "When any audio stream is not any configured language"
     ],
     "default": "Always"
   },
