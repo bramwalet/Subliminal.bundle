@@ -533,6 +533,12 @@
     "default": "true"
   },
   {
+    "id": "subtitles.fix_only_uppercase",
+    "label": "Fix only uppercase downloaded subtitles",
+    "type": "bool",
+    "default": "true"
+  },
+  {
     "id": "subtitles.reverse_rtl",
     "label": "Reverse punctuation in RTL languages (heb, ara, fas)",
     "type": "bool",

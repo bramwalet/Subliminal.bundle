@@ -96,6 +96,11 @@ class SubtitleModifications(object):
                                  identifier, self.language)
                 continue
 
+            if mod_cls.only_uppercase and not self.only_uppercase:
+                if self.debug:
+                    logger.debug("Skipping %s, because the subtitle isn't all uppercase", identifier)
+                continue
+
             # merge args of duplicate mods if possible
             elif identifier in final_mods and mod_cls.args_mergeable:
                 final_mods[identifier] = mod_cls.merge_args(final_mods[identifier], args)

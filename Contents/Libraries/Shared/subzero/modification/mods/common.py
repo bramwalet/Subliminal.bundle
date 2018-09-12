@@ -4,7 +4,7 @@ import re
 
 from subzero.language import Language
 from subzero.modification.mods import SubtitleTextModification, empty_line_post_processors, SubtitleModification
-from subzero.modification.processors.string_processor import StringProcessor
+from subzero.modification.processors import FuncProcessor
 from subzero.modification.processors.re_processor import NReProcessor
 from subzero.modification import registry
 
@@ -147,6 +147,29 @@ class ReverseRTL(SubtitleModification):
     ]
 
 
+split_upper_re = re.compile(ur"(\s*[.!?♪]\s*)")
+
+
+class FixUppercase(SubtitleModification):
+    identifier = "fix_uppercase"
+    description = "Fixes all-uppercase subtitles"
+    modifies_whole_file = True
+    exclusive = True
+    order = 41
+    only_uppercase = True
+    apply_last = True
+
+    long_description = "Some subtitles are in all-uppercase letters. This at least makes them readable."
+
+    def capitalize(self, c):
+        return u"".join([s.capitalize() for s in split_upper_re.split(c)])
+
+    def modify(self, content, debug=False, parent=None, **kwargs):
+        for entry in parent.f:
+            entry.plaintext = self.capitalize(entry.plaintext)
+
+
 registry.register(CommonFixes)
 registry.register(RemoveTags)
 registry.register(ReverseRTL)
+registry.register(FixUppercase)

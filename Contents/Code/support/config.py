@@ -127,6 +127,7 @@ class Config(object):
     remove_tags = False
     fix_ocr = False
     fix_common = False
+    fix_upper = False
     reverse_rtl = False
     colors = ""
     chmod = None
@@ -210,6 +211,7 @@ class Config(object):
         self.remove_tags = cast_bool(Prefs['subtitles.remove_tags'])
         self.fix_ocr = cast_bool(Prefs['subtitles.fix_ocr'])
         self.fix_common = cast_bool(Prefs['subtitles.fix_common'])
+        self.fix_upper = cast_bool(Prefs['subtitles.fix_only_uppercase'])
         self.reverse_rtl = cast_bool(Prefs['subtitles.reverse_rtl'])
         self.colors = Prefs['subtitles.colors'] if Prefs['subtitles.colors'] != "don't change" else None
         self.chmod = self.check_chmod()
@@ -918,6 +920,8 @@ class Config(object):
             mods.append("OCR_fixes")
         if self.fix_common:
             mods.append("common")
+        if self.fix_upper:
+            mods.append("fix_uppercase")
         if self.colors:
             mods.append("color(name=%s)" % self.colors)
         if self.reverse_rtl:
