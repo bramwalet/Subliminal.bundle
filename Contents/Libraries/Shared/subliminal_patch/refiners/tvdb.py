@@ -117,7 +117,7 @@ def refine(video, **kwargs):
 
     # exit if we don't have exactly 1 matching result
     if not matching_results:
-        logger.error('No matching series found')
+        logger.warning('No matching series found')
         return
     if len(matching_results) > 1:
         logger.error('Multiple matches found')
