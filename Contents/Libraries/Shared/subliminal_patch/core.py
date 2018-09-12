@@ -347,6 +347,10 @@ class SZProviderPool(ProviderPool):
 
         for s in subtitles:
             # get the matches
+            if s.language not in languages:
+                logger.debug("%r: Skipping, language not searched for", s)
+                continue
+
             try:
                 matches = s.get_matches(video)
             except AttributeError:
