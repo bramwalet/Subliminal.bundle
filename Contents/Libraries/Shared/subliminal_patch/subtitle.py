@@ -195,7 +195,7 @@ class Subtitle(Subtitle_):
             logger.info('Falling back to bs4 detection')
             a = UnicodeDammit(self.content)
 
-            logger.debug("bs4 detected encoding: %s", a.original_encoding)
+            logger.info("bs4 detected encoding: %s", a.original_encoding)
 
             if a.original_encoding:
                 self._guessed_encoding = a.original_encoding
