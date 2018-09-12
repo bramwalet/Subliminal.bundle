@@ -325,10 +325,10 @@ class TitloviProvider(Provider, ProviderSubtitleArchiveMixin):
         sub_to_extract = None
 
         for sub_name in subs_in_archive:
-            if 'lat' in sub_name and not 'cyr' in sub_name:
+            if not ('.cyr' in sub_name or '.cir' in sub_name):
                 sr_lat_subs.append(sub_name)
 
-            if 'cyr' in sub_name and not 'lat' in sub_name:
+            if ('.cyr' in sub_name or '.cir' in sub_name) and not '.lat' in sub_name:
                 sr_cyr_subs.append(sub_name)
 
         if subtitle.language == 'sr':
