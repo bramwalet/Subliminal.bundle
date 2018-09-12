@@ -101,6 +101,9 @@ class Config(object):
     advanced = None
     debug_i18n = False
 
+    normal_subs = False
+    forced_also = False
+    forced_only = False
     include = False
     enable_channel = True
     enable_agent = True
@@ -127,8 +130,6 @@ class Config(object):
     reverse_rtl = False
     colors = ""
     chmod = None
-    forced_only = False
-    forced_also = False
     exotic_ext = False
     treat_und_as_first = False
     subtitle_sub_dir = None, None
@@ -191,11 +192,12 @@ class Config(object):
         self.set_activity_modes()
         self.parse_rename_mode()
 
+        self.normal_subs = Prefs["subtitles.when"] != "Never"
+        self.forced_also = self.normal_subs and Prefs["subtitles.when_forced"] != "Never"
+        self.forced_only = not self.normal_subs and Prefs["subtitles.when_forced"] != "Never"
         self.include = Prefs["subtitles.include_exclude_mode"] == "enable SZ for all items by default, use ignore lists"
         self.subtitle_destination_folder = self.get_subtitle_destination_folder()
         self.subtitle_formats = self.get_subtitle_formats()
-        self.forced_only = Prefs["subtitles.when"] == "Only foreign/forced"
-        self.forced_also = not self.forced_only and "foreign/forced" in Prefs["subtitles.when"]
         self.max_recent_items_per_library = int_or_default(Prefs["scheduler.max_recent_items_per_library"], 2000)
         self.sections = list(Plex["library"].sections())
         self.missing_permissions = []
@@ -254,7 +256,8 @@ class Config(object):
     def migrate_prefs_to_1(self, user_prefs, **kwargs):
         update_prefs = {}
         if "subtitles.only_foreign" in user_prefs and user_prefs["subtitles.only_foreign"] == "true":
-            update_prefs["subtitles.when"] = "1"
+            update_prefs["subtitles.when_forced"] = "1"
+            update_prefs["subtitles.when"] = "0"
 
         return update_prefs
 
@@ -672,7 +675,22 @@ class Config(object):
                 l.update({real_lang})
 
         if self.forced_also:
-            for lang in list(l):
+            langs_to_force = []
+            if Prefs["subtitles.when_forced"] == "Always":
+                langs_to_force = list(l)
+
+            else:
+                for (setting, index) in (("Only for Subtitle Language (1)", 0),
+                                         ("Only for Subtitle Language (2)", 1),
+                                         ("Only for Subtitle Language (3)", 2)):
+                    if Prefs["subtitles.when_forced"] == setting:
+                        try:
+                            langs_to_force.append(list(l)[index])
+                            break
+                        except:
+                            pass
+
+            for lang in langs_to_force:
                 l.add(Language.rebuild(lang, forced=True))
 
         elif self.forced_only:

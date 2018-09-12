@@ -15,7 +15,7 @@ from support.storage import get_pack_data, store_pack_data
 
 
 def get_missing_languages(video, part):
-    languages = set([Language.fromietf(str(l)) for l in config.lang_list])
+    languages = set([Language.rebuild(l) for l in config.lang_list])
 
     if audio_streams_match_languages(video, list(config.lang_list)):
         Log.Debug("Skipping subtitle search for %s, audio streams are in correct language(s)",

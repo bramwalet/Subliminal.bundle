@@ -325,7 +325,7 @@ def ValidatePrefs():
             "version", "app_support_path", "data_path", "data_items_path", "enable_agent",
             "enable_channel", "permissions_ok", "missing_permissions", "fs_encoding",
             "subtitle_destination_folder", "include", "include_exclude_paths", "include_exclude_sz_files",
-            "new_style_cache", "dbm_supported", "lang_list", "providers",
+            "new_style_cache", "dbm_supported", "lang_list", "providers", "normal_subs", "forced_only", "forced_also",
             "plex_transcoder", "refiner_settings", "unrar", "adv_cfg_path"]:
 
         value = getattr(config, attr)

@@ -183,19 +183,27 @@
     "label": "Download subtitles",
     "type": "enum",
     "values": [
+      "Never",
       "Always",
-      "Always, also download foreign/forced",
-      "Only foreign/forced",
       "When main audio stream is not Subtitle Language (1)",
-      "When main audio stream is not Subtitle Language (1), also download foreign/forced",
       "When main audio stream is not any configured language",
-      "When main audio stream is not any configured language, also download foreign/forced",
       "When any audio stream is not Subtitle Language (1)",
-      "When any audio stream is not Subtitle Language (1), also download foreign/forced",
       "When any audio stream is not any configured language",
-      "When any audio stream is not any configured language, also download foreign/forced"
     ],
     "default": "Always"
+  },
+  {
+    "id": "subtitles.when_forced",
+    "label": "Download foreign/forced subtitles",
+    "type": "enum",
+    "values": [
+      "Never",
+      "Always",
+      "Only for Subtitle Language (1)",
+      "Only for Subtitle Language (2)",
+      "Only for Subtitle Language (3)"
+    ],
+    "default": "Never"
   },
   {
     "id": "subtitles.language.ietf_display",
