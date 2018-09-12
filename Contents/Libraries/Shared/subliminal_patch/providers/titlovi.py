@@ -4,7 +4,6 @@ import io
 import logging
 import math
 import re
-import platform
 
 import rarfile
 
@@ -135,10 +134,11 @@ class TitloviProvider(Provider, ProviderSubtitleArchiveMixin):
 
     def initialize(self):
         self.session = Session()
-        self.session.headers['User-Agent'] = 'Mozilla / Sub-Zero for Plex 2.5 / ' + platform.platform()
-        logger.info('User-Agent set to %s', self.session.headers['User-Agent'])
+        self.session.headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' \
+                                             '(KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36'
+        logger.debug('User-Agent set to %s', self.session.headers['User-Agent'])
         self.session.headers['Referer'] = self.server_url
-        logger.info('Referer set to %s', self.session.headers['Referer'])
+        logger.debug('Referer set to %s', self.session.headers['Referer'])
 
     def terminate(self):
         self.session.close()
