@@ -91,6 +91,7 @@ def language_hook(provider):
 def download_best_subtitles(video_part_map, min_score=0, throttle_time=None, providers=None):
     hearing_impaired = Prefs['subtitles.search.hearingImpaired']
     languages = set([Language.fromietf(str(l)) for l in config.lang_list])
+    missing_languages = []
     if not languages:
         return
 
@@ -109,11 +110,11 @@ def download_best_subtitles(video_part_map, min_score=0, throttle_time=None, pro
     # prepare blacklist
     blacklist = get_blacklist_from_part_map(video_part_map, languages)
 
-    if use_videos:
+    if use_videos and missing_languages:
         Log.Debug("Download best subtitles using settings: min_score: %s, hearing_impaired: %s, languages: %s" %
-                  (min_score, hearing_impaired, languages))
+                  (min_score, hearing_impaired, missing_languages))
 
-        return subliminal.download_best_subtitles(set(use_videos), languages, min_score, hearing_impaired,
+        return subliminal.download_best_subtitles(set(use_videos), missing_languages, min_score, hearing_impaired,
                                                   providers=providers or config.providers,
                                                   provider_configs=config.provider_settings,
                                                   pool_class=config.provider_pool,
