@@ -127,6 +127,9 @@ def refine_video(video, no_refining=False, refiner_settings=None):
             if video.imdb_id:
                 logger.info(u"Adding PMS imdb_id info: %s", video.imdb_id)
 
+    elif hints["type"] == "movie" and plex_title:
+        video.alternative_titles.append(plex_title.replace(" - ", " ").replace(" -", " ").replace("- ", " "))
+
     if hints["type"] == "episode":
         video.season = video_info.get("season", video.season)
         video.episode = video_info.get("episode", video.episode)
@@ -141,6 +144,9 @@ def refine_video(video, no_refining=False, refiner_settings=None):
             refine(video, **refine_kwargs)
 
             video.alternative_series.append(old_title)
+
+        elif plex_title:
+            video.alternative_series.append(plex_title)
 
         # still no match? add our own data
         if not video.series_tvdb_id or not video.tvdb_id:
