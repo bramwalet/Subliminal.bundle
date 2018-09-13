@@ -517,11 +517,6 @@ def scan_video(path, dont_use_actual_file=False, hints=None, providers=None, ski
     guessed_result = guessit(guess_from, options=hints)
     logger.debug('GuessIt found: %s', json.dumps(guessed_result, cls=GuessitEncoder, indent=4, ensure_ascii=False))
     video = Video.fromguess(path, guessed_result)
-
-    # trust plex's movie name
-    if video_type == "movie" and hints.get("expected_title"):
-        video.title = hints.get("expected_title")[0]
-
     video.hints = hints
 
     if dont_use_actual_file:
