@@ -1,7 +1,7 @@
 # coding=utf-8
 
 import traceback
-
+import re
 import pysubs2
 import logging
 import time
@@ -10,6 +10,9 @@ from mods import EMPTY_TAG_PROCESSOR, EmptyEntryError
 from registry import registry
 
 logger = logging.getLogger(__name__)
+
+
+lowercase_re = re.compile(ur'(?sux)[a-zà-ž]')
 
 
 class SubtitleModifications(object):
@@ -122,15 +125,19 @@ class SubtitleModifications(object):
         return line_mods, non_line_mods
 
     def detect_uppercase(self):
-        orig = []
         entries_used = 0
         for entry in self.f:
             entry_used = False
             for sub in entry.text.strip().split("\N"):
-                # try skipping HI bracket entries, those might actually be lowercase
+                # skip HI bracket entries, those might actually be lowercase
                 sub = sub.strip()
-                if not sub[0] in ("[", "(") and not sub[-1] in ("]", ")"):
-                    orig.append(sub)
+                for processor in registry.mods["remove_HI"].processors[:4]:
+                    sub = processor.process(sub)
+
+                if sub.strip():
+                    if lowercase_re.search(sub):
+                        return False
+
                     entry_used = True
                 else:
                     # skip full entry
@@ -139,15 +146,10 @@ class SubtitleModifications(object):
             if entry_used:
                 entries_used += 1
 
-            if entries_used == 20:
+            if entries_used == 40:
                 break
 
-        orig = "".join(orig)
-
-        if not orig:
-            return False
-
-        return orig.isupper()
+        return True
 
     def modify(self, *mods):
         new_entries = []
