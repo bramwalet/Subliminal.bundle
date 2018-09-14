@@ -8,6 +8,7 @@ class Processor(object):
     name = None
     parent = None
     supported = None
+    enabled = True
 
     def __init__(self, name=None, parent=None, supported=None):
         self.name = name

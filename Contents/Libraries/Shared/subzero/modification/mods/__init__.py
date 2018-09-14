@@ -40,8 +40,9 @@ class SubtitleModification(object):
         new_content = content
         for processor in _processors:
             if not processor.supported(parent):
-                if debug:
+                if debug and processor.enabled:
                     logger.debug("Processor not supported, skipping: %s", processor.name)
+                    processor.enabled = False
                 continue
 
             old_content = new_content
