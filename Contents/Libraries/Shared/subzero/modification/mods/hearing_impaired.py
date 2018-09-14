@@ -71,6 +71,9 @@ class HearingImpaired(SubtitleTextModification):
         NReProcessor(re.compile(ur'(?u)(^(?=.*[A-ZÀ-Ž&+]{4,})[A-ZÀ-Ž-_\s&+]+$)'), "", name="HI_all_caps",
                      supported=lambda p: not p.only_uppercase),
 
+        # remove MAN:
+        NReProcessor(re.compile(ur'(?suxi)(.*MAN:\s*)'), "", name="HI_remove_man"),
+
         # dash in front
         # NReProcessor(re.compile(r'(?u)^\s*-\s*'), "", name="HI_starting_dash"),
 
