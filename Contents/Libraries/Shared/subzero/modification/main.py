@@ -8,6 +8,7 @@ import time
 
 from mods import EMPTY_TAG_PROCESSOR, EmptyEntryError
 from registry import registry
+from subzero.language import Language
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +40,8 @@ class SubtitleModifications(object):
         :param content: unicode 
         :return: 
         """
-        self.language = language
+        if language:
+            self.language = Language.rebuild(language, forced=False)
         self.initialized_mods = {}
         try:
             if fn:

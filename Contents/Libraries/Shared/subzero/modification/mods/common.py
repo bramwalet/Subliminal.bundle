@@ -9,6 +9,9 @@ from subzero.modification.processors.re_processor import NReProcessor
 from subzero.modification import registry
 
 
+ENGLISH = Language("eng")
+
+
 class CommonFixes(SubtitleTextModification):
     identifier = "common"
     description = "Basic common fixes"
@@ -112,6 +115,10 @@ class CommonFixes(SubtitleTextModification):
 
         # add space after punctuation
         NReProcessor(re.compile(r'(?u)([!?.,:])([A-zÀ-ž]{2,})'), r"\1 \2", name="CM_punctuation_space2"),
+
+        # fix lowercase I in english
+        NReProcessor(re.compile(r'(?u)(\b)i(\b)'), r"\1I\2", name="CM_EN_lowercase_i",
+                     supported=lambda p: p.language == ENGLISH),
     ]
 
     post_processors = empty_line_post_processors

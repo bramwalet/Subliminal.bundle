@@ -6,7 +6,7 @@ import codecs
 
 from ftfy import fix_text
 
-from babelfish import Language
+from subzero.language import Language
 from subliminal_patch import Subtitle
 from subliminal_patch.subtitle import ftfy_defaults
 
@@ -20,7 +20,7 @@ debug = "--debug" in sys.argv
 if debug:
     logging.basicConfig(level=logging.DEBUG)
 
-sub = Subtitle(Language.fromietf("eng"), mods=["common", "remove_HI", "OCR_fixes", "fix_uppercase"])
+sub = Subtitle(Language.fromietf("eng:forced"), mods=["common", "remove_HI", "OCR_fixes", "fix_uppercase"])
 sub.content = open(fn).read()
 sub.normalize()
 content = sub.get_modified_content(debug=True)
