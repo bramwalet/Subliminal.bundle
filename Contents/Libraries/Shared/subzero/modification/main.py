@@ -19,6 +19,7 @@ class SubtitleModifications(object):
     debug = False
     language = None
     initialized_mods = {}
+    mods_used = []
     only_uppercase = False
     f = None
 
@@ -27,6 +28,7 @@ class SubtitleModifications(object):
     def __init__(self, debug=False):
         self.debug = debug
         self.initialized_mods = {}
+        self.mods_used = []
 
     def load(self, fn=None, content=None, language=None, encoding="utf-8"):
         """
@@ -77,12 +79,14 @@ class SubtitleModifications(object):
         return cls.get_mod_class(identifier).get_signature(**kwargs)
 
     def prepare_mods(self, *mods):
-        parsed_mods = [SubtitleModifications.parse_identifier(mod) for mod in mods]
+        parsed_mods = [(SubtitleModifications.parse_identifier(mod), mod) for mod in mods]
         final_mods = {}
         line_mods = []
         non_line_mods = []
+        used_mods = []
 
-        for identifier, args in parsed_mods:
+        for mod_data, orig_identifier in parsed_mods:
+            identifier, args = mod_data
             if identifier not in registry.mods:
                 logger.error("Mod %s not loaded", identifier)
                 continue
@@ -109,6 +113,7 @@ class SubtitleModifications(object):
                 final_mods[identifier] = mod_cls.merge_args(final_mods[identifier], args)
                 continue
             final_mods[identifier] = args
+            used_mods.append(orig_identifier)
 
         # separate all mods into line and non-line mods
         for identifier, args in final_mods.iteritems():
@@ -122,7 +127,7 @@ class SubtitleModifications(object):
             if identifier not in self.initialized_mods:
                 self.initialized_mods[identifier] = mod_cls(self)
 
-        return line_mods, non_line_mods
+        return line_mods, non_line_mods, used_mods
 
     def detect_uppercase(self):
         entries_used = 0
@@ -159,7 +164,8 @@ class SubtitleModifications(object):
         if self.only_uppercase and self.debug:
             logger.debug("Full-uppercase subtitle found")
 
-        line_mods, non_line_mods = self.prepare_mods(*mods)
+        line_mods, non_line_mods, mods_used = self.prepare_mods(*mods)
+        self.mods_used = mods_used
 
         # apply non-last file mods
         if non_line_mods:
@@ -193,6 +199,7 @@ class SubtitleModifications(object):
 
         if self.debug:
             logger.debug("Subtitle Modification took %ss", time.time() - start)
+            logger.debug("Mods applied: %s" % self.mods_used)
 
     def apply_non_line_mods(self, mods, only_last=False):
         for identifier, args in mods:

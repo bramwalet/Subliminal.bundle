@@ -315,6 +315,7 @@ class Subtitle(Subtitle_):
         if submods.load(content=self.text, language=self.language):
             logger.info("Applying mods: %s", self.mods)
             submods.modify(*self.mods)
+            self.mods = submods.mods_used
 
             content = fix_text(self.pysubs2_to_unicode(submods.f, format=format), **ftfy_defaults)\
                 .encode(encoding="utf-8")
