@@ -109,6 +109,9 @@ class CommonFixes(SubtitleTextModification):
 
         # remove spaces before punctuation; don't break spaced ellipses
         NReProcessor(re.compile(r'(?u)(?:(?<=^)|(?<=\w)) +([!?.,](?![!?.,]| \.))'), r"\1", name="CM_punctuation_space"),
+
+        # add space after punctuation
+        NReProcessor(re.compile(r'(?u)([!?.,:])([A-zÀ-ž]{2,})'), r"\1 \2", name="CM_punctuation_space2"),
     ]
 
     post_processors = empty_line_post_processors
