@@ -326,19 +326,24 @@ def SelectStoredSubForItemMenu(**kwargs):
     subtitles = stored_subs.get_all(part_id, language)
     subtitle = subtitles[sub_key]
 
-    subtitles["current"] = sub_key
-
     save_stored_sub(subtitle, rating_key, part_id, language, item_type, plex_item=plex_item, storage=storage,
                     stored_subs=stored_subs)
 
+    stored_subs.set_current(part_id, language, sub_key)
+    storage.save(stored_subs)
     storage.destroy()
 
-    kwargs.pop("randomize")
+    kwa = {
+        "header": _("Success"),
+        "message": _("Subtitle saved to disk"),
+        "title": kwargs["title"],
+        "item_title": kwargs["item_title"],
+        "base_title": kwargs.get("base_title")
+    }
 
-    kwargs["header"] = _("Success")
-    kwargs["message"] = _("Subtitle saved to disk")
+    # fixme: return to SubtitleOptionsMenu properly? (needs recomputation of current_data
 
-    return SubtitleOptionsMenu(randomize=timestamp(), **kwargs)
+    return ItemDetailsMenu(rating_key, randomize=timestamp(), **kwa)
 
 
 @route(PREFIX + '/item/blacklist_recent/{language}')

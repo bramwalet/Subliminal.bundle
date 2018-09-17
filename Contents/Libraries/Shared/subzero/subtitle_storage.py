@@ -205,6 +205,18 @@ class JSONStoredVideoSubtitles(object):
 
         return part.get(str(lang))
 
+    def set_current(self, part_id, lang, sub_key):
+        subs = self.get_all(part_id, lang)
+        if not subs:
+            return
+
+        if sub_key not in subs:
+            logger.info("Tried setting unknown subtitle %s as current" % sub_key)
+            return
+
+        subs["current"] = sub_key
+        logger.debug("Set subtitle %s as current for %s, %s" % (sub_key, part_id, lang))
+
     def get_by_provider(self, part_id, lang, provider_name):
         out = []
         all_subs = self.get_all(part_id, lang)
@@ -514,7 +526,7 @@ class StoredSubtitlesManager(object):
                     finally:
                         f.close()
                 except:
-                    logger.error("Something REALLY went wrong when writing to: %s: %s", basename,
+                    logger.error("Something went REALLY wrong when writing to: %s: %s", basename,
                                  traceback.format_exc())
             else:
                 with gzip.open(temp_fn, "wb", compresslevel=6) as f:

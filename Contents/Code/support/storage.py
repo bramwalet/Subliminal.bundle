@@ -205,7 +205,7 @@ def save_subtitles(scanned_video_part_map, downloaded_subtitles, mode="a", bare_
         if not bare_save and save_successful and config.notify_executable:
             notify_executable(config.notify_executable, scanned_video_part_map, downloaded_subtitles, storage)
 
-    if not bare_save and save_successful or not set_current:
+    if (not bare_save and save_successful) or not set_current:
         store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage, mode=mode, set_current=set_current)
 
     return save_successful
