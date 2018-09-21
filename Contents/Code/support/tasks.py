@@ -235,6 +235,7 @@ class DownloadSubtitleMixin(object):
                     item_title = get_title_for_video_metadata(metadata, add_section_title=False)
                     history = get_history()
                     history.add(item_title, video.id, section_title=video.plexapi_metadata["section"],
+                                thumb=video.plexapi_metadata["item"].thumb,
                                 subtitle=subtitle,
                                 mode=mode)
                     history.destroy()
@@ -478,6 +479,7 @@ class SearchAllRecentlyAddedMissing(Task):
                                         for subtitle in video_subtitles:
                                             downloads_per_video += 1
                                             history.add(item_title, video.id, section_title=metadata["section"],
+                                                        thumb=video.plexapi_metadata["item"].thumb,
                                                         subtitle=subtitle,
                                                         mode="a")
 

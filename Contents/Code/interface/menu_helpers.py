@@ -211,6 +211,7 @@ def extract_embedded_sub(**kwargs):
                                                               add_section_title=False)
                     history = get_history()
                     history.add(item_title, video.id, section_title=video.plexapi_metadata["section"],
+                                thumb=video.plexapi_metadata["item"].thumb,
                                 subtitle=subtitle, mode=extract_mode)
                     history.destroy()
 

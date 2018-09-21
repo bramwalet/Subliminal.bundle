@@ -22,7 +22,8 @@ from support.scheduler import scheduler
 from support.config import config
 from support.helpers import timestamp, df, display_language
 from support.ignore import exclude_list
-from support.items import get_all_items, get_items_info, get_item_kind_from_rating_key, get_item, MI_KEY, get_item_title
+from support.items import get_all_items, get_items_info, get_item_kind_from_rating_key, get_item, MI_KEY, \
+    get_item_title, get_item_thumb
 from support.storage import get_subtitle_storage
 from support.i18n import _
 
@@ -235,7 +236,7 @@ def HistoryMenu():
     history = get_history()
     oc = SubFolderObjectContainer(title2=_("History"), replace_parent=True)
 
-    for item in history.items:
+    for item in history.items[:100]:
         possible_language = item.language
         language_display = item.lang_name if not possible_language else display_language(possible_language)
 
@@ -244,7 +245,8 @@ def HistoryMenu():
                          rating_key=item.rating_key),
             title=u"%s (%s)" % (item.item_title, item.mode_verbose),
             summary=_(u"%s in %s (%s, score: %s), %s", language_display, item.section_title,
-                                                       item.provider_name, item.score, df(item.time))
+                                                       item.provider_name, item.score, df(item.time)),
+            thumb=item.thumb or default_thumb
         ))
 
     history.destroy()

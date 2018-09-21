@@ -218,6 +218,7 @@ def RecentlyPlayedMenu():
         item_title = get_item_title(item)
 
         oc.add(DirectoryObject(
+            thumb=get_item_thumb(item) or default_thumb,
             title=item_title,
             key=Callback(ItemDetailsMenu, title=base_title + " > " + item.title, item_title=item.title,
                          rating_key=item.rating_key)
