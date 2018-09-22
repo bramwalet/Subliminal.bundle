@@ -291,7 +291,7 @@ class SubZeroAgent(object):
                             item_title = get_title_for_video_metadata(video.plexapi_metadata["item"], add_section_title=False)
                             history = get_history()
                             history.add(item_title, video.id, section_title=video.plexapi_metadata["section"],
-                                        thumb=video.plexapi_metadata["item"].thumb,
+                                        thumb=video.plexapi_metadata["super_thumb"],
                                         subtitle=subtitle)
                             history.destroy()
             else:

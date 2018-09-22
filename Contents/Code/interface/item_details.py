@@ -199,7 +199,7 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                         title=_(u"%(part_summary)sEmbedded subtitles (%(languages)s)",
                                 part_summary=part_index_addon,
                                 languages=", ".join(display_language(l) for l in set(embedded_langs))),
-                        summary=_(u"Extract and activate embedded subtitle streams")
+                        summary=_(u"Extract embedded subtitle streams")
                     ))
 
     ignore_title = item_title
