@@ -55,4 +55,4 @@ def fix_inconsistent_naming(title, inconsistent_titles_dict=None):
         title = pattern.sub(lambda x: inconsistent_titles_dict[x.group()], title)
 
     # return fixed and sanitized title
-    return sanitize(title)
+    return title

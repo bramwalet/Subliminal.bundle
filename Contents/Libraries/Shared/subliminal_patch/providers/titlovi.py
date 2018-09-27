@@ -41,8 +41,8 @@ def fix_inconsistent_naming(title):
     :rtype: str
 
     """
-    return _fix_inconsistent_naming(title, {"DC's Legends of Tomorrow": "Legends of Tomorrow",
-                                            "Marvel's Jessica Jones": "Jessica Jones"})
+    return sanitize(_fix_inconsistent_naming(title, {"DC's Legends of Tomorrow": "Legends of Tomorrow",
+                                            "Marvel's Jessica Jones": "Jessica Jones"}))
 
 logger = logging.getLogger(__name__)
 
