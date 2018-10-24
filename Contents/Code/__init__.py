@@ -117,7 +117,7 @@ def update_local_media(metadata, media, media_type="movies"):
             pass
 
 
-def agent_extract_embedded(video_part_map):
+def agent_extract_embedded(video_part_map, history_storage=None):
     try:
         subtitle_storage = get_subtitle_storage()
 
@@ -155,7 +155,7 @@ def agent_extract_embedded(video_part_map):
         if to_extract:
             Log.Info("Triggering extraction of %d embedded subtitles of %d items", len(to_extract), item_count)
             Thread.Create(multi_extract_embedded, stream_list=to_extract, refresh=True, with_mods=True,
-                          single_thread=not config.advanced.auto_extract_multithread)
+                          single_thread=not config.advanced.auto_extract_multithread, history_storage=history_storage)
     except:
         Log.Error("Something went wrong when auto-extracting subtitles, continuing: %s", traceback.format_exc())
 
@@ -187,6 +187,7 @@ class SubZeroAgent(object):
 
         Log.Debug("Sub-Zero %s, %s update called" % (config.version, self.agent_type))
         intent = get_intent()
+        history = get_history()
 
         if not media:
             Log.Error("Called with empty media, something is really wrong with your setup!")
@@ -234,7 +235,7 @@ class SubZeroAgent(object):
             # auto extract embedded
             if config.embedded_auto_extract:
                 if config.plex_transcoder:
-                    agent_extract_embedded(scanned_video_part_map)
+                    agent_extract_embedded(scanned_video_part_map, history_storage=history)
                 else:
                     Log.Warning("Plex Transcoder not found, can't auto extract")
 
@@ -289,7 +290,6 @@ class SubZeroAgent(object):
                         # store item(s) in history
                         for subtitle in video_subtitles:
                             item_title = get_title_for_video_metadata(video.plexapi_metadata, add_section_title=False)
-                            history = get_history()
                             history.add(item_title, video.id, section_title=video.plexapi_metadata["section"],
                                         thumb=video.plexapi_metadata["super_thumb"],
                                         subtitle=subtitle)
@@ -303,6 +303,9 @@ class SubZeroAgent(object):
         finally:
             # update the menu state
             set_refresh_menu_state(None)
+
+            history.destroy()
+            history = None
 
             # notify any running tasks about our finished update
             for item_id in item_ids:

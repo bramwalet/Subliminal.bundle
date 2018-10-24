@@ -174,7 +174,8 @@ def SeasonExtractEmbedded(**kwargs):
     return MetadataMenu(randomize=timestamp(), title=item_title, **kwargs)
 
 
-def multi_extract_embedded(stream_list, refresh=False, with_mods=False, single_thread=True, extract_mode="a"):
+def multi_extract_embedded(stream_list, refresh=False, with_mods=False, single_thread=True, extract_mode="a",
+                           history_storage=None):
     def execute():
         for video_part_map, plexapi_part, stream_index, language, set_current in stream_list:
             plexapi_item = video_part_map.keys()[0].plexapi_metadata["item"]
@@ -182,7 +183,8 @@ def multi_extract_embedded(stream_list, refresh=False, with_mods=False, single_t
             extract_embedded_sub(rating_key=plexapi_item.rating_key, part_id=plexapi_part.id,
                                  plex_item=plexapi_item, part=plexapi_part, scanned_videos=video_part_map,
                                  stream_index=stream_index, set_current=set_current,
-                                 language=language, with_mods=with_mods, refresh=refresh, extract_mode=extract_mode)
+                                 language=language, with_mods=with_mods, refresh=refresh, extract_mode=extract_mode,
+                                 history_storage=history_storage)
 
     if single_thread:
         with Thread.Lock(key="extract_embedded"):
