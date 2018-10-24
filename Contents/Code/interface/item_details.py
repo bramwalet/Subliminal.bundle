@@ -4,7 +4,7 @@ import os
 from subzero.language import Language
 
 from sub_mod import SubtitleModificationsMenu
-from menu_helpers import debounce, SubFolderObjectContainer, default_thumb, add_ignore_options, get_item_task_data, \
+from menu_helpers import debounce, SubFolderObjectContainer, default_thumb, add_incl_excl_options, get_item_task_data, \
     set_refresh_menu_state, route, extract_embedded_sub
 
 from refresh_item import RefreshItem
@@ -33,7 +33,7 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
     :param randomize:
     :return:
     """
-    from interface.main import IgnoreMenu
+    from interface.main import InclExclMenu
 
     title = unicode(base_title) + " > " + unicode(title) if base_title else unicode(title)
     item = plex_item = get_item(rating_key)
@@ -205,7 +205,7 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
     ignore_title = item_title
     if current_kind == "episode":
         ignore_title = get_item_title(item)
-    add_ignore_options(oc, "videos", title=ignore_title, rating_key=rating_key, callback_menu=IgnoreMenu)
+    add_incl_excl_options(oc, "videos", title=ignore_title, rating_key=rating_key, callback_menu=InclExclMenu)
     subtitle_storage.destroy()
 
     return oc

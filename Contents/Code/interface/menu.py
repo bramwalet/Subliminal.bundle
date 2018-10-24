@@ -11,17 +11,17 @@ import copy
 from requests import HTTPError
 from item_details import ItemDetailsMenu
 from refresh_item import RefreshItem
-from menu_helpers import add_ignore_options, dig_tree, set_refresh_menu_state, \
+from menu_helpers import add_incl_excl_options, dig_tree, set_refresh_menu_state, \
     default_thumb, debounce, ObjectContainer, SubFolderObjectContainer, route, \
     extract_embedded_sub
-from main import fatality, IgnoreMenu
+from main import fatality, InclExclMenu
 from advanced import DispatchRestart
 from subzero.constants import ART, PREFIX, DEPENDENCY_MODULE_NAMES
 from support.plex_media import get_all_parts, get_embedded_subtitle_streams
 from support.scheduler import scheduler
 from support.config import config
 from support.helpers import timestamp, df, display_language
-from support.ignore import exclude_list
+from support.ignore import get_decision_list
 from support.items import get_all_items, get_items_info, get_item_kind_from_rating_key, get_item, MI_KEY, \
     get_item_title, get_item_thumb
 from support.storage import get_subtitle_storage
@@ -108,7 +108,7 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
         if current_kind in ("series", "season"):
             item = get_item(rating_key)
             sub_title = get_item_title(item)
-            add_ignore_options(oc, current_kind, title=sub_title, rating_key=rating_key, callback_menu=IgnoreMenu)
+            add_incl_excl_options(oc, current_kind, title=sub_title, rating_key=rating_key, callback_menu=InclExclMenu)
 
         # mass-extract embedded
         if current_kind == "season" and config.plex_transcoder:
@@ -223,12 +223,15 @@ def season_extract_embedded(rating_key, requested_language, with_mods=False, for
 
 @route(PREFIX + '/ignore_list')
 def IgnoreListMenu():
-    oc = SubFolderObjectContainer(title2="Ignore list", replace_parent=True)
-    for key in exclude_list.key_order:
-        values = exclude_list[key]
+    ref_list = get_decision_list()
+    include = ref_list.store == "include"
+    list_title = _("Include list" if include else "Ignore list")
+    oc = SubFolderObjectContainer(title2=list_title, replace_parent=True)
+    for key in ref_list.key_order:
+        values = ref_list[key]
         for value in values:
-            add_ignore_options(oc, key, title=exclude_list.get_title(key, value), rating_key=value,
-                               callback_menu=IgnoreMenu)
+            add_incl_excl_options(oc, key, title=ref_list.get_title(key, value), rating_key=value,
+                                  callback_menu=InclExclMenu)
     return oc
 
 
