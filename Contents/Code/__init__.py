@@ -186,12 +186,13 @@ class SubZeroAgent(object):
             return
 
         Log.Debug("Sub-Zero %s, %s update called" % (config.version, self.agent_type))
-        intent = get_intent()
-        history = get_history()
 
         if not media:
             Log.Error("Called with empty media, something is really wrong with your setup!")
             return
+
+        intent = get_intent()
+        history = get_history()
 
         item_ids = []
         try:
