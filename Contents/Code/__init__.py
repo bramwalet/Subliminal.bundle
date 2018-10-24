@@ -204,7 +204,7 @@ class SubZeroAgent(object):
             # media ignored?
             use_any_parts = False
             for video in videos:
-                if not is_wanted(video["id"]):
+                if not is_wanted(video["id"], item=video["item"]):
                     Log.Debug(u'Skipping "%s"' % video["filename"])
                     continue
                 use_any_parts = True

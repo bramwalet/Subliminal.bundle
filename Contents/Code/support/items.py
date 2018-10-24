@@ -317,8 +317,8 @@ def is_physically_wanted(fn, kind):
         wanted_results = []
         if config.include_exclude_sz_files:
             for sub_path in check_paths:
-                wanted_results.append(config.is_physically_wanted(os.path.normpath(os.path.join(os.path.dirname(fn),
-                                                                                                sub_path))))
+                wanted_results.append(config.is_physically_wanted(
+                    os.path.normpath(os.path.join(os.path.dirname(fn), sub_path)), fn))
 
         if config.include_exclude_paths:
             wanted_results.append(config.is_path_wanted(fn))
@@ -328,7 +328,7 @@ def is_physically_wanted(fn, kind):
         elif not config.include and not all(wanted_results):
             return False
 
-        return True
+        return not config.include
 
 
 def refresh_item(rating_key, force=False, timeout=8000, refresh_kind=None, parent_rating_key=None):

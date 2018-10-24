@@ -196,7 +196,8 @@ class Config(object):
         self.normal_subs = Prefs["subtitles.when"] != "Never"
         self.forced_also = self.normal_subs and Prefs["subtitles.when_forced"] != "Never"
         self.forced_only = not self.normal_subs and Prefs["subtitles.when_forced"] != "Never"
-        self.include = Prefs["subtitles.include_exclude_mode"] == "enable SZ for all items by default, use ignore lists"
+        self.include = \
+            Prefs["subtitles.include_exclude_mode"] == "disable SZ for all items by default, use include lists"
         self.subtitle_destination_folder = self.get_subtitle_destination_folder()
         self.subtitle_formats = self.get_subtitle_formats()
         self.max_recent_items_per_library = int_or_default(Prefs["scheduler.max_recent_items_per_library"], 2000)
@@ -541,20 +542,26 @@ class Config(object):
 
     def parse_include_exclude_paths(self):
         paths = Prefs["subtitles.include_exclude_paths"]
-        if paths:
+        if paths and paths != "None":
             try:
-                return [path.strip() for path in paths.split(",")]
+                return [p for p in [path.strip() for path in paths.split(",")]
+                        if p != "None" and os.path.exists(p)]
             except:
                 Log.Error("Couldn't parse your include/exclude paths settings: %s" % paths)
         return []
 
-    def is_physically_wanted(self, folder):
+    def is_physically_wanted(self, folder, ref_fn=None):
         # check whether we've got an ignore file inside the path
         ret_val = self.include
         ref_list = INCLUDE_FN if self.include else EXCLUDE_FN
         for ifn in ref_list:
             if os.path.isfile(os.path.join(folder, ifn)):
-                Log.Info(u'%s "%s" because "%s" exists', "Including" if self.include else "Ignoring", folder, ifn)
+                if ref_fn:
+                    Log.Info(u'%s "%s" because "%s" exists in "%s"', "Including" if self.include else "Ignoring",
+                             ref_fn, ifn, folder)
+                else:
+                    Log.Info(u'%s "%s" because "%s" exists', "Including" if self.include else "Ignoring", folder, ifn)
+
                 return ret_val
 
         return not ret_val
