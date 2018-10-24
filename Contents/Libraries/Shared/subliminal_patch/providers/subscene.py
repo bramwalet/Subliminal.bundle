@@ -95,7 +95,7 @@ class SubsceneSubtitle(Subtitle):
 
 
 def get_video_filename(video):
-    return os.path.splitext(os.path.basename(video.name))[0]
+    return os.path.splitext(os.path.basename(video.original_name))[0]
 
 
 class SubsceneProvider(Provider, ProviderSubtitleArchiveMixin):
