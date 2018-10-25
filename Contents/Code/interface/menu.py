@@ -248,7 +248,7 @@ def HistoryMenu():
         oc.add(DirectoryObject(
             key=Callback(ItemDetailsMenu, title=item.title, item_title=item.item_title,
                          rating_key=item.rating_key),
-            title=u"%s (%s)" % (item.item_title, item.mode_verbose),
+            title=u"%s (%s)" % (item.item_title, _(item.mode_verbose)),
             summary=_(u"%s in %s (%s, score: %s), %s", language_display, item.section_title,
                                                        _(item.provider_name), item.score, df(item.time)),
             thumb=item.thumb or default_thumb
