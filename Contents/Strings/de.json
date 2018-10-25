@@ -235,7 +235,7 @@
     "Scheduler: Overwrite subtitles with non-default subtitle modifications when better found": "Hintergrundaufgaben: Untertitel mit Nicht-Standard-Modifikationen überschreiben, wenn bessere gefunden wurden",
     "History: amount of items to store historical data for": "Verlauf: Anzahl der Elemente",
     "How many download tries per subtitle (on timeout or error)": "Wie oft soll der Download pro Untertitel versucht werden (bei Fehlern)",
-    "Should SZ be enabled or disabled for by default? (impacts the settings below and the plugin menu)": "Soll SZ standardmäßig aktiviert oder deaktiviert sein? (Beeinflusst Einstellungen und Menü)",
+    "Should SZ be enabled or disabled by default? (impacts the settings below and the plugin menu)": "Soll SZ standardmäßig aktiviert oder deaktiviert sein? (Beeinflusst Einstellungen und Menü)",
     "enable SZ for all items by default, use ignore lists": "SZ standardmäßig für alle Medien aktivieren, benutze Ignore-Listen",
     "disable SZ for all items by default, use include lists": "SZ standardmäßig für alle Medien deaktivieren, benutze Include-Listen",
     "Use \"subzero.ignore/.subzero.ignore/.nosz\" (exclude) or \"subzero.include/.subzero.include/.sz\" (include) files inside folders": "Benutze \"subzero.ignore/.subzero.ignore/.nosz\" (ausschl.) oder \"subzero.include/.subzero.include/.sz\" (einschl.) Dateien in Ordnern",
