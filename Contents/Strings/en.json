@@ -169,7 +169,7 @@
   "Automatically run periodically by the scheduler, if configured. %s":"Automatically run periodically by the scheduler, if configured. %s",
   "Display %(incl_excl_list_name)s (%(count)d)":"Display %(incl_excl_list_name)s list (%(count)d)",
   "include list": "include list",
-  "ignore list": "ignore list"
+  "ignore list": "ignore list",
   "Include list": "Include list",
   "Ignore list": "Ignore list",
   "Show the current %(incl_excl_list_name)s (mainly used for the automatic tasks)":"Show the current %(incl_excl_list_name)s list (mainly used for the automatic tasks)",
