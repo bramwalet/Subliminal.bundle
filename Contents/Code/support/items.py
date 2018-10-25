@@ -241,7 +241,7 @@ def get_recent_items():
                 Log.Debug(u"Skipping item: %s" % data["title"])
                 continue
             if not is_physically_wanted(data["filename"], plex_item_type):
-                Log.Debug(u"Skipping item: %s" % data["title"])
+                Log.Debug(u"Skipping item (physically not wanted): %s" % data["title"])
                 continue
 
             if is_recent(int(data["added"])):
@@ -328,7 +328,7 @@ def is_physically_wanted(fn, kind):
         elif not config.include and not all(wanted_results):
             return False
 
-        return not config.include
+    return not config.include
 
 
 def refresh_item(rating_key, force=False, timeout=8000, refresh_kind=None, parent_rating_key=None):
