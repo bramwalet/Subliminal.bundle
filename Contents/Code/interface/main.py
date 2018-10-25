@@ -135,13 +135,13 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
         ))
 
         ref_list = get_decision_list()
-        incl_excl_ref = _("include") if ref_list.store == "include" else _("ignore")
+        incl_excl_ref = _("include list") if ref_list.store == "include" else _("ignore list")
 
         oc.add(DirectoryObject(
             key=Callback(IgnoreListMenu),
-            title=_("Display %(incl_excl_list_name)s list (%(count)d)",
+            title=_("Display %(incl_excl_list_name)s (%(count)d)",
                     incl_excl_list_name=incl_excl_ref, count=len(ref_list)),
-            summary=_("Show the current %(incl_excl_list_name)s list (mainly used for the automatic tasks)",
+            summary=_("Show the current %(incl_excl_list_name)s (mainly used for the automatic tasks)",
                       incl_excl_list_name=incl_excl_ref),
             thumb=R("icon-ignore.jpg")
         ))
@@ -381,7 +381,7 @@ def InclExclMenu(kind, rating_key, title=None, sure=False, todo="not_set"):
         dont_change = True
 
     if dont_change:
-        return fatality(force_title=" ", header=_("Didn't change the %(incl_excl_list_name)s list",
+        return fatality(force_title=" ", header=_("Didn't change the %(incl_excl_list_name)s",
                                                   incl_excl_list_name=_(list_str_ref)), no_history=True)
 
     if include:

@@ -749,7 +749,7 @@
   },
   {
     "id": "subtitles.include_exclude_mode",
-    "label": "Should SZ be enabled or disabled for by default? (impacts the settings below and the plugin menu)",
+    "label": "Should SZ be enabled or disabled by default? (impacts the settings below and the plugin menu)",
     "type": "enum",
     "values": [
       "enable SZ for all items by default, use ignore lists",
