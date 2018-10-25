@@ -752,10 +752,10 @@
     "label": "Should SZ be enabled or disabled by default? (impacts the settings below and the plugin menu)",
     "type": "enum",
     "values": [
-      "enable SZ for all items by default, use ignore lists",
-      "disable SZ for all items by default, use include lists"
+      "enable SZ for all items by default, use ignore mode",
+      "disable SZ for all items by default, use include mode"
     ],
-    "default": "enable SZ for all items by default, use ignore lists"
+    "default": "enable SZ for all items by default, use ignore mode"
   },
   {
     "id": "subtitles.include_exclude_paths",
@@ -765,7 +765,7 @@
   },
   {
     "id": "subtitles.include_exclude_fs",
-    "label": "Use \"subzero.ignore/.subzero.ignore/.nosz\" (exclude) or \"subzero.include/.subzero.include/.sz\" (include) files inside folders",
+    "label": "Use \"subzero.ignore/.subzero.ignore/.nosz\" (ignore mode) or \"subzero.include/.subzero.include/.sz\" (include mode) files inside folders",
     "type": "bool",
     "default": "false"
   },

@@ -142,9 +142,9 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                     summary = _(u"%(part_summary)sCurrent subtitle: %(provider_name)s (added: %(date_added)s, "
                                 u"%(mode)s), Language: %(language)s, Score: %(score)i, Storage: %(storage_type)s",
                                 part_summary=part_summary_addon,
-                                provider_name=current_sub.provider_name,
+                                provider_name=_(current_sub.provider_name),
                                 date_added=df(current_sub.date_added),
-                                mode=current_sub.mode_verbose,
+                                mode=_(current_sub.mode_verbose),
                                 language=display_language(lang),
                                 score=current_sub.score,
                                 storage_type=current_sub.storage_type)
@@ -289,7 +289,7 @@ def ListStoredSubsForItemMenu(**kwargs):
         summary = _(u"added: %(date_added)s, %(mode)s, Language: %(language)s, Score: %(score)i, Storage: "
                     u"%(storage_type)s",
                     date_added=df(subtitle.date_added),
-                    mode=subtitle.mode_verbose,
+                    mode=_(subtitle.mode_verbose),
                     language=display_language(language),
                     score=subtitle.score,
                     storage_type=subtitle.storage_type)
@@ -459,10 +459,10 @@ def ManageBlacklistMenu(**kwargs):
         provider_name, subtitle_id = sub_key
         title = _(u"%(provider_name)s, %(subtitle_id)s (added: %(date_added)s, %(mode)s), Language: %(language)s, "
                   u"Score: %(score)i, Storage: %(storage_type)s",
-                  provider_name=provider_name,
+                  provider_name=_(provider_name),
                   subtitle_id=subtitle_id,
                   date_added=df(data["date_added"]),
-                  mode=current_sub.get_mode_verbose(data["mode"]),
+                  mode=_(current_sub.get_mode_verbose(data["mode"])),
                   language=display_language(Language.fromietf(language)),
                   score=data["score"],
                   storage_type=data["storage_type"])
@@ -521,7 +521,7 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
         video_display_data = metadata["filename"]
 
     current_display = (_(u"Current: %(provider_name)s (%(score)s) ",
-                         provider_name=current_provider,
+                         provider_name=_(current_provider),
                          score=current_score if current_provider else ""))
     if not running:
         oc.add(DirectoryObject(
@@ -592,7 +592,7 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
             title=_(u"%(blacklisted_state)s%(current_state)s: %(provider_name)s, score: %(score)s%(wrong_fps_state)s",
                     blacklisted_state=bl_addon,
                     current_state=_("Available") if current_id != subtitle.id else _("Current"),
-                    provider_name=subtitle.provider_name,
+                    provider_name=_(subtitle.provider_name),
                     score=subtitle.score,
                     wrong_fps_state=wrong_fps_addon),
             summary=_(u"Release: %(release_info)s, Matches: %(matches)s",

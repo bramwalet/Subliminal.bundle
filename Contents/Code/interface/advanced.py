@@ -103,7 +103,7 @@ def AdvancedMenu(randomize=None, header=None, message=None):
     ))
     oc.add(DirectoryObject(
         key=Callback(ResetStorage, key="menu_history", randomize=timestamp()),
-        title=pad_title("Reset the plugin's menu history storage"),
+        title=pad_title(_("Reset the plugin's menu history storage")),
     ))
     oc.add(DirectoryObject(
         key=Callback(InvalidateCache, randomize=timestamp()),

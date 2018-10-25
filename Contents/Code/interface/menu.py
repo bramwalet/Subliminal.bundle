@@ -250,7 +250,7 @@ def HistoryMenu():
                          rating_key=item.rating_key),
             title=u"%s (%s)" % (item.item_title, item.mode_verbose),
             summary=_(u"%s in %s (%s, score: %s), %s", language_display, item.section_title,
-                                                       item.provider_name, item.score, df(item.time)),
+                                                       _(item.provider_name), item.score, df(item.time)),
             thumb=item.thumb or default_thumb
         ))
 
