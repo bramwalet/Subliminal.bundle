@@ -419,7 +419,7 @@ def get_language(lang_short):
 
 
 def display_language(l):
-    return _(str(l.basename).lower())
+    return _(str(l.basename).lower()) + ((u" (%s)" % _("forced")) if l.forced else "")
 
 
 def is_stream_forced(stream):
