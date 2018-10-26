@@ -250,6 +250,7 @@
     "Use new style caching (for subliminal)": "Modernes Caching benutzen (für subliminal)",
     "Low impact mode (for remote filesystems)": "Belastungsarmer Modus (für rechnerferne Dateisysteme)",
     "Timeout for API requests sent to the PMS": "Timeout für Plex-API-Anfragen",
+    "Use Google DNS (for \"problematic\" countries)": "Google DNS benutzen (für \"problematische\" Länder)",
     "HTTP proxy to use for providers (supports credentials)": "Benutze HTTP-Proxy für Untertitel-Anbieter (unterstützt Anmeldeinformationen)",
     "How verbose should the logging be?": "Wie ausführlich soll die Protokollierung sein?",
     "How many log backups to keep?": "Wie viele Protokoll-Sicherungen sollen behalten werden?",

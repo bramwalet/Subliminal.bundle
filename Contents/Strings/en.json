@@ -328,6 +328,7 @@
   "Use new style caching (for subliminal)":"Use new style caching (for subliminal)",
   "Low impact mode (for remote filesystems)":"Low impact mode (for remote filesystems)",
   "Timeout for API requests sent to the PMS":"Timeout for API requests sent to the PMS",
+  "Use Google DNS (for \"problematic\" countries)": "Use Google DNS (for \"problematic\" countries)",
   "HTTP proxy to use for providers (supports credentials)":"HTTP proxy to use for providers (supports credentials)",
   "How verbose should the logging be?":"How verbose should the logging be?",
   "How many log backups to keep?":"How many log backups to keep?",

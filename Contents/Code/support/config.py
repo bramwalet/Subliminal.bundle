@@ -13,7 +13,6 @@ import subliminal_patch
 import subzero.constants
 import lib
 from subliminal.exceptions import ServiceUnavailable, DownloadLimitExceeded, AuthenticationError
-
 from subliminal_patch.core import is_windows_special_path
 from whichdb import whichdb
 
@@ -148,6 +147,7 @@ class Config(object):
     ietf_as_alpha3 = False
     unrar = None
     adv_cfg_path = None
+    use_custom_dns = False
 
     store_recently_played_amount = 40
 
@@ -227,6 +227,7 @@ class Config(object):
         self.only_one = cast_bool(Prefs['subtitles.only_one'])
         self.embedded_auto_extract = cast_bool(Prefs["subtitles.embedded.autoextract"])
         self.ietf_as_alpha3 = cast_bool(Prefs["subtitles.language.ietf_normalize"])
+        self.use_custom_dns = cast_bool(Prefs['use_custom_dns'])
         self.initialized = True
 
     def migrate_prefs(self):
@@ -815,6 +816,7 @@ class Config(object):
     def get_provider_settings(self):
         os_use_https = self.advanced.providers.opensubtitles.use_https \
             if self.advanced.providers.opensubtitles.use_https != None else True
+
         provider_settings = {'addic7ed': {'username': Prefs['provider.addic7ed.username'],
                                           'password': Prefs['provider.addic7ed.password'],
                                           'use_random_agents': cast_bool(Prefs['provider.addic7ed.use_random_agents1']),
@@ -826,7 +828,7 @@ class Config(object):
                                                'also_foreign': self.forced_also,
                                                'is_vip': cast_bool(Prefs['provider.opensubtitles.is_vip']),
                                                'use_ssl': os_use_https,
-                                               'timeout': self.advanced.providers.opensubtitles.timeout or 15
+                                               'timeout': self.advanced.providers.opensubtitles.timeout or 15,
                                                },
                              'podnapisi': {
                                  'only_foreign': self.forced_only,
@@ -1048,6 +1050,9 @@ class Config(object):
 
         subliminal_patch.core.DOWNLOAD_TRIES = int(Prefs['subtitles.try_downloads'])
         subliminal.score.episode_scores["addic7ed_boost"] = int(Prefs['provider.addic7ed.boost_by2'])
+
+        if self.use_custom_dns:
+            subliminal_patch.http.set_custom_resolver()
 
 
 config = Config()

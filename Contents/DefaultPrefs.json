@@ -836,6 +836,12 @@
     "default": "15"
   },
   {
+    "id": "use_custom_dns",
+    "label": "Use Google DNS (for \"problematic\" countries)",
+    "type": "bool",
+    "default": "false"
+  },
+  {
     "id": "proxy",
     "label": "HTTP proxy to use for providers (supports credentials)",
     "type": "text",

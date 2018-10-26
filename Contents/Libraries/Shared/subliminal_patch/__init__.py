@@ -13,6 +13,7 @@ from .core import scan_video, search_external_subtitles, list_all_subtitles, sav
 from .score import compute_score
 from .video import Video
 import extensions
+import http
 
 # patch subliminal's core functions
 subliminal.scan_video = subliminal.core.scan_video = scan_video
