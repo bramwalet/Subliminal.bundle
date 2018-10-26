@@ -437,7 +437,7 @@ class Config(object):
         self.enable_channel = True
 
         # any provider enabled?
-        if not self.providers:
+        if not self.providers_enabled:
             self.enable_agent = False
             self.enable_channel = False
             Log.Warn("No providers enabled, disabling agent and interface!")
@@ -728,8 +728,9 @@ class Config(object):
             out.append("vtt")
         return out
 
-    def get_providers(self, media_type="series"):
-        providers = {'opensubtitles': cast_bool(Prefs['provider.opensubtitles.enabled']),
+    @property
+    def providers_by_prefs(self):
+        return {'opensubtitles': cast_bool(Prefs['provider.opensubtitles.enabled']),
                      # 'thesubdb': Prefs['provider.thesubdb.enabled'],
                      'podnapisi': cast_bool(Prefs['provider.podnapisi.enabled']),
                      'titlovi': cast_bool(Prefs['provider.titlovi.enabled']),
@@ -746,6 +747,12 @@ class Config(object):
                      'assrt': cast_bool(Prefs['provider.assrt.enabled']),
                      }
 
+    @property
+    def providers_enabled(self):
+        return filter(lambda prov: self.providers_by_prefs[prov], self.providers_by_prefs)
+
+    def get_providers(self, media_type="series"):
+        providers = self.providers_by_prefs
         providers_by_prefs = copy.deepcopy(providers)
 
         # disable subscene for movies by default
