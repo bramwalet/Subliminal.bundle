@@ -86,6 +86,8 @@ class SubtitleModifications(object):
         line_mods = []
         non_line_mods = []
         used_mods = []
+        mods_merged = {}
+        mods_merged_log = {}
 
         for mod_data, orig_identifier in parsed_mods:
             identifier, args = mod_data
@@ -111,11 +113,54 @@ class SubtitleModifications(object):
                 continue
 
             # merge args of duplicate mods if possible
-            elif identifier in final_mods and mod_cls.args_mergeable:
-                final_mods[identifier] = mod_cls.merge_args(final_mods[identifier], args)
+            elif mod_cls.args_mergeable and identifier in mods_merged:
+                mods_merged[identifier] = mod_cls.merge_args(mods_merged[identifier], args)
+                mods_merged_log[identifier]["identifiers"].append(orig_identifier)
                 continue
+
+            if mod_cls.args_mergeable:
+                mods_merged[identifier] = mod_cls.merge_args(args, {})
+                mods_merged_log[identifier] = {"identifiers": [orig_identifier], "final_identifier": orig_identifier}
+                used_mods.append("%s_ORIG_POSITION" % identifier)
+                continue
+
             final_mods[identifier] = args
             used_mods.append(orig_identifier)
+
+        # finalize merged mods into final and used mods
+        for identifier, args in mods_merged.iteritems():
+            pos_preserve_index = used_mods.index("%s_ORIG_POSITION" % identifier)
+
+            # clear empty mods after merging
+            if not any(args.values()):
+                if self.debug:
+                    logger.debug("Skipping %s, empty args", identifier)
+
+                if pos_preserve_index > -1:
+                    used_mods.pop(pos_preserve_index)
+
+                mods_merged_log.pop(identifier)
+                continue
+
+            # clear empty args
+            final_mod_args = dict(filter(lambda (k, v): bool(v), args.iteritems()))
+
+            _data = SubtitleModifications.get_mod_signature(identifier, **final_mod_args)
+            if _data == mods_merged_log[identifier]["final_identifier"]:
+                mods_merged_log.pop(identifier)
+            else:
+                mods_merged_log[identifier]["final_identifier"] = _data
+
+            if pos_preserve_index > -1:
+                used_mods[pos_preserve_index] = _data
+            else:
+                # should never happen
+                used_mods.append(_data)
+            final_mods[identifier] = args
+
+        if self.debug:
+            for identifier, data in mods_merged_log.iteritems():
+                logger.debug("Merged %s to %s", data["identifiers"], data["final_identifier"])
 
         # separate all mods into line and non-line mods
         for identifier, args in final_mods.iteritems():

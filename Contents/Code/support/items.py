@@ -423,8 +423,9 @@ def save_stored_sub(stored_subtitle, rating_key, part_id, language, item_type, p
 
     try:
         save_subtitles(scanned_parts, {video: [subtitle]}, mode="m", bare_save=True)
+        stored_subtitle.mods = subtitle.mods
         Log.Debug("Modified %s subtitle for: %s:%s with: %s", language.name, rating_key, part_id,
-                  ", ".join(stored_subtitle.mods) if stored_subtitle.mods else "none")
+                  ", ".join(subtitle.mods) if subtitle.mods else "none")
     except:
         Log.Error("Something went wrong when modifying subtitle: %s", traceback.format_exc())
 
