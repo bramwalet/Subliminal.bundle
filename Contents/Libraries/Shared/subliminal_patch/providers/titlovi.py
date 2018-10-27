@@ -308,6 +308,11 @@ class TitloviProvider(Provider, ProviderSubtitleArchiveMixin):
             logger.debug('Archive identified as zip')
             archive = ZipFile(archive_stream)
         else:
+            subtitle.content = r.content
+            if subtitle.is_valid():
+                return
+            subtitle.content = None
+
             raise ProviderError('Unidentified archive type')
 
         subs_in_archive = archive.namelist()
