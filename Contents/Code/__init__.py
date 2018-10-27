@@ -94,12 +94,12 @@ def Start():
         track_usage("General", "plugin", "start", config.version)
 
 
-def update_local_media(metadata, media, media_type="movies"):
+def update_local_media(metadata, media, media_type="movies", ignore_parts_cleanup=None):
     # Look for subtitles
     if media_type == "movies":
         for item in media.items:
             for part in item.parts:
-                support.localmedia.find_subtitles(part)
+                support.localmedia.find_subtitles(part, ignore_parts_cleanup=ignore_parts_cleanup)
         return
 
     # Look for subtitles for each episode.
@@ -112,7 +112,7 @@ def update_local_media(metadata, media, media_type="movies"):
 
                     # Look for subtitles.
                     for part in i.parts:
-                        support.localmedia.find_subtitles(part)
+                        support.localmedia.find_subtitles(part, ignore_parts_cleanup=ignore_parts_cleanup)
         else:
             pass
 
@@ -199,16 +199,18 @@ class SubZeroAgent(object):
             config.init_subliminal_patches()
             videos = media_to_videos(media, kind=self.agent_type)
 
-            # find local media
-            update_local_media(metadata, media, media_type=self.agent_type)
-
             # media ignored?
             use_any_parts = False
+            ignore_parts_cleanup = []
             for video in videos:
                 if not is_wanted(video["id"], item=video["item"]):
                     Log.Debug(u'Skipping "%s"' % video["filename"])
+                    ignore_parts_cleanup.append(video["path"])
                     continue
                 use_any_parts = True
+
+            # find local media
+            update_local_media(metadata, media, media_type=self.agent_type, ignore_parts_cleanup=ignore_parts_cleanup)
 
             if not use_any_parts:
                 Log.Debug(u"Nothing to do.")
