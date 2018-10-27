@@ -105,10 +105,12 @@ def set_refresh_menu_state(state_or_media, media_type="movies"):
         # store it in last state and remove the current
         Dict["last_refresh_state"] = Dict["current_refresh_state"]
         Dict["current_refresh_state"] = None
+        Dict.Save()
         return
 
     if isinstance(state_or_media, types.StringTypes) or is_localized_string(state_or_media):
         Dict["current_refresh_state"] = unicode(state_or_media)
+        Dict.Save()
         return
 
     media = state_or_media
@@ -132,6 +134,7 @@ def set_refresh_menu_state(state_or_media, media_type="movies"):
 
     Dict["current_refresh_state"] = unicode(_(t,
                                               title=unicode(title)))
+    Dict.Save()
 
 
 def get_item_task_data(task_name, rating_key, language):
