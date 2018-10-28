@@ -22,6 +22,7 @@ def find_subtitles(part, ignore_parts_cleanup=None):
         if Prefs["subtitles.save.subFolder.Custom"] else None
 
     use_sub_subfolder = Prefs["subtitles.save.subFolder"] != "current folder" and not sub_dir_custom
+    autoclean = helpers.cast_bool(Prefs["subtitles.autoclean"])
     sub_subfolder = None
     paths = [os.path.dirname(part_filename)] if use_filesystem else []
 
@@ -89,7 +90,10 @@ def find_subtitles(part, ignore_parts_cleanup=None):
                 media_files.append(root)
 
     # cleanup any leftover subtitle if no associated media file was found
-    if use_filesystem and helpers.cast_bool(Prefs["subtitles.autoclean"]) and not ignore_parts_cleanup:
+    if autoclean and ignore_parts_cleanup:
+        Log.Info("Skipping housekeeping of: %s", paths)
+
+    if use_filesystem and autoclean and not ignore_parts_cleanup:
         for path in paths:
             # only housekeep in sub_subfolder if sub_subfolder is used
             if use_sub_subfolder and path != sub_subfolder and not sz_config.advanced.thorough_cleaning:
