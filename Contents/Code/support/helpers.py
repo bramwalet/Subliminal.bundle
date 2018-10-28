@@ -152,6 +152,13 @@ def get_plex_item_display_title(item, kind, parent=None, parent_title=None, sect
                                    add_section_title=add_section_title)
 
 
+def series_num(v):
+    try:
+        return int(v)
+    except (TypeError, ValueError):
+        pass
+
+
 def get_video_display_title(kind, title, section_title=None, parent_title=None, season=None, episode=None,
                             add_section_title=False):
     section_add = ""
@@ -159,10 +166,10 @@ def get_video_display_title(kind, title, section_title=None, parent_title=None, 
         section_add = ("%s: " % section_title) if section_title else ""
 
     if kind in ("season", "show") and parent_title:
-        if season and episode:
+        if series_num(season) is not None and series_num(episode) is not None:
             return '%s%s S%02dE%02d%s' % (section_add, parent_title, season or 0, episode or 0,
                                           (", %s" % title if title else ""))
-        elif season:
+        elif series_num(season) is not None:
             return '%s%s S%02d%s' % (section_add, parent_title, season or 0,
                                      (", %s" % title if title else ""))
 
