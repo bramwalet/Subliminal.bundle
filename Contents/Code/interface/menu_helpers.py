@@ -219,7 +219,7 @@ def extract_embedded_sub(**kwargs):
 
                     # add item to history
                     item_title = get_title_for_video_metadata(video.plexapi_metadata,
-                                                              add_section_title=False)
+                                                              add_section_title=False, add_episode_title=True)
                     if history_storage:
                         history = history_storage
                     else:
