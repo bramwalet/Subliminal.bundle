@@ -9,7 +9,7 @@ import xmlrpclib
 import dns.resolver
 
 from requests import Session, exceptions
-from requests.packages.urllib3.util import connection
+from urllib3.util import connection
 from retry.api import retry_call
 from exceptions import APIThrottled
 
