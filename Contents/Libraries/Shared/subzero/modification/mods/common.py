@@ -37,7 +37,7 @@ class CommonFixes(SubtitleTextModification):
         NReProcessor(re.compile(r'(?u)(\s{2,})'), " ", name="CM_multi_space"),
 
         # fix music symbols
-        NReProcessor(re.compile(ur'(?u)(?:^[-\s]*[*#¶]+)|(?:[*#¶]+\s*$)'), u"♪", name="CM_music_symbols"),
+        NReProcessor(re.compile(ur'(?u)(?:^[-\s]*[*#¶]+(?![^\s-]))|(?:[*#¶]+\s*$)'), u"♪", name="CM_music_symbols"),
 
         # '' = "
         NReProcessor(re.compile(ur'(?u)([\'’ʼ❜‘‛][\'’ʼ❜‘‛]+)'), u'"', name="CM_double_apostrophe"),
