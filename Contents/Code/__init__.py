@@ -119,7 +119,9 @@ def agent_extract_embedded(video_part_map, history_storage=None):
                 item_count = item_count + 1
                 for requested_language in config.lang_list:
                     embedded_subs = stored_subs.get_by_provider(plexapi_part.id, requested_language, "embedded")
-                    current = stored_subs.get_any(plexapi_part.id, requested_language)
+                    current = stored_subs.get_any(plexapi_part.id, requested_language) or \
+                        requested_language in scanned_video.subtitle_languages
+
                     if not embedded_subs:
                         stream_data = get_embedded_subtitle_streams(plexapi_part, requested_language=requested_language)
 
