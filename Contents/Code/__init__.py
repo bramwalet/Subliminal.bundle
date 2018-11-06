@@ -94,27 +94,9 @@ def Start():
         track_usage("General", "plugin", "start", config.version)
 
 
-def update_local_media(metadata, media, media_type="movies", ignore_parts_cleanup=None):
-    # Look for subtitles
-    if media_type == "movies":
-        for item in media.items:
-            for part in item.parts:
-                support.localmedia.find_subtitles(part, ignore_parts_cleanup=ignore_parts_cleanup)
-        return
-
-    # Look for subtitles for each episode.
-    for s in media.seasons:
-        # If we've got a date based season, ignore it for now, otherwise it'll collide with S/E folders/XML and PMS
-        # prefers date-based (why?)
-        if int(s) < 1900 or metadata.guid.startswith(PERSONAL_MEDIA_IDENTIFIER):
-            for e in media.seasons[s].episodes:
-                for i in media.seasons[s].episodes[e].items:
-
-                    # Look for subtitles.
-                    for part in i.parts:
-                        support.localmedia.find_subtitles(part, ignore_parts_cleanup=ignore_parts_cleanup)
-        else:
-            pass
+def update_local_media(videos, ignore_parts_cleanup=None):
+    for video in videos:
+        support.localmedia.find_subtitles(video["plex_part"], ignore_parts_cleanup=ignore_parts_cleanup)
 
 
 def agent_extract_embedded(video_part_map, history_storage=None):
@@ -197,22 +179,22 @@ class SubZeroAgent(object):
         item_ids = []
         try:
             config.init_subliminal_patches()
-            videos = media_to_videos(media, kind=self.agent_type)
+            all_videos = media_to_videos(media, kind=self.agent_type)
 
             # media ignored?
-            use_any_parts = False
             ignore_parts_cleanup = []
-            for video in videos:
+            videos = []
+            for video in all_videos:
                 if not is_wanted(video["id"], item=video["item"]):
                     Log.Debug(u'Skipping "%s"' % video["filename"])
                     ignore_parts_cleanup.append(video["path"])
                     continue
-                use_any_parts = True
+                videos.append(video)
 
             # find local media
-            update_local_media(metadata, media, media_type=self.agent_type, ignore_parts_cleanup=ignore_parts_cleanup)
+            update_local_media(videos, ignore_parts_cleanup=ignore_parts_cleanup)
 
-            if not use_any_parts:
+            if not videos:
                 Log.Debug(u"Nothing to do.")
                 return
 
@@ -301,7 +283,7 @@ class SubZeroAgent(object):
                 # store SZ meta info even if we've downloaded none
                 self.store_blank_subtitle_metadata(scanned_video_part_map)
 
-            update_local_media(metadata, media, media_type=self.agent_type)
+            update_local_media(videos)
 
         finally:
             # update the menu state
