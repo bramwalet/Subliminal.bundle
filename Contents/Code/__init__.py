@@ -192,7 +192,7 @@ class SubZeroAgent(object):
                 videos.append(video)
 
             # find local media
-            update_local_media(videos, ignore_parts_cleanup=ignore_parts_cleanup)
+            update_local_media(all_videos, ignore_parts_cleanup=ignore_parts_cleanup)
 
             if not videos:
                 Log.Debug(u"Nothing to do.")
