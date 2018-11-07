@@ -1,4 +1,22 @@
 
+2.5.7.2663
+- implement translations for the channel and the settings
+- i18n: German (myself)
+- i18n: Danish (thanks Uthman, Claus Møller, dane22)
+- i18n: Dutch (thanks jippo015, Semi Doludizgin, Rafael)
+- i18n: Hungarian (thanks Morpheus1333, sugarman402)
+- i18n: Spanish LA&C (thanks Yamil.llanos, Notorius28)
+- core: notify executable: support spaces in path, fixes #520
+- core: notify executable: fix usage with python scripts (drops inherited PYTHONPATH), fixes #355
+- core: fix plugin_pin_mode
+- refiners: filebot: fix usage on OSX
+- providers: add assrt.net (Chinese) - thanks @dimotsai!
+- providers: add supersubtitles (feliratok.info, Hungarian) - thanks @morpheus133!
+- providers: addic7ed: cache login data instead of re-login per search
+- submod: HI: support "&" and "+" in hi_before_colon
+- submod: HI: be less aggressive with HI_before_colon_noncaps; fixes #510
+
+
 2.5.4.2541
 
 - core: try retrieving advanced_settings.json from the path given, which may be a file path or a directory
