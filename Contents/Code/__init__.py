@@ -99,7 +99,7 @@ def update_local_media(videos, ignore_parts_cleanup=None):
         support.localmedia.find_subtitles(video["plex_part"], ignore_parts_cleanup=ignore_parts_cleanup)
 
 
-def agent_extract_embedded(video_part_map, history_storage=None):
+def agent_extract_embedded(video_part_map):
     try:
         subtitle_storage = get_subtitle_storage()
 
@@ -139,7 +139,7 @@ def agent_extract_embedded(video_part_map, history_storage=None):
         if to_extract:
             Log.Info("Triggering extraction of %d embedded subtitles of %d items", len(to_extract), item_count)
             Thread.Create(multi_extract_embedded, stream_list=to_extract, refresh=True, with_mods=True,
-                          single_thread=not config.advanced.auto_extract_multithread, history_storage=history_storage)
+                          single_thread=not config.advanced.auto_extract_multithread)
     except:
         Log.Error("Something went wrong when auto-extracting subtitles, continuing: %s", traceback.format_exc())
 
@@ -176,7 +176,7 @@ class SubZeroAgent(object):
             return
 
         intent = get_intent()
-        history = get_history()
+        history = None
 
         item_ids = []
         try:
@@ -222,7 +222,7 @@ class SubZeroAgent(object):
             # auto extract embedded
             if config.embedded_auto_extract:
                 if config.plex_transcoder:
-                    agent_extract_embedded(scanned_video_part_map, history_storage=history)
+                    agent_extract_embedded(scanned_video_part_map)
                 else:
                     Log.Warning("Plex Transcoder not found, can't auto extract")
 
@@ -258,6 +258,8 @@ class SubZeroAgent(object):
             if downloaded_subtitles:
                 downloaded_any = any(downloaded_subtitles.values())
 
+            history = get_history()
+
             if downloaded_any:
                 save_successful = False
                 try:
@@ -280,7 +282,6 @@ class SubZeroAgent(object):
                             history.add(item_title, video.id, section_title=video.plexapi_metadata["section"],
                                         thumb=video.plexapi_metadata["super_thumb"],
                                         subtitle=subtitle)
-                            history.destroy()
             else:
                 # store SZ meta info even if we've downloaded none
                 self.store_blank_subtitle_metadata(scanned_video_part_map)
@@ -291,8 +292,9 @@ class SubZeroAgent(object):
             # update the menu state
             set_refresh_menu_state(None)
 
-            history.destroy()
-            history = None
+            if history:
+                history.destroy()
+                history = None
 
             # notify any running tasks about our finished update
             for item_id in item_ids:
