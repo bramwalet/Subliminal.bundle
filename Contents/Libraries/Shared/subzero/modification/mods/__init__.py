@@ -17,6 +17,7 @@ class SubtitleModification(object):
     order = None
     modifies_whole_file = False  # operates on the whole file, not individual entries
     apply_last = False
+    only_uppercase = False
     pre_processors = []
     processors = []
     post_processors = []
@@ -38,6 +39,12 @@ class SubtitleModification(object):
 
         new_content = content
         for processor in _processors:
+            if not processor.supported(parent):
+                if debug and processor.enabled:
+                    logger.debug("Processor not supported, skipping: %s", processor.name)
+                    processor.enabled = False
+                continue
+
             old_content = new_content
             new_content = processor.process(new_content, debug=debug, **kwargs)
             if not new_content:

@@ -22,6 +22,7 @@ from subliminal.score import get_equivalent_release_groups
 from subliminal.utils import sanitize_release_group
 from subliminal.subtitle import guess_matches
 from subliminal.video import Episode, Movie
+from subliminal.subtitle import fix_line_ending
 from subzero.language import Language
 
 # parsing regex definitions
@@ -126,13 +127,18 @@ class TitloviSubtitle(Subtitle):
 
 class TitloviProvider(Provider, ProviderSubtitleArchiveMixin):
     subtitle_class = TitloviSubtitle
-    languages = {Language.fromtitlovi(l) for l in language_converters['titlovi'].codes} | {Language.fromietf('sr')}
-    server_url = 'http://titlovi.com'
+    languages = {Language.fromtitlovi(l) for l in language_converters['titlovi'].codes} | {Language.fromietf('sr-Latn')}
+    server_url = 'https://titlovi.com'
     search_url = server_url + '/titlovi/?'
     download_url = server_url + '/download/?type=1&mediaid='
 
     def initialize(self):
         self.session = Session()
+        self.session.headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' \
+                                             '(KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36'
+        logger.debug('User-Agent set to %s', self.session.headers['User-Agent'])
+        self.session.headers['Referer'] = self.server_url
+        logger.debug('Referer set to %s', self.session.headers['Referer'])
 
     def terminate(self):
         self.session.close()
@@ -141,9 +147,18 @@ class TitloviProvider(Provider, ProviderSubtitleArchiveMixin):
         items_per_page = 10
         current_page = 1
 
+        used_languages = languages
+        lang_strings = [str(lang) for lang in used_languages]
+
+        # handle possible duplicate use of Serbian Latin
+        if "sr" in lang_strings and "sr-Latn" in lang_strings:
+            logger.info('Duplicate entries <Language [sr]> and <Language [sr-Latn]> found, filtering languages')
+            used_languages = filter(lambda l: l != Language.fromietf('sr-Latn'), used_languages)
+            logger.info('Filtered language list %r', used_languages)
+
         # convert list of languages into search string
-        langs = '|'.join(
-            map(str, [l.titlovi if l != Language.fromietf('sr') else 'cirilica' for l in languages]))
+        langs = '|'.join(map(str, [l.titlovi for l in used_languages]))
+
         # set query params
         params = {'prijevod': title, 'jezik': langs}
         is_episode = False
@@ -207,10 +222,8 @@ class TitloviProvider(Provider, ProviderSubtitleArchiveMixin):
                     match = lang_re.search(sub.select_one('.lang').attrs['src'])
                     if match:
                         try:
-                            lang = Language.fromtitlovi(match.group('lang'))
-                            script = match.group('script')
-                            if script:
-                                lang.script = Script(script)
+                            # decode language
+                            lang = Language.fromtitlovi(match.group('lang')+match.group('script'))
                         except ValueError:
                             continue
 
@@ -295,6 +308,41 @@ class TitloviProvider(Provider, ProviderSubtitleArchiveMixin):
             logger.debug('Archive identified as zip')
             archive = ZipFile(archive_stream)
         else:
+            subtitle.content = r.content
+            if subtitle.is_valid():
+                return
+            subtitle.content = None
+
             raise ProviderError('Unidentified archive type')
 
-        subtitle.content = self.get_subtitle_from_archive(subtitle, archive)
+        subs_in_archive = archive.namelist()
+
+        # if Serbian lat and cyr versions are packed together, try to find right version
+        if len(subs_in_archive) > 1 and (subtitle.language == 'sr' or subtitle.language == 'sr-Cyrl'):
+            self.get_subtitle_from_bundled_archive(subtitle, subs_in_archive, archive)
+        else:
+            # use default method for everything else
+            subtitle.content = self.get_subtitle_from_archive(subtitle, archive)
+
+    def get_subtitle_from_bundled_archive(self, subtitle, subs_in_archive, archive):
+        sr_lat_subs = []
+        sr_cyr_subs = []
+        sub_to_extract = None
+
+        for sub_name in subs_in_archive:
+            if not ('.cyr' in sub_name or '.cir' in sub_name):
+                sr_lat_subs.append(sub_name)
+
+            if ('.cyr' in sub_name or '.cir' in sub_name) and not '.lat' in sub_name:
+                sr_cyr_subs.append(sub_name)
+
+        if subtitle.language == 'sr':
+            if len(sr_lat_subs) > 0:
+                sub_to_extract = sr_lat_subs[0]
+
+        if subtitle.language == 'sr-Cyrl':
+            if len(sr_cyr_subs) > 0:
+                sub_to_extract = sr_cyr_subs[0]
+
+        logger.info(u'Using %s from the archive', sub_to_extract)
+        subtitle.content = fix_line_ending(archive.read(sub_to_extract))

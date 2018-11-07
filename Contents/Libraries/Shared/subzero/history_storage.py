@@ -20,10 +20,11 @@ class SubtitleHistoryItem(object):
     lang_name = None
     lang_data = None
     score = None
+    thumb = None
     time = None
     mode = "a"
 
-    def __init__(self, item_title, rating_key, section_title=None, subtitle=None, mode="a", time=None):
+    def __init__(self, item_title, rating_key, section_title=None, subtitle=None, thumb=None, mode="a", time=None):
         self.item_title = item_title
         self.section_title = section_title
         self.rating_key = str(rating_key)
@@ -33,6 +34,7 @@ class SubtitleHistoryItem(object):
                          str(subtitle.language.country) if subtitle.language.country else None, \
                          str(subtitle.language.script) if subtitle.language.script else None
         self.score = subtitle.score
+        self.thumb = thumb
         self.time = time or datetime.datetime.now()
         self.mode = mode
 
@@ -82,11 +84,12 @@ class SubtitleHistory(object):
         self.storage = storage
         self.threadkit = threadkit
 
-    def add(self, item_title, rating_key, section_title=None, subtitle=None, mode="a", time=None):
+    def add(self, item_title, rating_key, section_title=None, subtitle=None, thumb=None, mode="a", time=None):
         with self.threadkit.Lock(key="sub_history_add"):
             items = self.items
 
-            item = SubtitleHistoryItem(item_title, rating_key, section_title=section_title, subtitle=subtitle, mode=mode, time=time)
+            item = SubtitleHistoryItem(item_title, rating_key, section_title=section_title, subtitle=subtitle,
+                                       thumb=thumb, mode=mode, time=time)
 
             # insert item
             items.insert(0, item)

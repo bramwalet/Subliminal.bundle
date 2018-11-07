@@ -195,12 +195,12 @@ class Subtitle(Subtitle_):
             logger.info('Falling back to bs4 detection')
             a = UnicodeDammit(self.content)
 
-            Log.Debug("bs4 detected encoding: %s" % a.original_encoding)
+            logger.info("bs4 detected encoding: %s", a.original_encoding)
 
             if a.original_encoding:
                 self._guessed_encoding = a.original_encoding
                 return a.original_encoding
-            raise ValueError(u"Couldn't guess the proper encoding for %s" % self)
+            raise ValueError(u"Couldn't guess the proper encoding for %s", self)
 
         self._guessed_encoding = encoding
         return encoding
@@ -315,6 +315,7 @@ class Subtitle(Subtitle_):
         if submods.load(content=self.text, language=self.language):
             logger.info("Applying mods: %s", self.mods)
             submods.modify(*self.mods)
+            self.mods = submods.mods_used
 
             content = fix_text(self.pysubs2_to_unicode(submods.f, format=format), **ftfy_defaults)\
                 .encode(encoding="utf-8")

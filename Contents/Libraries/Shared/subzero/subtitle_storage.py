@@ -12,7 +12,7 @@ import sys
 
 from json_tricks.nonp import loads
 from subzero.lib.json import dumps
-from scandir import scandir
+from scandir import scandir, scandir_generic as _scandir_generic
 from constants import mode_map
 
 logger = logging.getLogger(__name__)
@@ -205,6 +205,18 @@ class JSONStoredVideoSubtitles(object):
 
         return part.get(str(lang))
 
+    def set_current(self, part_id, lang, sub_key):
+        subs = self.get_all(part_id, lang)
+        if not subs:
+            return
+
+        if sub_key not in subs:
+            logger.info("Tried setting unknown subtitle %s as current" % sub_key)
+            return
+
+        subs["current"] = sub_key
+        logger.debug("Set subtitle %s as current for %s, %s" % (sub_key, part_id, lang))
+
     def get_by_provider(self, part_id, lang, provider_name):
         out = []
         all_subs = self.get_all(part_id, lang)
@@ -302,8 +314,9 @@ class StoredSubtitlesManager(object):
             return os.path.join(self.dataitems_path, "%s%s" % (bare_fn, self.extension))
         return os.path.join(self.dataitems_path, bare_fn)
 
-    def get_all_files(self):
-        for entry in scandir(self.dataitems_path):
+    def get_all_files(self, scandir_generic=False):
+        _scandir = _scandir_generic if scandir_generic else scandir
+        for entry in _scandir(self.dataitems_path):
             if entry.is_file(follow_symlinks=False) and \
                     entry.name.startswith("subs_") and \
                     entry.name.endswith(self.extension):
@@ -313,11 +326,17 @@ class StoredSubtitlesManager(object):
         fl = []
         root = self.dataitems_path
         recent_dt = datetime.datetime.now() - datetime.timedelta(days=age_days)
-        for fn in self.get_all_files():
-            ctime = os.path.getctime(os.path.join(root, fn))
-            created = datetime.datetime.fromtimestamp(ctime)
-            if created > recent_dt:
-                fl.append(fn)
+
+        def run(scandir_generic=False):
+            for fn in self.get_all_files(scandir_generic=scandir_generic):
+                ctime = os.path.getctime(os.path.join(root, fn))
+                created = datetime.datetime.fromtimestamp(ctime)
+                if created > recent_dt:
+                    fl.append(fn)
+        try:
+            run()
+        except OSError:
+            run(scandir_generic=True)
         return fl
 
     def load_recent_files(self, age_days=30):
@@ -329,7 +348,7 @@ class StoredSubtitlesManager(object):
                 out[fn] = data
         return out
 
-    def delete_missing(self, wanted_languages=set()):
+    def delete_missing(self, wanted_languages=set(), scandir_generic=False):
         deleted = []
 
         def delete_fn(filename):
@@ -338,7 +357,7 @@ class StoredSubtitlesManager(object):
             else:
                 self.legacy_delete(filename)
 
-        for fn in self.get_all_files():
+        for fn in self.get_all_files(scandir_generic=scandir_generic):
             video_id = os.path.basename(fn).split(".")[0].split("subs_")[1]
             item = self.get_item(video_id)
 
@@ -507,7 +526,7 @@ class StoredSubtitlesManager(object):
                     finally:
                         f.close()
                 except:
-                    logger.error("Something REALLY went wrong when writing to: %s: %s", basename,
+                    logger.error("Something went REALLY wrong when writing to: %s: %s", basename,
                                  traceback.format_exc())
             else:
                 with gzip.open(temp_fn, "wb", compresslevel=6) as f:

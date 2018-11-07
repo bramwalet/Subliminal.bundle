@@ -1,8 +1,8 @@
 # coding=utf-8
 
-from babelfish import Language, LanguageReverseConverter
-
+from babelfish import LanguageReverseConverter
 from subliminal.exceptions import ConfigurationError
+from subzero.language import Language
 
 
 # alpha3 codes extracted from `https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes`

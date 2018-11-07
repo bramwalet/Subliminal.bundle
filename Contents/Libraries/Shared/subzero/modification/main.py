@@ -1,21 +1,27 @@
 # coding=utf-8
 
 import traceback
-
+import re
 import pysubs2
 import logging
 import time
 
 from mods import EMPTY_TAG_PROCESSOR, EmptyEntryError
 from registry import registry
+from subzero.language import Language
 
 logger = logging.getLogger(__name__)
+
+
+lowercase_re = re.compile(ur'(?sux)[a-zà-ž]')
 
 
 class SubtitleModifications(object):
     debug = False
     language = None
     initialized_mods = {}
+    mods_used = []
+    only_uppercase = False
     f = None
 
     font_style_tag_start = u"{\\"
@@ -23,6 +29,7 @@ class SubtitleModifications(object):
     def __init__(self, debug=False):
         self.debug = debug
         self.initialized_mods = {}
+        self.mods_used = []
 
     def load(self, fn=None, content=None, language=None, encoding="utf-8"):
         """
@@ -33,7 +40,8 @@ class SubtitleModifications(object):
         :param content: unicode 
         :return: 
         """
-        self.language = language
+        if language:
+            self.language = Language.rebuild(language, forced=False)
         self.initialized_mods = {}
         try:
             if fn:
@@ -73,12 +81,16 @@ class SubtitleModifications(object):
         return cls.get_mod_class(identifier).get_signature(**kwargs)
 
     def prepare_mods(self, *mods):
-        parsed_mods = [SubtitleModifications.parse_identifier(mod) for mod in mods]
+        parsed_mods = [(SubtitleModifications.parse_identifier(mod), mod) for mod in mods]
         final_mods = {}
         line_mods = []
         non_line_mods = []
+        used_mods = []
+        mods_merged = {}
+        mods_merged_log = {}
 
-        for identifier, args in parsed_mods:
+        for mod_data, orig_identifier in parsed_mods:
+            identifier, args = mod_data
             if identifier not in registry.mods:
                 logger.error("Mod %s not loaded", identifier)
                 continue
@@ -95,11 +107,60 @@ class SubtitleModifications(object):
                                  identifier, self.language)
                 continue
 
-            # merge args of duplicate mods if possible
-            elif identifier in final_mods and mod_cls.args_mergeable:
-                final_mods[identifier] = mod_cls.merge_args(final_mods[identifier], args)
+            if mod_cls.only_uppercase and not self.only_uppercase:
+                if self.debug:
+                    logger.debug("Skipping %s, because the subtitle isn't all uppercase", identifier)
                 continue
+
+            # merge args of duplicate mods if possible
+            elif mod_cls.args_mergeable and identifier in mods_merged:
+                mods_merged[identifier] = mod_cls.merge_args(mods_merged[identifier], args)
+                mods_merged_log[identifier]["identifiers"].append(orig_identifier)
+                continue
+
+            if mod_cls.args_mergeable:
+                mods_merged[identifier] = mod_cls.merge_args(args, {})
+                mods_merged_log[identifier] = {"identifiers": [orig_identifier], "final_identifier": orig_identifier}
+                used_mods.append("%s_ORIG_POSITION" % identifier)
+                continue
+
             final_mods[identifier] = args
+            used_mods.append(orig_identifier)
+
+        # finalize merged mods into final and used mods
+        for identifier, args in mods_merged.iteritems():
+            pos_preserve_index = used_mods.index("%s_ORIG_POSITION" % identifier)
+
+            # clear empty mods after merging
+            if not any(args.values()):
+                if self.debug:
+                    logger.debug("Skipping %s, empty args", identifier)
+
+                if pos_preserve_index > -1:
+                    used_mods.pop(pos_preserve_index)
+
+                mods_merged_log.pop(identifier)
+                continue
+
+            # clear empty args
+            final_mod_args = dict(filter(lambda (k, v): bool(v), args.iteritems()))
+
+            _data = SubtitleModifications.get_mod_signature(identifier, **final_mod_args)
+            if _data == mods_merged_log[identifier]["final_identifier"]:
+                mods_merged_log.pop(identifier)
+            else:
+                mods_merged_log[identifier]["final_identifier"] = _data
+
+            if pos_preserve_index > -1:
+                used_mods[pos_preserve_index] = _data
+            else:
+                # should never happen
+                used_mods.append(_data)
+            final_mods[identifier] = args
+
+        if self.debug:
+            for identifier, data in mods_merged_log.iteritems():
+                logger.debug("Merged %s to %s", data["identifiers"], data["final_identifier"])
 
         # separate all mods into line and non-line mods
         for identifier, args in final_mods.iteritems():
@@ -113,12 +174,45 @@ class SubtitleModifications(object):
             if identifier not in self.initialized_mods:
                 self.initialized_mods[identifier] = mod_cls(self)
 
-        return line_mods, non_line_mods
+        return line_mods, non_line_mods, used_mods
+
+    def detect_uppercase(self):
+        entries_used = 0
+        for entry in self.f:
+            entry_used = False
+            for sub in entry.text.strip().split("\N"):
+                # skip HI bracket entries, those might actually be lowercase
+                sub = sub.strip()
+                for processor in registry.mods["remove_HI"].processors[:4]:
+                    sub = processor.process(sub)
+
+                if sub.strip():
+                    if lowercase_re.search(sub):
+                        return False
+
+                    entry_used = True
+                else:
+                    # skip full entry
+                    break
+
+            if entry_used:
+                entries_used += 1
+
+            if entries_used == 40:
+                break
+
+        return True
 
     def modify(self, *mods):
         new_entries = []
         start = time.time()
-        line_mods, non_line_mods = self.prepare_mods(*mods)
+        self.only_uppercase = self.detect_uppercase()
+
+        if self.only_uppercase and self.debug:
+            logger.debug("Full-uppercase subtitle found")
+
+        line_mods, non_line_mods, mods_used = self.prepare_mods(*mods)
+        self.mods_used = mods_used
 
         # apply non-last file mods
         if non_line_mods:
@@ -152,6 +246,7 @@ class SubtitleModifications(object):
 
         if self.debug:
             logger.debug("Subtitle Modification took %ss", time.time() - start)
+            logger.debug("Mods applied: %s" % self.mods_used)
 
     def apply_non_line_mods(self, mods, only_last=False):
         for identifier, args in mods:

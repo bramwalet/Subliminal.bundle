@@ -4,9 +4,9 @@ from subzero.constants import PREFIX, TITLE, ART
 from support.config import config
 from support.helpers import pad_title, timestamp, df, display_language
 from support.scheduler import scheduler
-from support.ignore import ignore_list
+from support.ignore import get_decision_list
 from support.items import get_item_thumb, get_on_deck_items, get_all_items, get_items_info, get_item, get_item_title
-from menu_helpers import main_icon, debounce, SubFolderObjectContainer, default_thumb, dig_tree, add_ignore_options, \
+from menu_helpers import main_icon, debounce, SubFolderObjectContainer, default_thumb, dig_tree, add_incl_excl_options, \
     ObjectContainer, route, handler
 from support.i18n import _
 from item_details import ItemDetailsMenu
@@ -100,7 +100,7 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
         oc.add(DirectoryObject(
             key=Callback(RecentMissingSubtitlesMenu, randomize=timestamp()),
             title=_("Show recently added items with missing subtitles"),
-            summary=_("Lists items with missing subtitles. Click on Find recent items with missing subs to update list"),
+            summary=_("Lists items with missing subtitles. Click on \"Find recent items with missing subs\" to update list"),
             thumb=R("icon-missing.jpg")
         ))
         oc.add(DirectoryObject(
@@ -134,10 +134,15 @@ def fatality(randomize=None, force_title=None, header=None, message=None, only_r
             thumb=R("icon-search.jpg")
         ))
 
+        ref_list = get_decision_list()
+        incl_excl_ref = _("include list") if ref_list.store == "include" else _("ignore list")
+
         oc.add(DirectoryObject(
             key=Callback(IgnoreListMenu),
-            title=_("Display ignore list (%(ignored_count)d)", ignored_count=len(ignore_list)),
-            summary=_("Show the current ignore list (mainly used for the automatic tasks)"),
+            title=_("Display %(incl_excl_list_name)s (%(count)d)",
+                    incl_excl_list_name=incl_excl_ref, count=len(ref_list)),
+            summary=_("Show the current %(incl_excl_list_name)s (mainly used for the automatic tasks)",
+                      incl_excl_list_name=incl_excl_ref),
             thumb=R("icon-ignore.jpg")
         ))
 
@@ -218,6 +223,7 @@ def RecentlyPlayedMenu():
         item_title = get_item_title(item)
 
         oc.add(DirectoryObject(
+            thumb=get_item_thumb(item) or default_thumb,
             title=item_title,
             key=Callback(ItemDetailsMenu, title=base_title + " > " + item.title, item_title=item.title,
                          rating_key=item.rating_key)
@@ -314,8 +320,8 @@ def determine_section_display(kind, item, pass_kwargs=None):
     return SectionMenu
 
 
-@route(PREFIX + '/ignore/set/{kind}/{rating_key}/{todo}/sure={sure}', kind=str, rating_key=str, todo=str, sure=bool)
-def IgnoreMenu(kind, rating_key, title=None, sure=False, todo="not_set"):
+@route(PREFIX + '/incl_excl/set/{kind}/{rating_key}/{todo}/sure={sure}', kind=str, rating_key=str, todo=str, sure=bool)
+def InclExclMenu(kind, rating_key, title=None, sure=False, todo="not_set"):
     """
     displays the ignore options for a menu
     :param kind:
@@ -325,55 +331,68 @@ def IgnoreMenu(kind, rating_key, title=None, sure=False, todo="not_set"):
     :param todo:
     :return:
     """
-    is_ignored = rating_key in ignore_list[kind]
+    ref_list = get_decision_list()
+    include = ref_list.store == "include"
+    list_str_ref = "include" if include else "ignore"
+    in_list = rating_key in ref_list[kind]
+
+    if include:
+        # shortcut
+        sure = True
+        todo = "add" if not in_list else "remove"
+
     if not sure:
         t = u"Add %(kind)s %(title)s to the ignore list"
-        if is_ignored:
+        if in_list:
             t = u"Remove %(kind)s %(title)s from the ignore list"
         oc = SubFolderObjectContainer(no_history=True, replace_parent=True,
                                       title1=_(t,
-                                               kind=ignore_list.verbose(kind),
+                                               kind=ref_list.verbose(kind),
                                                title=title
                                                ),
                                       title2=_("Are you sure?"))
         oc.add(DirectoryObject(
-            key=Callback(IgnoreMenu, kind=kind, rating_key=rating_key, title=title, sure=True,
-                         todo="add" if not is_ignored else "remove"),
+            key=Callback(InclExclMenu, kind=kind, rating_key=rating_key, title=title, sure=True,
+                         todo="add" if not in_list else "remove"),
             title=pad_title(_("Are you sure?")),
         ))
         return oc
 
-    rel = ignore_list[kind]
+    rel = ref_list[kind]
     dont_change = False
     state = None
     if todo == "remove":
-        if not is_ignored:
+        if not in_list:
             dont_change = True
         else:
             rel.remove(rating_key)
-            Log.Info("Removed %s (%s) from the ignore list", title, rating_key)
-            ignore_list.remove_title(kind, rating_key)
-            ignore_list.save()
+            Log.Info("Removed %s (%s) from the %s list", title, rating_key, list_str_ref)
+            ref_list.remove_title(kind, rating_key)
+            ref_list.save()
     elif todo == "add":
-        if is_ignored:
+        if in_list:
             dont_change = True
         else:
             rel.append(rating_key)
-            Log.Info("Added %s (%s) to the ignore list", title, rating_key)
-            ignore_list.add_title(kind, rating_key, title)
-            ignore_list.save()
+            Log.Info("Added %s (%s) to the %s list", title, rating_key, list_str_ref)
+            ref_list.add_title(kind, rating_key, title)
+            ref_list.save()
     else:
         dont_change = True
 
     if dont_change:
-        return fatality(force_title=" ", header=_("Didn't change the ignore list"), no_history=True)
+        return fatality(force_title=" ", header=_("Didn't change the %(incl_excl_list_name)s",
+                                                  incl_excl_list_name=_(list_str_ref)), no_history=True)
 
-    t = "%(title)s added to the ignore list"
-    if todo == "remove":
-        t = "%(title)s removed from the ignore list"
-    return fatality(force_title=" ", header=_(t,
-                                              title=title,),
-                    no_history=True)
+    if include:
+        t = "%(title)s added to the include list"
+        if todo == "remove":
+            t = "%(title)s removed from the include list"
+    else:
+        t = "%(title)s added to the ignore list"
+        if todo == "remove":
+            t = "%(title)s removed from the ignore list"
+    return fatality(force_title=" ", header=_(t, title=title,), no_history=True)
 
 
 @route(PREFIX + '/sections')
@@ -414,7 +433,7 @@ def SectionMenu(rating_key, title=None, base_title=None, section_title=None, ign
     title = base_title + " > " + title
     oc = SubFolderObjectContainer(title2=title, no_cache=True, no_history=True)
     if ignore_options:
-        add_ignore_options(oc, "sections", title=section_title, rating_key=rating_key, callback_menu=IgnoreMenu)
+        add_incl_excl_options(oc, "sections", title=section_title, rating_key=rating_key, callback_menu=InclExclMenu)
 
     return dig_tree(oc, items, MetadataMenu,
                     pass_kwargs={"base_title": title, "display_items": deeper, "previous_item_type": "section",
@@ -442,7 +461,7 @@ def SectionFirstLetterMenu(rating_key, title=None, base_title=None, section_titl
     title = unicode(title)
     oc = SubFolderObjectContainer(title2=section_title, no_cache=True, no_history=True)
     title = base_title + " > " + title
-    add_ignore_options(oc, "sections", title=section_title, rating_key=rating_key, callback_menu=IgnoreMenu)
+    add_incl_excl_options(oc, "sections", title=section_title, rating_key=rating_key, callback_menu=InclExclMenu)
 
     oc.add(DirectoryObject(
         key=Callback(SectionMenu, title=_("All"), base_title=title, rating_key=rating_key, ignore_options=False),

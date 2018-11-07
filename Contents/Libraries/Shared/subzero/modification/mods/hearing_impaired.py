@@ -49,7 +49,7 @@ class HearingImpaired(SubtitleTextModification):
         # uppercase text before colon (at least 3 uppercase chars); at start or after a sentence,
         # possibly with a dash in front; ignore anything ending with a quote
         NReProcessor(re.compile(ur'(?u)(?:(?<=^)|(?<=[.\-!?\"\']))([\s-]*(?=[A-ZÀ-Ž&+]\s*[A-ZÀ-Ž&+]\s*[A-ZÀ-Ž&+])'
-                                ur'[A-ZÀ-Ž-_0-9\s\"\'&+]+:(?![\"\'’ʼ❜‘‛”“‟„])\s*)(?![0-9])'), "",
+                                ur'[A-ZÀ-Ž-_0-9\s\"\'&+]+:(?![\"\'’ʼ❜‘‛”“‟„])(?:\s+|$))(?![0-9])'), "",
                      name="HI_before_colon_caps"),
 
         # any text before colon (at least 3 chars); at start or after a sentence,
@@ -68,14 +68,18 @@ class HearingImpaired(SubtitleTextModification):
         #             name="HI_brackets_special"),
 
         # all caps line (at least 4 consecutive uppercase chars)
-        NReProcessor(re.compile(ur'(?u)(^(?=.*[A-ZÀ-Ž&+]{4,})[A-ZÀ-Ž-_\s&+]+$)'), "", name="HI_all_caps"),
+        NReProcessor(re.compile(ur'(?u)(^(?=.*[A-ZÀ-Ž&+]{4,})[A-ZÀ-Ž-_\s&+]+$)'), "", name="HI_all_caps",
+                     supported=lambda p: not p.only_uppercase),
+
+        # remove MAN:
+        NReProcessor(re.compile(ur'(?suxi)(.*MAN:\s*)'), "", name="HI_remove_man"),
 
         # dash in front
         # NReProcessor(re.compile(r'(?u)^\s*-\s*'), "", name="HI_starting_dash"),
 
         # all caps at start before new sentence
         NReProcessor(re.compile(ur'(?u)^(?=[A-ZÀ-Ž]{4,})[A-ZÀ-Ž-_\s]+\s([A-ZÀ-Ž][a-zà-ž].+)'), r"\1",
-                     name="HI_starting_upper_then_sentence"),
+                     name="HI_starting_upper_then_sentence", supported=lambda p: not p.only_uppercase),
 
         # remove music symbols
         NReProcessor(re.compile(ur'(?u)(^%(t)s[*#¶♫♪\s]*%(t)s[*#¶♫♪\s]+%(t)s[*#¶♫♪\s]*%(t)s$)' % {"t": TAG}),

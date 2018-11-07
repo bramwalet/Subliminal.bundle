@@ -1,16 +1,18 @@
 # coding=utf-8
 import os
 
+from collections import OrderedDict
+
 from subzero.language import Language
 
 from sub_mod import SubtitleModificationsMenu
-from menu_helpers import debounce, SubFolderObjectContainer, default_thumb, add_ignore_options, get_item_task_data, \
+from menu_helpers import debounce, SubFolderObjectContainer, default_thumb, add_incl_excl_options, get_item_task_data, \
     set_refresh_menu_state, route, extract_embedded_sub
 
 from refresh_item import RefreshItem
 from subzero.constants import PREFIX
 from support.config import config, TEXT_SUBTITLE_EXTS
-from support.helpers import timestamp, df, get_language, display_language, get_language_from_stream
+from support.helpers import timestamp, df, get_language, display_language, get_language_from_stream, is_stream_forced
 from support.items import get_item_kind_from_rating_key, get_item, get_current_sub, get_item_title, save_stored_sub
 from support.plex_media import get_plex_metadata, get_part, get_embedded_subtitle_streams
 from support.scanning import scan_videos
@@ -33,7 +35,7 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
     :param randomize:
     :return:
     """
-    from interface.main import IgnoreMenu
+    from interface.main import InclExclMenu
 
     title = unicode(base_title) + " > " + unicode(title) if base_title else unicode(title)
     item = plex_item = get_item(rating_key)
@@ -142,9 +144,9 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                     summary = _(u"%(part_summary)sCurrent subtitle: %(provider_name)s (added: %(date_added)s, "
                                 u"%(mode)s), Language: %(language)s, Score: %(score)i, Storage: %(storage_type)s",
                                 part_summary=part_summary_addon,
-                                provider_name=current_sub.provider_name,
+                                provider_name=_(current_sub.provider_name),
                                 date_added=df(current_sub.date_added),
-                                mode=current_sub.mode_verbose,
+                                mode=_(current_sub.mode_verbose),
                                 language=display_language(lang),
                                 score=current_sub.score,
                                 storage_type=current_sub.storage_type)
@@ -181,11 +183,13 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                     # subtitle stream
                     if stream.stream_type == 3 and not stream.stream_key and stream.codec in TEXT_SUBTITLE_EXTS:
                         lang = get_language_from_stream(stream.language_code)
+                        is_forced = is_stream_forced(stream)
 
                         if not lang and config.treat_und_as_first:
                             lang = list(config.lang_list)[0]
 
                         if lang:
+                            lang = Language.rebuild(lang, forced=is_forced)
                             embedded_langs.append(lang)
                             embedded_count += 1
 
@@ -196,14 +200,15 @@ def ItemDetailsMenu(rating_key, title=None, base_title=None, item_title=None, ra
                                      randomize=timestamp()),
                         title=_(u"%(part_summary)sEmbedded subtitles (%(languages)s)",
                                 part_summary=part_index_addon,
-                                languages=", ".join(display_language(l) for l in set(embedded_langs))),
-                        summary=_(u"Extract and activate embedded subtitle streams")
+                                languages=", ".join(display_language(l)
+                                                    for l in list(OrderedDict.fromkeys(embedded_langs)))),
+                        summary=_(u"Extract embedded subtitle streams")
                     ))
 
     ignore_title = item_title
     if current_kind == "episode":
         ignore_title = get_item_title(item)
-    add_ignore_options(oc, "videos", title=ignore_title, rating_key=rating_key, callback_menu=IgnoreMenu)
+    add_incl_excl_options(oc, "videos", title=ignore_title, rating_key=rating_key, callback_menu=InclExclMenu)
     subtitle_storage.destroy()
 
     return oc
@@ -287,7 +292,7 @@ def ListStoredSubsForItemMenu(**kwargs):
         summary = _(u"added: %(date_added)s, %(mode)s, Language: %(language)s, Score: %(score)i, Storage: "
                     u"%(storage_type)s",
                     date_added=df(subtitle.date_added),
-                    mode=subtitle.mode_verbose,
+                    mode=_(subtitle.mode_verbose),
                     language=display_language(language),
                     score=subtitle.score,
                     storage_type=subtitle.storage_type)
@@ -324,19 +329,24 @@ def SelectStoredSubForItemMenu(**kwargs):
     subtitles = stored_subs.get_all(part_id, language)
     subtitle = subtitles[sub_key]
 
-    subtitles["current"] = sub_key
-
     save_stored_sub(subtitle, rating_key, part_id, language, item_type, plex_item=plex_item, storage=storage,
                     stored_subs=stored_subs)
 
+    stored_subs.set_current(part_id, language, sub_key)
+    storage.save(stored_subs)
     storage.destroy()
 
-    kwargs.pop("randomize")
+    kwa = {
+        "header": _("Success"),
+        "message": _("Subtitle saved to disk"),
+        "title": kwargs["title"],
+        "item_title": kwargs["item_title"],
+        "base_title": kwargs.get("base_title")
+    }
 
-    kwargs["header"] = _("Success")
-    kwargs["message"] = _("Subtitle saved to disk")
+    # fixme: return to SubtitleOptionsMenu properly? (needs recomputation of current_data
 
-    return SubtitleOptionsMenu(randomize=timestamp(), **kwargs)
+    return ItemDetailsMenu(rating_key, randomize=timestamp(), **kwa)
 
 
 @route(PREFIX + '/item/blacklist_recent/{language}')
@@ -452,10 +462,10 @@ def ManageBlacklistMenu(**kwargs):
         provider_name, subtitle_id = sub_key
         title = _(u"%(provider_name)s, %(subtitle_id)s (added: %(date_added)s, %(mode)s), Language: %(language)s, "
                   u"Score: %(score)i, Storage: %(storage_type)s",
-                  provider_name=provider_name,
+                  provider_name=_(provider_name),
                   subtitle_id=subtitle_id,
                   date_added=df(data["date_added"]),
-                  mode=current_sub.get_mode_verbose(data["mode"]),
+                  mode=_(current_sub.get_mode_verbose(data["mode"])),
                   language=display_language(Language.fromietf(language)),
                   score=data["score"],
                   storage_type=data["storage_type"])
@@ -514,7 +524,7 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
         video_display_data = metadata["filename"]
 
     current_display = (_(u"Current: %(provider_name)s (%(score)s) ",
-                         provider_name=current_provider,
+                         provider_name=_(current_provider),
                          score=current_score if current_provider else ""))
     if not running:
         oc.add(DirectoryObject(
@@ -585,7 +595,7 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
             title=_(u"%(blacklisted_state)s%(current_state)s: %(provider_name)s, score: %(score)s%(wrong_fps_state)s",
                     blacklisted_state=bl_addon,
                     current_state=_("Available") if current_id != subtitle.id else _("Current"),
-                    provider_name=subtitle.provider_name,
+                    provider_name=_(subtitle.provider_name),
                     score=subtitle.score,
                     wrong_fps_state=wrong_fps_addon),
             summary=_(u"Release: %(release_info)s, Matches: %(matches)s",
@@ -682,7 +692,7 @@ def TriggerExtractEmbeddedSubForItemMenu(**kwargs):
     part_id = kwargs.get("part_id")
     stream_index = kwargs.get("stream_index")
 
-    Thread.Create(extract_embedded_sub, **kwargs)
+    Thread.Create(extract_embedded_sub, extract_mode="m", **kwargs)
     header = _(u"Extracting of embedded subtitle %s of part %s:%s triggered",
             stream_index, rating_key, part_id)
 

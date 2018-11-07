@@ -28,10 +28,10 @@ from subliminal.utils import hash_napiprojekt, hash_opensubtitles, hash_shooter,
 from subliminal.video import VIDEO_EXTENSIONS, Video, Episode, Movie
 from subliminal.core import guessit, ProviderPool, io, is_windows_special_path, \
     ThreadPoolExecutor, check_video
-from subliminal_patch.exceptions import TooManyRequests
+from subliminal_patch.exceptions import TooManyRequests, APIThrottled
 
 from subzero.language import Language
-from scandir import scandir
+from scandir import scandir, scandir_generic as _scandir_generic
 
 logger = logging.getLogger(__name__)
 
@@ -186,7 +186,7 @@ class SZProviderPool(ProviderPool):
         except (requests.Timeout, socket.timeout):
             logger.error('Provider %r timed out', provider)
 
-        except (TooManyRequests, DownloadLimitExceeded, ServiceUnavailable), e:
+        except (TooManyRequests, DownloadLimitExceeded, ServiceUnavailable, APIThrottled), e:
             self.throttle_callback(provider, e)
             return
 
@@ -283,7 +283,7 @@ class SZProviderPool(ProviderPool):
                 logger.debug("RAR Traceback: %s", traceback.format_exc())
                 return False
 
-            except (TooManyRequests, DownloadLimitExceeded, ServiceUnavailable), e:
+            except (TooManyRequests, DownloadLimitExceeded, ServiceUnavailable, APIThrottled), e:
                 self.throttle_callback(subtitle.provider_name, e)
                 self.discarded_providers.add(subtitle.provider_name)
                 return False
@@ -347,6 +347,10 @@ class SZProviderPool(ProviderPool):
 
         for s in subtitles:
             # get the matches
+            if s.language not in languages:
+                logger.debug("%r: Skipping, language not searched for", s)
+                continue
+
             try:
                 matches = s.get_matches(video)
             except AttributeError:
@@ -510,14 +514,12 @@ def scan_video(path, dont_use_actual_file=False, hints=None, providers=None, ski
 
     # guess
     hints["single_value"] = True
+    if video_type == "movie":
+        hints["expected_title"] = [hints["title"]]
+
     guessed_result = guessit(guess_from, options=hints)
     logger.debug('GuessIt found: %s', json.dumps(guessed_result, cls=GuessitEncoder, indent=4, ensure_ascii=False))
     video = Video.fromguess(path, guessed_result)
-
-    # trust plex's movie name
-    if video_type == "movie" and hints.get("expected_title"):
-        video.title = hints.get("expected_title")[0]
-
     video.hints = hints
 
     if dont_use_actual_file:
@@ -550,12 +552,13 @@ def scan_video(path, dont_use_actual_file=False, hints=None, providers=None, ski
     return video
 
 
-def _search_external_subtitles(path, forced_tag=False, languages=None, only_one=False):
+def _search_external_subtitles(path, languages=None, only_one=False, scandir_generic=False):
     dirpath, filename = os.path.split(path)
     dirpath = dirpath or '.'
     fileroot, fileext = os.path.splitext(filename)
     subtitles = {}
-    for entry in scandir(dirpath):
+    _scandir = _scandir_generic if scandir_generic else scandir
+    for entry in _scandir(dirpath):
         if not entry.is_file(follow_symlinks=False):
             continue
 
@@ -578,11 +581,9 @@ def _search_external_subtitles(path, forced_tag=False, languages=None, only_one=
             if adv_tag in ['forced', 'normal', 'default', 'embedded', 'embedded-forced', 'custom']:
                 p_root = split_tag[0]
 
-        # forced wanted but NIL
+        forced = False
         if adv_tag:
             forced = "forced" in adv_tag
-            if (forced_tag and not forced) or (not forced_tag and forced):
-                continue
 
         # extract the potential language code
         language_code = p_root[len(fileroot):].replace('_', '-')[1:]
@@ -594,11 +595,13 @@ def _search_external_subtitles(path, forced_tag=False, languages=None, only_one=
         if language_code:
             try:
                 language = Language.fromietf(language_code)
+                language.forced = forced
             except ValueError:
                 logger.error('Cannot parse language code %r', language_code)
+                language = None
 
         if not language and only_one:
-            language = list(languages)[0]
+            language = Language.rebuild(list(languages)[0], forced=forced)
 
         subtitles[p] = language
 
@@ -607,7 +610,7 @@ def _search_external_subtitles(path, forced_tag=False, languages=None, only_one=
     return subtitles
 
 
-def search_external_subtitles(path, forced_tag=False, languages=None, only_one=False):
+def search_external_subtitles(path, languages=None, only_one=False):
     """
     wrap original search_external_subtitles function to search multiple paths for one given video
     # todo: cleanup and merge with _search_external_subtitles
@@ -626,8 +629,12 @@ def search_external_subtitles(path, forced_tag=False, languages=None, only_one=F
         logger.debug("external subs: scanning path %s", abspath)
 
         if os.path.isdir(os.path.dirname(abspath)):
-            subtitles.update(_search_external_subtitles(abspath, forced_tag=forced_tag, languages=languages,
-                                                        only_one=only_one))
+            try:
+                subtitles.update(_search_external_subtitles(abspath, languages=languages,
+                                                            only_one=only_one))
+            except OSError:
+                subtitles.update(_search_external_subtitles(abspath, languages=languages,
+                                                            only_one=only_one, scandir_generic=True))
     logger.debug("external subs: found %s", subtitles)
     return subtitles
 
@@ -755,7 +762,7 @@ def get_subtitle_path(video_path, language=None, extension='.srt', forced_tag=Fa
         tags.append("forced")
 
     if language:
-        subtitle_root += '.' + str(language)
+        subtitle_root += '.' + str(language.basename)
 
     if tags:
         subtitle_root += ".%s" % "-".join(tags)
@@ -763,7 +770,7 @@ def get_subtitle_path(video_path, language=None, extension='.srt', forced_tag=Fa
     return subtitle_root + extension
 
 
-def save_subtitles(file_path, subtitles, single=False, directory=None, chmod=None, formats=("srt",), forced_tag=False,
+def save_subtitles(file_path, subtitles, single=False, directory=None, chmod=None, formats=("srt",),
                    tags=None, path_decoder=None, debug_mods=False):
     """Save subtitles on filesystem.
 
@@ -800,8 +807,8 @@ def save_subtitles(file_path, subtitles, single=False, directory=None, chmod=Non
             continue
 
         # create subtitle path
-        subtitle_path = get_subtitle_path(file_path, None if single else subtitle.language, forced_tag=forced_tag,
-                                          tags=tags)
+        subtitle_path = get_subtitle_path(file_path, None if single else subtitle.language,
+                                          forced_tag=subtitle.language.forced, tags=tags)
         if directory is not None:
             subtitle_path = os.path.join(directory, os.path.split(subtitle_path)[1])
 

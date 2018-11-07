@@ -62,11 +62,13 @@ They currently consist of six individual mods:
 - **FPS**: Your subtitle is getting slower over time, or faster over time? Maybe the framerate is wrong. The FPS mod can fix that.
 - **Hearing Impaired**: Removes HI-tags from subtitles (such as `(SIRENS WAIL)`, `DOCTOR: Rose!`)
 - **Color**: Adds color to your subtitles (for playback devices/software that don't ship their own color modes; only works for players that support color tags)
-- **Common**: fixes common issues in subtitles, such as punctuation (`-- I don't know!` -> `... I don't know!`; `over 9 000!` -> `over 9000!`)
-- **OCR**: fixes problems in subtitles introduced by OCR (custom implementation of [SubtitleEdit](https://github.com/SubtitleEdit/subtitleedit)'s dictionaries) (`hands agaInst the waII!` -> `hands against the wall!`)
-- **Remove Tags**: removes any font style tags from the subtitles (bold, italic, underline, colors, ...)
+- **Common**: Fixes common issues in subtitles, such as punctuation (`-- I don't know!` -> `... I don't know!`; `over 9 000!` -> `over 9000!`)
+- **OCR**: Fixes problems in subtitles introduced by OCR (custom implementation of [SubtitleEdit](https://github.com/SubtitleEdit/subtitleedit)'s dictionaries) (`hands agaInst the waII!` -> `hands against the wall!`)
+- **Remove Tags**: Removes any font style tags from the subtitles (bold, italic, underline, colors, ...)
+- **Reverse RTL**: Reverses the punctuation in right-to-left subtitles for problematic playback devices
+- **Fix Uppercase**: Tries to make subtitles that are completely uppercase readable
 
-Hearing Impaired, Common, OCR and Color can be applied automatically on every subtitle downloaded. All mods are manually managable via the interface.
+Hearing Impaired, Common, OCR, Fix Uppercase, Reverse RTL and Color can be applied automatically on every subtitle downloaded. All mods are manually managable via the interface.
 
 Mods are applied on-the-fly, the original content of the subtitle stays available, so mods are completely reversible.
 
@@ -85,22 +87,72 @@ Jacob K, Ninjouz, chopeta, fvb, Jose
 
 ## Changelog
 
-2.5.7.2663
-- implement translations for the channel and the settings
-- i18n: German (myself)
-- i18n: Danish (thanks Uthman, Claus Møller, dane22)
-- i18n: Dutch (thanks jippo015, Semi Doludizgin, Rafael)
-- i18n: Hungarian (thanks Morpheus1333, sugarman402)
-- i18n: Spanish LA&C (thanks Yamil.llanos, Notorius28)
-- core: notify executable: support spaces in path, fixes #520
-- core: notify executable: fix usage with python scripts (drops inherited PYTHONPATH), fixes #355
-- core: fix plugin_pin_mode
-- refiners: filebot: fix usage on OSX
-- providers: add assrt.net (Chinese) - thanks @dimotsai!
-- providers: add supersubtitles (feliratok.info, Hungarian) - thanks @morpheus133!
-- providers: addic7ed: cache login data instead of re-login per search
-- submod: HI: support "&" and "+" in hi_before_colon
-- submod: HI: be less aggressive with HI_before_colon_noncaps; fixes #510
+2.6.4.2834
+- core: add option to use custom (Google, Cloudflare) DNS to resolve provider hosts in problematic countries; fixes #547
+- core: add support for downloading subtitles only when the audio streams don't match (any?) configured languages; fixes #519
+- core: add support for an include list instead of an ignore list; add the option to disable SZ by default, then enable it per item/series/section (inverse ignore list)
+- core/menu/config: support forced/foreign subtitles independently
+- core: fallback for OSError on scandir, should fix #532
+- core: add config versioning/migration system
+- core: correctly force non-foreign-only-capable providers off; remove subscene from foreign-only capable providers
+- core: scanning: collect information about audio streams
+- core: use correct storage path when storing subtitle info, when only VTT is used
+- core: fix disabled channel mode
+- core/menu: extract embedded: add extracted embedded subtitles to history
+- core: embedded subtitle streams: don't try parsing the language if inexistant
+- core: subtitle: fix log call, fixes #569
+- core: download best subtitles: only use actually languages searched for
+- core: refiners: tvdb: warn instead of error when no matching series was found
+- core: scanning: re-add expected title to guessit for narrowing down the video title
+- core: resolve #583
+- core: archives: explicitly skip forced subtitles if not searched for, when picking from an archive
+- core: activities/auto-refresh: fix hybrid-plus for movies
+- core: don't disable plugin if all providers throttled; fix #585 #574
+- core: skip cleanup for ignored paths
+- core: update requests to 2.20.0 (fixes security issue)
+- core: update certifi to 2018.10.15
+- core: auto extract: don't overwrite local sub even if unknown to SZ
+- config: set autoclean leftover/unused to off by default
+- providers: opensubtitles: respect rate limit (40 hits/10s); should fix long throttling behaviour
+- providers: opensubtitles: handle bad/inexistant responses
+- providers: opensubtitles: log bad response data
+- providers: opensubtitles: treat empty response as ServiceUnavailable for now
+- providers: opensubtitles: log reason for ServiceUnavailable
+- providers: legendastv: match second title and imdb id
+- providers: titlovi: fix language handling (thanks @viking1304)
+- providers: titlovi: proper handling of archives with both cyrlic and latin subtitles (thanks @viking1304) 
+- providers: titlovi: allow direct subtitle downloads as fallback (when a subtitle, not an archive was returned)
+- providers: hosszupuska: implement site change (thanks @morpheus133)
+- providers: supersubtitles: add base properties to subtitle
+- providers: opensubtitles, podnapisi: fix foreign/forced handling
+- providers: subscene: use original/sceneName if possible
+- menu: fix plugin not responding when ignoring an item in certain menus; fixes #535
+- menu: select active subtitle: return to item details afterwards; correctly set current
+- menu: add item thumbnails to history and a couple of submenus
+- menu: history: use series thumbnail instead of episode screenshot
+- menu: add full soft include/exclude menu handling
+- menu: add support for separate forced and not-forced subtitles
+- menu: fix order of embedded subtitle streams in item detail
+- menu: support S00E00 and equivalent
+- submod: add option to fix only-uppercase subtitles and make them readable
+- submod: keep track of actually applied mods
+- submod: correctly merge mods of the same kind (offset)
+- submod: OCR: add dictionaries for bosnian and norwegian bokmal; update dicts for dan, eng, hrv, spa, srp, swe
+- submod: OCR/HI: skip certain processors for all-caps subs
+- submod: HI: only remove caps before colon if the colon is followed by whitespace or EOL; fixes #542
+- submod: HI: remove MAN:
+- submod: common: improve detection and normalization of quotes, apostrophes
+- submod: common: fix double quotes that are meant to be single quotes inside words
+- submod: common: normalize small hyphens to dash
+- submod: common: remove line only consisting of colon; remove empty colon at start of line
+- submod: common: add space after punctuation
+- submod: common: fix lowercase i for english language
+- submod: common: better fix for music symbols
+- submod: reverse_RTL: also reverse ":,'-" chars in CM_RTL_reverse (thanks @doopler)
+- submod: reverse_RTL: enable mod for arabic, farsi and persian besides hebrew
+- i18n: fix not used translation for recently added missing subtitles menu
+- i18n: fix spanish translation, fixes #543
+- i18n: Hungarian translation is incomplete
 
 
 

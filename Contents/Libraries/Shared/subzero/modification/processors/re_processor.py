@@ -14,8 +14,8 @@ class ReProcessor(Processor):
     pattern = None
     replace_with = None
 
-    def __init__(self, pattern, replace_with, name=None):
-        super(ReProcessor, self).__init__(name=name)
+    def __init__(self, pattern, replace_with, name=None, supported=None):
+        super(ReProcessor, self).__init__(name=name, supported=supported)
         self.pattern = pattern
         self.replace_with = replace_with
 
@@ -36,8 +36,8 @@ class MultipleWordReProcessor(ReProcessor):
     }
     replaces found key in pattern with the corresponding value in data
     """
-    def __init__(self, snr_dict, name=None, parent=None):
-        super(ReProcessor, self).__init__(name=name)
+    def __init__(self, snr_dict, name=None, parent=None, supported=None):
+        super(ReProcessor, self).__init__(name=name, supported=supported)
         self.snr_dict = snr_dict
 
     def process(self, content, debug=False, **kwargs):

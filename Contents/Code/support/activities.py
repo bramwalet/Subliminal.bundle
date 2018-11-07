@@ -85,7 +85,7 @@ class PlexActivityManager(object):
                                         (rating_key, next_ep.rating_key, int(next_ep.season.index), int(next_ep.index))
 
                     else:
-                        if config.activity_mode == "hybrid":
+                        if config.activity_mode in ("hybrid", "hybrid-plus"):
                             keys_to_refresh.append(rating_key)
                 elif config.activity_mode == "refresh":
                     keys_to_refresh.append(rating_key)

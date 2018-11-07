@@ -4,6 +4,7 @@ import os
 
 import helpers
 from items import get_item
+from subzero.language import Language
 from lib import Plex
 from support.config import TEXT_SUBTITLE_EXTS, config
 
@@ -107,6 +108,7 @@ def media_to_videos(media, kind="series"):
                                                                     "title": ep.title,
                                                                     "series": media.title, "id": ep.id, "year": year,
                                                                     "series_id": media.id,
+                                                                    "super_thumb": plex_item.thumb,
                                                                     "season_id": season_object.id,
                                                                     "imdb_id": None, "series_tvdb_id": series_tvdb_id,
                                                                     "tvdb_id": tvdb_id,
@@ -127,6 +129,7 @@ def media_to_videos(media, kind="series"):
                 videos.append(
                     get_metadata_dict(plex_item, part, dict(stream_info, **{"plex_part": part, "type": "movie",
                                                                              "title": media.title, "id": media.id,
+                                                                             "super_thumb": plex_item.thumb,
                                                                              "series_id": None, "year": year,
                                                                              "season_id": None, "imdb_id": imdb_id,
                                                                              "original_title": original_title,
@@ -171,27 +174,26 @@ def get_all_parts(plex_item):
     return parts
 
 
-def get_embedded_subtitle_streams(part, requested_language=None, skip_duplicate_unknown=True, get_forced=None):
+def get_embedded_subtitle_streams(part, requested_language=None, skip_duplicate_unknown=True):
     streams = []
     has_unknown = False
     for stream in part.streams:
         # subtitle stream
         if stream.stream_type == 3 and not stream.stream_key and stream.codec in TEXT_SUBTITLE_EXTS:
+            is_forced = helpers.is_stream_forced(stream)
             language = helpers.get_language_from_stream(stream.language_code)
+            if language:
+                language = Language.rebuild(language, forced=is_forced)
+
             is_unknown = False
             found_requested_language = requested_language and requested_language == language
-            is_forced = helpers.is_stream_forced(stream)
-
-            if get_forced is not None:
-                if (get_forced and not is_forced) or (not get_forced and is_forced):
-                    continue
 
             if not language and config.treat_und_as_first:
                 # only consider first unknown subtitle stream
                 if has_unknown and skip_duplicate_unknown:
                     continue
 
-                language = list(config.lang_list)[0]
+                language = Language.rebuild(list(config.lang_list)[0], forced=is_forced)
                 is_unknown = True
                 has_unknown = True
 
@@ -256,6 +258,7 @@ def get_plex_metadata(rating_key, part_id, item_type, plex_item=None):
                                              "imdb_id": None,
                                              "year": year,
                                              "tvdb_id": tvdb_id,
+                                             "super_thumb": plex_item.show.thumb,
                                              "series_tvdb_id": series_tvdb_id,
                                              "original_title": original_title,
                                              "season": plex_item.season.index,
@@ -275,6 +278,7 @@ def get_plex_metadata(rating_key, part_id, item_type, plex_item=None):
                                                            "imdb_id": imdb_id,
                                                            "year": plex_item.year,
                                                            "tvdb_id": None,
+                                                           "super_thumb": plex_item.thumb,
                                                            "series_tvdb_id": None,
                                                            "original_title": original_title,
                                                            "season": None,

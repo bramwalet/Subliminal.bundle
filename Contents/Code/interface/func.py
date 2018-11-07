@@ -7,7 +7,7 @@ from support.config import config
 from support.helpers import timestamp
 
 
-def enable_channel_wrapper(func):
+def enable_channel_wrapper(func, enforce_route=False):
     """
     returns the original wrapper :func: (route or handler) if applicable, else the plain to-be-wrapped function
     :param func: original wrapper
@@ -20,12 +20,11 @@ def enable_channel_wrapper(func):
             :param k: kwargs
             :return: originally to-be-wrapped function
             """
-            return a[0]
+            return a[0] if len(a) else a
 
         return inner
 
     def wrap(*args, **kwargs):
-        enforce_route = kwargs.pop("enforce_route", None)
         return (func if (config.enable_channel or enforce_route) else noop)(*args, **kwargs)
 
     return wrap
@@ -176,10 +175,11 @@ def route_wrapper(*args, **kwargs):
             return ret_f(*ret_a, **ret_kw)
 
         # @route may be used multiple times
+        enforce_route = kwargs.pop("enforce_route", None)
         if not already_wrapped:
             inner.orig_f = f
 
-            return enable_channel_wrapper(route(*args, **kwargs))(inner)
-        return enable_channel_wrapper(route(*args, **kwargs))(f)
+            return enable_channel_wrapper(route(*args, **kwargs), enforce_route=enforce_route)(inner)
+        return enable_channel_wrapper(route(*args, **kwargs), enforce_route=enforce_route)(f)
 
     return wrap

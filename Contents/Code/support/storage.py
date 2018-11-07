@@ -113,8 +113,7 @@ def get_target_folder(file_path):
     return fld
 
 
-def save_subtitles_to_file(subtitles, tags=None, forced_tag=None):
-    forced_tag = forced_tag or config.forced_only
+def save_subtitles_to_file(subtitles, tags=None):
     for video, video_subtitles in subtitles.items():
         if not video_subtitles:
             continue
@@ -126,12 +125,12 @@ def save_subtitles_to_file(subtitles, tags=None, forced_tag=None):
 
         fld = get_target_folder(file_path)
         subliminal_save_subtitles(file_path, video_subtitles, directory=fld, single=cast_bool(Prefs['subtitles.only_one']),
-                                  chmod=config.chmod, forced_tag=forced_tag, path_decoder=force_unicode,
+                                  chmod=config.chmod, path_decoder=force_unicode,
                                   debug_mods=config.debug_mods, formats=config.subtitle_formats, tags=tags)
     return True
 
 
-def save_subtitles_to_metadata(videos, subtitles, is_forced=False):
+def save_subtitles_to_metadata(videos, subtitles):
     for video, video_subtitles in subtitles.items():
         mediaPart = videos[video]
         for subtitle in video_subtitles:
@@ -143,7 +142,7 @@ def save_subtitles_to_metadata(videos, subtitles, is_forced=False):
                 mp = PMSMediaProxy(video.id).get_part(mediaPart.id)
             else:
                 mp = mediaPart
-            pm = Proxy.Media(content, ext="srt", forced="1" if is_forced else None)
+            pm = Proxy.Media(content, ext="srt", forced="1" if subtitle.language.forced else None)
             lang = Locale.Language.Match(subtitle.language.alpha2)
             mp.subtitles[lang].validate_keys({})
             mp.subtitles[lang]["subzero"] = pm
@@ -151,7 +150,7 @@ def save_subtitles_to_metadata(videos, subtitles, is_forced=False):
 
 
 def save_subtitles(scanned_video_part_map, downloaded_subtitles, mode="a", bare_save=False, mods=None,
-                   set_current=True, is_forced=False):
+                   set_current=True):
     """
      
     :param set_current: save the subtitle as the current one
@@ -186,7 +185,7 @@ def save_subtitles(scanned_video_part_map, downloaded_subtitles, mode="a", bare_
         if save_to_fs:
             try:
                 Log.Debug("Using filesystem as subtitle storage")
-                save_subtitles_to_file(downloaded_subtitles, forced_tag=is_forced)
+                save_subtitles_to_file(downloaded_subtitles)
             except OSError:
                 if cast_bool(Prefs["subtitles.save.metadata_fallback"]):
                     meta_fallback = True
@@ -201,13 +200,12 @@ def save_subtitles(scanned_video_part_map, downloaded_subtitles, mode="a", bare_
                 Log.Debug("Using metadata as subtitle storage, because filesystem storage failed")
             else:
                 Log.Debug("Using metadata as subtitle storage")
-            save_successful = save_subtitles_to_metadata(scanned_video_part_map, downloaded_subtitles,
-                                                         is_forced=is_forced)
+            save_successful = save_subtitles_to_metadata(scanned_video_part_map, downloaded_subtitles)
 
         if not bare_save and save_successful and config.notify_executable:
             notify_executable(config.notify_executable, scanned_video_part_map, downloaded_subtitles, storage)
 
-    if not bare_save and save_successful or not set_current:
+    if (not bare_save and save_successful) or not set_current:
         store_subtitle_info(scanned_video_part_map, downloaded_subtitles, storage, mode=mode, set_current=set_current)
 
     return save_successful

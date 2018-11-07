@@ -7,7 +7,8 @@ import re
 import os
 import time
 
-from babelfish import Language, language_converters
+from babelfish import language_converters
+from subzero.language import Language
 from requests import Session
 
 from subliminal_patch.providers import Provider

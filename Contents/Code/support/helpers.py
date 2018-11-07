@@ -152,6 +152,13 @@ def get_plex_item_display_title(item, kind, parent=None, parent_title=None, sect
                                    add_section_title=add_section_title)
 
 
+def series_num(v):
+    try:
+        return int(v)
+    except (TypeError, ValueError):
+        pass
+
+
 def get_video_display_title(kind, title, section_title=None, parent_title=None, season=None, episode=None,
                             add_section_title=False):
     section_add = ""
@@ -159,9 +166,12 @@ def get_video_display_title(kind, title, section_title=None, parent_title=None, 
         section_add = ("%s: " % section_title) if section_title else ""
 
     if kind in ("season", "show") and parent_title:
-        if season and episode:
+        if series_num(season) is not None and series_num(episode) is not None:
             return '%s%s S%02dE%02d%s' % (section_add, parent_title, season or 0, episode or 0,
                                           (", %s" % title if title else ""))
+        elif series_num(season) is not None:
+            return '%s%s S%02d%s' % (section_add, parent_title, season or 0,
+                                     (", %s" % title if title else ""))
 
         return '%s%s%s' % (section_add, parent_title, (", %s" % title if title else ""))
     return "%s%s" % (section_add, title)
@@ -378,12 +388,48 @@ def get_language_from_stream(lang_code):
             return Language.fromietf(lang)
 
 
+def audio_streams_match_languages(video, languages):
+    if video.audio_languages:
+        decision = []
+
+        if Prefs["subtitles.when"] == "Always":
+            decision.append(False)
+
+        elif Prefs["subtitles.when"] == "When main audio stream is not Subtitle Language (1)":
+            if video.audio_languages[0] == languages[0]:
+                decision.append(True)
+
+        elif Prefs["subtitles.when"] == "When any audio stream is not Subtitle Language (1)":
+            if languages[0] in video.audio_languages:
+                decision.append(True)
+
+        elif Prefs["subtitles.when"] == "When main audio stream is not any configured language":
+            if video.audio_languages[0] in languages:
+                decision.append(True)
+
+        elif Prefs["subtitles.when"] == "When any audio stream is not any configured language":
+            if set(video.audio_languages).intersection(set(languages)):
+                decision.append(True)
+
+        if Prefs["subtitles.when_forced"] in [
+            "Always",
+            "Only for Subtitle Language (1)",
+            "Only for Subtitle Language (2)",
+            "Only for Subtitle Language (3)"
+        ]:
+            decision.append(False)
+
+        return all(decision)
+
+    return False
+
+
 def get_language(lang_short):
     return Language.fromietf(lang_short)
 
 
 def display_language(l):
-    return _(str(l).lower())
+    return _(str(l.basename).lower()) + ((u" (%s)" % _("forced")) if l.forced else "")
 
 
 def is_stream_forced(stream):

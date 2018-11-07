@@ -4,7 +4,7 @@ import logging
 import os
 import traceback
 import zlib
-
+import time
 import requests
 
 from babelfish import language_converters
@@ -20,7 +20,7 @@ from subliminal.cache import region
 from subliminal_patch.score import framerate_equal
 from subzero.language import Language
 
-from ..exceptions import TooManyRequests
+from ..exceptions import TooManyRequests, APIThrottled
 
 logger = logging.getLogger(__name__)
 
@@ -74,6 +74,7 @@ class OpenSubtitlesSubtitle(_OpenSubtitlesSubtitle):
 
 class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
     only_foreign = False
+    also_foreign = False
     subtitle_class = OpenSubtitlesSubtitle
     hash_verifiable = True
     hearing_impaired_verifiable = True
@@ -85,11 +86,11 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
     default_url = "//api.opensubtitles.org/xml-rpc"
     vip_url = "//vip-api.opensubtitles.org/xml-rpc"
 
-    languages = {Language.fromopensubtitles(l) for l in language_converters['szopensubtitles'].codes}# | {
-        #Language.fromietf("sr-latn"), Language.fromietf("sr-cyrl")}
+    languages = {Language.fromopensubtitles(l) for l in language_converters['szopensubtitles'].codes}
+    languages.update(set(Language.rebuild(l, forced=True) for l in languages))
 
-    def __init__(self, username=None, password=None, use_tag_search=False, only_foreign=False, skip_wrong_fps=True,
-                 is_vip=False, use_ssl=True, timeout=15):
+    def __init__(self, username=None, password=None, use_tag_search=False, only_foreign=False, also_foreign=False,
+                 skip_wrong_fps=True, is_vip=False, use_ssl=True, timeout=15):
         if any((username, password)) and not all((username, password)):
             raise ConfigurationError('Username and password must be specified')
 
@@ -97,6 +98,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         self.password = password or ''
         self.use_tag_search = use_tag_search
         self.only_foreign = only_foreign
+        self.also_foreign = also_foreign
         self.skip_wrong_fps = skip_wrong_fps
         self.token = None
         self.is_vip = is_vip
@@ -188,11 +190,6 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
             except:
                 logger.error("Logout failed: %s", traceback.format_exc())
 
-        try:
-            self.server.close()
-        except:
-            logger.error("Logout failed (server close): %s", traceback.format_exc())
-
         self.server = None
         self.token = None
 
@@ -223,10 +220,11 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
 
         return self.query(languages, hash=video.hashes.get('opensubtitles'), size=video.size, imdb_id=video.imdb_id,
                           query=query, season=season, episode=episode, tag=video.original_name,
-                          use_tag_search=self.use_tag_search, only_foreign=self.only_foreign)
+                          use_tag_search=self.use_tag_search, only_foreign=self.only_foreign,
+                          also_foreign=self.also_foreign)
 
     def query(self, languages, hash=None, size=None, imdb_id=None, query=None, season=None, episode=None, tag=None,
-              use_tag_search=False, only_foreign=False):
+              use_tag_search=False, only_foreign=False, also_foreign=False):
         # fill the search criteria
         criteria = []
         if hash and size:
@@ -294,8 +292,12 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
                 continue
 
             # foreign/forced not wanted
-            if not only_foreign and foreign_parts_only:
+            elif not only_foreign and not also_foreign and foreign_parts_only:
                 continue
+
+            # foreign/forced *also* wanted
+            elif also_foreign and foreign_parts_only:
+                language = Language.rebuild(language, forced=True)
 
             query_parameters = _subtitle_item.get("QueryParameters")
 
@@ -319,7 +321,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         subtitle.content = fix_line_ending(zlib.decompress(base64.b64decode(response['data'][0]['data']), 47))
 
 
-def checked(fn):
+def checked(fn, raise_api_limit=False):
     """Run :fn: and check the response status before returning it.
 
     :param fn: the function to make an XMLRPC call to OpenSubtitles.
@@ -329,11 +331,21 @@ def checked(fn):
     """
     response = None
     try:
-        response = fn()
-    except requests.RequestException as e:
-        status_code = e.response.status_code
-    else:
-        status_code = int(response['status'][:3])
+        try:
+            response = fn()
+        except APIThrottled:
+            if not raise_api_limit:
+                logger.info("API request limit hit, waiting and trying again once.")
+                time.sleep(12)
+                return checked(fn, raise_api_limit=True)
+            raise
+
+        except requests.RequestException as e:
+            status_code = e.response.status_code
+        else:
+            status_code = int(response['status'][:3])
+    except:
+        status_code = None
 
     if status_code == 401:
         raise Unauthorized
@@ -348,10 +360,15 @@ def checked(fn):
     if status_code == 415:
         raise DisabledUserAgent
     if status_code == 429:
-        raise TooManyRequests
+        if not raise_api_limit:
+            raise TooManyRequests
+        else:
+            raise APIThrottled
     if status_code == 503:
-        raise ServiceUnavailable
+        raise ServiceUnavailable(str(status_code))
     if status_code != 200:
-        raise OpenSubtitlesError(response['status'])
+        if response and "status" in response:
+            raise OpenSubtitlesError(response['status'])
+        raise ServiceUnavailable("Unknown Error, empty response: %s: %r" % (status_code, response))
 
     return response

@@ -26,10 +26,11 @@ from interface.menu import *
 from support.plex_media import media_to_videos, get_media_item_ids
 from support.scanning import scan_videos
 from support.storage import save_subtitles, store_subtitle_info, get_subtitle_storage
-from support.items import is_ignored
+from support.items import is_wanted
 from support.config import config
 from support.lib import get_intent
-from support.helpers import track_usage, get_title_for_video_metadata, get_identifier, cast_bool
+from support.helpers import track_usage, get_title_for_video_metadata, get_identifier, cast_bool, \
+    audio_streams_match_languages
 from support.history import get_history
 from support.data import dispatch_migrate
 from support.activities import activity
@@ -93,30 +94,12 @@ def Start():
         track_usage("General", "plugin", "start", config.version)
 
 
-def update_local_media(metadata, media, media_type="movies"):
-    # Look for subtitles
-    if media_type == "movies":
-        for item in media.items:
-            for part in item.parts:
-                support.localmedia.find_subtitles(part)
-        return
-
-    # Look for subtitles for each episode.
-    for s in media.seasons:
-        # If we've got a date based season, ignore it for now, otherwise it'll collide with S/E folders/XML and PMS
-        # prefers date-based (why?)
-        if int(s) < 1900 or metadata.guid.startswith(PERSONAL_MEDIA_IDENTIFIER):
-            for e in media.seasons[s].episodes:
-                for i in media.seasons[s].episodes[e].items:
-
-                    # Look for subtitles.
-                    for part in i.parts:
-                        support.localmedia.find_subtitles(part)
-        else:
-            pass
+def update_local_media(videos, ignore_parts_cleanup=None):
+    for video in videos:
+        support.localmedia.find_subtitles(video["plex_part"], ignore_parts_cleanup=ignore_parts_cleanup)
 
 
-def agent_extract_embedded(video_part_map):
+def agent_extract_embedded(video_part_map, history_storage=None):
     try:
         subtitle_storage = get_subtitle_storage()
 
@@ -127,14 +110,20 @@ def agent_extract_embedded(video_part_map):
             plexapi_item = scanned_video.plexapi_metadata["item"]
             stored_subs = subtitle_storage.load_or_new(plexapi_item)
 
+            if audio_streams_match_languages(scanned_video, list(config.lang_list)):
+                Log.Debug("Skipping embedded subtitle extraction for %s, audio streams are in correct language(s)",
+                          plexapi_item.rating_key)
+                continue
+
             for plexapi_part in get_all_parts(plexapi_item):
                 item_count = item_count + 1
                 for requested_language in config.lang_list:
                     embedded_subs = stored_subs.get_by_provider(plexapi_part.id, requested_language, "embedded")
-                    current = stored_subs.get_any(plexapi_part.id, requested_language)
+                    current = stored_subs.get_any(plexapi_part.id, requested_language) or \
+                        requested_language in scanned_video.subtitle_languages
+
                     if not embedded_subs:
-                        stream_data = get_embedded_subtitle_streams(plexapi_part, requested_language=requested_language,
-                                                                    get_forced=config.forced_only)
+                        stream_data = get_embedded_subtitle_streams(plexapi_part, requested_language=requested_language)
 
                         if stream_data:
                             stream = stream_data[0]["stream"]
@@ -150,7 +139,7 @@ def agent_extract_embedded(video_part_map):
         if to_extract:
             Log.Info("Triggering extraction of %d embedded subtitles of %d items", len(to_extract), item_count)
             Thread.Create(multi_extract_embedded, stream_list=to_extract, refresh=True, with_mods=True,
-                          single_thread=not config.advanced.auto_extract_multithread)
+                          single_thread=not config.advanced.auto_extract_multithread, history_storage=history_storage)
     except:
         Log.Error("Something went wrong when auto-extracting subtitles, continuing: %s", traceback.format_exc())
 
@@ -181,29 +170,33 @@ class SubZeroAgent(object):
             return
 
         Log.Debug("Sub-Zero %s, %s update called" % (config.version, self.agent_type))
-        intent = get_intent()
 
         if not media:
             Log.Error("Called with empty media, something is really wrong with your setup!")
             return
 
+        intent = get_intent()
+        history = get_history()
+
         item_ids = []
         try:
             config.init_subliminal_patches()
-            videos = media_to_videos(media, kind=self.agent_type)
-
-            # find local media
-            update_local_media(metadata, media, media_type=self.agent_type)
+            all_videos = media_to_videos(media, kind=self.agent_type)
 
             # media ignored?
-            use_any_parts = False
-            for video in videos:
-                if is_ignored(video["id"]):
-                    Log.Debug(u"Ignoring %s" % video)
+            ignore_parts_cleanup = []
+            videos = []
+            for video in all_videos:
+                if not is_wanted(video["id"], item=video["item"]):
+                    Log.Debug(u'Skipping "%s"' % video["filename"])
+                    ignore_parts_cleanup.append(video["path"])
                     continue
-                use_any_parts = True
+                videos.append(video)
 
-            if not use_any_parts:
+            # find local media
+            update_local_media(all_videos, ignore_parts_cleanup=ignore_parts_cleanup)
+
+            if not videos:
                 Log.Debug(u"Nothing to do.")
                 return
 
@@ -229,7 +222,7 @@ class SubZeroAgent(object):
             # auto extract embedded
             if config.embedded_auto_extract:
                 if config.plex_transcoder:
-                    agent_extract_embedded(scanned_video_part_map)
+                    agent_extract_embedded(scanned_video_part_map, history_storage=history)
                 else:
                     Log.Warning("Plex Transcoder not found, can't auto extract")
 
@@ -284,19 +277,22 @@ class SubZeroAgent(object):
                         # store item(s) in history
                         for subtitle in video_subtitles:
                             item_title = get_title_for_video_metadata(video.plexapi_metadata, add_section_title=False)
-                            history = get_history()
                             history.add(item_title, video.id, section_title=video.plexapi_metadata["section"],
+                                        thumb=video.plexapi_metadata["super_thumb"],
                                         subtitle=subtitle)
                             history.destroy()
             else:
                 # store SZ meta info even if we've downloaded none
                 self.store_blank_subtitle_metadata(scanned_video_part_map)
 
-            update_local_media(metadata, media, media_type=self.agent_type)
+            update_local_media(videos)
 
         finally:
             # update the menu state
             set_refresh_menu_state(None)
+
+            history.destroy()
+            history = None
 
             # notify any running tasks about our finished update
             for item_id in item_ids:

@@ -5,6 +5,7 @@ import time
 import logging
 import traceback
 import types
+import os
 from httplib import ResponseNotReady
 
 from guessit import guessit
@@ -83,7 +84,13 @@ class ProviderSubtitleArchiveMixin(object):
                 # - episode and season match
                 # - format matches (if it was matched before)
                 # - release group matches (and we asked for one and it was matched, or it was not matched)
+                # - not asked for forced and "forced" not in filename
                 is_episode = subtitle.asked_for_episode
+
+                if not subtitle.language.forced:
+                    base, ext = os.path.splitext(sub_name_lower)
+                    if base.endswith("forced") or "forced" in guess.get("release_group", ""):
+                        continue
 
                 episodes = guess.get("episode")
                 if is_episode and episodes and not isinstance(episodes, list):

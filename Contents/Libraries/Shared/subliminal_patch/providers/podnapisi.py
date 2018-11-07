@@ -89,14 +89,17 @@ class PodnapisiSubtitle(_PodnapisiSubtitle):
 class PodnapisiProvider(_PodnapisiProvider, ProviderSubtitleArchiveMixin):
     languages = ({Language('por', 'BR'), Language('srp', script='Latn'), Language('srp', script='Cyrl')} |
                  {Language.fromalpha2(l) for l in language_converters['alpha2'].codes})
+    languages.update(set(Language.rebuild(l, forced=True) for l in languages))
 
     server_url = 'https://podnapisi.net/subtitles/'
     only_foreign = False
+    also_foreign = False
     subtitle_class = PodnapisiSubtitle
     hearing_impaired_verifiable = True
 
-    def __init__(self, only_foreign=False):
+    def __init__(self, only_foreign=False, also_foreign=False):
         self.only_foreign = only_foreign
+        self.also_foreign = also_foreign
 
         if only_foreign:
             logger.info("Only searching for foreign/forced subtitles")
@@ -119,13 +122,14 @@ class PodnapisiProvider(_PodnapisiProvider, ProviderSubtitleArchiveMixin):
         for title in titles:
             subtitles = [s for l in languages for s in
                          self.query(l, title, video, season=season, episode=episode, year=video.year,
-                                    only_foreign=self.only_foreign)]
+                                    only_foreign=self.only_foreign, also_foreign=self.also_foreign)]
             if subtitles:
                 return subtitles
 
         return []
 
-    def query(self, language, keyword, video, season=None, episode=None, year=None, only_foreign=False):
+    def query(self, language, keyword, video, season=None, episode=None, year=None, only_foreign=False,
+              also_foreign=False):
         search_language = str(language).lower()
 
         # sr-Cyrl specialcase
@@ -177,8 +181,11 @@ class PodnapisiProvider(_PodnapisiProvider, ProviderSubtitleArchiveMixin):
                 if only_foreign and not foreign:
                     continue
 
-                if not only_foreign and foreign:
+                elif not only_foreign and not also_foreign and foreign:
                     continue
+
+                elif also_foreign and foreign:
+                    language = Language.rebuild(language, forced=True)
 
                 page_link = subtitle_xml.find('url').text
                 releases = []

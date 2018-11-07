@@ -4,9 +4,12 @@ import re
 
 from subzero.language import Language
 from subzero.modification.mods import SubtitleTextModification, empty_line_post_processors, SubtitleModification
-from subzero.modification.processors.string_processor import StringProcessor
+from subzero.modification.processors import FuncProcessor
 from subzero.modification.processors.re_processor import NReProcessor
 from subzero.modification import registry
+
+
+ENGLISH = Language("eng")
 
 
 class CommonFixes(SubtitleTextModification):
@@ -18,20 +21,37 @@ class CommonFixes(SubtitleTextModification):
     long_description = "Fix common and whitespace/punctuation issues in subtitles"
 
     processors = [
+        # normalize hyphens
+        NReProcessor(re.compile(ur'(?u)([‑‐﹘﹣])'), u"-", name="CM_hyphens"),
+
         # -- = em dash
         NReProcessor(re.compile(r'(?u)(\w|\b|\s|^)(-\s?-{1,2})'), ur"\1—", name="CM_multidash"),
 
         # line = _/-/\s
-        NReProcessor(re.compile(r'(?u)(^\W*[-_.]+\W*$)'), "", name="CM_non_word_only"),
+        NReProcessor(re.compile(r'(?u)(^\W*[-_.:]+\W*$)'), "", name="CM_non_word_only"),
+
+        # line = : text
+        NReProcessor(re.compile(r'(?u)(^\W*:\s*(?=\w+))'), "", name="CM_empty_colon_start"),
 
         # multi space
         NReProcessor(re.compile(r'(?u)(\s{2,})'), " ", name="CM_multi_space"),
 
         # fix music symbols
-        NReProcessor(re.compile(ur'(?u)(^[*#¶\s]*[*#¶]+[*#¶\s]*$)'), u"♪", name="CM_music_symbols"),
+        NReProcessor(re.compile(ur'(?u)(?:^[-\s]*[*#¶]+(?![^\s\-*#¶]))|(?:[*#¶]+\s*$)'), u"♪", name="CM_music_symbols"),
 
         # '' = "
-        StringProcessor("''", '"', name="CM_double_apostrophe"),
+        NReProcessor(re.compile(ur'(?u)([\'’ʼ❜‘‛][\'’ʼ❜‘‛]+)'), u'"', name="CM_double_apostrophe"),
+
+        # double quotes instead of single quotes inside words
+        NReProcessor(re.compile(ur'(?u)([A-zÀ-ž])"([A-zÀ-ž])'), ur"\1'\2", name="CM_double_as_single"),
+
+        # normalize quotes
+        NReProcessor(re.compile(ur'(?u)(\s*["”“‟„])\s*(["”“‟„]["”“‟„\s]*)'),
+                     lambda match: '"' + (" " if match.group(2).endswith(" ") else ""),
+                     name="CM_normalize_quotes"),
+
+        # normalize single quotes
+        NReProcessor(re.compile(ur'(?u)([\'’ʼ❜‘‛])'), u"'", name="CM_normalize_squotes"),
 
         # remove leading ...
         NReProcessor(re.compile(r'(?u)^\.\.\.[\s]*'), "", name="CM_leading_ellipsis"),
@@ -92,6 +112,13 @@ class CommonFixes(SubtitleTextModification):
 
         # remove spaces before punctuation; don't break spaced ellipses
         NReProcessor(re.compile(r'(?u)(?:(?<=^)|(?<=\w)) +([!?.,](?![!?.,]| \.))'), r"\1", name="CM_punctuation_space"),
+
+        # add space after punctuation
+        NReProcessor(re.compile(r'(?u)([!?.,:])([A-zÀ-ž]{2,})'), r"\1 \2", name="CM_punctuation_space2"),
+
+        # fix lowercase I in english
+        NReProcessor(re.compile(r'(?u)(\b)i(\b)'), r"\1I\2", name="CM_EN_lowercase_i",
+                     supported=lambda p: p.language == ENGLISH),
     ]
 
     post_processors = empty_line_post_processors
@@ -116,10 +143,10 @@ class ReverseRTL(SubtitleModification):
     description = "Reverse punctuation in RTL languages"
     exclusive = True
     order = 50
-    languages = [Language("heb")]
+    languages = [Language(l) for l in ('heb', 'ara', 'fas')]
 
     long_description = "Some playback devices don't properly handle right-to-left markers for punctuation. " \
-                       "Physically swap punctuation. Applicable to languages: hebrew"
+                       "Physically swap punctuation. Applicable to languages: hebrew, arabic, farsi, persian"
 
     processors = [
         # new? (?u)(^([\s.!?]*)(.+?)(\s*)(-?\s*)$); \5\4\3\2
@@ -130,6 +157,29 @@ class ReverseRTL(SubtitleModification):
     ]
 
 
+split_upper_re = re.compile(ur"(\s*[.!?♪\-]\s*)")
+
+
+class FixUppercase(SubtitleModification):
+    identifier = "fix_uppercase"
+    description = "Fixes all-uppercase subtitles"
+    modifies_whole_file = True
+    exclusive = True
+    order = 41
+    only_uppercase = True
+    apply_last = True
+
+    long_description = "Some subtitles are in all-uppercase letters. This at least makes them readable."
+
+    def capitalize(self, c):
+        return u"".join([s.capitalize() for s in split_upper_re.split(c)])
+
+    def modify(self, content, debug=False, parent=None, **kwargs):
+        for entry in parent.f:
+            entry.plaintext = self.capitalize(entry.plaintext)
+
+
 registry.register(CommonFixes)
 registry.register(RemoveTags)
 registry.register(ReverseRTL)
+registry.register(FixUppercase)

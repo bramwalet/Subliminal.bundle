@@ -13,17 +13,17 @@ import subliminal_patch
 import subzero.constants
 import lib
 from subliminal.exceptions import ServiceUnavailable, DownloadLimitExceeded, AuthenticationError
-
 from subliminal_patch.core import is_windows_special_path
 from whichdb import whichdb
 
-from subliminal_patch.exceptions import TooManyRequests
+from subliminal_patch.exceptions import TooManyRequests, APIThrottled
 from subzero.language import Language
 from subliminal.cli import MutexLock
 from subzero.lib.io import FileIO, get_viable_encoding
 from subzero.lib.dict import Dicked
 from subzero.util import get_root_path
 from subzero.constants import PLUGIN_NAME, PLUGIN_IDENTIFIER, MOVIE, SHOW, MEDIA_TYPE_TO_STRING
+from subzero.prefs import get_user_prefs, update_user_prefs
 from dogpile.cache.region import register_backend as register_cache_backend
 from lib import Plex
 from helpers import check_write_permissions, cast_bool, cast_int, mswindows
@@ -43,7 +43,8 @@ VIDEO_EXTS = ['3g2', '3gp', 'asf', 'asx', 'avc', 'avi', 'avs', 'bivx', 'bup', 'd
               'wtv', 'xsp', 'xvid',
               'webm']
 
-IGNORE_FN = ("subzero.ignore", ".subzero.ignore", ".nosz")
+EXCLUDE_FN = ("subzero.ignore", ".subzero.ignore", "subzero.exclude", ".subzero.exclude", ".nosz")
+INCLUDE_FN = ("subzero.include", ".subzero.include", ".sz")
 
 VERSION_RE = re.compile(ur'CFBundleVersion.+?<string>([0-9\.]+)</string>', re.DOTALL)
 DEV_RE = re.compile(ur'PlexPluginDevMode.+?<string>([01]+)</string>', re.DOTALL)
@@ -56,17 +57,19 @@ def int_or_default(s, default):
         return default
 
 
-VALID_THROTTLE_EXCEPTIONS = (TooManyRequests, DownloadLimitExceeded, ServiceUnavailable)
+VALID_THROTTLE_EXCEPTIONS = (TooManyRequests, DownloadLimitExceeded, ServiceUnavailable, APIThrottled)
 
 PROVIDER_THROTTLE_MAP = {
     "default": {
         TooManyRequests: (datetime.timedelta(hours=1), "1 hour"),
         DownloadLimitExceeded: (datetime.timedelta(hours=3), "3 hours"),
         ServiceUnavailable: (datetime.timedelta(minutes=20), "20 minutes"),
+        APIThrottled: (datetime.timedelta(minutes=10), "10 minutes"),
     },
     "opensubtitles": {
         TooManyRequests: (datetime.timedelta(hours=3), "3 hours"),
         DownloadLimitExceeded: (datetime.timedelta(hours=6), "6 hours"),
+        APIThrottled: (datetime.timedelta(seconds=15), "15 seconds"),
     },
     "addic7ed": {
         DownloadLimitExceeded: (datetime.timedelta(hours=3), "3 hours"),
@@ -76,6 +79,7 @@ PROVIDER_THROTTLE_MAP = {
 
 
 class Config(object):
+    config_version = 2
     libraries_root = None
     plugin_info = ""
     version = None
@@ -96,6 +100,10 @@ class Config(object):
     advanced = None
     debug_i18n = False
 
+    normal_subs = False
+    forced_also = False
+    forced_only = False
+    include = False
     enable_channel = True
     enable_agent = True
     pin = None
@@ -108,8 +116,8 @@ class Config(object):
     max_recent_items_per_library = 200
     permissions_ok = False
     missing_permissions = None
-    ignore_sz_files = False
-    ignore_paths = None
+    include_exclude_sz_files = False
+    include_exclude_paths = None
     fs_encoding = None
     notify_executable = None
     sections = None
@@ -118,10 +126,10 @@ class Config(object):
     remove_tags = False
     fix_ocr = False
     fix_common = False
+    fix_upper = False
     reverse_rtl = False
     colors = ""
     chmod = None
-    forced_only = False
     exotic_ext = False
     treat_und_as_first = False
     subtitle_sub_dir = None, None
@@ -139,6 +147,7 @@ class Config(object):
     ietf_as_alpha3 = False
     unrar = None
     adv_cfg_path = None
+    use_custom_dns = False
 
     store_recently_played_amount = 40
 
@@ -163,6 +172,11 @@ class Config(object):
         self.data_items_path = os.path.join(self.data_path, "DataItems")
         self.universal_plex_token = self.get_universal_plex_token()
         self.plex_token = os.environ.get("PLEXTOKEN", self.universal_plex_token)
+        try:
+            self.migrate_prefs()
+        except:
+            Log.Exception("Catastrophic failure when running prefs migration")
+
         subzero.constants.DEFAULT_TIMEOUT = lib.DEFAULT_TIMEOUT = self.pms_request_timeout = \
             min(cast_int(Prefs['pms_request_timeout'], 15), 45)
         self.low_impact_mode = cast_bool(Prefs['low_impact_mode'])
@@ -179,14 +193,18 @@ class Config(object):
         self.set_activity_modes()
         self.parse_rename_mode()
 
+        self.normal_subs = Prefs["subtitles.when"] != "Never"
+        self.forced_also = self.normal_subs and Prefs["subtitles.when_forced"] != "Never"
+        self.forced_only = not self.normal_subs and Prefs["subtitles.when_forced"] != "Never"
+        self.include = \
+            Prefs["subtitles.include_exclude_mode"] == "disable SZ for all items by default, use include lists"
         self.subtitle_destination_folder = self.get_subtitle_destination_folder()
         self.subtitle_formats = self.get_subtitle_formats()
-        self.forced_only = cast_bool(Prefs["subtitles.only_foreign"])
         self.max_recent_items_per_library = int_or_default(Prefs["scheduler.max_recent_items_per_library"], 2000)
         self.sections = list(Plex["library"].sections())
         self.missing_permissions = []
-        self.ignore_sz_files = cast_bool(Prefs["subtitles.ignore_fs"])
-        self.ignore_paths = self.parse_ignore_paths()
+        self.include_exclude_sz_files = cast_bool(Prefs["subtitles.include_exclude_fs"])
+        self.include_exclude_paths = self.parse_include_exclude_paths()
         self.enabled_sections = self.check_enabled_sections()
         self.permissions_ok = self.check_permissions()
         self.notify_executable = self.check_notify_executable()
@@ -194,6 +212,7 @@ class Config(object):
         self.remove_tags = cast_bool(Prefs['subtitles.remove_tags'])
         self.fix_ocr = cast_bool(Prefs['subtitles.fix_ocr'])
         self.fix_common = cast_bool(Prefs['subtitles.fix_common'])
+        self.fix_upper = cast_bool(Prefs['subtitles.fix_only_uppercase'])
         self.reverse_rtl = cast_bool(Prefs['subtitles.reverse_rtl'])
         self.colors = Prefs['subtitles.colors'] if Prefs['subtitles.colors'] != "don't change" else None
         self.chmod = self.check_chmod()
@@ -208,7 +227,53 @@ class Config(object):
         self.only_one = cast_bool(Prefs['subtitles.only_one'])
         self.embedded_auto_extract = cast_bool(Prefs["subtitles.embedded.autoextract"])
         self.ietf_as_alpha3 = cast_bool(Prefs["subtitles.language.ietf_normalize"])
+        self.use_custom_dns = cast_bool(Prefs['use_custom_dns'])
         self.initialized = True
+
+    def migrate_prefs(self):
+        config_version = 0 if "config_version" not in Dict else Dict["config_version"]
+        if config_version < self.config_version:
+            user_prefs = get_user_prefs(Prefs, Log)
+            if user_prefs:
+                update_prefs = {}
+                for i in range(config_version, self.config_version):
+                    version = i+1
+                    func = "migrate_prefs_to_%i" % version
+                    if hasattr(self, func):
+                        Log.Info("Migrating user prefs to version %i" % version)
+                        try:
+                            mig_result = getattr(self, func)(user_prefs, from_version=config_version,
+                                                             to_version=version,
+                                                             current_version=self.config_version,
+                                                             migrated_prefs=update_prefs)
+                            update_prefs.update(mig_result)
+                            Dict["config_version"] = version
+                            Dict.Save()
+                            Log.Info("User prefs migrated to version %i" % version)
+                        except:
+                            Log.Exception("User prefs migration from %i to %i failed" % (self.config_version, version))
+                            break
+
+                if update_prefs:
+                    update_user_prefs(update_prefs, Prefs, Log)
+
+    def migrate_prefs_to_1(self, user_prefs, **kwargs):
+        update_prefs = {}
+        if "subtitles.only_foreign" in user_prefs and user_prefs["subtitles.only_foreign"] == "true":
+            update_prefs["subtitles.when_forced"] = "1"
+            update_prefs["subtitles.when"] = "0"
+
+        return update_prefs
+
+    def migrate_prefs_to_2(self, user_prefs, **kwargs):
+        update_prefs = {}
+        if "subtitles.ignore_fs" in user_prefs and user_prefs["subtitles.ignore_fs"] == "true":
+            update_prefs["subtitles.include_exclude_fs"] = "true"
+
+        if "subtitles.ignore_paths" in user_prefs and user_prefs["subtitles.ignore_paths"]:
+            update_prefs["subtitles.include_exclude_paths"] = user_prefs["subtitles.ignore_paths"]
+
+        return update_prefs
 
     def init_libraries(self):
         try_executables = []
@@ -373,7 +438,7 @@ class Config(object):
         self.enable_channel = True
 
         # any provider enabled?
-        if not self.providers:
+        if not self.providers_enabled:
             self.enable_agent = False
             self.enable_channel = False
             Log.Warn("No providers enabled, disabling agent and interface!")
@@ -421,7 +486,7 @@ class Config(object):
             return True
 
         self.missing_permissions = []
-        use_ignore_fs = Prefs["subtitles.ignore_fs"]
+        use_include_exclude_fs = self.include_exclude_sz_files
         all_permissions_ok = True
         for section in self.sections:
             if section.key not in self.enabled_sections:
@@ -436,12 +501,12 @@ class Config(object):
                 if not os.path.exists(path_str):
                     continue
 
-                if use_ignore_fs:
+                if use_include_exclude_fs:
                     # check whether we've got an ignore file inside the section path
-                    if self.is_physically_ignored(path_str):
+                    if not self.is_physically_wanted(path_str):
                         continue
 
-                if self.is_path_ignored(path_str):
+                if not self.is_path_wanted(path_str):
                     # is the path in our ignored paths setting?
                     continue
 
@@ -476,29 +541,38 @@ class Config(object):
         info_file_path = os.path.abspath(os.path.join(curDir, "..", "..", "Info.plist"))
         return FileIO.read(info_file_path)
 
-    def parse_ignore_paths(self):
-        paths = Prefs["subtitles.ignore_paths"]
-        if paths:
+    def parse_include_exclude_paths(self):
+        paths = Prefs["subtitles.include_exclude_paths"]
+        if paths and paths != "None":
             try:
-                return [path.strip() for path in paths.split(",")]
+                return [p for p in [path.strip() for path in paths.split(",")]
+                        if p != "None" and os.path.exists(p)]
             except:
-                Log.Error("Couldn't parse your ignore paths settings: %s" % paths)
+                Log.Error("Couldn't parse your include/exclude paths settings: %s" % paths)
         return []
 
-    def is_physically_ignored(self, folder):
+    def is_physically_wanted(self, folder, ref_fn=None):
         # check whether we've got an ignore file inside the path
-        for ifn in IGNORE_FN:
+        ret_val = self.include
+        ref_list = INCLUDE_FN if self.include else EXCLUDE_FN
+        for ifn in ref_list:
             if os.path.isfile(os.path.join(folder, ifn)):
-                Log.Info(u'Ignoring "%s" because "%s" exists', folder, ifn)
-                return True
+                if ref_fn:
+                    Log.Info(u'%s "%s" because "%s" exists in "%s"', "Including" if self.include else "Ignoring",
+                             ref_fn, ifn, folder)
+                else:
+                    Log.Info(u'%s "%s" because "%s" exists', "Including" if self.include else "Ignoring", folder, ifn)
 
-        return False
+                return ret_val
 
-    def is_path_ignored(self, fn):
-        for path in self.ignore_paths:
+        return not ret_val
+
+    def is_path_wanted(self, fn):
+        ret_val = self.include
+        for path in self.include_exclude_paths:
             if fn.startswith(path):
-                return True
-        return False
+                return ret_val
+        return not ret_val
 
     def check_notify_executable(self):
         fn = Prefs["notify_executable"]
@@ -610,6 +684,29 @@ class Config(object):
                         continue
                 l.update({real_lang})
 
+        if self.forced_also:
+            langs_to_force = []
+            if Prefs["subtitles.when_forced"] == "Always":
+                langs_to_force = list(l)
+
+            else:
+                for (setting, index) in (("Only for Subtitle Language (1)", 0),
+                                         ("Only for Subtitle Language (2)", 1),
+                                         ("Only for Subtitle Language (3)", 2)):
+                    if Prefs["subtitles.when_forced"] == setting:
+                        try:
+                            langs_to_force.append(list(l)[index])
+                            break
+                        except:
+                            pass
+
+            for lang in langs_to_force:
+                l.add(Language.rebuild(lang, forced=True))
+
+        elif self.forced_only:
+            for lang in l:
+                lang.forced = True
+
         return l
 
     lang_list = property(get_lang_list)
@@ -632,8 +729,9 @@ class Config(object):
             out.append("vtt")
         return out
 
-    def get_providers(self, media_type="series"):
-        providers = {'opensubtitles': cast_bool(Prefs['provider.opensubtitles.enabled']),
+    @property
+    def providers_by_prefs(self):
+        return {'opensubtitles': cast_bool(Prefs['provider.opensubtitles.enabled']),
                      # 'thesubdb': Prefs['provider.thesubdb.enabled'],
                      'podnapisi': cast_bool(Prefs['provider.podnapisi.enabled']),
                      'titlovi': cast_bool(Prefs['provider.titlovi.enabled']),
@@ -650,6 +748,12 @@ class Config(object):
                      'assrt': cast_bool(Prefs['provider.assrt.enabled']),
                      }
 
+    @property
+    def providers_enabled(self):
+        return filter(lambda prov: self.providers_by_prefs[prov], self.providers_by_prefs)
+
+    def get_providers(self, media_type="series"):
+        providers = self.providers_by_prefs
         providers_by_prefs = copy.deepcopy(providers)
 
         # disable subscene for movies by default
@@ -657,6 +761,7 @@ class Config(object):
             providers["subscene"] = False
 
         # ditch non-forced-subtitles-reporting providers
+        providers_forced_off = {}
         if self.forced_only:
             providers["addic7ed"] = False
             providers["tvsubtitles"] = False
@@ -668,6 +773,8 @@ class Config(object):
             providers["titlovi"] = False
             providers["argenteam"] = False
             providers["assrt"] = False
+            providers["subscene"] = False
+            providers_forced_off = dict(providers)
 
         if not self.unrar and providers["legendastv"]:
             providers["legendastv"] = False
@@ -676,7 +783,7 @@ class Config(object):
         # advanced settings
         if media_type and self.advanced.providers:
             for provider, data in self.advanced.providers.iteritems():
-                if provider not in providers or not providers_by_prefs[provider]:
+                if provider not in providers or not providers_by_prefs[provider] or provider in providers_forced_off:
                     continue
 
                 if data["enabled_for"] is not None:
@@ -709,6 +816,7 @@ class Config(object):
     def get_provider_settings(self):
         os_use_https = self.advanced.providers.opensubtitles.use_https \
             if self.advanced.providers.opensubtitles.use_https != None else True
+
         provider_settings = {'addic7ed': {'username': Prefs['provider.addic7ed.username'],
                                           'password': Prefs['provider.addic7ed.password'],
                                           'use_random_agents': cast_bool(Prefs['provider.addic7ed.use_random_agents1']),
@@ -717,11 +825,16 @@ class Config(object):
                                                'password': Prefs['provider.opensubtitles.password'],
                                                'use_tag_search': self.exact_filenames,
                                                'only_foreign': self.forced_only,
+                                               'also_foreign': self.forced_also,
                                                'is_vip': cast_bool(Prefs['provider.opensubtitles.is_vip']),
                                                'use_ssl': os_use_https,
-                                               'timeout': self.advanced.providers.opensubtitles.timeout or 15
+                                               'timeout': self.advanced.providers.opensubtitles.timeout or 15,
                                                },
                              'podnapisi': {
+                                 'only_foreign': self.forced_only,
+                                 'also_foreign': self.forced_also,
+                             },
+                             'subscene': {
                                  'only_foreign': self.forced_only,
                              },
                              'legendastv': {'username': Prefs['provider.legendastv.username'],
@@ -762,8 +875,8 @@ class Config(object):
         throttle_until = datetime.datetime.now() + throttle_delta
         Dict["provider_throttle"][name] = (cls_name, throttle_until, throttle_description)
 
-        Log.Info("Throttling %s for %s, until %s, because of: %s", name, throttle_description,
-                 throttle_until.strftime("%y/%m/%d %H:%M"), cls_name)
+        Log.Info("Throttling %s for %s, until %s, because of: %s. Exception info: %r", name, throttle_description,
+                 throttle_until.strftime("%y/%m/%d %H:%M"), cls_name, exception.message)
         Dict.Save()
 
     @property
@@ -823,6 +936,8 @@ class Config(object):
             mods.append("OCR_fixes")
         if self.fix_common:
             mods.append("common")
+        if self.fix_upper:
+            mods.append("fix_uppercase")
         if self.colors:
             mods.append("color(name=%s)" % self.colors)
         if self.reverse_rtl:
@@ -935,6 +1050,9 @@ class Config(object):
 
         subliminal_patch.core.DOWNLOAD_TRIES = int(Prefs['subtitles.try_downloads'])
         subliminal.score.episode_scores["addic7ed_boost"] = int(Prefs['provider.addic7ed.boost_by2'])
+
+        if self.use_custom_dns:
+            subliminal_patch.http.set_custom_resolver()
 
 
 config = Config()

@@ -8,7 +8,8 @@ import re
 import os
 import time
 
-from babelfish import Language, language_converters
+from babelfish import language_converters
+from subzero.language import Language
 from requests import Session
 
 from subliminal.subtitle import fix_line_ending
@@ -82,7 +83,7 @@ class SuperSubtitlesSubtitle(Subtitle):
         return str(self.subtitle_id)
 
     def get_matches(self, video):
-        matches = set()
+        matches = guess_matches(video, guessit(self.release_info.encode("utf-8")))
 
         # episode
         if isinstance(video, Episode):
@@ -130,8 +131,6 @@ class SuperSubtitlesSubtitle(Subtitle):
         # format
         if video.format and self.version and video.format.lower() in self.version.lower():
             matches.add('format')
-        # other properties
-        # matches |= guess_matches(video, guessit(self.release_info.encode("utf-8")))
 
         self.matches = matches
         return matches

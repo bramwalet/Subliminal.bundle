@@ -17,11 +17,11 @@ def has_external_subtitle(part_id, stored_subs, language):
 
 
 def set_existing_languages(video, video_info, external_subtitles=False, embedded_subtitles=False, known_embedded=None,
-                           forced_only=False, stored_subs=None, languages=None, only_one=False):
+                           stored_subs=None, languages=None, only_one=False):
     logger.debug(u"Determining existing subtitles for %s", video.name)
 
     # scan for external subtitles
-    external_langs_found = set(search_external_subtitles(video.name, forced_tag=forced_only, languages=languages,
+    external_langs_found = set(search_external_subtitles(video.name, languages=languages,
                                                          only_one=only_one).values())
 
     # found external subtitles should be considered?
@@ -40,18 +40,10 @@ def set_existing_languages(video, video_info, external_subtitles=False, embedded
 
     # add known embedded subtitles
     if embedded_subtitles and known_embedded:
-        embedded_subtitle_languages = set()
         # mp4 and stuff, check burned in
         for language in known_embedded:
-            try:
-                embedded_subtitle_languages.add(language_from_stream(language))
-
-            except LanguageError:
-                logger.error('Embedded subtitle track language %r is not a valid language', language)
-                embedded_subtitle_languages.add(Language('und'))
-
-            logger.debug('Found embedded subtitle %r', embedded_subtitle_languages)
-            video.subtitle_languages.update(embedded_subtitle_languages)
+            logger.debug('Found embedded subtitle %r', language)
+            video.subtitle_languages.add(language)
 
 
 def parse_video(fn, hints, skip_hashing=False, dry_run=False, providers=None):
@@ -135,6 +127,11 @@ def refine_video(video, no_refining=False, refiner_settings=None):
             if video.imdb_id:
                 logger.info(u"Adding PMS imdb_id info: %s", video.imdb_id)
 
+    elif hints["type"] == "movie" and plex_title:
+        pt = plex_title.replace(" - ", " ").replace(" -", " ").replace("- ", " ")
+        if pt != video.title:
+            video.alternative_titles.append(pt)
+
     if hints["type"] == "episode":
         video.season = video_info.get("season", video.season)
         video.episode = video_info.get("episode", video.episode)
@@ -149,6 +146,9 @@ def refine_video(video, no_refining=False, refiner_settings=None):
             refine(video, **refine_kwargs)
 
             video.alternative_series.append(old_title)
+
+        elif plex_title and video.series != plex_title:
+            video.alternative_series.append(plex_title)
 
         # still no match? add our own data
         if not video.series_tvdb_id or not video.tvdb_id:

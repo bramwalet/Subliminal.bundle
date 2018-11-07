@@ -10,8 +10,10 @@ from func import enable_channel_wrapper, route_wrapper, register_route_function
 from subzero.language import Language
 from support.i18n import is_localized_string, _
 from support.items import get_kind, get_item_thumb, get_item, get_item_kind_from_item, refresh_item
-from support.helpers import get_video_display_title, pad_title, display_language, quote_args, is_stream_forced
-from support.ignore import ignore_list
+from support.helpers import get_video_display_title, pad_title, display_language, quote_args, is_stream_forced, \
+    get_title_for_video_metadata
+from support.history import get_history
+from support.ignore import get_decision_list
 from support.lib import get_intent
 from support.config import config
 from subzero.constants import ICON_SUB, ICON
@@ -31,7 +33,7 @@ route = route_wrapper
 handler = enable_channel_wrapper(handler)
 
 
-def add_ignore_options(oc, kind, callback_menu=None, title=None, rating_key=None, add_kind=True):
+def add_incl_excl_options(oc, kind, callback_menu=None, title=None, rating_key=None, add_kind=True):
     """
 
     :param oc: oc to add our options to
@@ -43,21 +45,28 @@ def add_ignore_options(oc, kind, callback_menu=None, title=None, rating_key=None
     """
     # try to translate kind to the ignore key
     use_kind = kind
-    if kind not in ignore_list:
-        use_kind = ignore_list.translate_key(kind)
-    if not use_kind or use_kind not in ignore_list:
+    ref_list = get_decision_list()
+    if kind not in ref_list:
+        use_kind = ref_list.translate_key(kind)
+    if not use_kind or use_kind not in ref_list:
         return
 
-    in_list = rating_key in ignore_list[use_kind]
+    in_list = rating_key in ref_list[use_kind]
+    include = ref_list.store == "include"
 
-    t = u"Ignore %(kind)s \"%(title)s\""
-    if in_list:
-        t = u"Un-ignore %(kind)s \"%(title)s\""
+    if include:
+        t = u"Enable Sub-Zero for %(kind)s \"%(title)s\""
+        if in_list:
+            t = u"Disable Sub-Zero for %(kind)s \"%(title)s\""
+    else:
+        t = u"Ignore %(kind)s \"%(title)s\""
+        if in_list:
+            t = u"Un-ignore %(kind)s \"%(title)s\""
 
     oc.add(DirectoryObject(
-        key=Callback(callback_menu, kind=use_kind, sure=False, todo="not_set", rating_key=rating_key, title=title),
+        key=Callback(callback_menu, kind=use_kind, sure=False, todo="not_set", rating_key=str(rating_key), title=title),
         title=_(t,
-                kind=ignore_list.verbose(kind) if add_kind else "",
+                kind=ref_list.verbose(kind) if add_kind else "",
                 title=unicode(title))
     )
     )
@@ -96,10 +105,12 @@ def set_refresh_menu_state(state_or_media, media_type="movies"):
         # store it in last state and remove the current
         Dict["last_refresh_state"] = Dict["current_refresh_state"]
         Dict["current_refresh_state"] = None
+        Dict.Save()
         return
 
     if isinstance(state_or_media, types.StringTypes) or is_localized_string(state_or_media):
         Dict["current_refresh_state"] = unicode(state_or_media)
+        Dict.Save()
         return
 
     media = state_or_media
@@ -123,6 +134,7 @@ def set_refresh_menu_state(state_or_media, media_type="movies"):
 
     Dict["current_refresh_state"] = unicode(_(t,
                                               title=unicode(title)))
+    Dict.Save()
 
 
 def get_item_task_data(task_name, rating_key, language):
@@ -156,6 +168,8 @@ def extract_embedded_sub(**kwargs):
     item_type = get_item_kind_from_item(plex_item)
     part = kwargs.pop("part", get_part(plex_item, part_id))
     scanned_videos = kwargs.pop("scanned_videos", None)
+    extract_mode = kwargs.pop("extract_mode", "a")
+    history_storage = kwargs.pop("history_storage", None)
 
     any_successful = False
 
@@ -173,7 +187,7 @@ def extract_embedded_sub(**kwargs):
                 set_refresh_menu_state(_(u"Extracting subtitle %(stream_index)s of %(filename)s",
                                          stream_index=stream_index,
                                          filename=bn))
-                Log.Info(u"Extracting stream %s (%s) of %s", stream_index, display_language(language), bn)
+                Log.Info(u"Extracting stream %s (%s) of %s", stream_index, str(language), bn)
 
                 out_codec = stream.codec if stream.codec != "mov_text" else "srt"
 
@@ -195,12 +209,28 @@ def extract_embedded_sub(**kwargs):
                     subtitle.set_encoding("utf-8")
 
                     # fixme: speedup video; only video.name is needed
-                    save_successful = save_subtitles(scanned_videos, {scanned_videos.keys()[0]: [subtitle]}, mode="m",
-                                                     set_current=set_current, is_forced=is_forced)
+                    video = scanned_videos.keys()[0]
+                    save_successful = save_subtitles(scanned_videos, {video: [subtitle]}, mode="m",
+                                                     set_current=set_current)
                     set_refresh_menu_state(None)
 
                     if save_successful and refresh:
                         refresh_item(rating_key)
+
+                    # add item to history
+                    item_title = get_title_for_video_metadata(video.plexapi_metadata,
+                                                              add_section_title=False, add_episode_title=True)
+                    if history_storage:
+                        history = history_storage
+                    else:
+                        history = get_history()
+
+                    history.add(item_title, video.id, section_title=video.plexapi_metadata["section"],
+                                thumb=video.plexapi_metadata["super_thumb"],
+                                subtitle=subtitle, mode=extract_mode)
+
+                    if not history_storage:
+                        history.destroy()
 
                     any_successful = True
 

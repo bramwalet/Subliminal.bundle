@@ -11,18 +11,19 @@ import copy
 from requests import HTTPError
 from item_details import ItemDetailsMenu
 from refresh_item import RefreshItem
-from menu_helpers import add_ignore_options, dig_tree, set_refresh_menu_state, \
+from menu_helpers import add_incl_excl_options, dig_tree, set_refresh_menu_state, \
     default_thumb, debounce, ObjectContainer, SubFolderObjectContainer, route, \
     extract_embedded_sub
-from main import fatality, IgnoreMenu
+from main import fatality, InclExclMenu
 from advanced import DispatchRestart
 from subzero.constants import ART, PREFIX, DEPENDENCY_MODULE_NAMES
 from support.plex_media import get_all_parts, get_embedded_subtitle_streams
 from support.scheduler import scheduler
 from support.config import config
 from support.helpers import timestamp, df, display_language
-from support.ignore import ignore_list
-from support.items import get_all_items, get_items_info, get_item_kind_from_rating_key, get_item, MI_KEY, get_item_title
+from support.ignore import get_decision_list
+from support.items import get_all_items, get_items_info, get_item_kind_from_rating_key, get_item, MI_KEY, \
+    get_item_title, get_item_thumb
 from support.storage import get_subtitle_storage
 from support.i18n import _
 
@@ -107,7 +108,7 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
         if current_kind in ("series", "season"):
             item = get_item(rating_key)
             sub_title = get_item_title(item)
-            add_ignore_options(oc, current_kind, title=sub_title, rating_key=rating_key, callback_menu=IgnoreMenu)
+            add_incl_excl_options(oc, current_kind, title=sub_title, rating_key=rating_key, callback_menu=InclExclMenu)
 
         # mass-extract embedded
         if current_kind == "season" and config.plex_transcoder:
@@ -173,7 +174,8 @@ def SeasonExtractEmbedded(**kwargs):
     return MetadataMenu(randomize=timestamp(), title=item_title, **kwargs)
 
 
-def multi_extract_embedded(stream_list, refresh=False, with_mods=False, single_thread=True):
+def multi_extract_embedded(stream_list, refresh=False, with_mods=False, single_thread=True, extract_mode="a",
+                           history_storage=None):
     def execute():
         for video_part_map, plexapi_part, stream_index, language, set_current in stream_list:
             plexapi_item = video_part_map.keys()[0].plexapi_metadata["item"]
@@ -181,7 +183,8 @@ def multi_extract_embedded(stream_list, refresh=False, with_mods=False, single_t
             extract_embedded_sub(rating_key=plexapi_item.rating_key, part_id=plexapi_part.id,
                                  plex_item=plexapi_item, part=plexapi_part, scanned_videos=video_part_map,
                                  stream_index=stream_index, set_current=set_current,
-                                 language=language, with_mods=with_mods, refresh=refresh)
+                                 language=language, with_mods=with_mods, refresh=refresh, extract_mode=extract_mode,
+                                 history_storage=history_storage)
 
     if single_thread:
         with Thread.Lock(key="extract_embedded"):
@@ -203,8 +206,7 @@ def season_extract_embedded(rating_key, requested_language, with_mods=False, for
                     embedded_subs = stored_subs.get_by_provider(part.id, requested_language, "embedded")
                     current = stored_subs.get_any(part.id, requested_language)
                     if not embedded_subs or force:
-                        stream_data = get_embedded_subtitle_streams(part, requested_language=requested_language,
-                                                                    get_forced=config.forced_only)
+                        stream_data = get_embedded_subtitle_streams(part, requested_language=requested_language)
                         if stream_data:
                             stream = stream_data[0]["stream"]
 
@@ -213,19 +215,23 @@ def season_extract_embedded(rating_key, requested_language, with_mods=False, for
 
                             extract_embedded_sub(rating_key=item.rating_key, part_id=part.id,
                                                  stream_index=str(stream.index), set_current=set_current,
-                                                 refresh=refresh, language=requested_language, with_mods=with_mods)
+                                                 refresh=refresh, language=requested_language, with_mods=with_mods,
+                                                 extract_mode="m")
     finally:
         subtitle_storage.destroy()
 
 
 @route(PREFIX + '/ignore_list')
 def IgnoreListMenu():
-    oc = SubFolderObjectContainer(title2="Ignore list", replace_parent=True)
-    for key in ignore_list.key_order:
-        values = ignore_list[key]
+    ref_list = get_decision_list()
+    include = ref_list.store == "include"
+    list_title = _("Include list" if include else "Ignore list")
+    oc = SubFolderObjectContainer(title2=list_title, replace_parent=True)
+    for key in ref_list.key_order:
+        values = ref_list[key]
         for value in values:
-            add_ignore_options(oc, key, title=ignore_list.get_title(key, value), rating_key=value,
-                               callback_menu=IgnoreMenu)
+            add_incl_excl_options(oc, key, title=ref_list.get_title(key, value), rating_key=value,
+                                  callback_menu=InclExclMenu)
     return oc
 
 
@@ -235,16 +241,17 @@ def HistoryMenu():
     history = get_history()
     oc = SubFolderObjectContainer(title2=_("History"), replace_parent=True)
 
-    for item in history.items:
+    for item in history.items[:100]:
         possible_language = item.language
         language_display = item.lang_name if not possible_language else display_language(possible_language)
 
         oc.add(DirectoryObject(
             key=Callback(ItemDetailsMenu, title=item.title, item_title=item.item_title,
                          rating_key=item.rating_key),
-            title=u"%s (%s)" % (item.item_title, item.mode_verbose),
+            title=u"%s (%s)" % (item.item_title, _(item.mode_verbose)),
             summary=_(u"%s in %s (%s, score: %s), %s", language_display, item.section_title,
-                                                       item.provider_name, item.score, df(item.time))
+                                                       _(item.provider_name), item.score, df(item.time)),
+            thumb=item.thumb or default_thumb
         ))
 
     history.destroy()
@@ -324,8 +331,9 @@ def ValidatePrefs():
     for attr in [
             "version", "app_support_path", "data_path", "data_items_path", "enable_agent",
             "enable_channel", "permissions_ok", "missing_permissions", "fs_encoding",
-            "subtitle_destination_folder", "new_style_cache", "dbm_supported", "lang_list", "providers",
-            "plex_transcoder", "refiner_settings", "unrar", "adv_cfg_path"]:
+            "subtitle_destination_folder", "include", "include_exclude_paths", "include_exclude_sz_files",
+            "new_style_cache", "dbm_supported", "lang_list", "providers", "normal_subs", "forced_only", "forced_also",
+            "plex_transcoder", "refiner_settings", "unrar", "adv_cfg_path", "use_custom_dns"]:
 
         value = getattr(config, attr)
         if isinstance(value, dict):

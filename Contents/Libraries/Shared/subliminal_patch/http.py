@@ -6,10 +6,12 @@ import socket
 import logging
 import requests
 import xmlrpclib
+import dns.resolver
 
-from xmlrpclib import SafeTransport, Transport
 from requests import Session, exceptions
+from urllib3.util import connection
 from retry.api import retry_call
+from exceptions import APIThrottled
 
 from subzero.lib.io import get_viable_encoding
 
@@ -20,6 +22,12 @@ try:
 except AttributeError:
     # < Python 2.7.9
     default_ssl_context = None
+
+
+custom_resolver = dns.resolver.Resolver(configure=False)
+
+# 8.8.8.8 is Google's public DNS server
+custom_resolver.nameservers = ['8.8.8.8', '1.1.1.1']
 
 
 class CertifiSession(Session):
@@ -109,8 +117,17 @@ class SubZeroRequestsTransport(xmlrpclib.SafeTransport):
         else:
             resp.raise_for_status()
 
+            try:
+                if 'x-ratelimit-remaining' in resp.headers and int(resp.headers['x-ratelimit-remaining']) <= 2:
+                    raise APIThrottled()
+            except ValueError:
+                logger.info('Couldn\'t parse "x-ratelimit-remaining": %r' % resp.headers['x-ratelimit-remaining'])
+
             self.verbose = verbose
-            return self.parse_response(resp.raw)
+            try:
+                return self.parse_response(resp.raw)
+            except:
+                logger.debug("Bad response data: %r", resp.raw)
 
     def _build_url(self, host, handler):
         """
@@ -120,3 +137,33 @@ class SubZeroRequestsTransport(xmlrpclib.SafeTransport):
         scheme = 'https' if self.use_https else 'http'
         handler = handler[1:] if handler and handler[0] == "/" else handler
         return '%s://%s/%s' % (scheme, host, handler)
+
+
+_orig_create_connection = connection.create_connection
+
+
+dns_cache = {}
+
+
+def set_custom_resolver():
+    def patched_create_connection(address, *args, **kwargs):
+        """Wrap urllib3's create_connection to resolve the name elsewhere"""
+        # resolve hostname to an ip address; use your own
+        # resolver here, as otherwise the system resolver will be used.
+        host, port = address
+        if host in dns_cache:
+            ip = dns_cache[host]
+            logger.debug("Using %s=%s from cache", host, ip)
+        else:
+            try:
+                ip = custom_resolver.query(host)[0].address
+                dns_cache[host] = ip
+            except dns.exception.DNSException:
+                logger.warning("Couldn't resolve %s with DNS: %s", host, custom_resolver.nameservers)
+                return _orig_create_connection((host, port), *args, **kwargs)
+
+            logger.debug("Resolved %s to %s using %s", host, ip, custom_resolver.nameservers)
+
+        return _orig_create_connection((ip, port), *args, **kwargs)
+
+    connection.create_connection = patched_create_connection
