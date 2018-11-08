@@ -174,10 +174,11 @@ class DefaultSubtitleHelper(SubtitleHelper):
 
         Log('Found subtitle file: ' + self.filename + ' language: ' + language + ' codec: ' + str(
             codec) + ' format: ' + str(format) + ' default: ' + default + ' forced: ' + forced)
-        part.subtitles[language][basename] = Proxy.LocalFile(self.filename, codec=codec, format=format, default=default,
+        key = ("subzero_ex" + "_forced" if forced else "") + basename
+        part.subtitles[language][key] = Proxy.LocalFile(self.filename, codec=codec, format=format, default=default,
                                                              forced=forced)
 
-        lang_sub_map[language] = [basename]
+        lang_sub_map[language] = [key]
         return lang_sub_map
 
 
@@ -195,7 +196,7 @@ def get_subtitles_from_metadata(part):
 
                 if p_type == "Media":
                     # metadata subtitle
-                    Log.Debug(u"Found metadata subtitle: %s, %s" % (language, repr(proxy)))
+                    Log.Debug(u"Found metadata subtitle: %s, %s, %s" % (language, key, repr(proxy)))
                     subs[language] = [key]
     return subs
 
