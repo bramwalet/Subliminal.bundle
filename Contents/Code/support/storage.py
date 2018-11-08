@@ -146,16 +146,16 @@ def save_subtitles_to_metadata(videos, subtitles):
             new_key = "subzero_md" + ("_forced" if subtitle.language.forced else "")
             lang = Locale.Language.Match(subtitle.language.alpha2)
 
-            Log.Debug("Existing metadata subs for %s: %s", lang, getattr(mp.subtitles[lang], "_proxies", {}).keys())
-
             for key, proxy in getattr(mp.subtitles[lang], "_proxies").iteritems():
                 if not proxy or not len(proxy) >= 5:
                     Log.Debug("Can't parse metadata: %s" % repr(proxy))
                     continue
-                if proxy[0] == "Media" and not key.startswith("subzero_"):
-                    if key == "subzero":
-                        Log.Debug("Removing legacy metadata subtitle for %s", lang)
-                    del mp.subtitles[lang][key]
+                if proxy[0] == "Media":
+                    if not key.startswith("subzero_"):
+                        if key == "subzero":
+                            Log.Debug("Removing legacy metadata subtitle for %s", lang)
+                        del mp.subtitles[lang][key]
+                    Log.Debug("Existing metadata subtitle for %s: %s", lang, key)
 
             Log.Debug("Adding metadata sub for %s: %s", lang, subtitle)
             mp.subtitles[lang][new_key] = pm

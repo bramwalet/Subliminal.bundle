@@ -195,9 +195,12 @@ def get_subtitles_from_metadata(part):
                 p_type = proxy[0]
 
                 if p_type == "Media":
+                    if not key.startswith("subzero"):
+                        continue
+
                     # metadata subtitle
-                    Log.Debug(u"Found metadata subtitle: %s, %s, %s" % (language, key, repr(proxy)))
-                    subs[language] = [key]
+                    #Log.Debug(u"Found metadata subtitle: %s, %s, %s" % (language, key, repr(proxy)))
+                    subs[language].append(key)
     return subs
 
 

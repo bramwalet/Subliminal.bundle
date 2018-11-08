@@ -7,7 +7,7 @@ from support.lib import Plex, get_intent
 from support.plex_media import get_stream_fps
 from support.storage import get_subtitle_storage
 from support.config import config, TEXT_SUBTITLE_EXTS
-
+from support.subtitlehelpers import get_subtitles_from_metadata
 from subzero.video import parse_video, set_existing_languages
 from subzero.language import language_from_stream, Language
 
@@ -86,7 +86,21 @@ def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, pr
     else:
         Log.Warn("Part %s missing of %s, not able to scan internal streams", plex_part.id, rating_key)
 
-    Log.Debug("Known embedded: %r", known_embedded)
+    # metadata subtitles
+    known_metadata_subs = set()
+    meta_subs = get_subtitles_from_metadata(plex_part)
+    for language, subList in meta_subs.iteritems():
+        lang = Language.fromietf(Locale.Language.Match(language))
+        if subList:
+            for key in subList:
+                if key.startswith("subzero_md_forced"):
+                    lang = Language.rebuild(lang, forced=True)
+
+                known_metadata_subs.add(lang)
+                Log.Debug("Found metadata subtitle %r:%s for %s", lang, key, plex_part.file)
+
+    Log.Debug("Known metadata subtitles: %r", known_metadata_subs)
+    Log.Debug("Known embedded subtitles: %r", known_embedded)
 
     subtitle_storage = get_subtitle_storage()
     stored_subs = subtitle_storage.load(rating_key)
@@ -106,7 +120,7 @@ def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, pr
             set_existing_languages(video, pms_video_info, external_subtitles=external_subtitles,
                                    embedded_subtitles=embedded_subtitles, known_embedded=known_embedded,
                                    stored_subs=stored_subs, languages=config.lang_list,
-                                   only_one=config.only_one)
+                                   only_one=config.only_one, known_metadata_subs=known_metadata_subs)
 
         # add video fps info
         video.fps = plex_part.fps
