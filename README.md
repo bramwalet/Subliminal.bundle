@@ -8,6 +8,14 @@
 Check out **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)** by [@ukdtom](https://github.com/ukdtom) and [@mmgoodnow](https://github.com/mmgoodnow) <br />
 <br style="clear:left;"/>
 
+<br />
+
+---
+
+**[The future of Sub-Zero](https://www.reddit.com/r/PleX/comments/9n9qjl/subzero_the_future/)**
+
+---
+
 If you like this, buy me a beer: <br>[![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=G9VKR2B8PMNKG) <br>or become a Patreon starting at **1 $ / month** <br><a href="https://www.patreon.com/subzero_plex" target="_blank"><img src="http://www.wenspencer.com/wp-content/uploads/2017/02/patreon-button.png" height="42" /></a> <br>or use the OpenSubtitles Sub-Zero affiliate link to become VIP <br>**10€/year, ad-free subs, 1000 subs/day, no-cache *VIP* server**<br><a href="http://v.ht/osvip" target="_blank"><img src="https://static.opensubtitles.org/gfx/logo.gif" height="50" /></a> 
 
 ## Introduction
@@ -71,11 +79,8 @@ Ever had broken music icons in a subtitle? Nordic characters like `Å` which tur
 Simply go to the Plex Plugins in your Plex Media Server, search for Sub-Zero and install it.
 For further help or manual installation, [please go to the wiki](https://github.com/pannal/Sub-Zero.bundle/wiki).
 
-## Big thanks to the beta testing team (in no particular order)!
-the.vbm, mmgoodnow, Vertig0ne, thliu78, tattoomees, ostman, count_confucius, 
-eherberg, tywilliams_88, Swanny, Jippo, Joost1991 / joost, Marik, Jon, AmbyDK, 
-Clay, mmgoodnow, Abenlog, michael, smikwily, shoghicp, Zuikkis, Isilorn, 
-Jacob K, Ninjouz, chopeta, fvb, Jose
+## Big thanks to the beta/i18n testing team (in no particular order)!
+the.vbm, mmgoodnow, Vertig0ne, thliu78, tattoomees, ostman, count_confucius, eherberg, tywilliams_88, Swanny, Jippo, Joost1991 / joost, Marik, Jon, AmbyDK, Clay, Abenlog, michael, smikwily, shoghicp, Zuikkis, Isilorn, Jacob K, Ninjouz, chopeta, fvb, Uthman, Claus Møller, Semi Doludizgin, Rafael, sugarman402, Morpheus1333, Yamil.llanos, Notorius28 
 
 ## Changelog
 
