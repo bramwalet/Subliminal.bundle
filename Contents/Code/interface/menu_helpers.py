@@ -173,8 +173,6 @@ def extract_embedded_sub(**kwargs):
     any_successful = False
 
     if part:
-        history = get_history()
-
         if not scanned_videos:
             metadata = get_plex_metadata(rating_key, part_id, item_type, plex_item=plex_item)
             scanned_videos = scan_videos([metadata], ignore_all=True, skip_hashing=True)
@@ -222,12 +220,13 @@ def extract_embedded_sub(**kwargs):
                     item_title = get_title_for_video_metadata(video.plexapi_metadata,
                                                               add_section_title=False, add_episode_title=True)
 
+                    history = get_history()
                     history.add(item_title, video.id, section_title=video.plexapi_metadata["section"],
                                 thumb=video.plexapi_metadata["super_thumb"],
                                 subtitle=subtitle, mode=extract_mode)
+                    history.destroy()
 
                     any_successful = True
-            history.destroy()
 
     return any_successful
 
