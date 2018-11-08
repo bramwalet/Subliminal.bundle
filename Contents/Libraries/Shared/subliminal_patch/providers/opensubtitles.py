@@ -299,6 +299,9 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
             elif also_foreign and foreign_parts_only:
                 language = Language.rebuild(language, forced=True)
 
+            if language not in languages:
+                continue
+
             query_parameters = _subtitle_item.get("QueryParameters")
 
             subtitle = self.subtitle_class(language, hearing_impaired, page_link, subtitle_id, matched_by,
