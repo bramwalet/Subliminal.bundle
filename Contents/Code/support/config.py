@@ -633,7 +633,7 @@ class Config(object):
         return enabled_sections
 
     # Prepare a list of languages we want subs for
-    def get_lang_list(self, provider=None):
+    def get_lang_list(self, provider=None, ordered=False):
         # advanced settings
         if provider and self.advanced.providers and provider in self.advanced.providers:
             adv_languages = self.advanced.providers[provider].get("languages", None)
@@ -654,21 +654,21 @@ class Config(object):
                 if adv_out:
                     return adv_out
 
-        l = {Language.fromietf(Prefs["langPref1a"])}
+        l = [Language.fromietf(Prefs["langPref1a"])]
         lang_custom = Prefs["langPrefCustom"].strip()
 
         if Prefs['subtitles.only_one']:
-            return l
+            return set(l) if not ordered else l
 
         if Prefs["langPref2a"] != "None":
             try:
-                l.update({Language.fromietf(Prefs["langPref2a"])})
+                l.append(Language.fromietf(Prefs["langPref2a"]))
             except:
                 pass
 
         if Prefs["langPref3a"] != "None":
             try:
-                l.update({Language.fromietf(Prefs["langPref3a"])})
+                l.append(Language.fromietf(Prefs["langPref3a"]))
             except:
                 pass
 
@@ -682,12 +682,12 @@ class Config(object):
                         real_lang = Language.fromname(lang)
                     except:
                         continue
-                l.update({real_lang})
+                l.append(real_lang)
 
         if self.forced_also:
-            langs_to_force = []
             if Prefs["subtitles.when_forced"] == "Always":
-                langs_to_force = list(l)
+                for lang in list(l):
+                    l.append(Language.rebuild(lang, forced=True))
 
             else:
                 for (setting, index) in (("Only for Subtitle Language (1)", 0),
@@ -695,19 +695,21 @@ class Config(object):
                                          ("Only for Subtitle Language (3)", 2)):
                     if Prefs["subtitles.when_forced"] == setting:
                         try:
-                            langs_to_force.append(list(l)[index])
+                            l.append(Language.rebuild(list(l)[index], forced=True))
                             break
                         except:
                             pass
-
-            for lang in langs_to_force:
-                l.add(Language.rebuild(lang, forced=True))
 
         elif self.forced_only:
             for lang in l:
                 lang.forced = True
 
-        return l
+        if not self.normal_subs:
+            for lang in l[:]:
+                if not lang.forced:
+                    l.remove(lang)
+
+        return set(l) if not ordered else l
 
     lang_list = property(get_lang_list)
 

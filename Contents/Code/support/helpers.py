@@ -389,39 +389,36 @@ def get_language_from_stream(lang_code):
 
 
 def audio_streams_match_languages(video, languages):
+    without_forced = filter(lambda x: not x.forced, languages)
     if video.audio_languages:
-        decision = []
-
         if Prefs["subtitles.when"] == "Always":
-            decision.append(False)
+            return set()
 
         elif Prefs["subtitles.when"] == "When main audio stream is not Subtitle Language (1)":
             if video.audio_languages[0] == languages[0]:
-                decision.append(True)
+                return set(without_forced)
 
         elif Prefs["subtitles.when"] == "When any audio stream is not Subtitle Language (1)":
             if languages[0] in video.audio_languages:
-                decision.append(True)
+                return set(without_forced)
 
         elif Prefs["subtitles.when"] == "When main audio stream is not any configured language":
             if video.audio_languages[0] in languages:
-                decision.append(True)
+                return set(without_forced)
 
         elif Prefs["subtitles.when"] == "When any audio stream is not any configured language":
-            if set(video.audio_languages).intersection(set(languages)):
-                decision.append(True)
+            matching = set(video.audio_languages).intersection(set(languages))
+            if matching:
+                return set(without_forced)
 
-        if Prefs["subtitles.when_forced"] in [
-            "Always",
-            "Only for Subtitle Language (1)",
-            "Only for Subtitle Language (2)",
-            "Only for Subtitle Language (3)"
-        ]:
-            decision.append(False)
+        # if Prefs["subtitles.when_forced"] in [
+        #     "Always",
+        #     "Only for Subtitle Language (1)",
+        #     "Only for Subtitle Language (2)",
+        #     "Only for Subtitle Language (3)"
+        # ]:
 
-        return all(decision)
-
-    return False
+    return set()
 
 
 def get_language(lang_short):
