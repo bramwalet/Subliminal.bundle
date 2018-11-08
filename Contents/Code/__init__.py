@@ -109,8 +109,9 @@ def agent_extract_embedded(video_part_map):
         for scanned_video, part_info in video_part_map.iteritems():
             plexapi_item = scanned_video.plexapi_metadata["item"]
             stored_subs = subtitle_storage.load_or_new(plexapi_item)
+            valid_langs_in_media = audio_streams_match_languages(scanned_video, config.get_lang_list(ordered=True))
 
-            if audio_streams_match_languages(scanned_video, list(config.lang_list)):
+            if not config.lang_list.difference(valid_langs_in_media):
                 Log.Debug("Skipping embedded subtitle extraction for %s, audio streams are in correct language(s)",
                           plexapi_item.rating_key)
                 continue
@@ -176,7 +177,6 @@ class SubZeroAgent(object):
             return
 
         intent = get_intent()
-        history = None
 
         item_ids = []
         try:
@@ -258,8 +258,6 @@ class SubZeroAgent(object):
             if downloaded_subtitles:
                 downloaded_any = any(downloaded_subtitles.values())
 
-            history = get_history()
-
             if downloaded_any:
                 save_successful = False
                 try:
@@ -278,10 +276,12 @@ class SubZeroAgent(object):
                     for video, video_subtitles in downloaded_subtitles.items():
                         # store item(s) in history
                         for subtitle in video_subtitles:
+                            history = get_history()
                             item_title = get_title_for_video_metadata(video.plexapi_metadata, add_section_title=False)
                             history.add(item_title, video.id, section_title=video.plexapi_metadata["section"],
                                         thumb=video.plexapi_metadata["super_thumb"],
                                         subtitle=subtitle)
+                            history.destroy()
             else:
                 # store SZ meta info even if we've downloaded none
                 self.store_blank_subtitle_metadata(scanned_video_part_map)
@@ -291,10 +291,6 @@ class SubZeroAgent(object):
         finally:
             # update the menu state
             set_refresh_menu_state(None)
-
-            if history:
-                history.destroy()
-                history = None
 
             # notify any running tasks about our finished update
             for item_id in item_ids:
