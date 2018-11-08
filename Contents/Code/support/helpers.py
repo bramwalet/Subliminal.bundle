@@ -390,24 +390,24 @@ def get_language_from_stream(lang_code):
 
 def audio_streams_match_languages(video, languages):
     without_forced = filter(lambda x: not x.forced, languages)
-    if video.audio_languages:
+    if video.audio_languages and without_forced:
         if Prefs["subtitles.when"] == "Always":
             return set()
 
         elif Prefs["subtitles.when"] == "When main audio stream is not Subtitle Language (1)":
-            if video.audio_languages[0] == languages[0]:
+            if video.audio_languages[0] == without_forced[0]:
                 return set(without_forced)
 
         elif Prefs["subtitles.when"] == "When any audio stream is not Subtitle Language (1)":
-            if languages[0] in video.audio_languages:
+            if without_forced[0] in video.audio_languages:
                 return set(without_forced)
 
         elif Prefs["subtitles.when"] == "When main audio stream is not any configured language":
-            if video.audio_languages[0] in languages:
+            if video.audio_languages[0] in without_forced:
                 return set(without_forced)
 
         elif Prefs["subtitles.when"] == "When any audio stream is not any configured language":
-            matching = set(video.audio_languages).intersection(set(languages))
+            matching = set(video.audio_languages).intersection(set(without_forced))
             if matching:
                 return set(without_forced)
 
