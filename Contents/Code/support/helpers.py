@@ -274,6 +274,8 @@ def get_item_hints(data):
                 "title": data["original_title"] or data["series"],
             }
         )
+    if hints["title"]:
+        hints["title"] = hints["title"].replace(":", "")
     return hints
 
 
