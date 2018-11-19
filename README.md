@@ -84,6 +84,13 @@ the.vbm, mmgoodnow, Vertig0ne, thliu78, tattoomees, ostman, count_confucius, ehe
 
 ## Changelog
 
+2.6.4.2864
+- core: scanning: don't fail on metadata subtitles with bad language code; fixes #596
+- providers: legendastv, napiprojekt, subscenter, tvsubtitles: fix "No language to search for" issue; fixes #596
+- menu: fix "ignore list list"
+- menu: advanced: add skip next search all recently missing subtitles entry
+
+
 2.6.4.2859
 - core: fix thread.lock error (only affected the history menu, not the actual functionality)
 - core: fix audio-based conditional subtitle decision making; fixes #592
