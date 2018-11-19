@@ -62,6 +62,10 @@ def AdvancedMenu(randomize=None, header=None, message=None):
         title=pad_title(_("Skip next find better subtitles (sets last run to now)")),
     ))
     oc.add(DirectoryObject(
+        key=Callback(SkipRecentlyAddedMissing, randomize=timestamp()),
+        title=pad_title(_("Skip next find recently added with missing subtitles (sets last run to now)")),
+    ))
+    oc.add(DirectoryObject(
         key=Callback(TriggerStorageMaintenance, randomize=timestamp()),
         title=pad_title(_("Trigger subtitle storage maintenance")),
     ))
@@ -204,6 +208,19 @@ def SkipFindBetterSubtitles(randomize=None):
         randomize=timestamp(),
         header=_("Success"),
         message=_("FindBetterSubtitles skipped")
+    )
+
+
+@route(PREFIX + '/skipram')
+@debounce
+def SkipRecentlyAddedMissing(randomize=None):
+    task = scheduler.task("SearchAllRecentlyAddedMissing")
+    task.last_run = datetime.datetime.now()
+
+    return AdvancedMenu(
+        randomize=timestamp(),
+        header=_("Success"),
+        message=_("SearchAllRecentlyAddedMissing skipped")
     )
 
 
