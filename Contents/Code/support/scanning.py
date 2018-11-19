@@ -90,7 +90,14 @@ def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, pr
     known_metadata_subs = set()
     meta_subs = get_subtitles_from_metadata(plex_part)
     for language, subList in meta_subs.iteritems():
-        lang = Language.fromietf(Locale.Language.Match(language))
+        try:
+            lang = Language.fromietf(Locale.Language.Match(language))
+        except LanguageError:
+            if config.treat_und_as_first:
+                lang = Language.rebuild(list(config.lang_list)[0])
+            else:
+                continue
+
         if subList:
             for key in subList:
                 if key.startswith("subzero_md_forced"):
