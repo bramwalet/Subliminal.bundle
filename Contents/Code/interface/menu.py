@@ -276,6 +276,41 @@ def replace_item(obj, key, replace_value):
     return obj
 
 
+def check_connections():
+    # debug drone
+    if "sonarr" in config.refiner_settings or "radarr" in config.refiner_settings:
+        Log.Debug("Checking connections ...")
+        log_buffer = []
+        try:
+            from subliminal_patch.refiners.drone import SonarrClient, RadarrClient
+            log_buffer.append(["----- Connections -----"])
+            for key, cls in [("sonarr", SonarrClient), ("radarr", RadarrClient)]:
+                if key in config.refiner_settings:
+                    cname = key.capitalize()
+                    try:
+                        status = cls(**config.refiner_settings[key]).status(timeout=5)
+                    except HTTPError, e:
+                        if e.response.status_code == 401:
+                            log_buffer.append(("%s: NOT WORKING - BAD API KEY", cname))
+                        else:
+                            log_buffer.append(("%s: NOT WORKING - %s", cname, traceback.format_exc()))
+                    except:
+                        log_buffer.append(("%s: NOT WORKING - %s", cname, traceback.format_exc()))
+                    else:
+                        if status and status["version"]:
+                            log_buffer.append(("%s: OK - %s", cname, status["version"]))
+                        else:
+                            log_buffer.append(("%s: NOT WORKING - %s", cname))
+        except:
+            log_buffer.append(("Something went really wrong when evaluating Sonarr/Radarr: %s", traceback.format_exc()))
+        finally:
+            Core.log.setLevel(logging.DEBUG)
+            for entry in log_buffer:
+                Log.Debug(*entry)
+
+            Core.log.setLevel(logging.getLevelName(Prefs["log_level"]))
+
+
 @route(PREFIX + '/ValidatePrefs', enforce_route=True)
 def ValidatePrefs():
     Core.log.setLevel(logging.DEBUG)
@@ -362,30 +397,7 @@ def ValidatePrefs():
             "subtitles.save.filesystem", ]:
         Log.Debug("Pref.%s: %s", attr, Prefs[attr])
 
-    # debug drone
-    if "sonarr" in config.refiner_settings or "radarr" in config.refiner_settings:
-        Log.Debug("----- Connections -----")
-        try:
-            from subliminal_patch.refiners.drone import SonarrClient, RadarrClient
-            for key, cls in [("sonarr", SonarrClient), ("radarr", RadarrClient)]:
-                if key in config.refiner_settings:
-                    cname = key.capitalize()
-                    try:
-                        status = cls(**config.refiner_settings[key]).status()
-                    except HTTPError, e:
-                        if e.response.status_code == 401:
-                            Log.Debug("%s: NOT WORKING - BAD API KEY", cname)
-                        else:
-                            Log.Debug("%s: NOT WORKING - %s", cname, traceback.format_exc())
-                    except:
-                        Log.Debug("%s: NOT WORKING - %s", cname, traceback.format_exc())
-                    else:
-                        if status and status["version"]:
-                            Log.Debug("%s: OK - %s", cname, status["version"])
-                        else:
-                            Log.Debug("%s: NOT WORKING - %s", cname)
-        except:
-            Log.Debug("Something went really wrong when evaluating Sonarr/Radarr: %s", traceback.format_exc())
+    Thread.Create(check_connections)
 
     # fixme: check existance of and os access of logs
     Log.Debug("----- Environment -----")

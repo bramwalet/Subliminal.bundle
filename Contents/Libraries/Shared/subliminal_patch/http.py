@@ -31,9 +31,16 @@ custom_resolver.nameservers = ['8.8.8.8', '1.1.1.1']
 
 
 class CertifiSession(Session):
+    timeout = 10
+
     def __init__(self):
         super(CertifiSession, self).__init__()
         self.verify = pem_file
+
+    def request(self, *args, **kwargs):
+        if kwargs.get('timeout') is None:
+            kwargs['timeout'] = self.timeout
+        return super(CertifiSession, self).request(*args, **kwargs)
 
 
 class RetryingSession(CertifiSession):
