@@ -44,6 +44,9 @@ Don't expect support if you mess this up.
             "enabled_for": ["series", "movies"],
             "use_https": true,
             "timeout": 15,
+            // skip subtitles with a mismatched FPS value; might lead to more results when disabled
+            // but also to more false-positives
+            "skip_wrong_fps": true,
         },
         "podnapisi": {
             "enabled_for": ["series", "movies"],

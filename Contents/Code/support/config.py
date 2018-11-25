@@ -817,7 +817,10 @@ class Config(object):
 
     def get_provider_settings(self):
         os_use_https = self.advanced.providers.opensubtitles.use_https \
-            if self.advanced.providers.opensubtitles.use_https != None else True
+            if self.advanced.providers.opensubtitles.use_https is not None else True
+
+        os_skip_wrong_fps = self.advanced.providers.opensubtitles.skip_wrong_fps \
+            if self.advanced.providers.opensubtitles.skip_wrong_fps is not None else True
 
         provider_settings = {'addic7ed': {'username': Prefs['provider.addic7ed.username'],
                                           'password': Prefs['provider.addic7ed.password'],
@@ -831,6 +834,7 @@ class Config(object):
                                                'is_vip': cast_bool(Prefs['provider.opensubtitles.is_vip']),
                                                'use_ssl': os_use_https,
                                                'timeout': self.advanced.providers.opensubtitles.timeout or 15,
+                                               'skip_wrong_fps': os_skip_wrong_fps,
                                                },
                              'podnapisi': {
                                  'only_foreign': self.forced_only,
