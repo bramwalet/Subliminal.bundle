@@ -33,6 +33,7 @@ def set_existing_languages(video, video_info, external_subtitles=False, embedded
     if external_subtitles:
         # |= is update, thanks plex
         video.subtitle_languages.update(external_langs_found)
+        video.external_subtitle_languages.update(external_langs_found)
 
     else:
         # did we already download subtitles for this?
