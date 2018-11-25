@@ -1,4 +1,14 @@
 
+2.6.4.2859
+- core: fix thread.lock error (only affected the history menu, not the actual functionality)
+- core: fix audio-based conditional subtitle decision making; fixes #592
+- core: massively improve metadata subtitle storage
+- providers: opensubtitles: skip non-forced results when searching for forced
+- providers: podnapisi: skip non-forced results when searching for forced
+- submod: common: correctly pad music symbols on either side
+
+
+
 2.6.4.2834
 - core: add option to use custom (Google, Cloudflare) DNS to resolve provider hosts in problematic countries; fixes #547
 - core: add support for downloading subtitles only when the audio streams don't match (any?) configured languages; fixes #519
