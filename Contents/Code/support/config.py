@@ -79,7 +79,7 @@ PROVIDER_THROTTLE_MAP = {
 
 
 class Config(object):
-    config_version = 2
+    config_version = 3
     libraries_root = None
     plugin_info = ""
     version = None
@@ -172,6 +172,8 @@ class Config(object):
         self.data_items_path = os.path.join(self.data_path, "DataItems")
         self.universal_plex_token = self.get_universal_plex_token()
         self.plex_token = os.environ.get("PLEXTOKEN", self.universal_plex_token)
+        self.new_style_cache = cast_bool(Prefs['new_style_cache'])
+        self.pack_cache_dir = self.get_pack_cache_dir()
         try:
             self.migrate_prefs()
         except:
@@ -180,8 +182,6 @@ class Config(object):
         subzero.constants.DEFAULT_TIMEOUT = lib.DEFAULT_TIMEOUT = self.pms_request_timeout = \
             min(cast_int(Prefs['pms_request_timeout'], 15), 45)
         self.low_impact_mode = cast_bool(Prefs['low_impact_mode'])
-        self.new_style_cache = cast_bool(Prefs['new_style_cache'])
-        self.pack_cache_dir = self.get_pack_cache_dir()
         self.advanced = self.get_advanced_config()
         self.debug_i18n = self.advanced.debug_i18n
 
@@ -256,6 +256,9 @@ class Config(object):
 
                 if update_prefs:
                     update_user_prefs(update_prefs, Prefs, Log)
+            else:
+                Dict["config_version"] = self.config_version
+                Dict.Save()
 
     def migrate_prefs_to_1(self, user_prefs, **kwargs):
         update_prefs = {}
@@ -274,6 +277,15 @@ class Config(object):
             update_prefs["subtitles.include_exclude_paths"] = user_prefs["subtitles.ignore_paths"]
 
         return update_prefs
+
+    def migrate_prefs_to_3(self, user_prefs, **kwargs):
+        if config.new_style_cache:
+            self.init_cache()
+            try:
+                subliminal.region.backend.clear()
+            except:
+                pass
+        return {}
 
     def init_libraries(self):
         try_executables = []
@@ -319,7 +331,8 @@ class Config(object):
         if self.new_style_cache:
             subliminal.region.configure('subzero.cache.file', expiration_time=datetime.timedelta(days=30),
                                         arguments={'appname': "sz_cache",
-                                                   'app_cache_dir': self.data_path})
+                                                   'app_cache_dir': self.data_path},
+                                        replace_existing_backend=True)
             Log.Info("Using new style file based cache!")
             return
 
@@ -359,14 +372,15 @@ class Config(object):
             try:
                 subliminal.region.configure('dogpile.cache.dbm', expiration_time=datetime.timedelta(days=30),
                                             arguments={'filename': dbfn,
-                                                       'lock_factory': MutexLock})
+                                                       'lock_factory': MutexLock},
+                                            replace_existing_backend=True)
                 Log.Info("Using file based cache!")
                 return
             except:
                 self.dbm_supported = False
 
         Log.Warn("Not using file based cache!")
-        subliminal.region.configure('dogpile.cache.memory')
+        subliminal.region.configure('dogpile.cache.memory', replace_existing_backend=True)
 
     def sync_cache(self):
         if not self.new_style_cache:
