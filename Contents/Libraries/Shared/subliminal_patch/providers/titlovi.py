@@ -202,7 +202,7 @@ class TitloviProvider(Provider, ProviderSubtitleArchiveMixin):
                 current_page = int(params['pg'])
 
             try:
-                sublist = soup.select('section.titlovi > ul.titlovi > li')
+                sublist = soup.select('section.titlovi > ul.titlovi > li.subtitleContainer.canEdit'')
                 for sub in sublist:
                     # subtitle id
                     sid = sub.find(attrs={'data-id': True}).attrs['data-id']
