@@ -12,7 +12,7 @@ from subzero.video import parse_video, set_existing_languages
 from subzero.language import language_from_stream, Language
 
 
-def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, providers=None, skip_hashing=False):
+def prepare_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, providers=None, skip_hashing=False):
     """
     returnes a subliminal/guessit-refined parsed video
     :param pms_video_info:
@@ -29,7 +29,7 @@ def scan_video(pms_video_info, ignore_all=False, hints=None, rating_key=None, pr
     if ignore_all:
         Log.Debug("Force refresh intended.")
 
-    Log.Debug("Scanning video: %s, external_subtitles=%s, embedded_subtitles=%s" % (
+    Log.Debug("Detecting streams: %s, external_subtitles=%s, embedded_subtitles=%s" % (
         plex_part.file, external_subtitles, embedded_subtitles))
 
     known_embedded = []
@@ -154,9 +154,9 @@ def scan_videos(videos, ignore_all=False, providers=None, skip_hashing=False):
         hints = helpers.get_item_hints(video)
         video["plex_part"].fps = get_stream_fps(video["plex_part"].streams)
         p = providers or config.get_providers(media_type="series" if video["type"] == "episode" else "movies")
-        scanned_video = scan_video(video, ignore_all=force_refresh or ignore_all, hints=hints,
-                                   rating_key=video["id"], providers=p,
-                                   skip_hashing=skip_hashing)
+        scanned_video = prepare_video(video, ignore_all=force_refresh or ignore_all, hints=hints,
+                                      rating_key=video["id"], providers=p,
+                                      skip_hashing=skip_hashing)
 
         if not scanned_video:
             continue
