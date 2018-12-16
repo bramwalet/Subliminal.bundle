@@ -194,39 +194,45 @@ class SubsceneProvider(Provider, ProviderSubtitleArchiveMixin):
         return subtitles
 
     def query(self, video):
-        #vfn = get_video_filename(video)
-
-        # logger.debug(u"Searching for: %s", vfn)
-        # film = search(vfn, session=self.session)
-        # if film and film.subtitles:
-        #     subtitles = self.parse_results(video, film)
-
+        vfn = get_video_filename(video)
         subtitles = []
+        logger.debug(u"Searching for: %s", vfn)
+        film = search(vfn, session=self.session)
+        if film and film.subtitles:
+            logger.debug('Release results found: %s', len(film.subtitles))
+            subtitles = self.parse_results(video, film)
+        else:
+            logger.debug('No release results found')
 
         # re-search for episodes without explicit release name
-        # fixme: searching by release name and pack is currently broken
         if isinstance(video, Episode):
             #term = u"%s S%02iE%02i" % (video.series, video.season, video.episode)
             term = u"%s - %s Season" % (video.series, p.number_to_words("%sth" % video.season).capitalize())
             time.sleep(self.search_throttle)
             logger.debug('Searching for alternative results: %s', term)
-            film = search(term, session=self.session)
+            film = search(term, session=self.session, release=False)
             if film and film.subtitles:
+                logger.debug('Alternative results found: %s', len(film.subtitles))
                 subtitles += self.parse_results(video, film)
+            else:
+                logger.debug('No alternative results found')
 
             # packs
-            # if video.season_fully_aired:
-            #     term = u"%s S%02i" % (video.series, video.season)
-            #     logger.debug('Searching for packs: %s', term)
-            #     time.sleep(self.search_throttle)
-            #     film = search(term, session=self.session)
-            #     if film and film.subtitles:
-            #         subtitles += self.parse_results(video, film)
-            # else:
-            #     logger.debug("Not searching for packs, because the season hasn't fully aired")
+            if video.season_fully_aired:
+                term = u"%s S%02i" % (video.series, video.season)
+                logger.debug('Searching for packs: %s', term)
+                time.sleep(self.search_throttle)
+                film = search(term, session=self.session)
+                if film and film.subtitles:
+                    logger.debug('Pack results found: %s', len(film.subtitles))
+                    subtitles += self.parse_results(video, film)
+                else:
+                    logger.debug('No pack results found')
+            else:
+                logger.debug("Not searching for packs, because the season hasn't fully aired")
         else:
             logger.debug('Searching for movie results: %s', video.title)
-            film = search(video.title, year=video.year, session=self.session, limit_to=None)
+            film = search(video.title, year=video.year, session=self.session, limit_to=None, release=False)
             if film and film.subtitles:
                 subtitles += self.parse_results(video, film)
 
