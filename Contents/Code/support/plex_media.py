@@ -174,7 +174,7 @@ def get_all_parts(plex_item):
     return parts
 
 
-def get_embedded_subtitle_streams(part, requested_language=None, skip_duplicate_unknown=True):
+def get_embedded_subtitle_streams(part, requested_language=None, skip_duplicate_unknown=True, skip_unknown=False):
     streams = []
     streams_unknown = []
     has_unknown = False
@@ -208,7 +208,7 @@ def get_embedded_subtitle_streams(part, requested_language=None, skip_duplicate_
                 if found_requested_language:
                     break
 
-    if streams_unknown and not found_requested_language:
+    if streams_unknown and not found_requested_language and not skip_unknown:
         streams = streams_unknown
 
     return streams
