@@ -12,6 +12,8 @@ import subprocess
 import sys
 from collections import OrderedDict
 
+from babelfish.exceptions import LanguageError
+
 import chardet
 
 from bs4 import UnicodeDammit
@@ -389,7 +391,10 @@ def get_language_from_stream(lang_code):
             # Log.Debug("Found language: %r", lang)
             return Language.fromietf(lang)
         elif lang:
-            return language_from_stream(lang)
+            try:
+                return language_from_stream(lang)
+            except LanguageError:
+                pass
 
 
 def audio_streams_match_languages(video, languages):
