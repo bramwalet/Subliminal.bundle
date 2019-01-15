@@ -50,6 +50,7 @@ class Subtitle(Subtitle_):
         super(Subtitle, self).__init__(language, hearing_impaired=hearing_impaired, page_link=page_link,
                                        encoding=encoding)
         self.mods = mods
+        self._is_valid = False
 
     def __repr__(self):
         return '<%s %r [%s:%s]>' % (
