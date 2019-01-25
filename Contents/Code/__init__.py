@@ -130,7 +130,7 @@ def agent_extract_embedded(video_part_map):
 
                         if stream_data:
                             stream = stream_data[0]["stream"]
-                            if stream_data["is_unknown"]:
+                            if stream_data[0]["is_unknown"]:
                                 used_one_unknown_stream = True
 
                             to_extract.append(({scanned_video: part_info}, plexapi_part, str(stream.index),
