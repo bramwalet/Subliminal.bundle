@@ -12,10 +12,12 @@ import subprocess
 import sys
 from collections import OrderedDict
 
+from babelfish.exceptions import LanguageError
+
 import chardet
 
 from bs4 import UnicodeDammit
-from subzero.language import Language
+from subzero.language import Language, language_from_stream
 from subzero.analytics import track_event
 
 mswindows = (sys.platform == "win32")
@@ -388,6 +390,11 @@ def get_language_from_stream(lang_code):
         if lang and lang != "xx":
             # Log.Debug("Found language: %r", lang)
             return Language.fromietf(lang)
+        elif lang:
+            try:
+                return language_from_stream(lang)
+            except LanguageError:
+                pass
 
 
 def audio_streams_match_languages(video, languages):

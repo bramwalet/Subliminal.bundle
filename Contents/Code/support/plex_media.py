@@ -174,9 +174,11 @@ def get_all_parts(plex_item):
     return parts
 
 
-def get_embedded_subtitle_streams(part, requested_language=None, skip_duplicate_unknown=True):
+def get_embedded_subtitle_streams(part, requested_language=None, skip_duplicate_unknown=True, skip_unknown=False):
     streams = []
+    streams_unknown = []
     has_unknown = False
+    found_requested_language = False
     for stream in part.streams:
         # subtitle stream
         if stream.stream_type == 3 and not stream.stream_key and stream.codec in TEXT_SUBTITLE_EXTS:
@@ -196,13 +198,18 @@ def get_embedded_subtitle_streams(part, requested_language=None, skip_duplicate_
                 language = Language.rebuild(list(config.lang_list)[0], forced=is_forced)
                 is_unknown = True
                 has_unknown = True
+                streams_unknown.append({"stream": stream, "is_unknown": is_unknown, "language": language,
+                                        "is_forced": is_forced})
 
-            if not requested_language or found_requested_language or has_unknown:
+            if not requested_language or found_requested_language:
                 streams.append({"stream": stream, "is_unknown": is_unknown, "language": language,
                                 "is_forced": is_forced})
 
                 if found_requested_language:
                     break
+
+    if streams_unknown and not found_requested_language and not skip_unknown:
+        streams = streams_unknown
 
     return streams
 
