@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 from zipfile import ZipFile, is_zipfile
 from rarfile import RarFile, is_rarfile
 from babelfish import language_converters, Script
-from requests import Session
+from requests import Session, RequestException
 from guessit import guessit
 from subliminal_patch.providers import Provider
 from subliminal_patch.providers.mixins import ProviderSubtitleArchiveMixin
@@ -181,8 +181,9 @@ class TitloviProvider(Provider, ProviderSubtitleArchiveMixin):
             try:
                 r = self.session.get(self.search_url, params=params, timeout=10)
                 r.raise_for_status()
-            except r.exceptions.RequestException as e:
+            except RequestException as e:
                 logger.exception('RequestException %s', e)
+                break
 
             try:
                 soup = BeautifulSoup(r.content, 'lxml')
