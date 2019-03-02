@@ -999,23 +999,26 @@ class Config(object):
 
         paths.append(self.app_support_path)
 
-        bn = ("Plex Transcoder",)
+        bns = []
         if sys.platform == "darwin":
-            bn = ("MacOS", bn)
+            bns.append(("MacOS", "Plex Transcoder"))
         elif mswindows:
-            bn = ("plextranscoder.exe",)
+            bns = [("plextranscoder.exe",), ("plex transcoder.exe",)]
+        else:
+            bns.append(("Plex Transcoder",))
 
         for path in paths:
-            fn = os.path.join(path, *bn)
+            for bn in bns:
+                fn = os.path.join(path, *bn)
 
-            if os.path.isfile(fn):
-                return fn
-
-            # look inside Resources folder as fallback, as well
-            for vbn in ("Plex Transcoder", "plextranscoder.exe"):
-                fn = os.path.join(path, "Resources", vbn)
                 if os.path.isfile(fn):
                     return fn
+
+                # look inside Resources folder as fallback, as well
+                for vbn in ("Plex Transcoder", "plextranscoder.exe"):
+                    fn = os.path.join(path, "Resources", vbn)
+                    if os.path.isfile(fn):
+                        return fn
 
     def parse_rename_mode(self):
         # fixme: exact_filenames should be determined via callback combined with info about the current video
