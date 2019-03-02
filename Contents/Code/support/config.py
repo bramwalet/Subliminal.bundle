@@ -1014,11 +1014,11 @@ class Config(object):
                 if os.path.isfile(fn):
                     return fn
 
-                # look inside Resources folder as fallback, as well
-                for vbn in ("Plex Transcoder", "plextranscoder.exe"):
-                    fn = os.path.join(path, "Resources", vbn)
-                    if os.path.isfile(fn):
-                        return fn
+            # look inside Resources folder as fallback, as well
+            for vbn in ("Plex Transcoder", "plextranscoder.exe", "plex transcoder.exe"):
+                fn = os.path.join(path, "Resources", vbn)
+                if os.path.isfile(fn):
+                    return fn
 
     def parse_rename_mode(self):
         # fixme: exact_filenames should be determined via callback combined with info about the current video
