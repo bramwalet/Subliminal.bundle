@@ -988,27 +988,34 @@ class Config(object):
             self.activity_mode = "next_episode"
 
     def get_plex_transcoder(self):
+        paths = []
         base_path = os.environ.get("PLEX_MEDIA_SERVER_HOME", None)
-        if not base_path:
-            # fall back to bundled plugins path
-            bundle_path = os.environ.get("PLEXBUNDLEDPLUGINSPATH", None)
-            if bundle_path:
-                base_path = os.path.normpath(os.path.join(bundle_path, "..", ".."))
+        if base_path:
+            paths.append(base_path)
 
+        bundle_path = os.environ.get("PLEXBUNDLEDPLUGINSPATH", None)
+        if bundle_path:
+            paths.append(os.path.normpath(os.path.join(bundle_path, "..", "..")))
+
+        paths.append(self.app_support_path)
+
+        bn = ("Plex Transcoder",)
         if sys.platform == "darwin":
-            fn = os.path.join(base_path, "MacOS", "Plex Transcoder")
+            bn = ("MacOS", bn)
         elif mswindows:
-            fn = os.path.join(base_path, "plextranscoder.exe")
-        else:
-            fn = os.path.join(base_path, "Plex Transcoder")
+            bn = ("plextranscoder.exe",)
 
-        if os.path.isfile(fn):
-            return fn
+        for path in paths:
+            fn = os.path.join(path, *bn)
 
-        # look inside Resources folder as fallback, as well
-        fn = os.path.join(base_path, "Resources", "Plex Transcoder")
-        if os.path.isfile(fn):
-            return fn
+            if os.path.isfile(fn):
+                return fn
+
+            # look inside Resources folder as fallback, as well
+            for vbn in ("Plex Transcoder", "plextranscoder.exe"):
+                fn = os.path.join(path, "Resources", vbn)
+                if os.path.isfile(fn):
+                    return fn
 
     def parse_rename_mode(self):
         # fixme: exact_filenames should be determined via callback combined with info about the current video
