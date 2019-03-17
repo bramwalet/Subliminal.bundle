@@ -286,6 +286,7 @@ def notify_executable(exe_info, videos, subtitles, storage):
         "subtitle_language", "subtitle_path", "subtitle_filename", "provider", "score", "storage", "series_id",
         "series", "title", "section", "filename", "path", "folder", "season_id", "type", "id", "season"
     )
+    to_clean = ("PYTHONPATH", "PYTHONHOME")
     exe, arguments = exe_info
     for video, video_subtitles in subtitles.items():
         for subtitle in video_subtitles:
@@ -321,8 +322,9 @@ def notify_executable(exe_info, videos, subtitles, storage):
                 env = dict(os.environ)
 
             # clean out any Plex-PYTHONPATH that may bleed through the spawned process
-            if "PYTHONPATH" in env and "plex" in env["PYTHONPATH"].lower():
-                del env["PYTHONPATH"]
+            for v in to_clean:
+                if v in env and "plex" in env[v].lower():
+                    del env[v]
 
             try:
                 proc = subprocess.Popen(quote_args([exe] + prepared_arguments), stdout=subprocess.PIPE,
