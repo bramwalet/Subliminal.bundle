@@ -751,7 +751,7 @@ class Config(object):
                      # 'thesubdb': Prefs['provider.thesubdb.enabled'],
                      'podnapisi': cast_bool(Prefs['provider.podnapisi.enabled']),
                      'titlovi': cast_bool(Prefs['provider.titlovi.enabled']),
-                     'addic7ed': cast_bool(Prefs['provider.addic7ed.enabled']),
+                     #'addic7ed': cast_bool(Prefs['provider.addic7ed.enabled']),
                      'tvsubtitles': cast_bool(Prefs['provider.tvsubtitles.enabled']),
                      'legendastv': cast_bool(Prefs['provider.legendastv.enabled']),
                      'napiprojekt': cast_bool(Prefs['provider.napiprojekt.enabled']),
@@ -779,7 +779,7 @@ class Config(object):
         # ditch non-forced-subtitles-reporting providers
         providers_forced_off = {}
         if self.forced_only:
-            providers["addic7ed"] = False
+            #providers["addic7ed"] = False
             providers["tvsubtitles"] = False
             providers["legendastv"] = False
             providers["napiprojekt"] = False
@@ -836,10 +836,10 @@ class Config(object):
         os_skip_wrong_fps = self.advanced.providers.opensubtitles.skip_wrong_fps \
             if self.advanced.providers.opensubtitles.skip_wrong_fps is not None else True
 
-        provider_settings = {'addic7ed': {'username': Prefs['provider.addic7ed.username'],
-                                          'password': Prefs['provider.addic7ed.password'],
-                                          'use_random_agents': cast_bool(Prefs['provider.addic7ed.use_random_agents1']),
-                                          },
+        provider_settings = {#'addic7ed': {'username': Prefs['provider.addic7ed.username'],
+                             #             'password': Prefs['provider.addic7ed.password'],
+                             #             'use_random_agents': cast_bool(Prefs['provider.addic7ed.use_random_agents1']),
+                             #             },
                              'opensubtitles': {'username': Prefs['provider.opensubtitles.username'],
                                                'password': Prefs['provider.opensubtitles.password'],
                                                'use_tag_search': self.exact_filenames,
