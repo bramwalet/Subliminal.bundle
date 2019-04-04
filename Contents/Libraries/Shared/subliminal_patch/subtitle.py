@@ -357,7 +357,8 @@ def guess_matches(video, guess, partial=False):
     matches = set()
     if isinstance(video, Episode):
         # series
-        if video.series and 'title' in guess and sanitize(guess['title']) == sanitize(video.series):
+        if video.series and 'title' in guess and sanitize(guess['title']) in (
+                sanitize(name) for name in [video.series] + video.alternative_series):
             matches.add('series')
         # title
         if video.title and 'episode_title' in guess and sanitize(guess['episode_title']) == sanitize(video.title):
@@ -385,7 +386,8 @@ def guess_matches(video, guess, partial=False):
         if video.year and 'year' in guess and guess['year'] == video.year:
             matches.add('year')
         # title
-        if video.title and 'title' in guess and sanitize(guess['title']) == sanitize(video.title):
+        if video.title and 'title' in guess and sanitize(guess['title']) in (
+                    sanitize(name) for name in [video.title] + video.alternative_titles):
             matches.add('title')
 
     # release_group
