@@ -124,13 +124,6 @@ class SubsceneProvider(Provider, ProviderSubtitleArchiveMixin):
     def initialize(self):
         logger.info("Creating session")
         self.session = cfscrape.create_scraper()
-        self.session.headers.update({
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.5',
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache',
-            'DNT': '1'
-        })
         from .utils import FIRST_THOUSAND_OR_SO_USER_AGENTS as AGENT_LIST
         self.session.headers['User-Agent'] = AGENT_LIST[randint(0, len(AGENT_LIST) - 1)]
         self.session.headers['Referer'] = "https://subscene.com"

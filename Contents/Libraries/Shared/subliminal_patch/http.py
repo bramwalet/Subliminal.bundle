@@ -12,6 +12,7 @@ from requests import Session, exceptions
 from urllib3.util import connection
 from retry.api import retry_call
 from exceptions import APIThrottled
+from cfscrape import CloudflareScraper
 
 from subzero.lib.io import get_viable_encoding
 
@@ -30,12 +31,19 @@ custom_resolver = dns.resolver.Resolver(configure=False)
 custom_resolver.nameservers = ['8.8.8.8', '1.1.1.1']
 
 
-class CertifiSession(Session):
+class CertifiSession(CloudflareScraper):
     timeout = 10
 
     def __init__(self):
         super(CertifiSession, self).__init__()
         self.verify = pem_file
+        self.headers.update({
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache',
+            'DNT': '1'
+        })
 
     def request(self, *args, **kwargs):
         if kwargs.get('timeout') is None:
