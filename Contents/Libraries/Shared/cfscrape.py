@@ -3,6 +3,9 @@ import random
 import time
 import re
 
+# based off of https://gist.github.com/doko-desuka/58d9212461f62583f8df9bc6387fade2
+# and https://github.com/Anorov/cloudflare-scrape
+
 '''''''''
 Disables InsecureRequestWarning: Unverified HTTPS request is being made warnings.
 '''''''''
