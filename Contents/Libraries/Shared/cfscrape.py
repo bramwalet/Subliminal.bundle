@@ -5,6 +5,7 @@ import re
 
 # based off of https://gist.github.com/doko-desuka/58d9212461f62583f8df9bc6387fade2
 # and https://github.com/Anorov/cloudflare-scrape
+# and https://github.com/VeNoMouS/cloudflare-scrape-js2py
 
 '''''''''
 Disables InsecureRequestWarning: Unverified HTTPS request is being made warnings.
@@ -51,8 +52,9 @@ class CloudflareScraper(Session):
         resp = super(CloudflareScraper, self).request(method, url, *args, **kwargs)
 
         # Check if Cloudflare anti-bot is on
-        if (resp.status_code == 503
+        if (resp.status_code in (503, 429)
                 and resp.headers.get("Server", "").startswith("cloudflare")
+                and b"jschl_vc" in resp.content
                 and b"jschl_answer" in resp.content
         ):
             return self.solve_cf_challenge(resp, **kwargs)
