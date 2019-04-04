@@ -306,12 +306,6 @@
     "default": "true"
   },
   {
-    "id": "provider.titlovi.enabled",
-    "label": "Provider: Enable Titlovi.com",
-    "type": "bool",
-    "default": "true"
-  },
-  {
     "id": "provider.legendastv.enabled",
     "label": "Provider: Enable Legendas TV (mostly pt-BR; UNRAR NEEDED)",
     "type": "bool",
