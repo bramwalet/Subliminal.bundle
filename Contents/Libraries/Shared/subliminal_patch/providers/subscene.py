@@ -243,7 +243,7 @@ class SubsceneProvider(Provider, ProviderSubtitleArchiveMixin):
 
                 # packs
                 if video.season_fully_aired:
-                    term = u"%s S%02i" % (video.series, video.season)
+                    term = u"%s S%02i" % (series, video.season)
                     logger.debug('Searching for packs: %s', term)
                     time.sleep(self.search_throttle)
                     film = search(term, session=self.session)

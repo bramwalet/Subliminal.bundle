@@ -165,7 +165,10 @@ class SubtitleListingMixin(object):
                     can_verify_series = False
 
                 if can_verify_series and not {"series", "season", "episode"}.issubset(matches):
-                    s.wrong_series = True
+                    if "series" not in matches:
+                        s.wrong_series = True
+                    else:
+                        s.wrong_season_ep = True
 
             unsorted_subtitles.append(
                 (s, compute_score(matches, s, video, hearing_impaired=use_hearing_impaired), matches))

@@ -334,7 +334,7 @@
     "Searching for %(language)s subs (%(video_data)s), refresh here ...": "Searching for %(language)s subs (%(video_data)s), refresh here ...",
     " (wrong FPS, sub: %(subtitle_fps)s, media: %(media_fps)s)": " (wrong FPS, sub: %(subtitle_fps)s, media: %(media_fps)s)",
     " (wrong FPS, sub: %(subtitle_fps)s, media: unknown, low impact mode)": " (wrong FPS, sub: %(subtitle_fps)s, media: unknown, low impact mode)",
-    "%(blacklisted_state)s%(current_state)s: %(provider_name)s, score: %(score)s%(wrong_fps_state)s": "%(blacklisted_state)s%(current_state)s: %(provider_name)s, score: %(score)s%(wrong_fps_state)s%(wrong_series_state)s",
+    "%(blacklisted_state)s%(current_state)s: %(provider_name)s, score: %(score)s%(wrong_fps_state)s": "%(blacklisted_state)s%(current_state)s: %(provider_name)s, score: %(score)s%(wrong_fps_state)s%(wrong_series_state)s%(wrong_season_ep_state)s",
     "Release: %(release_info)s, Matches: %(matches)s": "Release: %(release_info)s, Matches: %(matches)s",
     "Downloading subtitle for %(title_or_id)s": "Downloading subtitle for %(title_or_id)s",
     "Extract stream %(stream_index)s, %(language)s%(unknown_state)s%(forced_state)s%(stream_title)s with default mods": "Extract stream %(stream_index)s, %(language)s%(unknown_state)s%(forced_state)s%(stream_title)s with default mods",

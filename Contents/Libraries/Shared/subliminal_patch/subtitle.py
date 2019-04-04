@@ -39,6 +39,7 @@ class Subtitle(Subtitle_):
     skip_wrong_fps = False
     wrong_fps = False
     wrong_series = False
+    wrong_season_ep = False
     is_pack = False
     asked_for_release_group = None
     asked_for_episode = None
