@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 from zipfile import ZipFile, is_zipfile
 from rarfile import RarFile, is_rarfile
 from babelfish import language_converters, Script
-from requests import Session
+from requests import Session, RequestException
 from guessit import guessit
 from subliminal_patch.providers import Provider
 from subliminal_patch.providers.mixins import ProviderSubtitleArchiveMixin
@@ -24,6 +24,9 @@ from subliminal.subtitle import guess_matches
 from subliminal.video import Episode, Movie
 from subliminal.subtitle import fix_line_ending
 from subzero.language import Language
+
+from random import randint
+from .utils import FIRST_THOUSAND_OR_SO_USER_AGENTS as AGENT_LIST
 
 # parsing regex definitions
 title_re = re.compile(r'(?P<title>(?:.+(?= [Aa][Kk][Aa] ))|.+)(?:(?:.+)(?P<altitle>(?<= [Aa][Kk][Aa] ).+))?')
@@ -134,8 +137,8 @@ class TitloviProvider(Provider, ProviderSubtitleArchiveMixin):
 
     def initialize(self):
         self.session = Session()
-        self.session.headers['User-Agent'] = 'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.2.3)' \
-                                             'Gecko/20100401 Firefox/3.6.3 ( .NET CLR 3.5.30729)'
+        logger.debug("Using random user agents")
+        self.session.headers['User-Agent'] = AGENT_LIST[randint(0, len(AGENT_LIST) - 1)]
         logger.debug('User-Agent set to %s', self.session.headers['User-Agent'])
         self.session.headers['Referer'] = self.server_url
         logger.debug('Referer set to %s', self.session.headers['Referer'])
@@ -178,7 +181,11 @@ class TitloviProvider(Provider, ProviderSubtitleArchiveMixin):
             try:
                 r = self.session.get(self.search_url, params=params, timeout=10)
                 r.raise_for_status()
+            except RequestException as e:
+                logger.exception('RequestException %s', e)
+                break
 
+            try:
                 soup = BeautifulSoup(r.content, 'lxml')
 
                 # number of results

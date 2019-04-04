@@ -312,64 +312,6 @@
     "default": "true"
   },
   {
-    "id": "provider.addic7ed.enabled",
-    "label": "Provider: Enable Addic7ed",
-    "type": "bool",
-    "default": "true"
-  },
-  {
-    "id": "provider.addic7ed.username",
-    "label": "Addic7ed Username",
-    "type": "text",
-    "default": ""
-  },
-  {
-    "id": "provider.addic7ed.password",
-    "label": "Addic7ed Password",
-    "type": "text",
-    "option": "hidden",
-    "default": "",
-    "secure": "true"
-  },
-  {
-    "id": "provider.addic7ed.boost_by2",
-    "label": "Addic7ed: boost score (if requirements met)",
-    "type": "enum",
-    "values": [
-      "100",
-      "95",
-      "90",
-      "85",
-      "80",
-      "75",
-      "70",
-      "67",
-      "65",
-      "60",
-      "55",
-      "50",
-      "45",
-      "40",
-      "35",
-      "30",
-      "25",
-      "21",
-      "20",
-      "19",
-      "15",
-      "10",
-      "5",
-      "0"
-    ],
-    "default": "19"
-  },
-  {
-    "id": "provider.addic7ed.use_random_agents1",
-    "label": "Addic7ed: Use random user agents",
-    "type": "bool",
-    "default": "true"
-  },
-  {
     "id": "provider.legendastv.enabled",
     "label": "Provider: Enable Legendas TV (mostly pt-BR; UNRAR NEEDED)",
     "type": "bool",

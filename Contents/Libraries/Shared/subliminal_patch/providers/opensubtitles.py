@@ -296,8 +296,8 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
             elif not only_foreign and not also_foreign and foreign_parts_only:
                 continue
 
-            # foreign/forced *also* wanted
-            elif also_foreign and foreign_parts_only:
+            # set subtitle language to forced if it's foreign_parts_only
+            elif (also_foreign or only_foreign) and foreign_parts_only:
                 language = Language.rebuild(language, forced=True)
 
             if language not in languages:

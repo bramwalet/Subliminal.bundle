@@ -12,10 +12,12 @@ import subprocess
 import sys
 from collections import OrderedDict
 
+from babelfish.exceptions import LanguageError
+
 import chardet
 
 from bs4 import UnicodeDammit
-from subzero.language import Language
+from subzero.language import Language, language_from_stream
 from subzero.analytics import track_event
 
 mswindows = (sys.platform == "win32")
@@ -284,6 +286,7 @@ def notify_executable(exe_info, videos, subtitles, storage):
         "subtitle_language", "subtitle_path", "subtitle_filename", "provider", "score", "storage", "series_id",
         "series", "title", "section", "filename", "path", "folder", "season_id", "type", "id", "season"
     )
+    to_clean = ("PYTHONPATH", "PYTHONHOME")
     exe, arguments = exe_info
     for video, video_subtitles in subtitles.items():
         for subtitle in video_subtitles:
@@ -319,8 +322,9 @@ def notify_executable(exe_info, videos, subtitles, storage):
                 env = dict(os.environ)
 
             # clean out any Plex-PYTHONPATH that may bleed through the spawned process
-            if "PYTHONPATH" in env and "plex" in env["PYTHONPATH"].lower():
-                del env["PYTHONPATH"]
+            for v in to_clean:
+                if v in env and "plex" in env[v].lower():
+                    del env[v]
 
             try:
                 proc = subprocess.Popen(quote_args([exe] + prepared_arguments), stdout=subprocess.PIPE,
@@ -388,6 +392,11 @@ def get_language_from_stream(lang_code):
         if lang and lang != "xx":
             # Log.Debug("Found language: %r", lang)
             return Language.fromietf(lang)
+        elif lang:
+            try:
+                return language_from_stream(lang)
+            except LanguageError:
+                pass
 
 
 def audio_streams_match_languages(video, languages):

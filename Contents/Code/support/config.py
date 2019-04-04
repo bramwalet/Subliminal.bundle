@@ -751,7 +751,7 @@ class Config(object):
                      # 'thesubdb': Prefs['provider.thesubdb.enabled'],
                      'podnapisi': cast_bool(Prefs['provider.podnapisi.enabled']),
                      'titlovi': cast_bool(Prefs['provider.titlovi.enabled']),
-                     'addic7ed': cast_bool(Prefs['provider.addic7ed.enabled']),
+                     #'addic7ed': cast_bool(Prefs['provider.addic7ed.enabled']),
                      'tvsubtitles': cast_bool(Prefs['provider.tvsubtitles.enabled']),
                      'legendastv': cast_bool(Prefs['provider.legendastv.enabled']),
                      'napiprojekt': cast_bool(Prefs['provider.napiprojekt.enabled']),
@@ -779,7 +779,7 @@ class Config(object):
         # ditch non-forced-subtitles-reporting providers
         providers_forced_off = {}
         if self.forced_only:
-            providers["addic7ed"] = False
+            #providers["addic7ed"] = False
             providers["tvsubtitles"] = False
             providers["legendastv"] = False
             providers["napiprojekt"] = False
@@ -836,10 +836,10 @@ class Config(object):
         os_skip_wrong_fps = self.advanced.providers.opensubtitles.skip_wrong_fps \
             if self.advanced.providers.opensubtitles.skip_wrong_fps is not None else True
 
-        provider_settings = {'addic7ed': {'username': Prefs['provider.addic7ed.username'],
-                                          'password': Prefs['provider.addic7ed.password'],
-                                          'use_random_agents': cast_bool(Prefs['provider.addic7ed.use_random_agents1']),
-                                          },
+        provider_settings = {#'addic7ed': {'username': Prefs['provider.addic7ed.username'],
+                             #             'password': Prefs['provider.addic7ed.password'],
+                             #             'use_random_agents': cast_bool(Prefs['provider.addic7ed.use_random_agents1']),
+                             #             },
                              'opensubtitles': {'username': Prefs['provider.opensubtitles.username'],
                                                'password': Prefs['provider.opensubtitles.password'],
                                                'use_tag_search': self.exact_filenames,
@@ -988,27 +988,37 @@ class Config(object):
             self.activity_mode = "next_episode"
 
     def get_plex_transcoder(self):
+        paths = []
         base_path = os.environ.get("PLEX_MEDIA_SERVER_HOME", None)
-        if not base_path:
-            # fall back to bundled plugins path
-            bundle_path = os.environ.get("PLEXBUNDLEDPLUGINSPATH", None)
-            if bundle_path:
-                base_path = os.path.normpath(os.path.join(bundle_path, "..", ".."))
+        if base_path:
+            paths.append(base_path)
 
+        bundle_path = os.environ.get("PLEXBUNDLEDPLUGINSPATH", None)
+        if bundle_path:
+            paths.append(os.path.normpath(os.path.join(bundle_path, "..", "..")))
+
+        paths.append(self.app_support_path)
+
+        bns = []
         if sys.platform == "darwin":
-            fn = os.path.join(base_path, "MacOS", "Plex Transcoder")
+            bns.append(("MacOS", "Plex Transcoder"))
         elif mswindows:
-            fn = os.path.join(base_path, "plextranscoder.exe")
+            bns = [("plextranscoder.exe",), ("plex transcoder.exe",)]
         else:
-            fn = os.path.join(base_path, "Plex Transcoder")
+            bns.append(("Plex Transcoder",))
 
-        if os.path.isfile(fn):
-            return fn
+        for path in paths:
+            for bn in bns:
+                fn = os.path.join(path, *bn)
 
-        # look inside Resources folder as fallback, as well
-        fn = os.path.join(base_path, "Resources", "Plex Transcoder")
-        if os.path.isfile(fn):
-            return fn
+                if os.path.isfile(fn):
+                    return fn
+
+            # look inside Resources folder as fallback, as well
+            for vbn in ("Plex Transcoder", "plextranscoder.exe", "plex transcoder.exe"):
+                fn = os.path.join(path, "Resources", vbn)
+                if os.path.isfile(fn):
+                    return fn
 
     def parse_rename_mode(self):
         # fixme: exact_filenames should be determined via callback combined with info about the current video
@@ -1069,7 +1079,7 @@ class Config(object):
         subliminal_patch.core.INCLUDE_EXOTIC_SUBS = self.exotic_ext
 
         subliminal_patch.core.DOWNLOAD_TRIES = int(Prefs['subtitles.try_downloads'])
-        subliminal.score.episode_scores["addic7ed_boost"] = int(Prefs['provider.addic7ed.boost_by2'])
+        #subliminal.score.episode_scores["addic7ed_boost"] = int(Prefs['provider.addic7ed.boost_by2'])
 
         if self.use_custom_dns:
             subliminal_patch.http.set_custom_resolver()

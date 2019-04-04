@@ -84,6 +84,28 @@ the.vbm, mmgoodnow, Vertig0ne, thliu78, tattoomees, ostman, count_confucius, ehe
 
 ## Changelog
 
+2.6.4.xxxx
+- core: SRT parsing: handle (bad) ASS color tag in SRT
+- core: auto extract embedded: only use one unknown sub for first language
+- core: better embedded streams language detection
+- core: optimizations
+- core: extract embedded: fix is_unknown check
+- core: don't raise exception when subtitle not found inside archive
+- core: search external subtitles: fix condition
+- core: better plex transcoder path detection
+- core: use Log.Warn instead of Log.Warning
+- core: also check for "plex transcoder.exe" in case of windows (fixes #619)
+- core: Fix issue scandir not returning the name of the file inside Docker images on ARM systems. (thanks @giejay)
+- core: also clean PYTHONHOME when calling external notification app
+- core: update certifi to 2019.3.9
+- windows: fix compatibility issues with plex transcoder
+- compat: use lowercase paths on subtitle detection
+- providers: addic7ed: drop support for now (they added reCAPTCHA; waiting for API; #612)
+- providers: subscene: don't fail on missing cover
+- providers: titlovi: fix provider (thanks @viking1304)
+- providers: opensubtitles: fix only_foreign handling
+
+
 2.6.4.2911
 - core: improve file cache (windows especially); use fixed-length cache filenames; fixes #600
 - core: don't log "Checking connections ..." when sonarr/radarr not activated
