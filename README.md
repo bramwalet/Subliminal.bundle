@@ -84,7 +84,7 @@ the.vbm, mmgoodnow, Vertig0ne, thliu78, tattoomees, ostman, count_confucius, ehe
 
 ## Changelog
 
-2.6.4.xxxx
+2.6.4.2947
 - core: SRT parsing: handle (bad) ASS color tag in SRT
 - core: auto extract embedded: only use one unknown sub for first language
 - core: better embedded streams language detection
@@ -104,24 +104,6 @@ the.vbm, mmgoodnow, Vertig0ne, thliu78, tattoomees, ostman, count_confucius, ehe
 - providers: subscene: don't fail on missing cover
 - providers: titlovi: fix provider (thanks @viking1304)
 - providers: opensubtitles: fix only_foreign handling
-
-
-2.6.4.2911
-- core: improve file cache (windows especially); use fixed-length cache filenames; fixes #600
-- core: don't log "Checking connections ..." when sonarr/radarr not activated
-- core: make logging for scanning/parsing/preparing videos more clear
-- core: extract embedded: continue searching for embbedded subs after undefined language is found (thanks @jippo015)
-- compat: core: don't assume hints["title"] exists
-- compat: providers: podnapisi: loosen lxml requirement
-- providers: addic7ed: fix not using user credentials; fixes #605
-- providers: titlovi: fix provider (thanks @viking1304)
-- providers: subscene: fix provider
-- providers: opensubtitles: improve token logging
-- providers: podnapisi: fix searching for Marvel series
-- submod: HI: correctly remove uppercase at start of a sentence when lead by a crocodile (>>)
-- submod: HI: correctly remove lowercase inside brackets when HI matched as well
-- submod: HI: remove multiple HI_before_colon_caps before one colon
-- submod: common: also match music symbols after a crocodile; move crocodile removal up the chain
 
 
 

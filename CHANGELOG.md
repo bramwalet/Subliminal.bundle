@@ -1,4 +1,22 @@
 
+2.6.4.2911
+- core: improve file cache (windows especially); use fixed-length cache filenames; fixes #600
+- core: don't log "Checking connections ..." when sonarr/radarr not activated
+- core: make logging for scanning/parsing/preparing videos more clear
+- core: extract embedded: continue searching for embbedded subs after undefined language is found (thanks @jippo015)
+- compat: core: don't assume hints["title"] exists
+- compat: providers: podnapisi: loosen lxml requirement
+- providers: addic7ed: fix not using user credentials; fixes #605
+- providers: titlovi: fix provider (thanks @viking1304)
+- providers: subscene: fix provider
+- providers: opensubtitles: improve token logging
+- providers: podnapisi: fix searching for Marvel series
+- submod: HI: correctly remove uppercase at start of a sentence when lead by a crocodile (>>)
+- submod: HI: correctly remove lowercase inside brackets when HI matched as well
+- submod: HI: remove multiple HI_before_colon_caps before one colon
+- submod: common: also match music symbols after a crocodile; move crocodile removal up the chain
+
+
 2.6.4.2881
 - core: extract embedded: fix automatic extraction not actually writing the subtitles to disk under certain circumstances; fixes #598
 - core: sonarr/radarr: don't block the main thread while checking connectivity; fixes #597
