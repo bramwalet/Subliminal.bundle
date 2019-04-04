@@ -165,8 +165,7 @@ class SubtitleListingMixin(object):
                     can_verify_series = False
 
                 if can_verify_series and not {"series", "season", "episode"}.issubset(matches):
-                    Log.Debug(u"%s: Skipping %s, because it doesn't match our series/episode", self.name, s)
-                    continue
+                    s.wrong_series = True
 
             unsorted_subtitles.append(
                 (s, compute_score(matches, s, video, hearing_impaired=use_hearing_impaired), matches))
@@ -175,7 +174,7 @@ class SubtitleListingMixin(object):
         subtitles = []
         for subtitle, score, matches in scored_subtitles:
             # check score
-            if score < min_score:
+            if score < min_score and not subtitle.wrong_series:
                 Log.Info(u'%s: Score %d is below min_score (%d)', self.name, score, min_score)
                 continue
             subtitle.score = score

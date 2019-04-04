@@ -580,6 +580,7 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
             bl_addon = "Blacklisted "
 
         wrong_fps_addon = ""
+        wrong_series_addon = ""
         if subtitle.wrong_fps:
             if plex_part:
                 wrong_fps_addon = _(" (wrong FPS, sub: %(subtitle_fps)s, media: %(media_fps)s)",
@@ -589,15 +590,20 @@ def ListAvailableSubsForItemMenu(rating_key=None, part_id=None, title=None, item
                 wrong_fps_addon = _(" (wrong FPS, sub: %(subtitle_fps)s, media: unknown, low impact mode)",
                                     subtitle_fps=subtitle.fps)
 
+        if subtitle.wrong_series:
+            wrong_series_addon = _(" (possibly wrong series)")
+
         oc.add(DirectoryObject(
             key=Callback(TriggerDownloadSubtitle, rating_key=rating_key, randomize=timestamp(), item_title=item_title,
                          subtitle_id=str(subtitle.id), language=language),
-            title=_(u"%(blacklisted_state)s%(current_state)s: %(provider_name)s, score: %(score)s%(wrong_fps_state)s",
+            title=_(u"%(blacklisted_state)s%(current_state)s: %(provider_name)s, score: %(score)s%(wrong_fps_state)s"
+                    u"%(wrong_series_state)s",
                     blacklisted_state=bl_addon,
                     current_state=_("Available") if current_id != subtitle.id else _("Current"),
                     provider_name=_(subtitle.provider_name),
                     score=subtitle.score,
-                    wrong_fps_state=wrong_fps_addon),
+                    wrong_fps_state=wrong_fps_addon,
+                    wrong_series_state=wrong_series_addon),
             summary=_(u"Release: %(release_info)s, Matches: %(matches)s",
                       release_info=subtitle.release_info,
                       matches=", ".join(subtitle.matches)),
