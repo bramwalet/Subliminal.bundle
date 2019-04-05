@@ -105,39 +105,46 @@ class Addic7edProvider(_Addic7edProvider):
                     pass
 
             logger.info('Addic7ed: Logging in')
-            data = {'username': self.username, 'password': self.password, 'Submit': 'Log in', 'url': ''}
+            data = {'username': self.username, 'password': self.password, 'Submit': 'Log in', 'url': '',
+                    'remember': 'true'}
 
-            r = self.session.get(self.server_url + 'login.php', timeout=10, headers={"Referer": self.server_url})
-            if "grecaptcha" in r.content:
-                logger.info('Addic7ed: Solving captcha. This might take a couple of minutes, but should only '
-                            'happen once every so often')
-                anticaptcha_key = os.environ.get("ANTICAPTCHA_ACCOUNT_KEY")
-                if not anticaptcha_key:
-                    logger.error("AntiCaptcha key not given, exiting")
-                    return
+            tries = 0
+            while tries < 3:
+                r = self.session.get(self.server_url + 'login.php', timeout=10, headers={"Referer": self.server_url})
+                if "grecaptcha" in r.content:
+                    logger.info('Addic7ed: Solving captcha. This might take a couple of minutes, but should only '
+                                'happen once every so often')
+                    anticaptcha_key = os.environ.get("ANTICAPTCHA_ACCOUNT_KEY")
+                    if not anticaptcha_key:
+                        logger.error("AntiCaptcha key not given, exiting")
+                        return
 
-                site_key = re.search(r'grecaptcha.execute\(\'(.+?)\',', r.content).group(1)
-                if not site_key:
-                    logger.error("Addic7ed: Captcha site-key not found!")
-                    return
+                    site_key = re.search(r'grecaptcha.execute\(\'(.+?)\',', r.content).group(1)
+                    if not site_key:
+                        logger.error("Addic7ed: Captcha site-key not found!")
+                        return
 
-                pitcher_cls = pitchers.get_pitcher("AntiCaptchaProxyLess")
-                pitcher = pitcher_cls("Addic7ed", anticaptcha_key, self.server_url + 'login.php', site_key)
-                result = pitcher.throw()
-                if not result:
-                    logger.error("Addic7ed: Couldn't solve captcha!")
-                    return
+                    pitcher_cls = pitchers.get_pitcher("AntiCaptchaProxyLess")
+                    pitcher = pitcher_cls("Addic7ed", anticaptcha_key, self.server_url + 'login.php', site_key)
 
-                data["recaptcha_response"] = result
+                    result = pitcher.throw()
+                    if not result:
+                        raise Exception("Addic7ed: Couldn't solve captcha!")
 
-            r = self.session.post(self.server_url + 'dologin.php', data, allow_redirects=False, timeout=10,
-                                  headers={"Referer": self.server_url + "login.php"})
+                    data["recaptcha_response"] = result
 
-            if "relax, slow down" in r.content:
-                raise TooManyRequests(self.username)
+                r = self.session.post(self.server_url + 'dologin.php', data, allow_redirects=False, timeout=10,
+                                      headers={"Referer": self.server_url + "login.php"})
 
-            if r.status_code != 302:
-                raise AuthenticationError(self.username)
+                if "relax, slow down" in r.content:
+                    raise TooManyRequests(self.username)
+
+                if r.status_code != 302:
+                    if "User <b></b> doesn't exist" in r.content and tries <= 2:
+                        continue
+
+                    raise AuthenticationError(self.username)
+                tries += 1
 
             region.set("addic7ed_data", (self.session.cookies._cookies, self.session.headers["User-Agent"]))
 
