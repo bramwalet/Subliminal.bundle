@@ -367,13 +367,17 @@ def ValidatePrefs():
             "enable_channel", "permissions_ok", "missing_permissions", "fs_encoding",
             "subtitle_destination_folder", "include", "include_exclude_paths", "include_exclude_sz_files",
             "new_style_cache", "dbm_supported", "lang_list", "providers", "normal_subs", "forced_only", "forced_also",
-            "plex_transcoder", "refiner_settings", "unrar", "adv_cfg_path", "use_custom_dns"]:
+            "plex_transcoder", "refiner_settings", "unrar", "adv_cfg_path", "use_custom_dns",
+            "anticaptcha_token"]:
 
         value = getattr(config, attr)
         if isinstance(value, dict):
             d = replace_item(copy.deepcopy(value), "api_key", "xxxxxxxxxxxxxxxxxxxxxxxxx")
             Log.Debug("config.%s: %s", attr, d)
             continue
+
+        if attr in ("api_key", "anticaptcha_token"):
+            value = "xxxxxxxxxxxxxxxxxxxxxxxxx"
 
         Log.Debug("config.%s: %s", attr, value)
 

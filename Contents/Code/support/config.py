@@ -148,6 +148,7 @@ class Config(object):
     unrar = None
     adv_cfg_path = None
     use_custom_dns = False
+    anticaptcha_token = None
 
     store_recently_played_amount = 40
 
@@ -186,6 +187,7 @@ class Config(object):
         self.debug_i18n = self.advanced.debug_i18n
 
         os.environ["SZ_USER_AGENT"] = self.get_user_agent()
+        os.environ["ANTICAPTCHA_ACCOUNT_KEY"] = self.anticaptcha_token = str(Prefs["anticaptcha.api_key"]) or ""
 
         self.setup_proxies()
         self.set_plugin_mode()
@@ -752,8 +754,8 @@ class Config(object):
                      'podnapisi': cast_bool(Prefs['provider.podnapisi.enabled']),
                      #'titlovi': cast_bool(Prefs['provider.titlovi.enabled']),
                      'titlovi': False,
-                     #'addic7ed': cast_bool(Prefs['provider.addic7ed.enabled']),
-                     'addic7ed': False,
+                     'addic7ed': cast_bool(Prefs['provider.addic7ed.enabled']) and self.anticaptcha_token,
+                     #'addic7ed': False,
                      'tvsubtitles': cast_bool(Prefs['provider.tvsubtitles.enabled']),
                      'legendastv': cast_bool(Prefs['provider.legendastv.enabled']),
                      'napiprojekt': cast_bool(Prefs['provider.napiprojekt.enabled']),
@@ -781,7 +783,7 @@ class Config(object):
         # ditch non-forced-subtitles-reporting providers
         providers_forced_off = {}
         if self.forced_only:
-            #providers["addic7ed"] = False
+            providers["addic7ed"] = False
             providers["tvsubtitles"] = False
             providers["legendastv"] = False
             providers["napiprojekt"] = False
@@ -838,10 +840,10 @@ class Config(object):
         os_skip_wrong_fps = self.advanced.providers.opensubtitles.skip_wrong_fps \
             if self.advanced.providers.opensubtitles.skip_wrong_fps is not None else True
 
-        provider_settings = {#'addic7ed': {'username': Prefs['provider.addic7ed.username'],
-                             #             'password': Prefs['provider.addic7ed.password'],
-                             #             'use_random_agents': cast_bool(Prefs['provider.addic7ed.use_random_agents1']),
-                             #             },
+        provider_settings = {'addic7ed': {'username': Prefs['provider.addic7ed.username'],
+                                          'password': Prefs['provider.addic7ed.password'],
+                                          'use_random_agents': cast_bool(Prefs['provider.addic7ed.use_random_agents1']),
+                                          },
                              'opensubtitles': {'username': Prefs['provider.opensubtitles.username'],
                                                'password': Prefs['provider.opensubtitles.password'],
                                                'use_tag_search': self.exact_filenames,
@@ -1081,7 +1083,7 @@ class Config(object):
         subliminal_patch.core.INCLUDE_EXOTIC_SUBS = self.exotic_ext
 
         subliminal_patch.core.DOWNLOAD_TRIES = int(Prefs['subtitles.try_downloads'])
-        #subliminal.score.episode_scores["addic7ed_boost"] = int(Prefs['provider.addic7ed.boost_by2'])
+        subliminal.score.episode_scores["addic7ed_boost"] = int(Prefs['provider.addic7ed.boost_by2'])
 
         if self.use_custom_dns:
             subliminal_patch.http.set_custom_resolver()

@@ -230,9 +230,9 @@ class Addic7edProvider(Provider):
             show_id = show_ids.get(series_sanitized)
 
         # search as last resort
-        if not show_id:
-            logger.warning('Series %s not found in show ids', series)
-            show_id = self._search_show_id(series)
+        # if not show_id:
+        #     logger.warning('Series %s not found in show ids', series)
+        #     show_id = self._search_show_id(series)
 
         return show_id
 

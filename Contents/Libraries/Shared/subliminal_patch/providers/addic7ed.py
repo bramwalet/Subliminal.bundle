@@ -1,13 +1,14 @@
 # coding=utf-8
 import logging
 import re
+import os
 import datetime
 import subliminal
 import time
 from random import randint
 from dogpile.cache.api import NO_VALUE
 from requests import Session
-
+from python_anticaptcha import AnticaptchaClient, NoCaptchaTaskProxylessTask, NoCaptchaTask, AnticaptchaException
 from subliminal.exceptions import ServiceUnavailable, DownloadLimitExceeded, AuthenticationError
 from subliminal.providers.addic7ed import Addic7edProvider as _Addic7edProvider, \
     Addic7edSubtitle as _Addic7edSubtitle, ParserBeautifulSoup, show_cells_re
@@ -64,6 +65,7 @@ class Addic7edProvider(_Addic7edProvider):
     USE_ADDICTED_RANDOM_AGENTS = False
     hearing_impaired_verifiable = True
     subtitle_class = Addic7edSubtitle
+    server_url = 'https://www.addic7ed.com/'
 
     sanitize_characters = {'-', ':', '(', ')', '.', '/'}
 
@@ -83,37 +85,96 @@ class Addic7edProvider(_Addic7edProvider):
 
         # login
         if self.username and self.password:
-            ccks = region.get("addic7ed_cookies", expiration_time=86400)
+            ccks = region.get("addic7ed_data", expiration_time=86400)
             if ccks != NO_VALUE:
+                cookies, user_agent = ccks
+                logger.debug("Addic7ed: Re-using previous user agent")
+                self.session.headers["User-Agent"] = user_agent
                 try:
-                    self.session.cookies._cookies.update(ccks)
-                    r = self.session.get(self.server_url + 'panel.php', allow_redirects=False, timeout=10)
+                    self.session.cookies._cookies.update(cookies)
+                    r = self.session.get(self.server_url + 'panel.php', allow_redirects=False, timeout=10,
+                                         headers={"Referer": self.server_url})
                     if r.status_code == 302:
                         logger.info('Addic7ed: Login expired')
-                        region.delete("addic7ed_cookies")
+                        region.delete("addic7ed_data")
                     else:
-                        logger.info('Addic7ed: Reusing old login')
+                        logger.info('Addic7ed: Re-using old login')
                         self.logged_in = True
                         return
                 except:
                     pass
 
-            logger.info('Addic7ed: Logging in')
-            data = {'username': self.username, 'password': self.password, 'Submit': 'Log in'}
-            r = self.session.post(self.server_url + 'dologin.php', data, allow_redirects=False, timeout=10,
-                                  headers={"Referer": self.server_url + "login.php"})
+            for tries in range(3):
+                logger.info('Addic7ed: Logging in')
+                data = {'username': self.username, 'password': self.password, 'Submit': 'Log in', 'url': ''}
 
-            if "relax, slow down" in r.content:
-                raise TooManyRequests(self.username)
+                r = self.session.get(self.server_url + 'login.php', timeout=10, headers={"Referer": self.server_url})
+                if "grecaptcha" in r.content:
+                    logger.info('Addic7ed: Solving captcha')
+                    anticaptcha_key = os.environ.get("ANTICAPTCHA_ACCOUNT_KEY")
+                    if not anticaptcha_key:
+                        logger.error("AntiCaptcha key not given, exiting")
+                        return
 
-            if r.status_code != 302:
-                raise AuthenticationError(self.username)
+                    client = AnticaptchaClient(anticaptcha_key)
+                    site_key = re.search(r'grecaptcha.execute\(\'(.+?)\',', r.content).group(1)
+                    logger.debug('Addic7ed: Using site-key: %s', site_key)
+                    try:
+                        task = NoCaptchaTaskProxylessTask(website_url=self.server_url + 'login.php',
+                                                          website_key=site_key)
+                        job = client.createTask(task)
+                        job.join()
+                        data["recaptcha_response"] = job.get_solution_response()
+                    except AnticaptchaException as e:
+                        if tries >= 2:
+                            logger.error("Addic7ed: Captcha solving finally failed. Exiting")
+                            return
 
-            region.set("addic7ed_cookies", self.session.cookies._cookies)
+                        if e.error_code == 'ERROR_ZERO_BALANCE':
+                            logger.error("Addic7ed: No balance left on captcha solving service. Exiting")
+                            return
 
-            logger.debug('Addic7ed: Logged in')
-            self.logged_in = True
+                        elif e.error_code == 'ERROR_NO_SLOT_AVAILABLE':
+                            logger.info("Addic7ed: No captcha solving slot available, retrying")
+                            time.sleep(5.0)
+                            continue
 
+                        elif e.error_code == 'ERROR_KEY_DOES_NOT_EXIST':
+                            logger.error("Addic7ed: Bad AntiCaptcha API key")
+                            return
+
+                        elif e.error_id is None and e.error_code == 250:
+                            # timeout
+                            if tries < 3:
+                                logger.info("Addic7ed: Captcha solving timed out, retrying")
+                                time.sleep(1.0)
+                                continue
+                            else:
+                                logger.error("Addic7ed: Captcha solving timed out three times; bailing out")
+                                return
+                        raise
+
+                r = self.session.post(self.server_url + 'dologin.php', data, allow_redirects=False, timeout=10,
+                                      headers={"Referer": self.server_url + "login.php"})
+
+                if "relax, slow down" in r.content:
+                    raise TooManyRequests(self.username)
+
+                if r.status_code != 302:
+                    if tries < 3:
+                        time.sleep(1.0)
+                        continue
+
+                    raise AuthenticationError(self.username)
+
+                region.set("addic7ed_data", (self.session.cookies._cookies, self.session.headers["User-Agent"]))
+
+                logger.debug('Addic7ed: Logged in')
+                self.logged_in = True
+                break
+
+    def terminate(self):
+        pass
 
     @region.cache_on_arguments(expiration_time=SHOW_EXPIRATION_TIME)
     def _get_show_ids(self):
@@ -140,7 +201,7 @@ class Addic7edProvider(_Addic7edProvider):
 
         # populate the show ids
         show_ids = {}
-        for show in soup.select('td.version > h3 > a[href^="/show/"]'):
+        for show in soup.select('td > h3 > a[href^="/show/"]'):
             show_clean = sanitize(show.text, default_characters=self.sanitize_characters)
             try:
                 show_id = int(show['href'][6:])
