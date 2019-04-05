@@ -141,10 +141,12 @@ class Addic7edProvider(_Addic7edProvider):
 
                 if r.status_code != 302:
                     if "User <b></b> doesn't exist" in r.content and tries <= 2:
+                        logger.info("Addic7ed: Error, trying again. (%s/%s)", tries+1, 3)
+                        tries += 1
                         continue
 
                     raise AuthenticationError(self.username)
-                tries += 1
+                break
 
             region.set("addic7ed_data", (self.session.cookies._cookies, self.session.headers["User-Agent"]))
 
