@@ -110,7 +110,8 @@ class Addic7edProvider(_Addic7edProvider):
 
                 r = self.session.get(self.server_url + 'login.php', timeout=10, headers={"Referer": self.server_url})
                 if "grecaptcha" in r.content:
-                    logger.info('Addic7ed: Solving captcha')
+                    logger.info('Addic7ed: Solving captcha. This might take a couple of minutes, but should only '
+                                'happen once every so often')
                     anticaptcha_key = os.environ.get("ANTICAPTCHA_ACCOUNT_KEY")
                     if not anticaptcha_key:
                         logger.error("AntiCaptcha key not given, exiting")
