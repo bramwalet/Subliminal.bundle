@@ -16,7 +16,7 @@ from subliminal.cache import region
 from subliminal.subtitle import fix_line_ending
 from subliminal_patch.utils import sanitize
 from subliminal_patch.exceptions import TooManyRequests
-
+from subliminal_patch.pitcher import pitchers
 from subzero.language import Language
 
 logger = logging.getLogger(__name__)
@@ -85,7 +85,7 @@ class Addic7edProvider(_Addic7edProvider):
 
         # login
         if self.username and self.password:
-            ccks = region.get("addic7ed_data", expiration_time=86400)
+            ccks = region.get("addic7ed_data", expiration_time=15552000)  # 6m
             if ccks != NO_VALUE:
                 cookies, user_agent = ccks
                 logger.debug("Addic7ed: Re-using previous user agent")
@@ -104,75 +104,45 @@ class Addic7edProvider(_Addic7edProvider):
                 except:
                     pass
 
-            for tries in range(3):
-                logger.info('Addic7ed: Logging in')
-                data = {'username': self.username, 'password': self.password, 'Submit': 'Log in', 'url': ''}
+            logger.info('Addic7ed: Logging in')
+            data = {'username': self.username, 'password': self.password, 'Submit': 'Log in', 'url': ''}
 
-                r = self.session.get(self.server_url + 'login.php', timeout=10, headers={"Referer": self.server_url})
-                if "grecaptcha" in r.content:
-                    logger.info('Addic7ed: Solving captcha. This might take a couple of minutes, but should only '
-                                'happen once every so often')
-                    anticaptcha_key = os.environ.get("ANTICAPTCHA_ACCOUNT_KEY")
-                    if not anticaptcha_key:
-                        logger.error("AntiCaptcha key not given, exiting")
-                        return
+            r = self.session.get(self.server_url + 'login.php', timeout=10, headers={"Referer": self.server_url})
+            if "grecaptcha" in r.content:
+                logger.info('Addic7ed: Solving captcha. This might take a couple of minutes, but should only '
+                            'happen once every so often')
+                anticaptcha_key = os.environ.get("ANTICAPTCHA_ACCOUNT_KEY")
+                if not anticaptcha_key:
+                    logger.error("AntiCaptcha key not given, exiting")
+                    return
 
-                    client = AnticaptchaClient(anticaptcha_key)
-                    site_key = re.search(r'grecaptcha.execute\(\'(.+?)\',', r.content).group(1)
-                    logger.debug('Addic7ed: Using site-key: %s', site_key)
-                    try:
-                        task = NoCaptchaTaskProxylessTask(website_url=self.server_url + 'login.php',
-                                                          website_key=site_key)
-                        job = client.createTask(task)
-                        job.join()
-                        data["recaptcha_response"] = job.get_solution_response()
-                    except AnticaptchaException as e:
-                        if tries >= 2:
-                            logger.error("Addic7ed: Captcha solving finally failed. Exiting")
-                            return
+                site_key = re.search(r'grecaptcha.execute\(\'(.+?)\',', r.content).group(1)
+                if not site_key:
+                    logger.error("Addic7ed: Captcha site-key not found!")
+                    return
 
-                        if e.error_code == 'ERROR_ZERO_BALANCE':
-                            logger.error("Addic7ed: No balance left on captcha solving service. Exiting")
-                            return
+                pitcher_cls = pitchers.get_pitcher("AntiCaptchaProxyLess")
+                pitcher = pitcher_cls("Addic7ed", anticaptcha_key, self.server_url + 'login.php', site_key)
+                result = pitcher.throw()
+                if not result:
+                    logger.error("Addic7ed: Couldn't solve captcha!")
+                    return
 
-                        elif e.error_code == 'ERROR_NO_SLOT_AVAILABLE':
-                            logger.info("Addic7ed: No captcha solving slot available, retrying")
-                            time.sleep(5.0)
-                            continue
+                data["recaptcha_response"] = result
 
-                        elif e.error_code == 'ERROR_KEY_DOES_NOT_EXIST':
-                            logger.error("Addic7ed: Bad AntiCaptcha API key")
-                            return
+            r = self.session.post(self.server_url + 'dologin.php', data, allow_redirects=False, timeout=10,
+                                  headers={"Referer": self.server_url + "login.php"})
 
-                        elif e.error_id is None and e.error_code == 250:
-                            # timeout
-                            if tries < 3:
-                                logger.info("Addic7ed: Captcha solving timed out, retrying")
-                                time.sleep(1.0)
-                                continue
-                            else:
-                                logger.error("Addic7ed: Captcha solving timed out three times; bailing out")
-                                return
-                        raise
+            if "relax, slow down" in r.content:
+                raise TooManyRequests(self.username)
 
-                r = self.session.post(self.server_url + 'dologin.php', data, allow_redirects=False, timeout=10,
-                                      headers={"Referer": self.server_url + "login.php"})
+            if r.status_code != 302:
+                raise AuthenticationError(self.username)
 
-                if "relax, slow down" in r.content:
-                    raise TooManyRequests(self.username)
+            region.set("addic7ed_data", (self.session.cookies._cookies, self.session.headers["User-Agent"]))
 
-                if r.status_code != 302:
-                    if tries < 3:
-                        time.sleep(1.0)
-                        continue
-
-                    raise AuthenticationError(self.username)
-
-                region.set("addic7ed_data", (self.session.cookies._cookies, self.session.headers["User-Agent"]))
-
-                logger.debug('Addic7ed: Logged in')
-                self.logged_in = True
-                break
+            logger.debug('Addic7ed: Logged in')
+            self.logged_in = True
 
     def terminate(self):
         pass
