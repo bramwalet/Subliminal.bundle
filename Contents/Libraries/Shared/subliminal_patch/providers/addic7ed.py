@@ -5,6 +5,8 @@ import os
 import datetime
 import subliminal
 import time
+import requests
+
 from random import randint
 from dogpile.cache.api import NO_VALUE
 from requests import Session
@@ -77,11 +79,10 @@ class Addic7edProvider(_Addic7edProvider):
         self.session = Session()
         self.session.headers['User-Agent'] = 'Subliminal/%s' % subliminal.__short_version__
 
-        if self.USE_ADDICTED_RANDOM_AGENTS:
-            from .utils import FIRST_THOUSAND_OR_SO_USER_AGENTS as AGENT_LIST
-            logger.debug("Addic7ed: using random user agents")
-            self.session.headers['User-Agent'] = AGENT_LIST[randint(0, len(AGENT_LIST) - 1)]
-            self.session.headers['Referer'] = self.server_url
+        from .utils import FIRST_THOUSAND_OR_SO_USER_AGENTS as AGENT_LIST
+        logger.debug("Addic7ed: using random user agents")
+        self.session.headers['User-Agent'] = AGENT_LIST[randint(0, len(AGENT_LIST) - 1)]
+        self.session.headers['Referer'] = self.server_url
 
         # login
         if self.username and self.password:
@@ -119,13 +120,20 @@ class Addic7edProvider(_Addic7edProvider):
                         logger.error("AntiCaptcha key not given, exiting")
                         return
 
+                    anticaptcha_proxy = os.environ.get("ANTICAPTCHA_PROXY")
+
                     site_key = re.search(r'grecaptcha.execute\(\'(.+?)\',', r.content).group(1)
                     if not site_key:
                         logger.error("Addic7ed: Captcha site-key not found!")
                         return
 
+                    #pitcher_cls = pitchers.get_pitcher("AntiCaptchaProxyLess")
+                    #pitcher = pitcher_cls("Addic7ed", anticaptcha_key, self.server_url + 'login.php', site_key)
                     pitcher_cls = pitchers.get_pitcher("AntiCaptchaProxyLess")
-                    pitcher = pitcher_cls("Addic7ed", anticaptcha_key, self.server_url + 'login.php', site_key)
+                    pitcher = pitcher_cls("Addic7ed", anticaptcha_key, self.server_url + 'login.php', site_key,
+                                          user_agent=self.session.headers["User-Agent"],
+                                          cookies=self.session.cookies.get_dict(),
+                                          is_invisible=True)
 
                     result = pitcher.throw()
                     if not result:

@@ -274,8 +274,25 @@
     "default": ""
   },
   {
+    "id": "anticaptcha.service",
+    "label": "AntiCaptcha-Service",
+    "type": "enum",
+    "values": [
+      "none",
+      "anti-captcha.com",
+      "deathbycaptcha.com"
+    ],
+    "default": "none"
+  },
+  {
     "id": "anticaptcha.api_key",
-    "label": "AntiCaptcha account key (anti-captcha.com, needs credits, for Addic7ed)",
+    "label": "AntiCaptcha-Service key (anti-captcha.com: account key; deathbycaptcha.com: username:password; for Addic7ed)",
+    "type": "text",
+    "default": ""
+  },
+  {
+    "id": "anticaptcha.proxy",
+    "label": "AntiCaptcha-Service proxy (type://[username:password@]addr.loc:port; type: http(s),socks4,socks5; DBC only HTTP)",
     "type": "text",
     "default": ""
   },
@@ -362,12 +379,6 @@
       "0"
     ],
     "default": "19"
-  },
-  {
-    "id": "provider.addic7ed.use_random_agents1",
-    "label": "Addic7ed: Use random user agents",
-    "type": "bool",
-    "default": "true"
   },
   {
     "id": "provider.legendastv.enabled",

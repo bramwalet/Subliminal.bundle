@@ -842,7 +842,6 @@ class Config(object):
 
         provider_settings = {'addic7ed': {'username': Prefs['provider.addic7ed.username'],
                                           'password': Prefs['provider.addic7ed.password'],
-                                          'use_random_agents': cast_bool(Prefs['provider.addic7ed.use_random_agents1']),
                                           },
                              'opensubtitles': {'username': Prefs['provider.opensubtitles.username'],
                                                'password': Prefs['provider.opensubtitles.password'],
