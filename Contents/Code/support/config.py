@@ -149,6 +149,8 @@ class Config(object):
     adv_cfg_path = None
     use_custom_dns = False
     anticaptcha_token = None
+    anticaptcha_cls = None
+    has_anticaptcha = False
 
     store_recently_played_amount = 40
 
@@ -188,6 +190,10 @@ class Config(object):
 
         os.environ["SZ_USER_AGENT"] = self.get_user_agent()
         os.environ["ANTICAPTCHA_ACCOUNT_KEY"] = self.anticaptcha_token = str(Prefs["anticaptcha.api_key"]) or ""
+        acs = str(Prefs["anticaptcha.service"])
+        if acs and acs != "none":
+            os.environ["ANTICAPTCHA_CLASS"] = self.anticaptcha_cls = acs
+        self.has_anticaptcha = self.anticaptcha_token and self.anticaptcha_cls
 
         self.setup_proxies()
         self.set_plugin_mode()
@@ -754,7 +760,7 @@ class Config(object):
                      'podnapisi': cast_bool(Prefs['provider.podnapisi.enabled']),
                      #'titlovi': cast_bool(Prefs['provider.titlovi.enabled']),
                      'titlovi': False,
-                     'addic7ed': cast_bool(Prefs['provider.addic7ed.enabled']) and self.anticaptcha_token,
+                     'addic7ed': cast_bool(Prefs['provider.addic7ed.enabled']) and self.has_anticaptcha,
                      #'addic7ed': False,
                      'tvsubtitles': cast_bool(Prefs['provider.tvsubtitles.enabled']),
                      'legendastv': cast_bool(Prefs['provider.legendastv.enabled']),

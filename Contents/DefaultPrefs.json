@@ -286,13 +286,7 @@
   },
   {
     "id": "anticaptcha.api_key",
-    "label": "AntiCaptcha-Service key (anti-captcha.com: account key; deathbycaptcha.com: username:password; for Addic7ed)",
-    "type": "text",
-    "default": ""
-  },
-  {
-    "id": "anticaptcha.proxy",
-    "label": "AntiCaptcha-Service proxy (type://[username:password@]addr.loc:port; type: http(s),socks4,socks5; DBC only HTTP)",
+    "label": "AntiCaptcha-Service key (anti-captcha.com: account key; deathbycaptcha.com: username:password; enables Addic7ed, titlovi)",
     "type": "text",
     "default": ""
   },
