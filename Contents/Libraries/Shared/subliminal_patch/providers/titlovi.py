@@ -144,6 +144,7 @@ class TitloviProvider(Provider, ProviderSubtitleArchiveMixin):
         logger.debug('User-Agent set to %s', self.session.headers['User-Agent'])
         self.session.headers['Referer'] = self.server_url
         logger.debug('Referer set to %s', self.session.headers['Referer'])
+        load_verification("titlovi", self.session)
 
     def terminate(self):
         self.session.close()
@@ -181,7 +182,6 @@ class TitloviProvider(Provider, ProviderSubtitleArchiveMixin):
         while True:
             # query the server
             try:
-                load_verification("titlovi", self.session)
                 r = self.session.get(self.search_url, params=params, timeout=10)
                 r.raise_for_status()
             except RequestException as e:

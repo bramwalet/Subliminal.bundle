@@ -144,7 +144,7 @@ class Addic7edProvider(_Addic7edProvider):
             self.logged_in = True
 
     def terminate(self):
-        pass
+        self.session.close()
 
     @region.cache_on_arguments(expiration_time=SHOW_EXPIRATION_TIME)
     def _get_show_ids(self):
