@@ -275,7 +275,7 @@
   },
   {
     "id": "anticaptcha.service",
-    "label": "AntiCaptcha-Service",
+    "label": "AntiCaptcha-Service (needs paid account; enables Addic7ed, titlovi)",
     "type": "enum",
     "values": [
       "none",
@@ -286,7 +286,7 @@
   },
   {
     "id": "anticaptcha.api_key",
-    "label": "AntiCaptcha-Service key (anti-captcha.com: account key; deathbycaptcha.com: username:password; enables Addic7ed, titlovi)",
+    "label": "AntiCaptcha-Service key (anti-captcha.com: account_key; deathbycaptcha.com: username:password)",
     "type": "text",
     "default": ""
   },
@@ -324,7 +324,7 @@
   },
   {
     "id": "provider.addic7ed.enabled",
-    "label": "Provider: Enable Addic7ed (needs AntiCaptcha key)",
+    "label": "Provider: Enable Addic7ed (needs AntiCaptcha)",
     "type": "bool",
     "default": "true"
   },
@@ -373,6 +373,12 @@
       "0"
     ],
     "default": "19"
+  },
+  {
+    "id": "provider.titlovi.enabled",
+    "label": "Provider: Enable Titlovi.com (might need AntiCaptcha)",
+    "type": "bool",
+    "default": "true"
   },
   {
     "id": "provider.legendastv.enabled",
