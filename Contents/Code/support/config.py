@@ -337,7 +337,7 @@ class Config(object):
 
     def init_cache(self):
         if self.new_style_cache:
-            subliminal.region.configure('subzero.cache.file', expiration_time=datetime.timedelta(days=30),
+            subliminal.region.configure('subzero.cache.file', expiration_time=datetime.timedelta(days=180),
                                         arguments={'appname': "sz_cache",
                                                    'app_cache_dir': self.data_path},
                                         replace_existing_backend=True)
