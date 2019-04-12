@@ -7,6 +7,7 @@ import os
 import operator
 
 from func import enable_channel_wrapper, route_wrapper, register_route_function
+from subzero.lib.io import get_viable_encoding
 from subzero.language import Language
 from support.i18n import is_localized_string, _
 from support.items import get_kind, get_item_thumb, get_item, get_item_kind_from_item, refresh_item
@@ -190,8 +191,10 @@ def extract_embedded_sub(**kwargs):
 
                 out_codec = stream.codec if stream.codec != "mov_text" else "srt"
 
+                encoding = get_viable_encoding()
                 args = [
-                    config.plex_transcoder, "-i", part.file, "-map", "0:%s" % stream_index, "-f", out_codec, "-"
+                    config.plex_transcoder.decode("utf-8").encode(encoding), "-i",
+                    part.file.decode("utf-8").encode(encoding), "-map", "0:%s" % stream_index, "-f", out_codec, "-"
                 ]
                 output = None
                 try:
