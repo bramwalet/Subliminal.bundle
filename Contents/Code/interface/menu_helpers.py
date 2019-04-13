@@ -12,7 +12,7 @@ from subzero.language import Language
 from support.i18n import is_localized_string, _
 from support.items import get_kind, get_item_thumb, get_item, get_item_kind_from_item, refresh_item
 from support.helpers import get_video_display_title, pad_title, display_language, quote_args, is_stream_forced, \
-    get_title_for_video_metadata
+    get_title_for_video_metadata, mswindows
 from support.history import get_history
 from support.ignore import get_decision_list
 from support.lib import get_intent
@@ -191,14 +191,19 @@ def extract_embedded_sub(**kwargs):
 
                 out_codec = stream.codec if stream.codec != "mov_text" else "srt"
 
-                encoding = get_viable_encoding()
                 args = [
-                    config.plex_transcoder.decode("utf-8").encode(encoding), "-i",
-                    part.file.decode("utf-8").encode(encoding), "-map", "0:%s" % stream_index, "-f", out_codec, "-"
+                    config.plex_transcoder, "-i", part.file, "-map", "0:%s" % stream_index, "-f", out_codec, "-"
                 ]
+
+                cmdline = quote_args(args)
+                Log.Debug(u"Calling: %s", cmdline)
+                if mswindows:
+                    Log.Debug("MSWindows: Fixing encoding")
+                    cmdline = cmdline.encode("mbcs")
+
                 output = None
                 try:
-                    output = subprocess.check_output(quote_args(args), stderr=subprocess.PIPE, shell=True)
+                    output = subprocess.check_output(cmdline, stderr=subprocess.PIPE, shell=True)
                 except:
                     Log.Error("Extraction failed: %s", traceback.format_exc())
 
