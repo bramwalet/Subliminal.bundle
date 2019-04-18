@@ -75,6 +75,7 @@ class CFSession(CloudflareScraper, CertifiSession, TimeoutSession):
             ('Upgrade-Insecure-Requests', '1'),
             ('DNT', '1'),
         ])
+        self.debug = os.environ.get("CF_DEBUG", False)
 
     def request(self, method, url, *args, **kwargs):
         parsed_url = urlparse(url)
