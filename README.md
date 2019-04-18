@@ -84,7 +84,7 @@ the.vbm, mmgoodnow, Vertig0ne, thliu78, tattoomees, ostman, count_confucius, ehe
 
 ## Changelog
 
-2.6.5.2995
+2.6.5.2997
 - core: SRT parsing: handle (bad) ASS color tag in SRT
 - core: auto extract embedded: only use one unknown sub for first language
 - core: better embedded streams language detection
