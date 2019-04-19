@@ -12,11 +12,11 @@ from zipfile import ZipFile
 
 from babelfish import language_converters
 from guessit import guessit
-from requests import Session
 from dogpile.cache.api import NO_VALUE
 from subliminal import Episode, ProviderError
 from subliminal.cache import region
 from subliminal.utils import sanitize_release_group
+from subliminal_patch.http import RetryingCFSession
 from subliminal_patch.providers import Provider
 from subliminal_patch.providers.mixins import ProviderSubtitleArchiveMixin
 from subliminal_patch.subtitle import Subtitle, guess_matches
@@ -125,7 +125,7 @@ class SubsceneProvider(Provider, ProviderSubtitleArchiveMixin):
 
     def initialize(self):
         logger.info("Creating session")
-        self.session = Session()
+        self.session = RetryingCFSession()
 
     def terminate(self):
         logger.info("Closing session")

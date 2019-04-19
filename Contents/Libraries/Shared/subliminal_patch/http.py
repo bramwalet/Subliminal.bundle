@@ -58,7 +58,7 @@ class CertifiSession(TimeoutSession):
         self.verify = pem_file
 
 
-class CFSession(CloudflareScraper, CertifiSession, TimeoutSession):
+class CFSession(CloudflareScraper):
     def __init__(self):
         super(CFSession, self).__init__()
         self.debug = os.environ.get("CF_DEBUG", False)
@@ -111,7 +111,7 @@ class CFSession(CloudflareScraper, CertifiSession, TimeoutSession):
         )
 
 
-class RetryingSession(CFSession):
+class RetryingSession(CertifiSession, TimeoutSession):
     proxied_functions = ("get", "post")
 
     def __init__(self):
@@ -147,6 +147,10 @@ class RetryingSession(CFSession):
         if self.proxies and "timeout" in kwargs and kwargs["timeout"]:
             kwargs["timeout"] = kwargs["timeout"] * 3
         return self.retry_method("post", *args, **kwargs)
+
+
+class RetryingCFSession(RetryingSession, CFSession):
+    pass
 
 
 class SubZeroRequestsTransport(xmlrpclib.SafeTransport):
