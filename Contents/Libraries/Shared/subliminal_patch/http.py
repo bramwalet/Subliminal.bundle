@@ -82,7 +82,7 @@ class CFSession(CloudflareScraper, CertifiSession, TimeoutSession):
         ret = super(CFSession, self).request(method, url, *args, **kwargs)
 
         try:
-            cf_data = self.get_live_tokens(domain)
+            cf_data = self.get_cf_live_tokens(domain)
         except:
             pass
         else:
@@ -92,6 +92,23 @@ class CFSession(CloudflareScraper, CertifiSession, TimeoutSession):
                 region.set(cache_key, cf_data)
 
         return ret
+
+    def get_cf_live_tokens(self, domain):
+        for d in self.cookies.list_domains():
+            if d.startswith(".") and d in ("." + domain):
+                cookie_domain = d
+                break
+        else:
+            raise ValueError(
+                "Unable to find Cloudflare cookies. Does the site actually have "
+                "Cloudflare IUAM (\"I'm Under Attack Mode\") enabled?")
+
+        return ({
+                    "__cfduid": self.cookies.get("__cfduid", "", domain=cookie_domain),
+                    "cf_clearance": self.cookies.get("cf_clearance", "", domain=cookie_domain)
+                },
+                self.headers["User-Agent"]
+        )
 
 
 class RetryingSession(CFSession):

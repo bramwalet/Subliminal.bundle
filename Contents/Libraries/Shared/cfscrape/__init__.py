@@ -297,22 +297,6 @@ class CloudflareScraper(Session):
             scraper.headers['User-Agent']
         )
 
-    def get_live_tokens(self, domain):
-        for d in self.cookies.list_domains():
-            if d.startswith(".") and d in ("." + domain):
-                cookie_domain = d
-                break
-        else:
-            raise ValueError(
-                "Unable to find Cloudflare cookies. Does the site actually have Cloudflare IUAM (\"I'm Under Attack Mode\") enabled?")
-
-        return ({
-                    "__cfduid": self.cookies.get("__cfduid", "", domain=cookie_domain),
-                    "cf_clearance": self.cookies.get("cf_clearance", "", domain=cookie_domain)
-                },
-                self.headers["User-Agent"]
-        )
-
     @classmethod
     def get_cookie_string(cls, url, user_agent=None, debug=False, **kwargs):
         """
