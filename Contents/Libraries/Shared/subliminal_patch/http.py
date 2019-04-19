@@ -1,5 +1,4 @@
 # coding=utf-8
-
 import certifi
 import ssl
 import os
@@ -9,9 +8,7 @@ import requests
 import xmlrpclib
 import dns.resolver
 
-from collections import OrderedDict
 from requests import exceptions
-from requests.utils import default_user_agent
 from urllib3.util import connection
 from retry.api import retry_call
 from exceptions import APIThrottled
@@ -64,17 +61,6 @@ class CertifiSession(TimeoutSession):
 class CFSession(CloudflareScraper, CertifiSession, TimeoutSession):
     def __init__(self):
         super(CFSession, self).__init__()
-        self.headers = OrderedDict([
-            ('User-Agent', default_user_agent()),
-            ('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'),
-            ('Accept-Language', 'en-US,en;q=0.5'),
-            ('Accept-Encoding', 'gzip, deflate'),
-            ('Connection', 'keep-alive'),
-            ('Pragma', 'no-cache'),
-            ('Cache-Control', 'no-cache'),
-            ('Upgrade-Insecure-Requests', '1'),
-            ('DNT', '1'),
-        ])
         self.debug = os.environ.get("CF_DEBUG", False)
 
     def request(self, method, url, *args, **kwargs):
