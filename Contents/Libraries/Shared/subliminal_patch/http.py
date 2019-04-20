@@ -1,4 +1,6 @@
 # coding=utf-8
+from collections import OrderedDict
+
 import certifi
 import ssl
 import os
@@ -67,17 +69,19 @@ class CFSession(CloudflareScraper):
         parsed_url = urlparse(url)
         domain = parsed_url.netloc
 
-        cache_key = "cf_data_%s" % domain
+        cache_key = "cf_data2_%s" % domain
 
         if not self.cookies.get("__cfduid", "", domain=domain):
             cf_data = region.get(cache_key)
             if cf_data is not NO_VALUE:
-                cf_cookies, user_agent = cf_data
+                cf_cookies, user_agent, hdrs = cf_data
                 logger.debug("Trying to use old cf data for %s: %s", domain, cf_data)
                 for cookie, value in cf_cookies.iteritems():
                     self.cookies.set(cookie, value, domain=domain)
 
-                self.headers['User-Agent'] = user_agent
+                self._hdrs = hdrs
+                self._ua = user_agent
+                self.headers['User-Agent'] = self._ua
 
         ret = super(CFSession, self).request(method, url, *args, **kwargs)
 
@@ -86,8 +90,7 @@ class CFSession(CloudflareScraper):
         except:
             pass
         else:
-            if cf_data != region.get(cache_key) and self.cookies.get("__cfduid", "", domain=domain)\
-                    and self.cookies.get("cf_clearance", "", domain=domain):
+            if cf_data != region.get(cache_key) and cf_data[0]["__cfduid"] and cf_data[0]["cf_clearance"]:
                 logger.debug("Storing cf data for %s: %s", domain, cf_data)
                 region.set(cache_key, cf_data)
 
@@ -103,15 +106,15 @@ class CFSession(CloudflareScraper):
                 "Unable to find Cloudflare cookies. Does the site actually have "
                 "Cloudflare IUAM (\"I'm Under Attack Mode\") enabled?")
 
-        return ({
-                    "__cfduid": self.cookies.get("__cfduid", "", domain=cookie_domain),
-                    "cf_clearance": self.cookies.get("cf_clearance", "", domain=cookie_domain)
-                },
-                self.headers["User-Agent"]
+        return (OrderedDict([
+                    ("__cfduid", self.cookies.get("__cfduid", "", domain=cookie_domain)),
+                    ("cf_clearance", self.cookies.get("cf_clearance", "", domain=cookie_domain))
+                ]),
+                self._ua, self._hdrs
         )
 
 
-class RetryingSession(CertifiSession, TimeoutSession):
+class RetryingSession(CertifiSession):
     proxied_functions = ("get", "post")
 
     def __init__(self):
