@@ -89,7 +89,7 @@ class CloudflareScraper(Session):
 
         super(CloudflareScraper, self).__init__(*args, **kwargs)
 
-        if 'requests' in self.headers['User-Agent']:
+        if not self._ua:
             # Set a random User-Agent if no custom User-Agent has been set
             ua_combo = random.choice(UA_COMBO)
             self._ua = random.choice(ua_combo["User-Agent"])
