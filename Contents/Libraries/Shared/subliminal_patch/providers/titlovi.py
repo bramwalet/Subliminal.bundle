@@ -12,8 +12,9 @@ from bs4 import BeautifulSoup
 from zipfile import ZipFile, is_zipfile
 from rarfile import RarFile, is_rarfile
 from babelfish import language_converters, Script
-from requests import Session, RequestException
+from requests import RequestException
 from guessit import guessit
+from subliminal_patch.http import RetryingCFSession
 from subliminal_patch.providers import Provider
 from subliminal_patch.providers.mixins import ProviderSubtitleArchiveMixin
 from subliminal_patch.subtitle import Subtitle
@@ -138,12 +139,7 @@ class TitloviProvider(Provider, ProviderSubtitleArchiveMixin):
     download_url = server_url + '/download/?type=1&mediaid='
 
     def initialize(self):
-        self.session = Session()
-        logger.debug("Using random user agents")
-        self.session.headers['User-Agent'] = AGENT_LIST[randint(0, len(AGENT_LIST) - 1)]
-        logger.debug('User-Agent set to %s', self.session.headers['User-Agent'])
-        self.session.headers['Referer'] = self.server_url
-        logger.debug('Referer set to %s', self.session.headers['Referer'])
+        self.session = RetryingCFSession()
         load_verification("titlovi", self.session)
 
     def terminate(self):

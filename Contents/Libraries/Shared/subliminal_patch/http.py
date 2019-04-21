@@ -1,4 +1,5 @@
 # coding=utf-8
+from collections import OrderedDict
 
 import certifi
 import ssl
@@ -9,9 +10,7 @@ import requests
 import xmlrpclib
 import dns.resolver
 
-from collections import OrderedDict
 from requests import exceptions
-from requests.utils import default_user_agent
 from urllib3.util import connection
 from retry.api import retry_call
 from exceptions import APIThrottled
@@ -61,54 +60,61 @@ class CertifiSession(TimeoutSession):
         self.verify = pem_file
 
 
-class CFSession(CloudflareScraper, CertifiSession, TimeoutSession):
+class CFSession(CloudflareScraper):
     def __init__(self):
         super(CFSession, self).__init__()
-        self.headers = OrderedDict([
-            ('User-Agent', default_user_agent()),
-            ('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'),
-            ('Accept-Language', 'en-US,en;q=0.5'),
-            ('Accept-Encoding', 'gzip, deflate'),
-            ('Connection', 'keep-alive'),
-            ('Pragma', 'no-cache'),
-            ('Cache-Control', 'no-cache'),
-            ('Upgrade-Insecure-Requests', '1'),
-            ('DNT', '1'),
-        ])
         self.debug = os.environ.get("CF_DEBUG", False)
 
     def request(self, method, url, *args, **kwargs):
         parsed_url = urlparse(url)
         domain = parsed_url.netloc
 
-        cache_key = "cf_data_%s" % domain
+        cache_key = "cf_data2_%s" % domain
 
         if not self.cookies.get("__cfduid", "", domain=domain):
             cf_data = region.get(cache_key)
             if cf_data is not NO_VALUE:
-                cf_cookies, user_agent = cf_data
+                cf_cookies, user_agent, hdrs = cf_data
                 logger.debug("Trying to use old cf data for %s: %s", domain, cf_data)
                 for cookie, value in cf_cookies.iteritems():
                     self.cookies.set(cookie, value, domain=domain)
 
-                self.headers['User-Agent'] = user_agent
+                self._hdrs = hdrs
+                self._ua = user_agent
+                self.headers['User-Agent'] = self._ua
 
         ret = super(CFSession, self).request(method, url, *args, **kwargs)
 
         try:
-            cf_data = self.get_live_tokens(domain)
+            cf_data = self.get_cf_live_tokens(domain)
         except:
             pass
         else:
-            if cf_data != region.get(cache_key) and self.cookies.get("__cfduid", "", domain=domain)\
-                    and self.cookies.get("cf_clearance", "", domain=domain):
+            if cf_data != region.get(cache_key) and cf_data[0]["__cfduid"] and cf_data[0]["cf_clearance"]:
                 logger.debug("Storing cf data for %s: %s", domain, cf_data)
                 region.set(cache_key, cf_data)
 
         return ret
 
+    def get_cf_live_tokens(self, domain):
+        for d in self.cookies.list_domains():
+            if d.startswith(".") and d in ("." + domain):
+                cookie_domain = d
+                break
+        else:
+            raise ValueError(
+                "Unable to find Cloudflare cookies. Does the site actually have "
+                "Cloudflare IUAM (\"I'm Under Attack Mode\") enabled?")
 
-class RetryingSession(CFSession):
+        return (OrderedDict([
+                    ("__cfduid", self.cookies.get("__cfduid", "", domain=cookie_domain)),
+                    ("cf_clearance", self.cookies.get("cf_clearance", "", domain=cookie_domain))
+                ]),
+                self._ua, self._hdrs
+        )
+
+
+class RetryingSession(CertifiSession):
     proxied_functions = ("get", "post")
 
     def __init__(self):
@@ -144,6 +150,10 @@ class RetryingSession(CFSession):
         if self.proxies and "timeout" in kwargs and kwargs["timeout"]:
             kwargs["timeout"] = kwargs["timeout"] * 3
         return self.retry_method("post", *args, **kwargs)
+
+
+class RetryingCFSession(RetryingSession, CFSession):
+    pass
 
 
 class SubZeroRequestsTransport(xmlrpclib.SafeTransport):
