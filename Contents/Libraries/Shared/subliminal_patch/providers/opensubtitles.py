@@ -173,7 +173,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
 
         logger.info('Logging in')
 
-        token = region.get("os_token", expiration_time=3600)
+        token = region.get("os_token")
         if token is not NO_VALUE:
             try:
                 logger.debug('Trying previous token: %r', token[:10]+"X"*(len(token)-10))
@@ -181,7 +181,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
                 self.token = token
                 logger.debug("Using previous login token: %r", token[:10]+"X"*(len(token)-10))
                 return
-            except:
+            except (NoSession, Unauthorized):
                 logger.debug('Token not valid.')
                 pass
 
