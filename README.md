@@ -85,7 +85,11 @@ the.vbm, mmgoodnow, Vertig0ne, thliu78, tattoomees, ostman, count_confucius, ehe
 
 ## Changelog
 
-2.6.5.xxxx (in progress)
+2.6.5.3017
+subscene, addic7ed and titlovi
+- either of those providers might impose a reCAPTCHA verification. In order to use those providers, please create an account at an AntiCaptcha service (anti-captcha.com or deathbycaptcha.com), add funds, then supply your credentials/apikey in the configuration
+
+Changelog
 - core: SRT parsing: handle (bad) ASS color tag in SRT
 - core: auto extract embedded: only use one unknown sub for first language
 - core: better embedded streams language detection
@@ -103,6 +107,7 @@ the.vbm, mmgoodnow, Vertig0ne, thliu78, tattoomees, ostman, count_confucius, ehe
 - core: scan_video: add series/title as alternative by scanning filename itself without parent folders
 - core: add generic solution for solving captchas using anti captcha services
 - core: increase cache time to 180d (was: 30d)
+- core: guess_matches: handle multiple title matches; fixes bazarr#403
 - windows: fix compatibility issues with plex transcoder
 - compat: use lowercase paths on subtitle detection
 - providers: addic7ed: re-enable (using paid anti captch service)
