@@ -16,6 +16,8 @@ Check out **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)*
 
 ---
 
+## Helping development
+
 If you like this, buy me a beer: <br>[![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=G9VKR2B8PMNKG) <br>or become a Patreon starting at **1 $ / month** <br><a href="https://www.patreon.com/subzero_plex" target="_blank"><img src="http://www.wenspencer.com/wp-content/uploads/2017/02/patreon-button.png" height="42" /></a> <br>or use the OpenSubtitles Sub-Zero affiliate link to become VIP <br>**10€/year, ad-free subs, 1000 subs/day, no-cache *VIP* server**<br><a href="http://v.ht/osvip" target="_blank"><img src="https://static.opensubtitles.org/gfx/logo.gif" height="50" /></a> 
 
 If you register with an anti-captcha service and you decide to use [Anti-Captcha.com](http://getcaptchasolution.com/kkvviom7nh), you can use [this affiliate link](http://getcaptchasolution.com/kkvviom7nh) to help development.
