@@ -359,11 +359,11 @@ def guess_matches(video, guess, partial=False):
     matches = set()
     if isinstance(video, Episode):
         # series
-        titles = guess["title"]
-        if not isinstance(titles, types.ListType):
-            titles = [titles]
-
         if video.series and 'title' in guess:
+            titles = guess["title"]
+            if not isinstance(titles, types.ListType):
+                titles = [titles]
+
             for title in titles:
                 if sanitize(title) in (sanitize(name) for name in [video.series] + video.alternative_series):
                     matches.add('series')
