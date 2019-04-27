@@ -847,10 +847,10 @@
     "default": "15"
   },
   {
-    "id": "use_custom_dns",
-    "label": "Use Google DNS (for \"problematic\" countries)",
-    "type": "bool",
-    "default": "false"
+    "id": "use_custom_dns2",
+    "label": "Use custom DNS (IPs, comma-separated, leave empty for default DNS. Default: Google/CF)",
+    "type": "text",
+    "default": "1.1.1.1, 8.8.8.8"
   },
   {
     "id": "proxy",

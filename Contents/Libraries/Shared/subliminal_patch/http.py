@@ -1,4 +1,5 @@
 # coding=utf-8
+import json
 from collections import OrderedDict
 
 import certifi
@@ -32,12 +33,6 @@ try:
 except AttributeError:
     # < Python 2.7.9
     default_ssl_context = None
-
-
-custom_resolver = dns.resolver.Resolver(configure=False)
-
-# 8.8.8.8 is Google's public DNS server
-custom_resolver.nameservers = ['8.8.8.8', '1.1.1.1']
 
 
 class TimeoutSession(requests.Session):
@@ -226,25 +221,60 @@ _orig_create_connection = connection.create_connection
 dns_cache = {}
 
 
-def set_custom_resolver():
+_custom_resolver = None
+_custom_resolver_ips = None
+
+
+def patch_create_connection():
+    if hasattr(connection.create_connection, "_sz_patched"):
+        return
+
     def patched_create_connection(address, *args, **kwargs):
         """Wrap urllib3's create_connection to resolve the name elsewhere"""
         # resolve hostname to an ip address; use your own
         # resolver here, as otherwise the system resolver will be used.
+        global _custom_resolver, _custom_resolver_ips, dns_cache
         host, port = address
-        if host in dns_cache:
-            ip = dns_cache[host]
-            logger.debug("Using %s=%s from cache", host, ip)
-        else:
-            try:
-                ip = custom_resolver.query(host)[0].address
-                dns_cache[host] = ip
-            except dns.exception.DNSException:
-                logger.warning("Couldn't resolve %s with DNS: %s", host, custom_resolver.nameservers)
-                return _orig_create_connection((host, port), *args, **kwargs)
 
-            logger.debug("Resolved %s to %s using %s", host, ip, custom_resolver.nameservers)
+        __custom_resolver_ips = os.environ.get("dns_resolvers", None)
 
-        return _orig_create_connection((ip, port), *args, **kwargs)
+        # resolver ips changed in the meantime?
+        if __custom_resolver_ips != _custom_resolver_ips:
+            _custom_resolver = None
+            _custom_resolver_ips = __custom_resolver_ips
+            dns_cache = {}
 
+        custom_resolver = _custom_resolver
+
+        if not custom_resolver:
+            if _custom_resolver_ips:
+                logger.debug("DNS: Trying to use custom DNS resolvers: %s", _custom_resolver_ips)
+                try:
+                    custom_resolver = dns.resolver.Resolver(configure=False)
+                    custom_resolver.lifetime = 8.0
+                    custom_resolver.nameservers = json.loads(_custom_resolver_ips)
+                    _custom_resolver = custom_resolver
+                except:
+                    logger.debug("DNS: Couldn't load custom DNS resolvers: %s", _custom_resolver_ips)
+
+        if custom_resolver:
+            if host in dns_cache:
+                ip = dns_cache[host]
+                logger.debug("DNS: Using %s=%s from cache", host, ip)
+            else:
+                try:
+                    ip = custom_resolver.query(host)[0].address
+                    logger.debug("DNS: Resolved %s to %s using %s", host, ip, custom_resolver.nameservers)
+                    dns_cache[host] = ip
+                except dns.exception.DNSException:
+                    logger.warning("DNS: Couldn't resolve %s with DNS: %s", host, custom_resolver.nameservers)
+                    raise
+
+        return _orig_create_connection((host, port), *args, **kwargs)
+
+    patch_create_connection._sz_patched = True
     connection.create_connection = patched_create_connection
+
+
+patch_create_connection()
+
