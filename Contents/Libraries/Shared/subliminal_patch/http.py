@@ -249,13 +249,14 @@ def patch_create_connection():
         if not custom_resolver:
             if _custom_resolver_ips:
                 logger.debug("DNS: Trying to use custom DNS resolvers: %s", _custom_resolver_ips)
+                custom_resolver = dns.resolver.Resolver(configure=False)
+                custom_resolver.lifetime = 8.0
                 try:
-                    custom_resolver = dns.resolver.Resolver(configure=False)
-                    custom_resolver.lifetime = 8.0
                     custom_resolver.nameservers = json.loads(_custom_resolver_ips)
-                    _custom_resolver = custom_resolver
                 except:
                     logger.debug("DNS: Couldn't load custom DNS resolvers: %s", _custom_resolver_ips)
+                else:
+                    _custom_resolver = custom_resolver
 
         if custom_resolver:
             if host in dns_cache:
