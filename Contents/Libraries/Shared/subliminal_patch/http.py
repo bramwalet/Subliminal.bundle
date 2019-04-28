@@ -58,7 +58,7 @@ class CertifiSession(TimeoutSession):
 class CFSession(CloudflareScraper):
     def __init__(self):
         super(CFSession, self).__init__()
-        self.debug = True or os.environ.get("CF_DEBUG", False)
+        self.debug = os.environ.get("CF_DEBUG", False)
 
     def request(self, method, url, *args, **kwargs):
         parsed_url = urlparse(url)
