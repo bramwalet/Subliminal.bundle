@@ -144,6 +144,7 @@ class Config(object):
     refiner_settings = None
     exact_filenames = False
     only_one = False
+    any_language_is_enough = False
     embedded_auto_extract = False
     ietf_as_alpha3 = False
     unrar = None
@@ -234,6 +235,7 @@ class Config(object):
         self.no_refresh = os.environ.get("SZ_NO_REFRESH", False)
         self.plex_transcoder = self.get_plex_transcoder()
         self.only_one = cast_bool(Prefs['subtitles.only_one'])
+        self.any_language_is_enough = Prefs['subtitles.any_language_is_enough']
         self.embedded_auto_extract = cast_bool(Prefs["subtitles.embedded.autoextract"])
         self.ietf_as_alpha3 = cast_bool(Prefs["subtitles.language.ietf_normalize"])
         self.use_custom_dns = self.parse_custom_dns()

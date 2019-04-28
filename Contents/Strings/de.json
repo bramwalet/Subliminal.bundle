@@ -438,5 +438,5 @@
     "auto-better": "auto-besser",
     "Unknown": "Unbekannt",
     "embedded": "eingebettet",
-    "Use Google DNS (for \"problematic\" countries)": "Google DNS benutzen (für \"problematische\" Länder)"
+    "Use custom DNS (IPs, comma-separated, leave empty for system DNS. Default: Google/CF)": "Benutzerdefinierten DNS benutzen (IPs, Komma-Separiert, leer lassen für System-DNS. Default: Google/CF)"
 }

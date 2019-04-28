@@ -438,5 +438,11 @@
     "auto-better": "auto-better",
     "Unknown": "Unknown",
     "embedded": "embedded",
-    "Use Google DNS (for \"problematic\" countries)": "Use Google DNS (for \"problematic\" countries)"
+    "Use custom DNS (IPs, comma-separated, leave empty for default DNS. Default: Google/CF)": "Use custom DNS (IPs, comma-separated, leave empty for default DNS. Default: Google/CF)",
+    "Don't search for subtitles if a subtitle in any configured language exists as": "Don't search for subtitles if a subtitle in any configured language exists as",
+    "External or embedded subtitle": "External or embedded subtitle",
+    "External or embedded subtitle (not foreign/forced)": "External or embedded subtitle (not foreign/forced)",
+    "External subtitle": "External subtitle",
+    "External subtitle (not foreign/forced)": "External subtitle (not foreign/forced)",
+    "Always search for all configured languages": "Always search for all configured languages"
 }

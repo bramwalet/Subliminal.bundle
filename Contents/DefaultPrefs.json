@@ -206,6 +206,19 @@
     "default": "Never"
   },
   {
+    "id": "subtitles.any_language_is_enough",
+    "label": "Don't search for subtitles if a subtitle in any configured language exists as",
+    "type": "enum",
+    "values": [
+      "External or embedded subtitle",
+      "External or embedded subtitle (not foreign/forced)",
+      "External subtitle",
+      "External subtitle (not foreign/forced)",
+      "Always search for all configured languages"
+    ],
+    "default": "Always search for all configured languages"
+  },
+  {
     "id": "subtitles.language.ietf_display",
     "label": "Display languages with country attribute as ISO 639-1 (e.g. pt-BR = pt)",
     "type": "bool",
@@ -848,7 +861,7 @@
   },
   {
     "id": "use_custom_dns2",
-    "label": "Use custom DNS (IPs, comma-separated, leave empty for default DNS. Default: Google/CF)",
+    "label": "Use custom DNS (IPs, comma-separated, leave empty for system DNS. Default: Google/CF)",
     "type": "text",
     "default": "1.1.1.1, 8.8.8.8"
   },
