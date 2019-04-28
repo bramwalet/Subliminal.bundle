@@ -84,6 +84,7 @@ class CloudflareScraper(Session):
     def __init__(self, *args, **kwargs):
         self.delay = kwargs.pop('delay', 8)
         self.debug = False
+        self._was_cf = False
         self._ua = None
         self._hdrs = None
 
@@ -145,6 +146,7 @@ class CloudflareScraper(Session):
         # Check if Cloudflare anti-bot is on
         try:
             if self.is_cloudflare_challenge(resp):
+                self._was_cf = True
                 # Work around if the initial request is not a GET,
                 # Superseed with a GET then re-request the orignal METHOD.
                 if resp.request.method != 'GET':
@@ -154,6 +156,7 @@ class CloudflareScraper(Session):
                     resp = self.solve_cf_challenge(resp, **kwargs)
         except NeedsCaptchaException:
             # solve the captcha
+            self._was_cf = True
             site_key = re.search(r'data-sitekey="(.+?)"', resp.content).group(1)
             challenge_s = re.search(r'type="hidden" name="s" value="(.+?)"', resp.content).group(1)
             challenge_ray = re.search(r'data-ray="(.+?)"', resp.content).group(1)
@@ -165,13 +168,13 @@ class CloudflareScraper(Session):
                                              cookies=self.cookies.get_dict(),
                                              is_invisible=True)
 
-            logger.info("cf: Solving captcha")
+            parsed_url = urlparse(resp.url)
+            domain = parsed_url.netloc
+            logger.info("cf: %s: Solving captcha", domain)
             result = pitcher.throw()
             if not result:
                 raise Exception("cf: Couldn't solve captcha!")
 
-            parsed_url = urlparse(resp.url)
-            domain = parsed_url.netloc
             submit_url = '{}://{}/cdn-cgi/l/chk_captcha'.format(parsed_url.scheme, domain)
             method = resp.request.method
 

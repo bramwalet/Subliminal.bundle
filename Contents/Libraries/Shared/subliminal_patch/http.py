@@ -58,7 +58,7 @@ class CertifiSession(TimeoutSession):
 class CFSession(CloudflareScraper):
     def __init__(self):
         super(CFSession, self).__init__()
-        self.debug = os.environ.get("CF_DEBUG", False)
+        self.debug = True or os.environ.get("CF_DEBUG", False)
 
     def request(self, method, url, *args, **kwargs):
         parsed_url = urlparse(url)
@@ -66,7 +66,7 @@ class CFSession(CloudflareScraper):
 
         cache_key = "cf_data2_%s" % domain
 
-        if not self.cookies.get("__cfduid", "", domain=domain):
+        if not self.cookies.get("cf_clearance", "", domain=domain):
             cf_data = region.get(cache_key)
             if cf_data is not NO_VALUE:
                 cf_cookies, user_agent, hdrs = cf_data
@@ -80,14 +80,18 @@ class CFSession(CloudflareScraper):
 
         ret = super(CFSession, self).request(method, url, *args, **kwargs)
 
-        try:
-            cf_data = self.get_cf_live_tokens(domain)
-        except:
-            pass
-        else:
-            if cf_data != region.get(cache_key) and cf_data[0]["__cfduid"] and cf_data[0]["cf_clearance"]:
-                logger.debug("Storing cf data for %s: %s", domain, cf_data)
-                region.set(cache_key, cf_data)
+        if self._was_cf:
+            self._was_cf = False
+            logger.debug("We've hit CF, trying to store previous data")
+            try:
+                cf_data = self.get_cf_live_tokens(domain)
+            except:
+                logger.debug("Couldn't get CF live tokens for re-use. Cookies: %r", self.cookies)
+                pass
+            else:
+                if cf_data != region.get(cache_key) and cf_data[0]["cf_clearance"]:
+                    logger.debug("Storing cf data for %s: %s", domain, cf_data)
+                    region.set(cache_key, cf_data)
 
         return ret
 
@@ -262,6 +266,7 @@ def patch_create_connection():
             if host in dns_cache:
                 ip = dns_cache[host]
                 logger.debug("DNS: Using %s=%s from cache", host, ip)
+                return _orig_create_connection((ip, port), *args, **kwargs)
             else:
                 try:
                     ip = custom_resolver.query(host)[0].address
