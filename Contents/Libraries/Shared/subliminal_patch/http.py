@@ -105,10 +105,10 @@ class CFSession(CloudflareScraper):
                 "Unable to find Cloudflare cookies. Does the site actually have "
                 "Cloudflare IUAM (\"I'm Under Attack Mode\") enabled?")
 
-        return (OrderedDict([
+        return (OrderedDict(filter(lambda x: x[1], [
                     ("__cfduid", self.cookies.get("__cfduid", "", domain=cookie_domain)),
                     ("cf_clearance", self.cookies.get("cf_clearance", "", domain=cookie_domain))
-                ]),
+                ])),
                 self._ua, self._hdrs
         )
 
