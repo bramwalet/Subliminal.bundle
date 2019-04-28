@@ -91,7 +91,7 @@ the.vbm, mmgoodnow, Vertig0ne, thliu78, tattoomees, ostman, count_confucius, ehe
 2.6.5.3017
 
 subscene, addic7ed and titlovi
-- either of those providers might impose a reCAPTCHA verification. In order to use those providers, please create an account at an AntiCaptcha service (anti-captcha.com or deathbycaptcha.com), add funds, then supply your credentials/apikey in the configuration
+- either of those providers might impose a reCAPTCHA verification. In order to use those providers, please create an account at an AntiCaptcha service ([anti-captcha.com](http://getcaptchasolution.com/kkvviom7nh) or [deathbycaptcha.com](http://deathbycaptcha.com)), add funds, then supply your credentials/apikey in the configuration
 
 Changelog
 - core: SRT parsing: handle (bad) ASS color tag in SRT
