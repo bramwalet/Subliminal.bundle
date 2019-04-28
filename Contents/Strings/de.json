@@ -438,5 +438,12 @@
     "auto-better": "auto-besser",
     "Unknown": "Unbekannt",
     "embedded": "eingebettet",
-    "Use custom DNS (IPs, comma-separated, leave empty for system DNS. Default: Google/CF)": "Benutzerdefinierten DNS benutzen (IPs, Komma-Separiert, leer lassen für System-DNS. Default: Google/CF)"
+    "Use Google DNS (for \"problematic\" countries)": "Google DNS benutzen (für \"problematische\" Länder)",
+    "Use custom DNS (IPs, comma-separated, leave empty for default DNS. Default: Google/CF)": "Benutzerdefinierten DNS benutzen (IPs, Komma-Separiert, leer lassen für System-DNS. Default: Google/CF)",
+    "Don't search for subtitles if a subtitle in any configured language exists as": "Nicht nach Untertiteln suchen, wenn wenigstens ein Untertitel in einer konfigurierten Sprache gefunden wurde",
+    "External or embedded subtitle": "Externe oder eingebettete Untertitel",
+    "External or embedded subtitle (not foreign/forced)": "Externe oder eingebettete Untertitel (keine erzwungenden/fremdsprachigen)",
+    "External subtitle": "Externe Untertitel",
+    "External subtitle (not foreign/forced)": "Externe Untertitel (keine erzwungenden/fremdsprachigen)",
+    "Always search for all configured languages": "Immer nach allen konfigurierten Untertiteln suchen"
 }
