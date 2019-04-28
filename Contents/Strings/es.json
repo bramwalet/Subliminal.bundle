@@ -437,6 +437,5 @@
     "manual": "manual",
     "auto-better": "auto-mejorar",
     "Unknown": "Desconocido",
-    "embedded": "Integrado",
-    "Use Google DNS (for \"problematic\" countries)": "Usar DNS de Google (para países problemáticos)"
+    "embedded": "Integrado"
 }

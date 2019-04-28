@@ -437,6 +437,5 @@
     "manual": "handmatig",
     "auto-better": "automatisch-verbeter",
     "Unknown": "Onbekend",
-    "embedded": "geëmbedde",
-    "Use Google DNS (for \"problematic\" countries)": "Gebruik Google DNS (voor \"probleematische\" landen)"
+    "embedded": "geëmbedde"
 }
