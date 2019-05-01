@@ -18,7 +18,7 @@ from retry.api import retry_call
 from exceptions import APIThrottled
 from dogpile.cache.api import NO_VALUE
 from subliminal.cache import region
-from cfscrape import CloudflareScraper
+from cloudscraper import CloudScraper
 
 try:
     from urlparse import urlparse
@@ -56,34 +56,35 @@ class CertifiSession(TimeoutSession):
         self.verify = pem_file
 
 
-class CFSession(CloudflareScraper):
-    def __init__(self):
-        super(CFSession, self).__init__()
+class CFSession(CloudScraper):
+    _hdrs = None
+
+    def __init__(self, *args, **kwargs):
+        super(CFSession, self).__init__(*args, **kwargs)
         self.debug = os.environ.get("CF_DEBUG", False)
+        self._was_cf = False
 
     def request(self, method, url, *args, **kwargs):
         parsed_url = urlparse(url)
         domain = parsed_url.netloc
 
-        cache_key = "cf_data2_%s" % domain
+        cache_key = "cf_data3_%s" % domain
 
         if not self.cookies.get("cf_clearance", "", domain=domain):
             cf_data = region.get(cache_key)
             if cf_data is not NO_VALUE:
-                cf_cookies, user_agent, hdrs = cf_data
+                cf_cookies, hdrs = cf_data
                 logger.debug("Trying to use old cf data for %s: %s", domain, cf_data)
                 for cookie, value in cf_cookies.iteritems():
                     self.cookies.set(cookie, value, domain=domain)
 
-                self._hdrs = hdrs
-                self._ua = user_agent
-                self.headers['User-Agent'] = self._ua
+                self.headers = hdrs
 
         ret = super(CFSession, self).request(method, url, *args, **kwargs)
 
-        if self._was_cf:
-            self._was_cf = False
-            logger.debug("We've hit CF, trying to store previous data")
+        if self.was_cf_request:
+            self.was_cf_request = False
+            logger.debug("We've hit CF, seeing if we need to store previous data")
             try:
                 cf_data = self.get_cf_live_tokens(domain)
             except:
@@ -110,7 +111,7 @@ class CFSession(CloudflareScraper):
                     ("__cfduid", self.cookies.get("__cfduid", "", domain=cookie_domain)),
                     ("cf_clearance", self.cookies.get("cf_clearance", "", domain=cookie_domain))
                 ])),
-                self._ua, self._hdrs
+                self.headers
         )
 
 
