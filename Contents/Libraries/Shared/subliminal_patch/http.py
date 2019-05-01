@@ -276,6 +276,7 @@ def patch_create_connection():
                         ip = custom_resolver.query(host)[0].address
                         logger.debug("DNS: Resolved %s to %s using %s", host, ip, custom_resolver.nameservers)
                         dns_cache[host] = ip
+                        return _orig_create_connection((ip, port), *args, **kwargs)
                     except dns.exception.DNSException:
                         logger.warning("DNS: Couldn't resolve %s with DNS: %s", host, custom_resolver.nameservers)
                         raise
