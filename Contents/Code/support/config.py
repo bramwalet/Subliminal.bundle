@@ -1083,6 +1083,7 @@ class Config(object):
 
     def parse_custom_dns(self):
         custom_dns = Prefs['use_custom_dns2'].strip()
+        os.environ["dns_resolvers"] = ""
         if custom_dns:
             ips = filter(lambda x: x, [d.strip() for d in custom_dns.split(",")])
             if ips:
