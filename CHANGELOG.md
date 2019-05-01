@@ -1,4 +1,39 @@
 
+
+2.6.5.3017
+
+Changelog
+- core: SRT parsing: handle (bad) ASS color tag in SRT
+- core: auto extract embedded: only use one unknown sub for first language
+- core: better embedded streams language detection
+- core: optimizations
+- core: extract embedded: fix is_unknown check
+- core: don't raise exception when subtitle not found inside archive
+- core: search external subtitles: fix condition
+- core: better plex transcoder path detection
+- core: use Log.Warn instead of Log.Warning (#619, #629, #633)
+- core: also check for "plex transcoder.exe" in case of windows (fixes #619)
+- core: auto extract: use mbcs encoding for paths on windows 
+- core: Fix issue scandir not returning the name of the file inside Docker images on ARM systems. (thanks @giejay)
+- core: also clean PYTHONHOME when calling external notification app
+- core: update certifi to 2019.3.9
+- core: scan_video: add series/title as alternative by scanning filename itself without parent folders
+- core: add generic solution for solving captchas using anti captcha services
+- core: increase cache time to 180d (was: 30d)
+- core: guess_matches: handle multiple title matches; fixes bazarr#403
+- windows: fix compatibility issues with plex transcoder
+- compat: use lowercase paths on subtitle detection
+- providers: addic7ed: re-enable (using paid anti captch service)
+- providers: assrt: assume undefined Chinese flavor as Simplified (chs/zho-Hans)
+- providers: subscene: make it work again by bypassing cf
+- providers: subscene: don't fail on missing cover
+- providers: titlovi: re-enable (might need paid anti captch service)
+- providers: opensubtitles: fix only_foreign handling
+- providers: opensubtitles: show subtitles with possibly mismatched series when manually listing subs
+- menu: list subtitles: show subtitles with bad season/episode values as well
+- refiners: omdb: fix imdb ids with spaces
+
+
 2.6.4.2911
 - core: improve file cache (windows especially); use fixed-length cache filenames; fixes #600
 - core: don't log "Checking connections ..." when sonarr/radarr not activated
