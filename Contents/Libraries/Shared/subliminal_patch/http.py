@@ -258,7 +258,7 @@ def patch_create_connection():
                 if _custom_resolver_ips:
                     logger.debug("DNS: Trying to use custom DNS resolvers: %s", _custom_resolver_ips)
                     custom_resolver = dns.resolver.Resolver(configure=False)
-                    custom_resolver.lifetime = 8.0
+                    custom_resolver.lifetime = os.environ.get("dns_resolvers_timeout", 8.0)
                     try:
                         custom_resolver.nameservers = json.loads(_custom_resolver_ips)
                     except:
