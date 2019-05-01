@@ -10,6 +10,7 @@ import logging
 import requests
 import xmlrpclib
 import dns.resolver
+import ipaddress
 
 from requests import exceptions
 from urllib3.util import connection
@@ -240,42 +241,46 @@ def patch_create_connection():
         global _custom_resolver, _custom_resolver_ips, dns_cache
         host, port = address
 
-        __custom_resolver_ips = os.environ.get("dns_resolvers", None)
+        try:
+            ipaddress.ip_address(unicode(host))
+        except (ipaddress.AddressValueError, ValueError):
+            __custom_resolver_ips = os.environ.get("dns_resolvers", None)
 
-        # resolver ips changed in the meantime?
-        if __custom_resolver_ips != _custom_resolver_ips:
-            _custom_resolver = None
-            _custom_resolver_ips = __custom_resolver_ips
-            dns_cache = {}
+            # resolver ips changed in the meantime?
+            if __custom_resolver_ips != _custom_resolver_ips:
+                _custom_resolver = None
+                _custom_resolver_ips = __custom_resolver_ips
+                dns_cache = {}
 
-        custom_resolver = _custom_resolver
+            custom_resolver = _custom_resolver
 
-        if not custom_resolver:
-            if _custom_resolver_ips:
-                logger.debug("DNS: Trying to use custom DNS resolvers: %s", _custom_resolver_ips)
-                custom_resolver = dns.resolver.Resolver(configure=False)
-                custom_resolver.lifetime = 8.0
-                try:
-                    custom_resolver.nameservers = json.loads(_custom_resolver_ips)
-                except:
-                    logger.debug("DNS: Couldn't load custom DNS resolvers: %s", _custom_resolver_ips)
+            if not custom_resolver:
+                if _custom_resolver_ips:
+                    logger.debug("DNS: Trying to use custom DNS resolvers: %s", _custom_resolver_ips)
+                    custom_resolver = dns.resolver.Resolver(configure=False)
+                    custom_resolver.lifetime = 8.0
+                    try:
+                        custom_resolver.nameservers = json.loads(_custom_resolver_ips)
+                    except:
+                        logger.debug("DNS: Couldn't load custom DNS resolvers: %s", _custom_resolver_ips)
+                    else:
+                        _custom_resolver = custom_resolver
+
+            if custom_resolver:
+                if host in dns_cache:
+                    ip = dns_cache[host]
+                    logger.debug("DNS: Using %s=%s from cache", host, ip)
+                    return _orig_create_connection((ip, port), *args, **kwargs)
                 else:
-                    _custom_resolver = custom_resolver
+                    try:
+                        ip = custom_resolver.query(host)[0].address
+                        logger.debug("DNS: Resolved %s to %s using %s", host, ip, custom_resolver.nameservers)
+                        dns_cache[host] = ip
+                    except dns.exception.DNSException:
+                        logger.warning("DNS: Couldn't resolve %s with DNS: %s", host, custom_resolver.nameservers)
+                        raise
 
-        if custom_resolver:
-            if host in dns_cache:
-                ip = dns_cache[host]
-                logger.debug("DNS: Using %s=%s from cache", host, ip)
-                return _orig_create_connection((ip, port), *args, **kwargs)
-            else:
-                try:
-                    ip = custom_resolver.query(host)[0].address
-                    logger.debug("DNS: Resolved %s to %s using %s", host, ip, custom_resolver.nameservers)
-                    dns_cache[host] = ip
-                except dns.exception.DNSException:
-                    logger.warning("DNS: Couldn't resolve %s with DNS: %s", host, custom_resolver.nameservers)
-                    raise
-
+        logger.debug("DNS: Falling back to default DNS or IP on %s", host)
         return _orig_create_connection((host, port), *args, **kwargs)
 
     patch_create_connection._sz_patched = True
