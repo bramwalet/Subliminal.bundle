@@ -1,5 +1,6 @@
 # Sub-Zero for Plex
-[![](https://img.shields.io/github/release/pannal/Sub-Zero.bundle.svg?style=flat&label=stable)](https://github.com/pannal/Sub-Zero.bundle/releases/latest)<!--[![](https://img.shields.io/github/release/pannal/Sub-Zero.bundle/all.svg?maxAge=2592000&label=testing+2.0+RC9)](https://github.com/pannal/Sub-Zero.bundle/releases)--> [![master](https://img.shields.io/badge/master-stable-green.svg?maxAge=2592000)]()
+[![](https://img.shields.io/github/release/pannal/Sub-Zero.bundle.svg?style=flat&label=stable)](https://github.com/pannal/Sub-Zero.bundle/releases/latest)<!--[![](https://img.shields.io/github/release/pannal/Sub-Zero.bundle/all.svg?maxAge=2592000&label=testing+2.0+RC9)](https://github.com/pannal/Sub-Zero.bundle/releases)--> [![master](https://img.shields.io/badge/master-stable-green.svg?maxAge=2592000)][![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fpannal%2FSub-Zero.bundle.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fpannal%2FSub-Zero.bundle?ref=badge_shield)
+()
 [![Maintenance](https://img.shields.io/maintenance/yes/2019.svg)]()
 [![Slack Status](https://szslack.fragstore.net/badge.svg)](https://szslack.fragstore.net)
 
@@ -143,3 +144,7 @@ Changelog
 Subtitles provided by [OpenSubtitles.org](http://www.opensubtitles.org/), [Podnapisi.NET](https://www.podnapisi.net/), [TVSubtitles.net](http://www.tvsubtitles.net/), [Addic7ed.com](http://www.addic7ed.com/), [Legendas TV](http://legendas.tv/), [Napi Projekt](http://www.napiprojekt.pl/), [Shooter](http://shooter.cn/), [Titlovi](http://titlovi.com), [aRGENTeaM](http://argenteam.net), [SubScene](https://subscene.com/), [Hosszupuska](http://hosszupuskasub.com/)
 
 [3rd party licenses](https://github.com/pannal/Sub-Zero.bundle/tree/master/Licenses)
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fpannal%2FSub-Zero.bundle.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fpannal%2FSub-Zero.bundle?ref=badge_large)
