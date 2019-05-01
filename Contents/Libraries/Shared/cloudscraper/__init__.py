@@ -152,6 +152,8 @@ class CloudScraper(Session):
                     resp = self.sendChallengeResponse(resp, **kwargs)
         except NeedsCaptchaException:
             self.was_cf_request = True
+            parsed_url = urlparse(url)
+            domain = parsed_url.netloc
             # solve the captcha
             site_key = re.search(r'data-sitekey="(.+?)"', resp.content).group(1)
             challenge_s = re.search(r'type="hidden" name="s" value="(.+?)"', resp.content).group(1)
@@ -159,13 +161,12 @@ class CloudScraper(Session):
             if not all([site_key, challenge_s, challenge_ray]):
                 raise Exception("cf: Captcha site-key not found!")
 
-            pitcher = pitchers.get_pitcher()("cf", resp.request.url, site_key,
+            pitcher = pitchers.get_pitcher()("cf: %s" % domain, resp.request.url, site_key,
                                              user_agent=self.headers["User-Agent"],
                                              cookies=self.cookies.get_dict(),
                                              is_invisible=True)
 
             parsed_url = urlparse(resp.url)
-            domain = parsed_url.netloc
             logger.info("cf: %s: Solving captcha", domain)
             result = pitcher.throw()
             if not result:
