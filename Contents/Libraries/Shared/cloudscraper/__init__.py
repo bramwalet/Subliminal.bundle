@@ -1,11 +1,7 @@
-import re
-import ssl
-try:
-    import brotli
-except ImportError:
-    brotli = None
-
 import logging
+import re
+import sys
+import ssl
 
 from copy import deepcopy
 from time import sleep
@@ -14,7 +10,6 @@ from collections import OrderedDict
 from requests.sessions import Session
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.ssl_ import create_urllib3_context
-from subliminal_patch.pitcher import pitchers
 
 from .interpreters import JavaScriptInterpreter
 from .user_agent import User_Agent
@@ -25,17 +20,20 @@ except ImportError:
     pass
 
 try:
+    import brotli
+except ImportError:
+    pass
+
+try:
     from urlparse import urlparse
     from urlparse import urlunparse
 except ImportError:
     from urllib.parse import urlparse
     from urllib.parse import urlunparse
 
-logger = logging.getLogger(__name__)
-
 ##########################################################################################################################################################
 
-__version__ = '1.1.1'
+__version__ = '1.1.5'
 
 BUG_REPORT = 'Cloudflare may have changed their technique, or there may be a bug in the script.'
 
@@ -63,21 +61,15 @@ class CipherSuiteAdapter(HTTPAdapter):
 ##########################################################################################################################################################
 
 
-class NeedsCaptchaException(Exception):
-    pass
-
-
 class CloudScraper(Session):
-    was_cf_request = False
-
     def __init__(self, *args, **kwargs):
         self.debug = kwargs.pop('debug', False)
         self.delay = kwargs.pop('delay', None)
         self.interpreter = kwargs.pop('interpreter', 'js2py')
-        self.allow_brotli = kwargs.pop('allow_brotli', True) and bool(brotli)
+        self.allow_brotli = kwargs.pop('allow_brotli', True if 'brotli' in sys.modules.keys() else False)
         self.cipherSuite = None
 
-        super(CloudScraper, self).__init__()
+        super(CloudScraper, self).__init__(*args, **kwargs)
 
         if 'requests' in self.headers['User-Agent']:
             # Set a random User-Agent if no custom User-Agent has been set
@@ -139,54 +131,15 @@ class CloudScraper(Session):
             self.debugRequest(resp)
 
         # Check if Cloudflare anti-bot is on
-        try:
-            if self.isChallengeRequest(resp):
-                self.was_cf_request = True
-                if resp.request.method != 'GET':
-                    # Work around if the initial request is not a GET,
-                    # Supersede with a GET then re-request the original METHOD.
-                    self.request('GET', resp.url)
-                    resp = ourSuper.request(method, url, *args, **kwargs)
-                else:
-                    # Solve Challenge
-                    resp = self.sendChallengeResponse(resp, **kwargs)
-        except NeedsCaptchaException:
-            self.was_cf_request = True
-            parsed_url = urlparse(url)
-            domain = parsed_url.netloc
-            # solve the captcha
-            site_key = re.search(r'data-sitekey="(.+?)"', resp.content).group(1)
-            challenge_s = re.search(r'type="hidden" name="s" value="(.+?)"', resp.content).group(1)
-            challenge_ray = re.search(r'data-ray="(.+?)"', resp.content).group(1)
-            if not all([site_key, challenge_s, challenge_ray]):
-                raise Exception("cf: Captcha site-key not found!")
-
-            pitcher = pitchers.get_pitcher()("cf: %s" % domain, resp.request.url, site_key,
-                                             user_agent=self.headers["User-Agent"],
-                                             cookies=self.cookies.get_dict(),
-                                             is_invisible=True)
-
-            parsed_url = urlparse(resp.url)
-            logger.info("cf: %s: Solving captcha", domain)
-            result = pitcher.throw()
-            if not result:
-                raise Exception("cf: Couldn't solve captcha!")
-
-            submit_url = '{}://{}/cdn-cgi/l/chk_captcha'.format(parsed_url.scheme, domain)
-            method = resp.request.method
-
-            cloudflare_kwargs = {
-                'allow_redirects': False,
-                'headers': {'Referer': resp.url},
-                'params': OrderedDict(
-                    [
-                        ('s', challenge_s),
-                        ('g-recaptcha-response', result)
-                    ]
-                )
-            }
-
-            return self.request(method, submit_url, **cloudflare_kwargs)
+        if self.isChallengeRequest(resp):
+            if resp.request.method != 'GET':
+                # Work around if the initial request is not a GET,
+                # Supersede with a GET then re-request the original METHOD.
+                self.request('GET', resp.url)
+                resp = ourSuper.request(method, url, *args, **kwargs)
+            else:
+                # Solve Challenge
+                resp = self.sendChallengeResponse(resp, **kwargs)
 
         return resp
 
@@ -196,7 +149,7 @@ class CloudScraper(Session):
     def isChallengeRequest(resp):
         if resp.headers.get('Server', '').startswith('cloudflare'):
             if b'why_captcha' in resp.content or b'/cdn-cgi/l/chk_captcha' in resp.content:
-                raise NeedsCaptchaException
+                raise ValueError('Captcha')
 
             return (
                 resp.status_code in [429, 503]

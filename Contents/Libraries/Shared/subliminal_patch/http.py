@@ -11,6 +11,7 @@ import requests
 import xmlrpclib
 import dns.resolver
 import ipaddress
+import re
 
 from requests import exceptions
 from urllib3.util import connection
@@ -18,7 +19,13 @@ from retry.api import retry_call
 from exceptions import APIThrottled
 from dogpile.cache.api import NO_VALUE
 from subliminal.cache import region
+from subliminal_patch.pitcher import pitchers
 from cloudscraper import CloudScraper
+
+try:
+    import brotli
+except:
+    pass
 
 try:
     from urlparse import urlparse
@@ -56,13 +63,81 @@ class CertifiSession(TimeoutSession):
         self.verify = pem_file
 
 
-class CFSession(CloudScraper):
-    _hdrs = None
+class NeedsCaptchaException(Exception):
+    pass
 
+
+class CFSession(CloudScraper):
     def __init__(self, *args, **kwargs):
         super(CFSession, self).__init__(*args, **kwargs)
         self.debug = os.environ.get("CF_DEBUG", False)
-        self._was_cf = False
+
+    def _request(self, method, url, *args, **kwargs):
+        ourSuper = super(CloudScraper, self)
+        resp = ourSuper.request(method, url, *args, **kwargs)
+
+        if resp.headers.get('Content-Encoding') == 'br':
+            if self.allow_brotli and resp._content:
+                resp._content = brotli.decompress(resp.content)
+            else:
+                logging.warning('Brotli content detected, But option is disabled, we will not continue.')
+                return resp
+
+        # Debug request
+        if self.debug:
+            self.debugRequest(resp)
+
+        # Check if Cloudflare anti-bot is on
+        try:
+            if self.isChallengeRequest(resp):
+                if resp.request.method != 'GET':
+                    # Work around if the initial request is not a GET,
+                    # Supersede with a GET then re-request the original METHOD.
+                    CloudScraper.request(self, 'GET', resp.url)
+                    resp = ourSuper.request(method, url, *args, **kwargs)
+                else:
+                    # Solve Challenge
+                    resp = self.sendChallengeResponse(resp, **kwargs)
+
+        except ValueError, e:
+            if e.message == "Captcha":
+                parsed_url = urlparse(url)
+                domain = parsed_url.netloc
+                # solve the captcha
+                site_key = re.search(r'data-sitekey="(.+?)"', resp.content).group(1)
+                challenge_s = re.search(r'type="hidden" name="s" value="(.+?)"', resp.content).group(1)
+                challenge_ray = re.search(r'data-ray="(.+?)"', resp.content).group(1)
+                if not all([site_key, challenge_s, challenge_ray]):
+                    raise Exception("cf: Captcha site-key not found!")
+
+                pitcher = pitchers.get_pitcher()("cf: %s" % domain, resp.request.url, site_key,
+                                                 user_agent=self.headers["User-Agent"],
+                                                 cookies=self.cookies.get_dict(),
+                                                 is_invisible=True)
+
+                parsed_url = urlparse(resp.url)
+                logger.info("cf: %s: Solving captcha", domain)
+                result = pitcher.throw()
+                if not result:
+                    raise Exception("cf: Couldn't solve captcha!")
+
+                submit_url = '{}://{}/cdn-cgi/l/chk_captcha'.format(parsed_url.scheme, domain)
+                method = resp.request.method
+
+                cloudflare_kwargs = {
+                    'allow_redirects': False,
+                    'headers': {'Referer': resp.url},
+                    'params': OrderedDict(
+                        [
+                            ('s', challenge_s),
+                            ('g-recaptcha-response', result)
+                        ]
+                    )
+                }
+
+                return CloudScraper.request(self, method, submit_url, **cloudflare_kwargs)
+
+        return resp
 
     def request(self, method, url, *args, **kwargs):
         parsed_url = urlparse(url)
@@ -80,20 +155,18 @@ class CFSession(CloudScraper):
 
                 self.headers = hdrs
 
-        ret = super(CFSession, self).request(method, url, *args, **kwargs)
+        ret = self._request(method, url, *args, **kwargs)
 
-        if self.was_cf_request:
-            self.was_cf_request = False
-            logger.debug("We've hit CF, seeing if we need to store previous data")
-            try:
-                cf_data = self.get_cf_live_tokens(domain)
-            except:
-                logger.debug("Couldn't get CF live tokens for re-use. Cookies: %r", self.cookies)
-                pass
-            else:
-                if cf_data != region.get(cache_key) and cf_data[0]["cf_clearance"]:
-                    logger.debug("Storing cf data for %s: %s", domain, cf_data)
-                    region.set(cache_key, cf_data)
+        try:
+            cf_data = self.get_cf_live_tokens(domain)
+        except:
+            pass
+        else:
+            if cf_data != region.get(cache_key) and cf_data[0]["cf_clearance"]:
+                logger.debug("Storing cf data for %s: %s", domain, cf_data)
+                region.set(cache_key, cf_data)
+            elif cf_data[0]["cf_clearance"]:
+                logger.debug("CF Live tokens not updated")
 
         return ret
 
