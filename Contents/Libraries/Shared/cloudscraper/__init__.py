@@ -49,16 +49,21 @@ class CipherSuiteAdapter(HTTPAdapter):
     ##########################################################################################################################################################
 
     def init_poolmanager(self, *args, **kwargs):
-        kwargs['ssl_context'] = create_urllib3_context(ciphers=self.cipherSuite)
+        if hasattr(ssl, 'PROTOCOL_TLS'):
+            kwargs['ssl_context'] = create_urllib3_context(ssl_version=getattr(ssl, 'PROTOCOL_TLSv1_3', ssl.PROTOCOL_TLSv1_2), ciphers=self.cipherSuite)
+        else:
+            kwargs['ssl_context'] = create_urllib3_context(ssl_version=ssl.PROTOCOL_TLSv1)
         return super(CipherSuiteAdapter, self).init_poolmanager(*args, **kwargs)
 
     ##########################################################################################################################################################
 
     def proxy_manager_for(self, *args, **kwargs):
-        kwargs['ssl_context'] = create_urllib3_context(ciphers=self.cipherSuite)
+        if hasattr(ssl, 'PROTOCOL_TLS'):
+            kwargs['ssl_context'] = create_urllib3_context(
+                ssl_version=getattr(ssl, 'PROTOCOL_TLSv1_3', ssl.PROTOCOL_TLSv1_2), ciphers=self.cipherSuite)
+        else:
+            kwargs['ssl_context'] = create_urllib3_context(ssl_version=ssl.PROTOCOL_TLSv1)
         return super(CipherSuiteAdapter, self).proxy_manager_for(*args, **kwargs)
-
-##########################################################################################################################################################
 
 
 class CloudScraper(Session):
