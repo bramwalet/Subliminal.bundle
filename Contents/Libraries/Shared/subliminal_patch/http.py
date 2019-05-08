@@ -162,11 +162,12 @@ class CFSession(CloudScraper):
         except:
             pass
         else:
-            if cf_data != region.get(cache_key) and cf_data[0]["cf_clearance"]:
-                logger.debug("Storing cf data for %s: %s", domain, cf_data)
-                region.set(cache_key, cf_data)
-            elif cf_data[0]["cf_clearance"]:
-                logger.debug("CF Live tokens not updated")
+            if cf_data and "cf_clearance" in cf_data[0] and cf_data[0]["cf_clearance"]:
+                if cf_data != region.get(cache_key):
+                    logger.debug("Storing cf data for %s: %s", domain, cf_data)
+                    region.set(cache_key, cf_data)
+                elif cf_data[0]["cf_clearance"]:
+                    logger.debug("CF Live tokens not updated")
 
         return ret
 
