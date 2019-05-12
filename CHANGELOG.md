@@ -1,4 +1,14 @@
 
+2.6.5.3041
+
+Changelog
+- core: only reference guessed title if there actually is one
+- core: cf: optimize
+- core/config: add setting for one existing language to be enough, fixes #491
+- core/compat: dns: support nameservers via ENV[dns_resolvers]; don't fall back to default DNS when configured custom DNS failed
+- providers: titlovi: prevent repeated captcha solving for CF
+
+
 2.6.5.3017
 
 Changelog

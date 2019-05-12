@@ -91,24 +91,22 @@ the.vbm, mmgoodnow, Vertig0ne, thliu78, tattoomees, ostman, count_confucius, ehe
 ## Changelog
 
 
-2.6.5.3062
+2.6.5.3074
 
 subscene, addic7ed and titlovi
 - either of those providers might impose a reCAPTCHA verification. In order to use those providers, please create an account at an AntiCaptcha service ([anti-captcha.com](http://getcaptchasolution.com/kkvviom7nh) or [deathbycaptcha.com](http://deathbycaptcha.com)), add funds, then supply your credentials/apikey in the configuration
 
 Changelog
-- core: cf: optimize
-- core: http: don't query DNS with IPs. thanks @fgump (fixes sonarr/radarr)
+- core: cf: bypass cf 95% of the time without captchas
+- core: fix breaking line endings of certain languages (chinese, UTF-16); fixes #646
+- core: update pysubs2 to 0.2.3
 
 
-2.6.5.3041
+2.6.5.3062
 
 Changelog
-- core: only reference guessed title if there actually is one
 - core: cf: optimize
-- core/config: add setting for one existing language to be enough, fixes #491
-- core/compat: dns: support nameservers via ENV[dns_resolvers]; don't fall back to default DNS when configured custom DNS failed
-- providers: titlovi: prevent repeated captcha solving for CF
+- core: http: don't query DNS with IPs. thanks @fgump (fixes sonarr/radarr)
 
 
 [older changes](CHANGELOG.md)
