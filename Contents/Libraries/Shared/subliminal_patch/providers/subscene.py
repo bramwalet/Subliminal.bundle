@@ -190,7 +190,7 @@ class SubsceneProvider(Provider, ProviderSubtitleArchiveMixin):
         return subtitles
 
     def query(self, video):
-        vfn = get_video_filename(video)
+        #vfn = get_video_filename(video)
         subtitles = []
         #logger.debug(u"Searching for: %s", vfn)
         # film = search(vfn, session=self.session)
