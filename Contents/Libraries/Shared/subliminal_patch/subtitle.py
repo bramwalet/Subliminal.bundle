@@ -320,7 +320,8 @@ class Subtitle(Subtitle_):
         :return: string 
         """
         if not self.mods:
-            return fix_text(self.content.decode("utf-8"), **ftfy_defaults).encode(encoding="utf-8")
+            return fix_text(self.content.decode(encoding=self._guessed_encoding), **ftfy_defaults).encode(
+                encoding=self._guessed_encoding)
 
         submods = SubtitleModifications(debug=debug)
         if submods.load(content=self.text, language=self.language):
@@ -329,7 +330,7 @@ class Subtitle(Subtitle_):
             self.mods = submods.mods_used
 
             content = fix_text(self.pysubs2_to_unicode(submods.f, format=format), **ftfy_defaults)\
-                .encode(encoding="utf-8")
+                .encode(encoding=self._guessed_encoding)
             submods.f = None
             del submods
             return content
