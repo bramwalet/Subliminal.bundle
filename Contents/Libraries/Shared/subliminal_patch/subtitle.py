@@ -251,8 +251,7 @@ class Subtitle(Subtitle_):
                 subs = pysubs2.SSAFile.from_string(text, fps=self.plex_media_fps)
 
             unicontent = self.pysubs2_to_unicode(subs)
-            self.content = unicontent.encode("utf-8")
-            self._guessed_encoding = "utf-8"
+            self.content = unicontent.encode(self._guessed_encoding)
         except:
             logger.exception("Couldn't convert subtitle %s to .srt format: %s", self, traceback.format_exc())
             return False
