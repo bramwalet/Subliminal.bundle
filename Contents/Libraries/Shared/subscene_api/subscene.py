@@ -297,7 +297,7 @@ def search(term, release=True, session=None, year=None, limit_to=SearchTypes.Exa
                 return search(term, release=release, session=session, year=year, limit_to=limit_to, throttle=throttle)
             else:
                 region.delete("subscene_endpoint")
-                raise
+                raise Exception("New endpoint %s didn't work; exiting" % new_endpoint)
         break
 
     if soup:
