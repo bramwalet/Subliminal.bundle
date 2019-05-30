@@ -1,4 +1,11 @@
 
+2.6.5.3062
+
+Changelog
+- core: cf: optimize
+- core: http: don't query DNS with IPs. thanks @fgump (fixes sonarr/radarr)
+
+
 2.6.5.3041
 
 Changelog
