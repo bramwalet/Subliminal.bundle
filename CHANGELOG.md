@@ -1,4 +1,13 @@
 
+
+2.6.5.3074
+
+Changelog
+- core: cf: bypass cf 95% of the time without captchas
+- core: fix breaking line endings of certain languages (chinese, UTF-16); fixes #646
+- core: update pysubs2 to 0.2.3
+
+
 2.6.5.3062
 
 Changelog

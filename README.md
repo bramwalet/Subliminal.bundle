@@ -90,6 +90,14 @@ the.vbm, mmgoodnow, Vertig0ne, thliu78, tattoomees, ostman, count_confucius, ehe
 
 ## Changelog
 
+2.6.5.3096
+
+subscene, addic7ed and titlovi
+- either of those providers might impose a reCAPTCHA verification. In order to use those providers, please create an account at an AntiCaptcha service ([anti-captcha.com](http://getcaptchasolution.com/kkvviom7nh) or [deathbycaptcha.com](http://deathbycaptcha.com)), add funds, then supply your credentials/apikey in the configuration
+
+Changelog
+- providers: subscene: fix again (subscene, contact us please, so we can end this)
+
 
 2.6.5.3092
 
@@ -106,12 +114,6 @@ Changelog
 - core: compat (bazarr): add env var SZ_KEEP_ENCODING to keep encoding of subtitles
 
 
-2.6.5.3074
-
-Changelog
-- core: cf: bypass cf 95% of the time without captchas
-- core: fix breaking line endings of certain languages (chinese, UTF-16); fixes #646
-- core: update pysubs2 to 0.2.3
 
 
 
