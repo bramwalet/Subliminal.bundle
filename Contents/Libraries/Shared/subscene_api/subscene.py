@@ -71,10 +71,7 @@ def soup_for(url, data=None, session=None, user_agent=DEFAULT_USER_AGENT):
         html = urlopen(r).read().decode("utf-8")
     else:
         ret = session.post(url, data=data)
-        try:
-            ret.raise_for_status()
-        except requests.HTTPError, e:
-            raise
+        ret.raise_for_status()
         html = ret.text
     return BeautifulSoup(html, "html.parser")
 
