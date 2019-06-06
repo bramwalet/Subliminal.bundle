@@ -1084,11 +1084,12 @@ class Config(object):
     def parse_custom_dns(self):
         custom_dns = Prefs['use_custom_dns2'].strip()
         os.environ["dns_resolvers"] = ""
-        if custom_dns:
+
+        if custom_dns and custom_dns != "system":
             ips = filter(lambda x: x, [d.strip() for d in custom_dns.split(",")])
             if ips:
                 os.environ["dns_resolvers"] = json.dumps(ips)
-                return os.environ["dns_resolvers"]
+            return os.environ["dns_resolvers"]
 
     def init_subliminal_patches(self):
         # configure custom subtitle destination folders for scanning pre-existing subs

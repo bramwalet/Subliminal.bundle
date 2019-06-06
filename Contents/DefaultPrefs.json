@@ -861,7 +861,7 @@
   },
   {
     "id": "use_custom_dns2",
-    "label": "Use custom DNS (IPs, comma-separated, leave empty for system DNS. Default: Google/CF)",
+    "label": "Use custom DNS (IPs, comma-separated, set to 'system' for system DNS. Default: Google/CF)",
     "type": "text",
     "default": "1.1.1.1, 8.8.8.8"
   },
