@@ -432,6 +432,20 @@
     "default": "true"
   },
   {
+    "id": "provider.subscene.username",
+    "label": "SubScene Username",
+    "type": "text",
+    "default": ""
+  },
+  {
+    "id": "provider.subscene.password",
+    "label": "SubScene Password",
+    "type": "text",
+    "option": "hidden",
+    "default": "",
+    "secure": "true"
+  },
+  {
     "id": "provider.supersubtitles.enabled",
     "label": "Provider: Enable feliratok.info (Hungarian)",
     "type": "bool",

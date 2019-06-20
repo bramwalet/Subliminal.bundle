@@ -866,6 +866,8 @@ class Config(object):
                              },
                              'subscene': {
                                  'only_foreign': self.forced_only,
+                                 'username': Prefs['provider.subscene.username'],
+                                 'password': Prefs['provider.subscene.password'],
                              },
                              'legendastv': {'username': Prefs['provider.legendastv.username'],
                                             'password': Prefs['provider.legendastv.password'],
