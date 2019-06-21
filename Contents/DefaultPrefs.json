@@ -336,6 +336,26 @@
     "default": "true"
   },
   {
+    "id": "provider.napisy24.enabled",
+    "label": "Provider: Enable Napisy24 (pl)",
+    "type": "bool",
+    "default": "false"
+  },
+  {
+    "id": "provider.napisy24.username",
+    "label": "Napisy24 Username",
+    "type": "text",
+    "default": ""
+  },
+  {
+    "id": "provider.napisy24.password",
+    "label": "Napisy24 Password",
+    "type": "text",
+    "option": "hidden",
+    "default": "",
+    "secure": "true"
+  },
+  {
     "id": "provider.addic7ed.enabled",
     "label": "Provider: Enable Addic7ed (needs AntiCaptcha)",
     "type": "bool",

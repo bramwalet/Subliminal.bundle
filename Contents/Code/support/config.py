@@ -761,6 +761,7 @@ class Config(object):
         return {'opensubtitles': cast_bool(Prefs['provider.opensubtitles.enabled']),
                      # 'thesubdb': Prefs['provider.thesubdb.enabled'],
                      'podnapisi': cast_bool(Prefs['provider.podnapisi.enabled']),
+                     'napisy24': cast_bool(Prefs['provider.napisy24.enabled']),
                      'titlovi': cast_bool(Prefs['provider.titlovi.enabled']),
                      'addic7ed': cast_bool(Prefs['provider.addic7ed.enabled']) and self.has_anticaptcha,
                      'tvsubtitles': cast_bool(Prefs['provider.tvsubtitles.enabled']),
@@ -801,6 +802,7 @@ class Config(object):
             providers["argenteam"] = False
             providers["assrt"] = False
             providers["subscene"] = False
+            providers["napisy24"] = False
             providers_forced_off = dict(providers)
 
         if not self.unrar and providers["legendastv"]:
@@ -863,6 +865,10 @@ class Config(object):
                              'podnapisi': {
                                  'only_foreign': self.forced_only,
                                  'also_foreign': self.forced_also,
+                             },
+                             'napisy24': {
+                                 'username': Prefs['provider.napisy24.username'],
+                                 'password': Prefs['provider.napisy24.password'],
                              },
                              'subscene': {
                                  'only_foreign': self.forced_only,
