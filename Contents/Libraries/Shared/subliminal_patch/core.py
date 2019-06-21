@@ -544,7 +544,7 @@ def scan_video(path, dont_use_actual_file=False, hints=None, providers=None, ski
     # size and hashes
     if not skip_hashing:
         hash_path = hash_from or path
-        video.size = os.path.getsize(path)
+        video.size = os.path.getsize(hash_path)
         if video.size > 10485760:
             logger.debug('Size is %d', video.size)
             osub_hash = None
