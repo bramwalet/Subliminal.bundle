@@ -1,3 +1,26 @@
+2.6.5.3099
+
+subscene, addic7ed and titlovi
+- either of those providers might impose a reCAPTCHA verification. In order to use those providers, please create an account at an AntiCaptcha service ([anti-captcha.com](http://getcaptchasolution.com/kkvviom7nh) or [deathbycaptcha.com](http://deathbycaptcha.com)), add funds, then supply your credentials/apikey in the configuration
+
+Changelog
+- core: allow system DNS again by putting "system" as the DNS
+- providers: subscene: fix again (subscene, contact us please, so we can end this)
+
+
+2.6.5.3092
+
+subscene, addic7ed and titlovi
+- either of those providers might impose a reCAPTCHA verification. In order to use those providers, please create an account at an AntiCaptcha service ([anti-captcha.com](http://getcaptchasolution.com/kkvviom7nh) or [deathbycaptcha.com](http://deathbycaptcha.com)), add funds, then supply your credentials/apikey in the configuration
+
+Changelog
+- providers: subscene: fix endpoint (hopefully for longer now)
+- providers: subscene: don't search for season packs (broken for now; relieves 50% of server load on provider)
+- providers: subscene: don't calculate video fn for now
+- providers: argenteam: backport fixes from bazarr
+- subtitle: try decoding with utf-16 by default as well (zho/farsi)
+- submod: HI: remove music tags by default
+- core: compat (bazarr): add env var SZ_KEEP_ENCODING to keep encoding of subtitles
 
 
 2.6.5.3074
