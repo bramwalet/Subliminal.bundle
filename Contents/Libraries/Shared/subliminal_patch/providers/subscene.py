@@ -202,12 +202,20 @@ class SubsceneProvider(Provider, ProviderSubtitleArchiveMixin):
 
     def _create_filters(self, languages):
         self.filters = dict(HearingImpaired="2")
+        acc_filters = self.filters.copy()
         if self.only_foreign:
             self.filters["ForeignOnly"] = "True"
+            acc_filters["ForeignOnly"] = self.filters["ForeignOnly"].lower()
             logger.info("Only searching for foreign/forced subtitles")
 
-        self.filters["LanguageFilter"] = ",".join((str(language_ids[l.alpha3]) for l in languages
-                                                   if l.alpha3 in language_ids))
+        acc_filters["SelectedIds"] = [str(language_ids[l.alpha3]) for l in languages if l.alpha3 in language_ids]
+        self.filters["LanguageFilter"] = ",".join(acc_filters["SelectedIds"])
+
+        last_filters = region.get("subscene_filters")
+        if last_filters != acc_filters:
+            region.set("subscene_filters", acc_filters)
+            logger.debug("Setting account filters to %r", acc_filters)
+            self.session.post("https://u.subscene.com/filter", acc_filters, allow_redirects=False)
 
         logger.debug("Filter created: '%s'" % self.filters)
 
