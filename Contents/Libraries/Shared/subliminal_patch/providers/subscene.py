@@ -125,7 +125,7 @@ class SubsceneProvider(Provider, ProviderSubtitleArchiveMixin):
     username = None
     password = None
 
-    search_throttle = 5  # seconds
+    search_throttle = 8  # seconds
 
     def __init__(self, only_foreign=False, username=None, password=None):
         if not all((username, password)):
@@ -289,9 +289,10 @@ class SubsceneProvider(Provider, ProviderSubtitleArchiveMixin):
 
         # re-search for episodes without explicit release name
         if isinstance(video, Episode):
+            titles = list(set([video.series] + video.alternative_series))[:2]
             # term = u"%s S%02iE%02i" % (video.series, video.season, video.episode)
-            more_than_one = len([video.series] + video.alternative_series) > 1
-            for series in set([video.series] + video.alternative_series):
+            more_than_one = len(titles) > 1
+            for series in titles:
                 term = u"%s - %s Season" % (series, p.number_to_words("%sth" % video.season).capitalize())
                 logger.debug('Searching for alternative results: %s', term)
                 film = self.do_search(term, session=self.session, release=False, throttle=self.search_throttle)
@@ -317,8 +318,9 @@ class SubsceneProvider(Provider, ProviderSubtitleArchiveMixin):
                 if more_than_one:
                     time.sleep(self.search_throttle)
         else:
-            more_than_one = len([video.title] + video.alternative_titles) > 1
-            for title in set([video.title] + video.alternative_titles):
+            titles = list(set([video.title] + video.alternative_titles))[:2]
+            more_than_one = len(titles) > 1
+            for title in titles:
                 logger.debug('Searching for movie results: %r', title)
                 film = self.do_search(title, year=video.year, session=self.session, limit_to=None, release=False,
                                       throttle=self.search_throttle)
