@@ -177,6 +177,7 @@ def get_all_parts(plex_item):
 def get_embedded_subtitle_streams(part, requested_language=None, skip_duplicate_unknown=True, skip_unknown=False):
     streams = []
     streams_unknown = []
+    all_streams = []
     has_unknown = False
     found_requested_language = False
     for stream in part.streams:
@@ -189,27 +190,40 @@ def get_embedded_subtitle_streams(part, requested_language=None, skip_duplicate_
 
             is_unknown = False
             found_requested_language = requested_language and requested_language == language
+            stream_data = None
 
-            if not language and config.treat_und_as_first:
+            if not language:
                 # only consider first unknown subtitle stream
-                if has_unknown and skip_duplicate_unknown:
-                    continue
+                if requested_language and config.treat_und_as_first:
+                    if has_unknown and skip_duplicate_unknown:
+                        Log.Debug("skipping duplicate unknown")
+                        continue
 
-                language = Language.rebuild(list(config.lang_list)[0], forced=is_forced)
+                    language = Language.rebuild(list(config.lang_list)[0], forced=is_forced)
+                else:
+                    language = Language("unk")
                 is_unknown = True
                 has_unknown = True
-                streams_unknown.append({"stream": stream, "is_unknown": is_unknown, "language": language,
-                                        "is_forced": is_forced})
+                stream_data = {"stream": stream, "is_unknown": is_unknown, "language": language,
+                               "is_forced": is_forced}
+                streams_unknown.append(stream_data)
 
             if not requested_language or found_requested_language:
-                streams.append({"stream": stream, "is_unknown": is_unknown, "language": language,
-                                "is_forced": is_forced})
+                stream_data = {"stream": stream, "is_unknown": is_unknown, "language": language,
+                               "is_forced": is_forced}
+                streams.append(stream_data)
 
                 if found_requested_language:
                     break
 
-    if streams_unknown and not found_requested_language and not skip_unknown:
-        streams = streams_unknown
+            if stream_data:
+                all_streams.append(stream_data)
+
+    if requested_language:
+        if streams_unknown and not found_requested_language and not skip_unknown:
+            streams = streams_unknown
+    else:
+        streams = all_streams
 
     return streams
 

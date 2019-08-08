@@ -394,7 +394,7 @@ def get_language_from_stream(lang_code):
             return Language.fromietf(lang)
         elif lang:
             try:
-                return language_from_stream(lang)
+                return language_from_stream(lang_code)
             except LanguageError:
                 pass
 
