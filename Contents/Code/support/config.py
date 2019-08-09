@@ -762,7 +762,9 @@ class Config(object):
                      # 'thesubdb': Prefs['provider.thesubdb.enabled'],
                      'podnapisi': cast_bool(Prefs['provider.podnapisi.enabled']),
                      'napisy24': cast_bool(Prefs['provider.napisy24.enabled']),
-                     'titlovi': cast_bool(Prefs['provider.titlovi.enabled']),
+                     'titlovi': cast_bool(Prefs['provider.titlovi.enabled']) and
+                                cast_bool(Prefs['provider.titlovi.username']) and
+                                cast_bool(Prefs['provider.titlovi.password']),
                      'addic7ed': cast_bool(Prefs['provider.addic7ed.enabled']) and self.has_anticaptcha,
                      'tvsubtitles': cast_bool(Prefs['provider.tvsubtitles.enabled']),
                      'legendastv': cast_bool(Prefs['provider.legendastv.enabled']),
