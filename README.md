@@ -90,16 +90,23 @@ the.vbm, mmgoodnow, Vertig0ne, thliu78, tattoomees, ostman, count_confucius, ehe
 
 ## Changelog
 
-2.6.5.3109
+
+2.6.5.xxxx
 
 subscene, addic7ed and titlovi
 - either of those providers might impose a reCAPTCHA verification. In order to use those providers, please create an account at an AntiCaptcha service ([anti-captcha.com](http://getcaptchasolution.com/kkvviom7nh) or [deathbycaptcha.com](http://deathbycaptcha.com)), add funds, then supply your credentials/apikey in the configuration
 
 Changelog
-- providers: add Napisy24 (polish)
-- providers: subscene: reduce provider load by possibly half
-- providers: subscene: support logging in (username/password are now required)
-- providers: subscene: fallback to non year results if none found with year
+- core: http: fallback to default DNS when normal resolving fails; fixes #657
+- core: extract embedded/menu: fix detection of unknown streams; don't use unknown streams if a known language was previously found
+- core: language: use replacement map from bazarr
+- providers: titlovi: fix matching
+- providers: subscene: fix unknown language code error when "empty" result is returned
+- providers: subscene: add support for pt-BR (based on Diaoul/subliminal@b22cf08)
+- providers: subscene: explicitly set account filters for languages
+- providers: subscene: limit alternative searches to 3; set throttle to 8
+- providers: subscene: move login/cookies to initialization sequence
+- submod: generic: en: fix ";='s
 
 
 [older changes](CHANGELOG.md)

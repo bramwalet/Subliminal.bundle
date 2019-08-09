@@ -1,3 +1,15 @@
+2.6.5.3109
+
+subscene, addic7ed and titlovi
+- either of those providers might impose a reCAPTCHA verification. In order to use those providers, please create an account at an AntiCaptcha service ([anti-captcha.com](http://getcaptchasolution.com/kkvviom7nh) or [deathbycaptcha.com](http://deathbycaptcha.com)), add funds, then supply your credentials/apikey in the configuration
+
+Changelog
+- providers: add Napisy24 (polish)
+- providers: subscene: reduce provider load by possibly half
+- providers: subscene: support logging in (username/password are now required)
+- providers: subscene: fallback to non year results if none found with year
+
+
 2.6.5.3099
 
 subscene, addic7ed and titlovi
