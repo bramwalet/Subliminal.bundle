@@ -866,6 +866,10 @@ class Config(object):
                                  'only_foreign': self.forced_only,
                                  'also_foreign': self.forced_also,
                              },
+                             'titlovi': {
+                                 'username': Prefs['provider.titlovi.username'],
+                                 'password': Prefs['provider.titlovi.password'],
+                             },
                              'napisy24': {
                                  'username': Prefs['provider.napisy24.username'],
                                  'password': Prefs['provider.napisy24.password'],

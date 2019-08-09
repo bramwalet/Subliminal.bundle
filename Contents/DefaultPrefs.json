@@ -409,9 +409,23 @@
   },
   {
     "id": "provider.titlovi.enabled",
-    "label": "Provider: Enable Titlovi.com (might need AntiCaptcha)",
+    "label": "Provider: Enable Titlovi.com (User and Password required)",
     "type": "bool",
     "default": "true"
+  },
+  {
+    "id": "provider.titlovi.username",
+    "label": "Titlovi Username",
+    "type": "text",
+    "default": ""
+  },
+  {
+    "id": "provider.titlovi.password",
+    "label": "Titlovi Password",
+    "type": "text",
+    "option": "hidden",
+    "default": "",
+    "secure": "true"
   },
   {
     "id": "provider.legendastv.enabled",
