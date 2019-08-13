@@ -5,6 +5,7 @@ import helpers
 
 from config import config, SUBTITLE_EXTS, TEXT_SUBTITLE_EXTS
 from bs4 import UnicodeDammit
+from subzero.language import match_ietf_language
 
 
 class SubtitleHelper(object):
@@ -85,19 +86,6 @@ class VobSubSubtitleHelper(SubtitleHelper):
 #####################################################################################################################
 
 
-IETF_MATCH = ".+\.([^-.]+)(?:-[A-Za-z]+)?$"
-ENDSWITH_LANGUAGECODE_RE = re.compile("\.([^-.]{2,3})(?:-[A-Za-z]{2,})?$")
-
-
-def match_ietf_language(s):
-    language_match = re.match(".+\.([^\.]+)$" if not helpers.cast_bool(Prefs["subtitles.language.ietf_display"])
-                              else IETF_MATCH, s)
-    if language_match and len(language_match.groups()) == 1:
-        language = language_match.groups()[0]
-        return language
-    return s
-
-
 class DefaultSubtitleHelper(SubtitleHelper):
     @classmethod
     def is_helper_for(cls, filename):
@@ -133,7 +121,7 @@ class DefaultSubtitleHelper(SubtitleHelper):
         # Attempt to extract the language from the filename (e.g. Avatar (2009).eng)
         # IETF support thanks to
         # https://github.com/hpsbranco/LocalMedia.bundle/commit/4fad9aefedece78a1fa96401304351347f644369
-        lang_part = match_ietf_language(file)
+        lang_part = match_ietf_language(file, ietf=helpers.cast_bool(Prefs["subtitles.language.ietf_display"]))
         if lang_part != file:
             language = Locale.Language.Match(lang_part)
         elif config.only_one:
