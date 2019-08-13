@@ -127,7 +127,8 @@ def prepare_video(pms_video_info, ignore_all=False, hints=None, rating_key=None,
             set_existing_languages(video, pms_video_info, external_subtitles=external_subtitles,
                                    embedded_subtitles=embedded_subtitles, known_embedded=known_embedded,
                                    stored_subs=stored_subs, languages=config.lang_list,
-                                   only_one=config.only_one, known_metadata_subs=known_metadata_subs)
+                                   only_one=config.only_one, known_metadata_subs=known_metadata_subs,
+                                   match_strictness=config.ext_match_strictness)
 
         # add video fps info
         video.fps = plex_part.fps
