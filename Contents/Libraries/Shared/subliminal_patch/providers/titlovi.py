@@ -143,7 +143,7 @@ class TitloviProvider(Provider, ProviderSubtitleArchiveMixin):
     api_search_url = api_url + '/search'
 
     def __init__(self, username=None, password=None):
-        if any((username, password)) and not all((username, password)):
+        if not all((username, password)):
             raise ConfigurationError('Username and password must be specified')
 
         self.username = username
