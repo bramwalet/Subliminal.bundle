@@ -14,6 +14,10 @@ Check out **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)*
 
 ---
 
+**[Kitana is now required to have a UI](https://github.com/pannal/Kitana)**
+
+---
+
 **[The future of Sub-Zero](https://www.reddit.com/r/PleX/comments/9n9qjl/subzero_the_future/)**
 
 ---
