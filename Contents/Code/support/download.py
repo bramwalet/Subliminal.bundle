@@ -33,14 +33,14 @@ def get_missing_languages(video, part):
     alpha3_map = {}
     if config.ietf_as_alpha3:
         for language in languages:
-            if language.country:
+            if language and language.country:
                 alpha3_map[language.alpha3] = language.country
                 language.country = None
 
     have_languages = video.subtitle_languages.copy()
     if config.ietf_as_alpha3:
         for language in have_languages:
-            if language.country:
+            if language and language.country:
                 alpha3_map[language.alpha3] = language.country
                 language.country = None
 
