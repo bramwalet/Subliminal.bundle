@@ -56,7 +56,7 @@ def get_missing_languages(video, part):
                 return set()
 
         elif "External subtitle" in config.any_language_is_enough:
-            langs = video.subtitle_languages if not not_in_forced else \
+            langs = video.external_subtitle_languages if not not_in_forced else \
                 filter(lambda l: not l.forced, video.external_subtitle_languages)
             if langs:
                 Log.Debug("We have at least one external subtitle for any configured language.")
