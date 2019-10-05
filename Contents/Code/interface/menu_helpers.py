@@ -11,14 +11,14 @@ from subzero.lib.io import get_viable_encoding
 from subzero.language import Language
 from support.i18n import is_localized_string, _
 from support.items import get_kind, get_item_thumb, get_item, get_item_kind_from_item, refresh_item
-from support.helpers import get_video_display_title, pad_title, display_language, quote_args, is_stream_forced, \
+from support.helpers import get_video_display_title, pad_title, display_language, quote_args, \
     get_title_for_video_metadata, mswindows
 from support.history import get_history
 from support.ignore import get_decision_list
 from support.lib import get_intent
 from support.config import config
 from subzero.constants import ICON_SUB, ICON
-from support.plex_media import get_part, get_plex_metadata
+from support.plex_media import get_part, get_plex_metadata, is_stream_forced, update_stream_info
 from support.scheduler import scheduler
 from support.scanning import scan_videos
 from support.storage import save_subtitles
@@ -178,6 +178,7 @@ def extract_embedded_sub(**kwargs):
             metadata = get_plex_metadata(rating_key, part_id, item_type, plex_item=plex_item)
             scanned_videos = scan_videos([metadata], ignore_all=True, skip_hashing=True)
 
+        update_stream_info(part)
         for stream in part.streams:
             # subtitle stream
             if str(stream.index) == stream_index:

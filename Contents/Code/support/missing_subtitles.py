@@ -7,7 +7,8 @@ import os
 from babelfish import LanguageReverseError
 
 from support.config import config, TEXT_SUBTITLE_EXTS
-from support.helpers import get_plex_item_display_title, cast_bool, get_language_from_stream, is_stream_forced
+from support.helpers import get_plex_item_display_title, cast_bool, get_language_from_stream
+from support.plex_media import is_stream_forced, update_stream_info
 from support.items import get_item
 from support.lib import Plex
 from support.storage import get_subtitle_storage
@@ -35,7 +36,7 @@ def item_discover_missing_subs(rating_key, kind="show", added_at=None, section_t
     for media in item.media:
         existing_subs = {"internal": [], "external": [], "own_external": [], "count": 0}
         for part in media.parts:
-
+            update_stream_info(part)
             # did we already download an external subtitle before?
             if subtitle_target_dir and stored_subs:
                 for language in languages_set:

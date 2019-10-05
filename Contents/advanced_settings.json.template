@@ -24,6 +24,13 @@ Don't expect support if you mess this up.
     "find_better_as_extracted_tv_score": 352,
     "find_better_as_extracted_movie_score": 82,
 
+    // SZ can use mediainfo if present to detect titles/forced state of MP4 MOV_TEXT, because the PMS currently doesn't
+    // set the title attribute
+    "dont_use_mediainfo_mp4": False,
+
+    // specific mediainfo binary path
+    "mediainfo_bin": null,
+
     "debug_i18n": false,
 
     // per-provider-config

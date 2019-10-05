@@ -368,7 +368,7 @@ def ValidatePrefs():
             "subtitle_destination_folder", "include", "include_exclude_paths", "include_exclude_sz_files",
             "new_style_cache", "dbm_supported", "lang_list", "providers", "normal_subs", "forced_only", "forced_also",
             "plex_transcoder", "refiner_settings", "unrar", "adv_cfg_path", "use_custom_dns",
-            "has_anticaptcha", "anticaptcha_cls"]:
+            "has_anticaptcha", "anticaptcha_cls", "mediainfo_bin"]:
 
         value = getattr(config, attr)
         if isinstance(value, dict):

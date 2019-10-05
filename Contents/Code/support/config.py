@@ -22,6 +22,7 @@ from subzero.language import Language
 from subliminal.cli import MutexLock
 from subzero.lib.io import FileIO, get_viable_encoding
 from subzero.lib.dict import Dicked
+from subzero.lib.which import find_executable
 from subzero.util import get_root_path
 from subzero.constants import PLUGIN_NAME, PLUGIN_IDENTIFIER, MOVIE, SHOW, MEDIA_TYPE_TO_STRING
 from subzero.prefs import get_user_prefs, update_user_prefs
@@ -153,6 +154,7 @@ class Config(object):
     anticaptcha_token = None
     anticaptcha_cls = None
     has_anticaptcha = False
+    mediainfo_bin = None
 
     store_recently_played_amount = 40
 
@@ -239,6 +241,8 @@ class Config(object):
         self.embedded_auto_extract = cast_bool(Prefs["subtitles.embedded.autoextract"])
         self.ietf_as_alpha3 = cast_bool(Prefs["subtitles.language.ietf_normalize"])
         self.use_custom_dns = self.parse_custom_dns()
+        if not self.advanced.dont_use_mediainfo_mp4:
+            self.mediainfo_bin = self.advanced.mediainfo_bin or find_executable("mediainfo")
         self.initialized = True
 
     def migrate_prefs(self):

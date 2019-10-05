@@ -4,7 +4,7 @@ import helpers
 from babelfish.exceptions import LanguageError
 
 from support.lib import Plex, get_intent
-from support.plex_media import get_stream_fps
+from support.plex_media import get_stream_fps, is_stream_forced, update_stream_info
 from support.storage import get_subtitle_storage
 from support.config import config, TEXT_SUBTITLE_EXTS
 from support.subtitlehelpers import get_subtitles_from_metadata
@@ -46,6 +46,7 @@ def prepare_video(pms_video_info, ignore_all=False, hints=None, rating_key=None,
     # fixme: skip the whole scanning process if known_embedded == wanted languages?
     audio_languages = []
     if plexpy_part:
+        update_stream_info(plexpy_part)
         for stream in plexpy_part.streams:
             if stream.stream_type == 2:
                 lang = None
@@ -62,7 +63,7 @@ def prepare_video(pms_video_info, ignore_all=False, hints=None, rating_key=None,
 
             # subtitle stream
             elif stream.stream_type == 3 and embedded_subtitles:
-                is_forced = helpers.is_stream_forced(stream)
+                is_forced = is_stream_forced(stream)
 
                 if ((config.forced_only or config.forced_also) and is_forced) or not is_forced:
                     # embedded subtitle

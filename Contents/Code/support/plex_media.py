@@ -1,6 +1,7 @@
 # coding=utf-8
 
 import os
+import subprocess
 
 import helpers
 from items import get_item
@@ -174,16 +175,49 @@ def get_all_parts(plex_item):
     return parts
 
 
+def update_stream_info(part):
+    if config.mediainfo_bin and part.container == "mp4":
+        cmdline = '%s --Inform="Text;-%%ID%%_%%Title%%" %s' % (config.mediainfo_bin, helpers.quote(part.file))
+        result = subprocess.check_output(cmdline, stderr=subprocess.PIPE, shell=True)
+        if result:
+            try:
+                stream_titles = {}
+                for pair in result[1:].split("-"):
+                    sid, title = pair.split("_")
+                    stream_titles[int(sid.strip())] = title.strip()
+            except:
+                pass
+            else:
+                filled = []
+                for stream in part.streams:
+                    index = stream.index+1
+                    if index in stream_titles:
+                        stream.title = stream_titles[index]
+                        filled.append(index-1)
+                if filled:
+                    Log.Debug("Filled missing MP4 stream title info for streams: %s", filled)
+
+
+def is_stream_forced(stream):
+    stream_title = getattr(stream, "title", "") or ""
+    forced = getattr(stream, "forced", False)
+    if not forced and stream_title and "forced" in stream_title.strip().lower():
+        forced = True
+
+    return forced
+
+
 def get_embedded_subtitle_streams(part, requested_language=None, skip_duplicate_unknown=True, skip_unknown=False):
     streams = []
     streams_unknown = []
     all_streams = []
     has_unknown = False
     found_requested_language = False
+    update_stream_info(part)
     for stream in part.streams:
         # subtitle stream
         if stream.stream_type == 3 and not stream.stream_key and stream.codec in TEXT_SUBTITLE_EXTS:
-            is_forced = helpers.is_stream_forced(stream)
+            is_forced = is_stream_forced(stream)
             language = helpers.get_language_from_stream(stream.language_code)
             if language:
                 language = Language.rebuild(language, forced=is_forced)

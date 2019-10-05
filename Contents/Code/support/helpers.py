@@ -440,14 +440,5 @@ def display_language(l):
     return _(str(l.basename).lower()) + ((u" (%s)" % _("forced")) if l.forced else "")
 
 
-def is_stream_forced(stream):
-    stream_title = getattr(stream, "title", "") or ""
-    forced = getattr(stream, "forced", False)
-    if not forced and stream_title and "forced" in stream_title.strip().lower():
-        forced = True
-
-    return forced
-
-
 class PartUnknownException(Exception):
     pass
