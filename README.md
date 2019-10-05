@@ -95,22 +95,18 @@ the.vbm, mmgoodnow, Vertig0ne, thliu78, tattoomees, ostman, count_confucius, ehe
 ## Changelog
 
 
-2.6.5.3124
+2.6.5.x
 
-subscene, addic7ed and titlovi
+subscene, addic7ed
 - either of those providers might impose a reCAPTCHA verification. In order to use those providers, please create an account at an AntiCaptcha service ([anti-captcha.com](http://getcaptchasolution.com/kkvviom7nh) or [deathbycaptcha.com](http://deathbycaptcha.com)), add funds, then supply your credentials/apikey in the configuration
 
 Changelog
-- core: http: fallback to default DNS when normal resolving fails; fixes #657
-- core: extract embedded/menu: fix detection of unknown streams; don't use unknown streams if a known language was previously found
-- core: language: use replacement map from bazarr
-- providers: titlovi: fix matching
-- providers: subscene: fix unknown language code error when "empty" result is returned
-- providers: subscene: add support for pt-BR (based on Diaoul/subliminal@b22cf08)
-- providers: subscene: explicitly set account filters for languages
-- providers: subscene: limit alternative searches to 3; set throttle to 8
-- providers: subscene: move login/cookies to initialization sequence
-- submod: generic: en: fix ";='s
+- core: fix core issue possibly impacting results on OpenSubtitles in certain conditions
+- core: fix default values of opensubtitles-skip-wrong-fps, use_https; fix #676
+- core: fix for determining whether to search under certain circumstances; fixes #666
+- core: #664 fix missing language processing of multiple videos refreshed at once
+- core: #661 fix match strictness when determining preexisting external subtitles
+- providers: titlovi: New implementation of Titlovi using API (thanks @viking1304)
 
 
 [older changes](CHANGELOG.md)
