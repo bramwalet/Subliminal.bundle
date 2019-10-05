@@ -7,6 +7,7 @@ import helpers
 import subtitlehelpers
 
 from config import config as sz_config
+from subzero.language import ENDSWITH_LANGUAGECODE_RE
 
 
 SECONDARY_TAGS = ['forced', 'normal', 'default', 'embedded', 'embedded-forced', 'custom', 'hi', 'cc', 'sdh']
@@ -125,7 +126,7 @@ def find_subtitles(part, ignore_parts_cleanup=None):
                             root = split_tag[0]
 
                         # get associated media file name without language
-                        sub_fn = subtitlehelpers.ENDSWITH_LANGUAGECODE_RE.sub("", root)
+                        sub_fn = ENDSWITH_LANGUAGECODE_RE.sub("", root)
 
                         # subtitle basename and basename without possible language tag  not found in collected
                         # media files? kill.

@@ -843,11 +843,8 @@ class Config(object):
     providers = property(get_providers)
 
     def get_provider_settings(self):
-        os_use_https = self.advanced.providers.opensubtitles.use_https \
-            if self.advanced.providers.opensubtitles.use_https is not None else True
-
-        os_skip_wrong_fps = self.advanced.providers.opensubtitles.skip_wrong_fps \
-            if self.advanced.providers.opensubtitles.skip_wrong_fps is not None else True
+        os_use_https = self.advanced.providers.opensubtitles.get("use_https", True)
+        os_skip_wrong_fps = self.advanced.providers.opensubtitles.get("skip_wrong_fps", True)
 
         provider_settings = {'addic7ed': {'username': Prefs['provider.addic7ed.username'],
                                           'password': Prefs['provider.addic7ed.password'],
@@ -865,6 +862,10 @@ class Config(object):
                              'podnapisi': {
                                  'only_foreign': self.forced_only,
                                  'also_foreign': self.forced_also,
+                             },
+                             'titlovi': {
+                                 'username': Prefs['provider.titlovi.username'],
+                                 'password': Prefs['provider.titlovi.password'],
                              },
                              'napisy24': {
                                  'username': Prefs['provider.napisy24.username'],

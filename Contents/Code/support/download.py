@@ -33,14 +33,14 @@ def get_missing_languages(video, part):
     alpha3_map = {}
     if config.ietf_as_alpha3:
         for language in languages:
-            if language.country:
+            if language and language.country:
                 alpha3_map[language.alpha3] = language.country
                 language.country = None
 
     have_languages = video.subtitle_languages.copy()
     if config.ietf_as_alpha3:
         for language in have_languages:
-            if language.country:
+            if language and language.country:
                 alpha3_map[language.alpha3] = language.country
                 language.country = None
 
@@ -53,14 +53,14 @@ def get_missing_languages(video, part):
                 filter(lambda l: not l.forced, video.subtitle_languages)
             if langs:
                 Log.Debug("We have at least one subtitle for any configured language.")
-                return False
+                return set()
 
         elif "External subtitle" in config.any_language_is_enough:
-            langs = video.subtitle_languages if not not_in_forced else \
+            langs = video.external_subtitle_languages if not not_in_forced else \
                 filter(lambda l: not l.forced, video.external_subtitle_languages)
             if langs:
                 Log.Debug("We have at least one external subtitle for any configured language.")
-                return False
+                return set()
 
     # all languages are found if we either really have subs for all languages or we only want to have exactly one language
     # and we've only found one (the case for a selected language, Prefs['subtitles.only_one'] (one found sub matches any language))
@@ -70,7 +70,7 @@ def get_missing_languages(video, part):
             Log.Debug('Only one language was requested, and we\'ve got a subtitle for %s', video)
         else:
             Log.Debug('All languages %r exist for %s', languages, video)
-        return False
+        return set()
 
     # re-add country codes to the missing languages, in case we've removed them above
     if config.ietf_as_alpha3:
@@ -106,21 +106,22 @@ def language_hook(provider):
 def download_best_subtitles(video_part_map, min_score=0, throttle_time=None, providers=None):
     hearing_impaired = Prefs['subtitles.search.hearingImpaired']
     languages = set([Language.rebuild(l) for l in config.lang_list])
-    missing_languages = []
     if not languages:
         return
 
     use_videos = []
+    missing_languages = set()
     for video, part in video_part_map.iteritems():
         if not video.ignore_all:
-            missing_languages = get_missing_languages(video, part)
+            p_missing_languages = get_missing_languages(video, part)
         else:
-            missing_languages = languages
+            p_missing_languages = languages
 
-        if missing_languages:
-            Log.Info(u"%s has missing languages: %s", os.path.basename(video.name), missing_languages)
+        if p_missing_languages:
+            Log.Info(u"%s has missing languages: %s", os.path.basename(video.name), p_missing_languages)
             refine_video(video, refiner_settings=config.refiner_settings)
             use_videos.append(video)
+            missing_languages.update(p_missing_languages)
 
     # prepare blacklist
     blacklist = get_blacklist_from_part_map(video_part_map, languages)
