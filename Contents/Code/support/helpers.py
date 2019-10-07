@@ -437,6 +437,8 @@ def get_language(lang_short):
 
 
 def display_language(l):
+    if not l:
+        return "Unknown"
     return _(str(l.basename).lower()) + ((u" (%s)" % _("forced")) if l.forced else "")
 
 

@@ -228,14 +228,14 @@ def get_embedded_subtitle_streams(part, requested_language=None, skip_duplicate_
 
             if not language:
                 # only consider first unknown subtitle stream
-                if requested_language and config.treat_und_as_first:
+                if config.treat_und_as_first:
                     if has_unknown and skip_duplicate_unknown:
                         Log.Debug("skipping duplicate unknown")
                         continue
 
                     language = Language.rebuild(list(config.lang_list)[0], forced=is_forced)
                 else:
-                    language = Language("unk")
+                    language = None
                 is_unknown = True
                 has_unknown = True
                 stream_data = {"stream": stream, "is_unknown": is_unknown, "language": language,

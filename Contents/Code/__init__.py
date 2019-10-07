@@ -130,7 +130,7 @@ def agent_extract_embedded(video_part_map):
                         stream_data = get_embedded_subtitle_streams(plexapi_part, requested_language=requested_language,
                                                                     skip_unknown=skip_unknown)
 
-                        if stream_data:
+                        if stream_data and stream_data[0]["language"]:
                             stream = stream_data[0]["stream"]
                             if stream_data[0]["is_unknown"]:
                                 used_one_unknown_stream = True
