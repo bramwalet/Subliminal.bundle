@@ -103,11 +103,15 @@ class Addic7edProvider(_Addic7edProvider):
             tries = 0
             while tries < 3:
                 r = self.session.get(self.server_url + 'login.php', timeout=10, headers={"Referer": self.server_url})
-                if "grecaptcha" in r.content:
+                if "g-recaptcha" in r.content or "grecaptcha" in r.content:
                     logger.info('Addic7ed: Solving captcha. This might take a couple of minutes, but should only '
                                 'happen once every so often')
 
-                    site_key = re.search(r'grecaptcha.execute\(\'(.+?)\',', r.content).group(1)
+                    for g, s in (("g-recaptcha-response", r'g-recaptcha.+?data-sitekey=\"(.+?)\"'),
+                                 ("recaptcha_response", r'grecaptcha.execute\(\'(.+?)\',')):
+                        site_key = re.search(s, r.content).group(1)
+                        if site_key:
+                            break
                     if not site_key:
                         logger.error("Addic7ed: Captcha site-key not found!")
                         return
@@ -121,7 +125,7 @@ class Addic7edProvider(_Addic7edProvider):
                     if not result:
                         raise Exception("Addic7ed: Couldn't solve captcha!")
 
-                    data["recaptcha_response"] = result
+                    data[g] = result
 
                 r = self.session.post(self.server_url + 'dologin.php', data, allow_redirects=False, timeout=10,
                                       headers={"Referer": self.server_url + "login.php"})
