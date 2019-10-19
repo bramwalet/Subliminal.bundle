@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 language_converters.register('addic7ed = subliminal.converters.addic7ed:Addic7edConverter')
 
 # Series cell matching regex
-show_cells_re = re.compile(b'<td class="(?:version|vr)">.*?</td>', re.DOTALL)
+show_cells_re = re.compile(b'<td class="version">.*?</td>', re.DOTALL)
 
 #: Series header parsing regex
 series_year_re = re.compile(r'^(?P<series>[ \w\'.:(),*&!?-]+?)(?: \((?P<year>\d{4})\))?$')

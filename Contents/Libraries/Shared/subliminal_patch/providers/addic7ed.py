@@ -10,7 +10,7 @@ from requests import Session
 from subliminal.cache import region
 from subliminal.exceptions import DownloadLimitExceeded, AuthenticationError
 from subliminal.providers.addic7ed import Addic7edProvider as _Addic7edProvider, \
-    Addic7edSubtitle as _Addic7edSubtitle, ParserBeautifulSoup, show_cells_re
+    Addic7edSubtitle as _Addic7edSubtitle, ParserBeautifulSoup
 from subliminal.subtitle import fix_line_ending
 from subliminal_patch.utils import sanitize
 from subliminal_patch.exceptions import TooManyRequests
@@ -18,6 +18,8 @@ from subliminal_patch.pitcher import pitchers, load_verification, store_verifica
 from subzero.language import Language
 
 logger = logging.getLogger(__name__)
+
+show_cells_re = re.compile(b'<td class="(?:version|vr)">.*?</td>', re.DOTALL)
 
 #: Series header parsing regex
 series_year_re = re.compile(r'^(?P<series>[ \w\'.:(),*&!?-]+?)(?: \((?P<year>\d{4})\))?$')
