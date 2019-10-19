@@ -280,14 +280,10 @@ class SZProviderPool(ProviderPool):
                 logger.debug("RAR Traceback: %s", traceback.format_exc())
                 return False
 
-            except (TooManyRequests, DownloadLimitExceeded, ServiceUnavailable, APIThrottled), e:
-                self.throttle_callback(subtitle.provider_name, e)
-                self.discarded_providers.add(subtitle.provider_name)
-                return False
-
-            except:
+            except Exception as e:
                 logger.exception('Unexpected error in provider %r, Traceback: %s', subtitle.provider_name,
                                  traceback.format_exc())
+                self.throttle_callback(subtitle.provider_name, e)
                 self.discarded_providers.add(subtitle.provider_name)
                 return False
 
