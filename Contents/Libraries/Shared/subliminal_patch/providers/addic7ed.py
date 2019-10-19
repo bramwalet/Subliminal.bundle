@@ -133,12 +133,11 @@ class Addic7edProvider(_Addic7edProvider):
                 if "relax, slow down" in r.content:
                     raise TooManyRequests(self.username)
 
-                if r.status_code != 302:
-                    if "User <b></b> doesn't exist" in r.content and tries <= 2:
-                        logger.info("Addic7ed: Error, trying again. (%s/%s)", tries+1, 3)
-                        tries += 1
-                        continue
+                if "Try again" in r.content or "Wrong password" in r.content:
+                    raise AuthenticationError(self.username)
 
+                if r.status_code != 302:
+                    logger.error("Addic7ed: Something went wrong when logging in")
                     raise AuthenticationError(self.username)
                 break
 
