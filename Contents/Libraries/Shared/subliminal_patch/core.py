@@ -614,9 +614,6 @@ def _search_external_subtitles(path, languages=None, only_one=False, scandir_gen
         if adv_tag:
             forced = "forced" in adv_tag
 
-        # extract the potential language code
-        language_code = p_root.rsplit(".", 1)[1].replace('_', '-')
-
         # remove possible language code for matching
         p_root_bare = ENDSWITH_LANGUAGECODE_RE.sub("", p_root)
 
@@ -629,19 +626,21 @@ def _search_external_subtitles(path, languages=None, only_one=False, scandir_gen
             if match_strictness == "strict" or (match_strictness == "loose" and not filename_contains):
                 continue
 
-        # default language is undefined
-        language = Language('und')
+        language = None
 
-        # attempt to parse
-        if language_code:
+        # extract the potential language code
+        try:
+            language_code = p_root.rsplit(".", 1)[1].replace('_', '-')
             try:
                 language = Language.fromietf(language_code)
                 language.forced = forced
             except ValueError:
                 logger.error('Cannot parse language code %r', language_code)
-                language = None
+                language_code = None
+        except IndexError:
+            language_code = None
 
-        elif not language_code and only_one:
+        if not language and not language_code and only_one:
             language = Language.rebuild(list(languages)[0], forced=forced)
 
         subtitles[p] = language
