@@ -909,10 +909,10 @@ class Config(object):
         throttle_data = PROVIDER_THROTTLE_MAP.get(name, PROVIDER_THROTTLE_MAP["default"]).get(cls, None) or \
             PROVIDER_THROTTLE_MAP["default"].get(cls, None)
 
-        if not throttle_data:
-            return
-
-        throttle_delta, throttle_description = throttle_data
+        if throttle_data:
+            throttle_delta, throttle_description = throttle_data
+        else:
+            throttle_delta, throttle_description = datetime.timedelta(minutes=10), "10 minutes"
 
         if "provider_throttle" not in Dict:
             Dict["provider_throttle"] = {}
