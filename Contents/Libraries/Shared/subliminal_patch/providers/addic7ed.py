@@ -145,7 +145,7 @@ class Addic7edProvider(_Addic7edProvider):
                 if "relax, slow down" in r.content:
                     raise TooManyRequests(self.username)
 
-                if "Try again" in r.content or "Wrong password" in r.content:
+                if "Wrong password" in r.content or "doesn't exist" in r.content:
                     raise AuthenticationError(self.username)
 
                 if r.status_code != 302:
@@ -176,44 +176,46 @@ class Addic7edProvider(_Addic7edProvider):
         :type country_code: str
         :return: the show id, if found.
         :rtype: int
-
         """
-        series_sanitized = sanitize(series).lower()
-        if not ignore_cache:
-            show_ids = self._get_show_ids()
-        else:
-            show_ids = self._get_show_ids.original(self)
         show_id = None
+        show_ids = {sanitize(series).lower(), sanitize(series.replace(".", "")).lower()}
+        logger.debug("Trying show ids: %s", show_ids)
+        for series_sanitized in show_ids:
+            if not ignore_cache:
+                show_ids = self._get_show_ids()
+            else:
+                show_ids = self._get_show_ids.refresh(self)
 
-        # attempt with country
-        if not show_id and country_code:
-            logger.debug('Getting show id with country')
-            show_id = show_ids.get('%s %s' % (series_sanitized, country_code.lower()))
+            # attempt with country
+            if not show_id and country_code:
+                logger.debug('Getting show id with country')
+                show_id = show_ids.get('%s %s' % (series_sanitized, country_code.lower()))
 
-        # attempt with year
-        if not show_id and year:
-            logger.debug('Getting show id with year')
-            show_id = show_ids.get('%s %d' % (series_sanitized, year))
+            # attempt with year
+            if not show_id and year:
+                logger.debug('Getting show id with year')
+                show_id = show_ids.get('%s %d' % (series_sanitized, year))
 
-        # attempt clean
-        if not show_id:
-            logger.debug('Getting show id')
-            show_id = show_ids.get(series_sanitized)
-
+            # attempt clean
             if not show_id:
-                now = datetime.datetime.now()
-                last_fetch = region.get(self.last_show_ids_fetch_key)
+                logger.debug('Getting show id')
+                show_id = show_ids.get(series_sanitized)
 
-                # re-fetch show ids once per day if any show ID not found
-                if not ignore_cache and last_fetch != NO_VALUE and last_fetch + datetime.timedelta(days=1) < now:
-                    logger.info("Show id not found; re-fetching show ids")
-                    return self.get_show_id(series, year=year, country_code=country_code, ignore_cache=True)
+                if not show_id:
+                    now = datetime.datetime.now()
+                    last_fetch = region.get(self.last_show_ids_fetch_key)
 
-        # search as last resort
-        # broken right now
-        # if not show_id:
-        #     logger.warning('Series %s not found in show ids', series)
-        #     show_id = self._search_show_id(series)
+                    # re-fetch show ids once per day if any show ID not found
+                    if not ignore_cache and last_fetch != NO_VALUE and last_fetch + datetime.timedelta(days=1) < now:
+                        logger.info("Show id not found; re-fetching show ids")
+                        return self.get_show_id(series, year=year, country_code=country_code, ignore_cache=True)
+                    logger.debug("Not refreshing show ids, as the last fetch has been too recent")
+
+            # search as last resort
+            # broken right now
+            # if not show_id:
+            #     logger.warning('Series %s not found in show ids', series)
+            #     show_id = self._search_show_id(series)
 
         return show_id
 
