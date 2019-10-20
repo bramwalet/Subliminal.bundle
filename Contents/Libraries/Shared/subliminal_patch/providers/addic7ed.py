@@ -178,14 +178,14 @@ class Addic7edProvider(_Addic7edProvider):
         :rtype: int
         """
         show_id = None
-        show_ids = {sanitize(series).lower(), sanitize(series.replace(".", "")).lower()}
-        logger.debug("Trying show ids: %s", show_ids)
-        for series_sanitized in show_ids:
-            if not ignore_cache:
-                show_ids = self._get_show_ids()
-            else:
-                show_ids = self._get_show_ids.refresh(self)
+        ids_to_look_for = {sanitize(series).lower(), sanitize(series.replace(".", "")).lower()}
+        if not ignore_cache:
+            show_ids = self._get_show_ids()
+        else:
+            show_ids = self._get_show_ids.refresh(self)
 
+        logger.debug("Trying show ids: %s", ids_to_look_for)
+        for series_sanitized in ids_to_look_for:
             # attempt with country
             if not show_id and country_code:
                 logger.debug('Getting show id with country')
