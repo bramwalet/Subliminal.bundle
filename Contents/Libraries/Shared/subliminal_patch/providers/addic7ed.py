@@ -8,7 +8,7 @@ import time
 from random import randint
 from requests import Session
 from subliminal.cache import region
-from subliminal.exceptions import DownloadLimitExceeded, AuthenticationError
+from subliminal.exceptions import DownloadLimitExceeded, AuthenticationError, ConfigurationError
 from subliminal.providers.addic7ed import Addic7edProvider as _Addic7edProvider, \
     Addic7edSubtitle as _Addic7edSubtitle, ParserBeautifulSoup
 from subliminal.subtitle import fix_line_ending
@@ -73,6 +73,9 @@ class Addic7edProvider(_Addic7edProvider):
         super(Addic7edProvider, self).__init__(username=username, password=password)
         self.USE_ADDICTED_RANDOM_AGENTS = use_random_agents
 
+        if not all((username, password)):
+            raise ConfigurationError('Username and password must be specified')
+
     def initialize(self):
         self.session = Session()
         self.session.headers['User-Agent'] = 'Subliminal/%s' % subliminal.__short_version__
@@ -103,7 +106,8 @@ class Addic7edProvider(_Addic7edProvider):
                     'remember': 'true'}
 
             tries = 0
-            while tries < 3:
+            while tries <= 3:
+                tries += 1
                 r = self.session.get(self.server_url + 'login.php', timeout=10, headers={"Referer": self.server_url})
                 if "g-recaptcha" in r.content or "grecaptcha" in r.content:
                     logger.info('Addic7ed: Solving captcha. This might take a couple of minutes, but should only '
@@ -125,7 +129,10 @@ class Addic7edProvider(_Addic7edProvider):
 
                     result = pitcher.throw()
                     if not result:
-                        raise Exception("Addic7ed: Couldn't solve captcha!")
+                        if tries >= 3:
+                            raise Exception("Addic7ed: Couldn't solve captcha!")
+                        logger.info("Addic7ed: Couldn't solve captcha! Retrying")
+                        continue
 
                     data[g] = result
 
@@ -139,8 +146,11 @@ class Addic7edProvider(_Addic7edProvider):
                     raise AuthenticationError(self.username)
 
                 if r.status_code != 302:
-                    logger.error("Addic7ed: Something went wrong when logging in")
-                    raise AuthenticationError(self.username)
+                    if tries >= 3:
+                        logger.error("Addic7ed: Something went wrong when logging in")
+                        raise AuthenticationError(self.username)
+                    logger.info("Addic7ed: Something went wrong when logging in; retrying")
+                    continue
                 break
 
             store_verification("addic7ed", self.session)
@@ -210,14 +220,15 @@ class Addic7edProvider(_Addic7edProvider):
         # Assuming the site's markup is bad, and stripping it down to only contain what's needed.
         show_cells = re.findall(show_cells_re, r.content)
         if show_cells:
-            soup = ParserBeautifulSoup(b''.join(show_cells), ['lxml', 'html.parser'])
+            soup = ParserBeautifulSoup(b''.join(show_cells).decode('utf-8', 'ignore'), ['lxml', 'html.parser'])
         else:
             # If RegEx fails, fall back to original r.content and use 'html.parser'
             soup = ParserBeautifulSoup(r.content, ['html.parser'])
 
         # populate the show ids
         show_ids = {}
-        for show in soup.select('td > h3 > a[href^="/show/"]'):
+        shows = soup.select('td > h3 > a[href^="/show/"]')
+        for show in shows:
             show_clean = sanitize(show.text, default_characters=self.sanitize_characters)
             try:
                 show_id = int(show['href'][6:])
