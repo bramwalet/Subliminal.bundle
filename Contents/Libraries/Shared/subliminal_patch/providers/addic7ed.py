@@ -6,6 +6,8 @@ import subliminal
 import time
 
 from random import randint
+
+from dogpile.cache.api import NO_VALUE
 from requests import Session
 from subliminal.cache import region
 from subliminal.exceptions import DownloadLimitExceeded, AuthenticationError, ConfigurationError
@@ -68,6 +70,7 @@ class Addic7edProvider(_Addic7edProvider):
     server_url = 'https://www.addic7ed.com/'
 
     sanitize_characters = {'-', ':', '(', ')', '.', '/'}
+    last_show_ids_fetch_key = "addic7ed_last_id_fetch"
 
     def __init__(self, username=None, password=None, use_random_agents=False):
         super(Addic7edProvider, self).__init__(username=username, password=password)
@@ -161,7 +164,7 @@ class Addic7edProvider(_Addic7edProvider):
     def terminate(self):
         self.session.close()
 
-    def get_show_id(self, series, year=None, country_code=None):
+    def get_show_id(self, series, year=None, country_code=None, ignore_cache=False):
         """Get the best matching show id for `series`, `year` and `country_code`.
 
         First search in the result of :meth:`_get_show_ids` and fallback on a search with :meth:`_search_show_id`.
@@ -176,7 +179,10 @@ class Addic7edProvider(_Addic7edProvider):
 
         """
         series_sanitized = sanitize(series).lower()
-        show_ids = self._get_show_ids()
+        if not ignore_cache:
+            show_ids = self._get_show_ids()
+        else:
+            show_ids = self._get_show_ids.original(self)
         show_id = None
 
         # attempt with country
@@ -193,6 +199,15 @@ class Addic7edProvider(_Addic7edProvider):
         if not show_id:
             logger.debug('Getting show id')
             show_id = show_ids.get(series_sanitized)
+
+            if not show_id:
+                now = datetime.datetime.now()
+                last_fetch = region.get(self.last_show_ids_fetch_key)
+
+                # re-fetch show ids once per day if any show ID not found
+                if not ignore_cache and last_fetch != NO_VALUE and last_fetch + datetime.timedelta(days=1) < now:
+                    logger.info("Show id not found; re-fetching show ids")
+                    return self.get_show_id(series, year=year, country_code=country_code, ignore_cache=True)
 
         # search as last resort
         # broken right now
@@ -212,6 +227,8 @@ class Addic7edProvider(_Addic7edProvider):
         """
         # get the show page
         logger.info('Getting show ids')
+        region.set(self.last_show_ids_fetch_key, datetime.datetime.now())
+
         r = self.session.get(self.server_url + 'shows.php', timeout=10)
         r.raise_for_status()
 
