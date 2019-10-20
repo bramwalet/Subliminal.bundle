@@ -27,6 +27,9 @@ tvdb_guid_identifier = "com.plexapp.agents.thetvdb://"
 
 
 def get_plexapi_stream_info(plex_item, part_id=None):
+    if not plex_item:
+        return
+
     d = {"stream": {}}
     data = d["stream"]
 
@@ -101,6 +104,9 @@ def media_to_videos(media, kind="series"):
                 plex_episode = get_item(ep.id)
                 stream_info = get_plexapi_stream_info(plex_episode)
 
+                if not stream_info:
+                    continue
+
                 for item in media.seasons[season].episodes[episode].items:
                     for part in item.parts:
                         videos.append(
@@ -122,22 +128,24 @@ def media_to_videos(media, kind="series"):
                         )
     else:
         stream_info = get_plexapi_stream_info(plex_item)
-        imdb_id = None
-        if imdb_guid_identifier in media.guid:
-            imdb_id = media.guid[len(imdb_guid_identifier):].split("?")[0]
-        for item in media.items:
-            for part in item.parts:
-                videos.append(
-                    get_metadata_dict(plex_item, part, dict(stream_info, **{"plex_part": part, "type": "movie",
-                                                                             "title": media.title, "id": media.id,
-                                                                             "super_thumb": plex_item.thumb,
-                                                                             "series_id": None, "year": year,
-                                                                             "season_id": None, "imdb_id": imdb_id,
-                                                                             "original_title": original_title,
-                                                                             "series_tvdb_id": None, "tvdb_id": None,
-                                                                             "section": plex_item.section.title})
-                                      )
-                )
+
+        if stream_info:
+            imdb_id = None
+            if imdb_guid_identifier in media.guid:
+                imdb_id = media.guid[len(imdb_guid_identifier):].split("?")[0]
+            for item in media.items:
+                for part in item.parts:
+                    videos.append(
+                        get_metadata_dict(plex_item, part, dict(stream_info, **{"plex_part": part, "type": "movie",
+                                                                                 "title": media.title, "id": media.id,
+                                                                                 "super_thumb": plex_item.thumb,
+                                                                                 "series_id": None, "year": year,
+                                                                                 "season_id": None, "imdb_id": imdb_id,
+                                                                                 "original_title": original_title,
+                                                                                 "series_tvdb_id": None, "tvdb_id": None,
+                                                                                 "section": plex_item.section.title})
+                                          )
+                    )
     return videos
 
 
@@ -292,6 +300,9 @@ def get_plex_metadata(rating_key, part_id, item_type, plex_item=None):
         raise helpers.PartUnknownException("Part unknown")
 
     stream_info = get_plexapi_stream_info(plex_item, part_id)
+
+    if not stream_info:
+        return
 
     # get normalized metadata
     # fixme: duplicated logic of media_to_videos
