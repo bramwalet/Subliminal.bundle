@@ -366,7 +366,7 @@ class Addic7edProvider(_Addic7edProvider):
 
             # ignore incomplete subtitles
             status = cells[5].text
-            if status != 'Completed':
+            if "%" in status:
                 logger.debug('Ignoring subtitle with status %s', status)
                 continue
 
