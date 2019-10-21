@@ -179,9 +179,8 @@ class Addic7edProvider(_Addic7edProvider):
         """
         show_id = None
         ids_to_look_for = {sanitize(series).lower(), sanitize(series.replace(".", "")).lower()}
-        if not ignore_cache:
-            show_ids = self._get_show_ids()
-        else:
+        show_ids = self._get_show_ids()
+        if ignore_cache or not show_ids:
             show_ids = self._get_show_ids.refresh(self)
 
         logger.debug("Trying show ids: %s", ids_to_look_for)
@@ -264,6 +263,9 @@ class Addic7edProvider(_Addic7edProvider):
         soup = None
 
         logger.debug('Found %d show ids', len(show_ids))
+
+        if not show_ids:
+            raise Exception("Addic7ed: No show IDs found!")
 
         return show_ids
 
