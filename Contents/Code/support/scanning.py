@@ -53,11 +53,12 @@ def prepare_video(pms_video_info, ignore_all=False, hints=None, rating_key=None,
                 try:
                     lang = language_from_stream(stream.language_code)
                 except LanguageError:
-                    Log.Debug("Couldn't detect embedded audio stream language: %s", stream.language_code)
+                    Log.Info("Couldn't detect embedded audio stream language: %s", stream.language_code)
 
                 # treat unknown language as lang1?
                 if not lang and config.treat_und_as_first:
                     lang = Language.rebuild(list(config.lang_list)[0])
+                    Log.Info("Assuming language %s for audio stream: %s", lang, getattr(stream, "index", None))
 
                 audio_languages.append(lang)
 
@@ -74,11 +75,13 @@ def prepare_video(pms_video_info, ignore_all=False, hints=None, rating_key=None,
                             try:
                                 lang = language_from_stream(stream.language_code)
                             except LanguageError:
-                                Log.Debug("Couldn't detect embedded subtitle stream language: %s", stream.language_code)
+                                Log.Info("Couldn't detect embedded subtitle stream language: %s", stream.language_code)
 
                             # treat unknown language as lang1?
                             if not lang and config.treat_und_as_first:
                                 lang = Language.rebuild(list(config.lang_list)[0])
+                                Log.Info("Assuming language %s for subtitle stream: %s", lang,
+                                         getattr(stream, "index", None))
 
                             if lang:
                                 if is_forced:
