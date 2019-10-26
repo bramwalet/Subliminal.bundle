@@ -1,3 +1,17 @@
+2.6.5.3152
+
+subscene, addic7ed
+- either of those providers might impose a reCAPTCHA verification. In order to use those providers, please create an account at an AntiCaptcha service ([anti-captcha.com](http://getcaptchasolution.com/kkvviom7nh) or [deathbycaptcha.com](http://deathbycaptcha.com)), add funds, then supply your credentials/apikey in the configuration
+
+Changelog
+- core: fix core issue possibly impacting results on OpenSubtitles in certain conditions
+- core: fix default values of opensubtitles-skip-wrong-fps, use_https; fix #676
+- core: fix for determining whether to search under certain circumstances; fixes #666
+- core: #664 fix missing language processing of multiple videos refreshed at once
+- core: #661 fix match strictness when determining preexisting external subtitles
+- providers: titlovi: New implementation of Titlovi using API (thanks @viking1304)
+
+
 2.6.5.3124
 
 subscene, addic7ed and titlovi

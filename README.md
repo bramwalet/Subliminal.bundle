@@ -101,13 +101,19 @@ subscene, addic7ed
 - either of those providers might impose a reCAPTCHA verification. In order to use those providers, please create an account at an AntiCaptcha service ([anti-captcha.com](http://getcaptchasolution.com/kkvviom7nh) or [deathbycaptcha.com](http://deathbycaptcha.com)), add funds, then supply your credentials/apikey in the configuration
 
 Changelog
-- core: fix core issue possibly impacting results on OpenSubtitles in certain conditions
-- core: fix default values of opensubtitles-skip-wrong-fps, use_https; fix #676
-- core: fix for determining whether to search under certain circumstances; fixes #666
-- core: #664 fix missing language processing of multiple videos refreshed at once
-- core: #661 fix match strictness when determining preexisting external subtitles
-- providers: titlovi: New implementation of Titlovi using API (thanks @viking1304)
-
+- core: don't fall back to default providers if none enabled
+- core: don't process any further if stream info is missing
+- core: support using mediainfo for retrieving MP4 MOV_TEXT subtitle stream titles (PMS bug)
+- core: fix embedded subtitle extraction in some cases (#681, #680)
+- core: scanning: add additional INFO logging for undetected languages
+- core: bazarr-backport: remove existing subtitle file, to support MergerFS
+- core: bazarr-backport: generic 10 minute throttling if uncaught exception occurs
+- providers: addic7ed: fix recaptcha solving; fix show ID retrieval (#681)
+- providers: addic7ed: add timeout on authentication error
+- providers: addic7ed: fix shows with dots in them (Mayans M.C.)
+- providers: addic7ed: fix detection of completed subtitle for non-english users (#686)
+- providers: addic7ed: add more timeouts in the login process
+- providers: argenteam: bazarr-backport: use new url; fixes
 
 [older changes](CHANGELOG.md)
 
