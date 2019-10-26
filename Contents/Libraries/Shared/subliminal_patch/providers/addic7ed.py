@@ -135,10 +135,12 @@ class Addic7edProvider(_Addic7edProvider):
                         if tries >= 3:
                             raise Exception("Addic7ed: Couldn't solve captcha!")
                         logger.info("Addic7ed: Couldn't solve captcha! Retrying")
+                        time.sleep(4)
                         continue
 
                     data[g] = result
 
+                time.sleep(1)
                 r = self.session.post(self.server_url + 'dologin.php', data, allow_redirects=False, timeout=10,
                                       headers={"Referer": self.server_url + "login.php"})
 
@@ -153,6 +155,7 @@ class Addic7edProvider(_Addic7edProvider):
                         logger.error("Addic7ed: Something went wrong when logging in")
                         raise AuthenticationError(self.username)
                     logger.info("Addic7ed: Something went wrong when logging in; retrying")
+                    time.sleep(4)
                     continue
                 break
 
@@ -160,6 +163,8 @@ class Addic7edProvider(_Addic7edProvider):
 
             logger.debug('Addic7ed: Logged in')
             self.logged_in = True
+
+            time.sleep(2)
 
     def terminate(self):
         self.session.close()
