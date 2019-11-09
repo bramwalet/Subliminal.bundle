@@ -6,9 +6,11 @@ from subzero.language import Language
 from bs4 import BeautifulSoup
 from guessit import guessit
 
-from subliminal.providers import Episode, Movie, Provider
-from subliminal.utils import sanitize
-from subliminal.subtitle import Subtitle, fix_line_ending, guess_matches
+from subliminal_patch.providers import Provider
+from subliminal.providers import Episode, Movie
+from subliminal_patch.utils import sanitize
+from subliminal_patch.subtitle import Subtitle, guess_matches
+from subliminal.subtitle import fix_line_ending
 
 __author__ = "Dor Nizar"
 
