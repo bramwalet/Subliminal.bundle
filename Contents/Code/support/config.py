@@ -8,6 +8,8 @@ import sys
 import rarfile
 import jstyleson
 import datetime
+import stat
+import traceback
 
 import subliminal
 import subliminal_patch
@@ -329,6 +331,19 @@ class Config(object):
         for exe in try_executables:
             rarfile.UNRAR_TOOL = exe
             rarfile.ORIG_UNRAR_TOOL = exe
+            if os.path.isfile(exe) and not os.access(exe, os.X_OK):
+                st = os.stat(exe)
+                try:
+                    Log.Debug("setting generic executable permissions for %s", exe)
+                    # fixme: too broad?
+                    os.chmod(exe, st.st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+                except:
+                    Log.Debug("failed setting generic executable permissions for %s: %s", exe, traceback.format_exc())
+                    try:
+                        Log.Debug("setting executable permissions for %s", exe)
+                        os.chmod(exe, st.st_mode | stat.S_IEXEC)
+                    except:
+                        Log.Debug("failed setting executable permissions for %s: %s", exe, traceback.format_exc())
             try:
                 rarfile.custom_check([rarfile.UNRAR_TOOL], True)
             except:
