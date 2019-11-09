@@ -19,6 +19,10 @@ sys.modules["support.i18n"] = i18n
 
 helpers._ = i18n._
 
+import history
+
+sys.modules["support.history"] = history
+
 import plex_media
 sys.modules["support.plex_media"] = plex_media
 
@@ -49,6 +53,10 @@ import missing_subtitles
 
 sys.modules["support.missing_subtitles"] = missing_subtitles
 
+import extract
+
+sys.modules["support.extract"] = extract
+
 import tasks
 
 sys.modules["support.tasks"] = tasks
@@ -56,10 +64,6 @@ sys.modules["support.tasks"] = tasks
 import ignore
 
 sys.modules["support.ignore"] = ignore
-
-import history
-
-sys.modules["support.history"] = history
 
 import data
 

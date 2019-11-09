@@ -7,7 +7,8 @@ from subzero.language import Language
 
 from sub_mod import SubtitleModificationsMenu
 from menu_helpers import debounce, SubFolderObjectContainer, default_thumb, add_incl_excl_options, get_item_task_data, \
-    set_refresh_menu_state, route, extract_embedded_sub
+    set_refresh_menu_state, route
+from support.extract import extract_embedded_sub
 
 from refresh_item import RefreshItem
 from subzero.constants import PREFIX

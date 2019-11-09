@@ -12,19 +12,16 @@ from requests import HTTPError
 from item_details import ItemDetailsMenu
 from refresh_item import RefreshItem
 from menu_helpers import add_incl_excl_options, dig_tree, set_refresh_menu_state, \
-    default_thumb, debounce, ObjectContainer, SubFolderObjectContainer, route, \
-    extract_embedded_sub
+    default_thumb, debounce, ObjectContainer, SubFolderObjectContainer, route
 from main import fatality, InclExclMenu
 from advanced import DispatchRestart
 from subzero.constants import ART, PREFIX, DEPENDENCY_MODULE_NAMES
-from support.plex_media import get_all_parts, get_embedded_subtitle_streams
+from support.extract import season_extract_embedded
 from support.scheduler import scheduler
 from support.config import config
 from support.helpers import timestamp, df, display_language
 from support.ignore import get_decision_list
-from support.items import get_all_items, get_items_info, get_item_kind_from_rating_key, get_item, MI_KEY, \
-    get_item_title, get_item_thumb
-from support.storage import get_subtitle_storage
+from support.items import get_all_items, get_items_info, get_item_kind_from_rating_key, get_item, get_item_title
 from support.i18n import _
 
 # init GUI
@@ -172,53 +169,6 @@ def SeasonExtractEmbedded(**kwargs):
 
     kwargs.pop("randomize")
     return MetadataMenu(randomize=timestamp(), title=item_title, **kwargs)
-
-
-def multi_extract_embedded(stream_list, refresh=False, with_mods=False, single_thread=True, extract_mode="a",
-                           history_storage=None):
-    def execute():
-        for video_part_map, plexapi_part, stream_index, language, set_current in stream_list:
-            plexapi_item = video_part_map.keys()[0].plexapi_metadata["item"]
-
-            extract_embedded_sub(rating_key=plexapi_item.rating_key, part_id=plexapi_part.id,
-                                 plex_item=plexapi_item, part=plexapi_part, scanned_videos=video_part_map,
-                                 stream_index=stream_index, set_current=set_current,
-                                 language=language, with_mods=with_mods, refresh=refresh, extract_mode=extract_mode,
-                                 history_storage=history_storage)
-
-    if single_thread:
-        with Thread.Lock(key="extract_embedded"):
-            execute()
-    else:
-        execute()
-
-
-def season_extract_embedded(rating_key, requested_language, with_mods=False, force=False):
-    # get stored subtitle info for item id
-    subtitle_storage = get_subtitle_storage()
-
-    try:
-        for data in get_all_items(key="children", value=rating_key, base="library/metadata"):
-            item = get_item(data[MI_KEY])
-            if item:
-                stored_subs = subtitle_storage.load_or_new(item)
-                for part in get_all_parts(item):
-                    embedded_subs = stored_subs.get_by_provider(part.id, requested_language, "embedded")
-                    current = stored_subs.get_any(part.id, requested_language)
-                    if not embedded_subs or force:
-                        stream_data = get_embedded_subtitle_streams(part, requested_language=requested_language)
-                        if stream_data:
-                            stream = stream_data[0]["stream"]
-
-                            set_current = not current or force
-                            refresh = not current
-
-                            extract_embedded_sub(rating_key=item.rating_key, part_id=part.id,
-                                                 stream_index=str(stream.index), set_current=set_current,
-                                                 refresh=refresh, language=requested_language, with_mods=with_mods,
-                                                 extract_mode="m")
-    finally:
-        subtitle_storage.destroy()
 
 
 @route(PREFIX + '/ignore_list')

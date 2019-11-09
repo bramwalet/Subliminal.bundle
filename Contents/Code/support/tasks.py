@@ -19,6 +19,7 @@ from support.config import config
 from support.items import get_recent_items, get_item, is_wanted, get_item_title
 from support.helpers import track_usage, get_title_for_video_metadata, cast_bool, PartUnknownException
 from support.plex_media import get_plex_metadata
+from support.extract import agent_extract_embedded
 from support.scanning import scan_videos
 from support.i18n import _
 from download import download_best_subtitles, pre_download_hook, post_download_hook, language_hook
@@ -448,6 +449,13 @@ class SearchAllRecentlyAddedMissing(Task):
 
                     Log.Debug(u"%s: Looking for missing subtitles: %s", self.name, get_item_title(plex_item))
                     scanned_parts = scan_videos([metadata], providers=providers)
+
+                    # auto extract embedded
+                    if config.embedded_auto_extract:
+                        if config.plex_transcoder:
+                            agent_extract_embedded(scanned_parts)
+                        else:
+                            Log.Warn("Plex Transcoder not found, can't auto extract")
 
                     downloaded_subtitles = download_best_subtitles(scanned_parts, min_score=min_score,
                                                                    providers=providers)
