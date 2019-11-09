@@ -17,12 +17,14 @@ from subzero.language import Language
 from subliminal_patch.subtitle import ModifiedSubtitle
 
 
-def agent_extract_embedded(video_part_map):
+def agent_extract_embedded(video_part_map, set_as_existing=False):
     try:
         subtitle_storage = get_subtitle_storage()
 
         to_extract = []
         item_count = 0
+
+        threads = []
 
         for scanned_video, part_info in video_part_map.iteritems():
             plexapi_item = scanned_video.plexapi_metadata["item"]
@@ -59,15 +61,16 @@ def agent_extract_embedded(video_part_map):
                             to_extract.append(({scanned_video: part_info}, plexapi_part, str(stream.index),
                                                str(requested_language), not current))
 
-                            if not cast_bool(Prefs["subtitles.search_after_autoextract"]):
+                            if not cast_bool(Prefs["subtitles.search_after_autoextract"]) or set_as_existing:
                                 scanned_video.subtitle_languages.update({requested_language})
                     else:
                         Log.Debug("Skipping embedded subtitle extraction for %s, already got %r from %s",
                                   plexapi_item.rating_key, requested_language, embedded_subs[0].id)
         if to_extract:
             Log.Info("Triggering extraction of %d embedded subtitles of %d items", len(to_extract), item_count)
-            Thread.Create(multi_extract_embedded, stream_list=to_extract, refresh=True, with_mods=True,
-                          single_thread=not config.advanced.auto_extract_multithread)
+            threads.append(Thread.Create(multi_extract_embedded, stream_list=to_extract, refresh=True, with_mods=True,
+                                         single_thread=not config.advanced.auto_extract_multithread))
+            return threads
     except:
         Log.Error("Something went wrong when auto-extracting subtitles, continuing: %s", traceback.format_exc())
 

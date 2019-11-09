@@ -453,7 +453,11 @@ class SearchAllRecentlyAddedMissing(Task):
                     # auto extract embedded
                     if config.embedded_auto_extract:
                         if config.plex_transcoder:
-                            agent_extract_embedded(scanned_parts)
+                            ts = agent_extract_embedded(scanned_parts, set_as_existing=True)
+                            if ts:
+                                Log.Debug("Waiting for %i extraction threads to finish" % len(ts))
+                                for t in ts:
+                                    t.join()
                         else:
                             Log.Warn("Plex Transcoder not found, can't auto extract")
 
