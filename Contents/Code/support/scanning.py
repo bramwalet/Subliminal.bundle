@@ -29,7 +29,7 @@ def prepare_video(pms_video_info, ignore_all=False, hints=None, rating_key=None,
     if ignore_all:
         Log.Debug("Force refresh intended.")
 
-    Log.Debug("Detecting streams: %s, external_subtitles=%s, embedded_subtitles=%s" % (
+    Log.Debug("Detecting streams: %s, account_for_external_subtitles=%s, account_for_embedded_subtitles=%s" % (
         plex_part.file, external_subtitles, embedded_subtitles))
 
     known_embedded = []
