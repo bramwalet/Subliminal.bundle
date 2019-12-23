@@ -134,7 +134,7 @@ class Subtitle(Subtitle_):
         # check UTF BOMs
         bom_encodings = self._check_bom(self.content)
         if bom_encodings:
-            encodings = list(set(bom_encodings + encodings))
+            encodings = list(set(enc.lower() for enc in bom_encodings + encodings))
 
         # add language-specific encodings
         # http://scratchpad.wikia.com/wiki/Character_Encoding_Recommendation_for_Languages
