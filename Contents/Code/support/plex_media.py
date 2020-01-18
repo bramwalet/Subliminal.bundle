@@ -184,6 +184,13 @@ def get_all_parts(plex_item):
 
 
 def update_stream_info(part):
+    try:
+        return _update_stream_info(part)
+    except:
+        Log.Traceback("Getting Mediainfo failed for: %s", part.file)
+
+
+def _update_stream_info(part):
     if config.mediainfo_bin and part.container == "mp4":
         cmdline = '%s --Inform="Text;-%%ID%%_%%Title%%" %s' % (config.mediainfo_bin, helpers.quote(part.file))
         result = subprocess.check_output(cmdline, stderr=subprocess.PIPE, shell=True)
@@ -198,7 +205,10 @@ def update_stream_info(part):
             else:
                 filled = []
                 for stream in part.streams:
-                    index = stream.index+1
+                    if stream.index is None:
+                        Log.Debug("Found stream with no index: %r", stream)
+
+                    index = stream.index+1 if stream.index is not None else 1
                     if index in stream_titles:
                         stream.title = stream_titles[index]
                         filled.append(index-1)
