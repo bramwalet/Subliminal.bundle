@@ -187,7 +187,7 @@ def update_stream_info(part):
     try:
         return _update_stream_info(part)
     except:
-        Log.Traceback("Getting Mediainfo failed for: %s", part.file)
+        Log.Exception("Getting Mediainfo failed for: %s", part.file)
 
 
 def _update_stream_info(part):
