@@ -357,6 +357,15 @@ class ModifiedSubtitle(Subtitle):
     id = None
 
 
+MERGED_FORMATS = {
+    "TV": ("HDTV", "SDTV", "AHDTV", "UHDTV"),
+    "Air": ("SATRip", "DVB", "PPV"),
+    "Disk": ("DVD", "HD-DVD", "BluRay")
+}
+
+MERGED_FORMATS_REV = dict((v.lower(), k.lower()) for k in MERGED_FORMATS for v in MERGED_FORMATS[k])
+
+
 def guess_matches(video, guess, partial=False):
     """Get matches between a `video` and a `guess`.
 
@@ -439,21 +448,25 @@ def guess_matches(video, guess, partial=False):
             formats = [formats]
 
         if video.format:
-            video_format = video.format
-            if video_format in ("HDTV", "SDTV", "TV"):
-                video_format = "TV"
-                logger.debug("Treating HDTV/SDTV the same")
+            video_format = video.format.lower()
+            _video_gen_format = MERGED_FORMATS_REV.get(video_format)
+            if _video_gen_format:
+                logger.debug("Treating %s as %s the same", video_format, _video_gen_format)
 
             for frmt in formats:
-                if frmt in ("HDTV", "SDTV"):
-                    frmt = "TV"
+                _guess_gen_frmt = MERGED_FORMATS_REV.get(frmt.lower())
 
-                if frmt.lower() == video_format.lower():
+                if _guess_gen_frmt == _video_gen_format:
                     matches.add('format')
                     break
+        if "release_group" in matches and "format" not in matches:
+            logger.info("Release group matched but format didn't. Remnoving release group match.")
+            matches.remove("release_group")
+
     # video_codec
     if video.video_codec and 'video_codec' in guess and guess['video_codec'] == video.video_codec:
         matches.add('video_codec')
+
     # audio_codec
     if video.audio_codec and 'audio_codec' in guess and guess['audio_codec'] == video.audio_codec:
         matches.add('audio_codec')
