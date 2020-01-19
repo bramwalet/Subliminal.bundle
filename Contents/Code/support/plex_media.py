@@ -185,12 +185,12 @@ def get_all_parts(plex_item):
 
 def update_stream_info(part):
     try:
-        return _update_stream_info(part)
+        return update_stream_info_(part)
     except:
         Log.Exception("Getting Mediainfo failed for: %s", part.file)
 
 
-def _update_stream_info(part):
+def update_stream_info_(part):
     if config.mediainfo_bin and part.container == "mp4":
         cmdline = '%s --Inform="Text;-%%ID%%_%%Title%%" %s' % (config.mediainfo_bin, helpers.quote(part.file))
         result = subprocess.check_output(cmdline, stderr=subprocess.PIPE, shell=True)
