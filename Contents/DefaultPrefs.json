@@ -330,12 +330,6 @@
     "default": "false"
   },
   {
-    "id": "provider.screwzira.enabled",
-    "label": "Provider: Enable ScrewZira (Hebrew)",
-    "type": "bool",
-    "default": "true"
-  },
-  {
     "id": "provider.podnapisi.enabled",
     "label": "Provider: Enable Podnapisi.NET",
     "type": "bool",
@@ -514,6 +508,18 @@
     "label": "Assrt API Token",
     "type": "text",
     "default": ""
+  },
+  {
+    "id": "provider.bsplayer.enabled",
+    "label": "Provider: Enable BSPlayer",
+    "type": "bool",
+    "default": "true"
+  },
+  {
+    "id": "provider.screwzira.enabled",
+    "label": "Provider: Enable ScrewZira (Hebrew)",
+    "type": "bool",
+    "default": "false"
   },
   {
     "id": "providers.multithreading",

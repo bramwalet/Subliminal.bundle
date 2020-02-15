@@ -795,6 +795,7 @@ class Config(object):
                      'argenteam': cast_bool(Prefs['provider.argenteam.enabled']),
                      'subscenter': False,
                      'assrt': cast_bool(Prefs['provider.assrt.enabled']),
+                     'bsplayer': cast_bool(Prefs['provider.bsplayer.enabled']),
                      'screwzira': cast_bool(Prefs['provider.screwzira.enabled']),
                 }
 
@@ -825,6 +826,7 @@ class Config(object):
             providers["assrt"] = False
             providers["subscene"] = False
             providers["napisy24"] = False
+            providers["bsplayer"] = False
             providers["screwzira"] = False
             providers_forced_off = dict(providers)
 
