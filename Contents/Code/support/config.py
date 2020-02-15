@@ -795,7 +795,8 @@ class Config(object):
                      'argenteam': cast_bool(Prefs['provider.argenteam.enabled']),
                      'subscenter': False,
                      'assrt': cast_bool(Prefs['provider.assrt.enabled']),
-                     }
+                     'screwzira': cast_bool(Prefs['provider.screwzira.enabled']),
+                }
 
     @property
     def providers_enabled(self):
