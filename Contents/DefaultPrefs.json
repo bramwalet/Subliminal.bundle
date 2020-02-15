@@ -511,7 +511,7 @@
   },
   {
     "id": "provider.bsplayer.enabled",
-    "label": "Provider: Enable BSPlayer",
+    "label": "Provider: Enable BSPlayer Subtitles",
     "type": "bool",
     "default": "true"
   },

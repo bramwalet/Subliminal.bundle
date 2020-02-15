@@ -95,25 +95,22 @@ the.vbm, mmgoodnow, Vertig0ne, thliu78, tattoomees, ostman, count_confucius, ehe
 ## Changelog
 
 
-2.6.5.3183
+2.6.5.3217
 
 subscene, addic7ed
 - either of those providers might impose a reCAPTCHA verification. In order to use those providers, please create an account at an AntiCaptcha service ([anti-captcha.com](http://getcaptchasolution.com/kkvviom7nh) or [deathbycaptcha.com](http://deathbycaptcha.com)), add funds, then supply your credentials/apikey in the configuration
 
 Changelog
-- core: don't fall back to default providers if none enabled
-- core: don't process any further if stream info is missing
-- core: support using mediainfo for retrieving MP4 MOV_TEXT subtitle stream titles (PMS bug)
-- core: fix embedded subtitle extraction in some cases (#681, #680)
-- core: scanning: add additional INFO logging for undetected languages
-- core: bazarr-backport: remove existing subtitle file, to support MergerFS
-- core: bazarr-backport: generic 10 minute throttling if uncaught exception occurs
-- providers: addic7ed: fix recaptcha solving; fix show ID retrieval (#681)
-- providers: addic7ed: add timeout on authentication error
-- providers: addic7ed: fix shows with dots in them (Mayans M.C.)
-- providers: addic7ed: fix detection of completed subtitle for non-english users (#686)
-- providers: addic7ed: add more timeouts in the login process
-- providers: argenteam: bazarr-backport: use new url; fixes
+- core: also extract (missing) embedded subtitles when SearchAllRecentlyAddedMissing is running
+- core: core: clarify detecting streams (in logs)
+- core: UnRAR: set binary to executable, even if not checked out from git; might fix #693
+- core: bazarr-backport: morpheus65535/bazarr#703: use proper language code detection instead of a wild guess; should fix bad existing subtitle detection
+- core: bazarr-backport: morpheus65535/bazarr#660: fix BOM encoding stuff
+- core: bazarr-backport: morpheus65535/bazarr#656 further generalize formats; skip release group match if format match failed
+- core: fix stream detection when using mediainfo (#711)
+- config/core: make periodic SZ-internal subtitle maintenance interval configurable
+- providers: add BSPlayer Subtitles
+- providers: add ScrewZira (Hebrew)
 
 [older changes](CHANGELOG.md)
 
