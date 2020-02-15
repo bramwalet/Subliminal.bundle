@@ -541,8 +541,12 @@ def scan_video(path, dont_use_actual_file=False, hints=None, providers=None, ski
         if video.size > 10485760:
             logger.debug('Size is %d', video.size)
             osub_hash = None
+
+            if "bsplayer" in providers:
+                video.hashes['bsplayer'] = osub_hash = hash_opensubtitles(hash_path)
+
             if "opensubtitles" in providers:
-                video.hashes['opensubtitles'] = osub_hash = hash_opensubtitles(hash_path)
+                video.hashes['opensubtitles'] = osub_hash = osub_hash or hash_opensubtitles(hash_path)
 
             if "shooter" in providers:
                 video.hashes['shooter'] = hash_shooter(hash_path)

@@ -87,7 +87,10 @@ def refine(video, **kwargs):
         # parse series year
         series_year = None
         if result['firstAired']:
-            series_year = datetime.datetime.strptime(result['firstAired'], '%Y-%m-%d').year
+            try:
+                series_year = datetime.datetime.strptime(result['firstAired'], '%Y-%m-%d').year
+            except ValueError:
+                continue
 
         # discard mismatches on year
         if video.year and series_year and video.year != series_year:
