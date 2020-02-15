@@ -825,6 +825,7 @@ class Config(object):
             providers["assrt"] = False
             providers["subscene"] = False
             providers["napisy24"] = False
+            providers["screwzira"] = False
             providers_forced_off = dict(providers)
 
         if not self.unrar and providers["legendastv"]:
