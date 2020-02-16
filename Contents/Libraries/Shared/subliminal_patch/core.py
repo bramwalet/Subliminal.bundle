@@ -354,15 +354,16 @@ class SZProviderPool(ProviderPool):
             orig_matches = matches.copy()
 
             logger.debug('%r: Found matches %r', s, matches)
+            score, score_without_hash = compute_score(matches, s, video, hearing_impaired=use_hearing_impaired)
             unsorted_subtitles.append(
-                (s, compute_score(matches, s, video, hearing_impaired=use_hearing_impaired), matches, orig_matches))
+                (s, score, score_without_hash, matches, orig_matches))
 
         # sort subtitles by score
-        scored_subtitles = sorted(unsorted_subtitles, key=operator.itemgetter(1), reverse=True)
+        scored_subtitles = sorted(unsorted_subtitles, key=operator.itemgetter(1, 2), reverse=True)
 
         # download best subtitles, falling back on the next on error
         downloaded_subtitles = []
-        for subtitle, score, matches, orig_matches in scored_subtitles:
+        for subtitle, score, score_without_hash, matches, orig_matches in scored_subtitles:
             # check score
             if score < min_score:
                 logger.info('%r: Score %d is below min_score (%d)', subtitle, score, min_score)

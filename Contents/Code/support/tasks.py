@@ -171,12 +171,15 @@ class SubtitleListingMixin(object):
                     else:
                         s.wrong_season_ep = True
 
+            orig_matches = matches.copy()
+            score, score_without_hash = compute_score(matches, s, video, hearing_impaired=use_hearing_impaired)
+
             unsorted_subtitles.append(
-                (s, compute_score(matches, s, video, hearing_impaired=use_hearing_impaired), matches))
-        scored_subtitles = sorted(unsorted_subtitles, key=operator.itemgetter(1), reverse=True)
+                (s, score, score_without_hash, matches, orig_matches))
+        scored_subtitles = sorted(unsorted_subtitles, key=operator.itemgetter(1, 2), reverse=True)
 
         subtitles = []
-        for subtitle, score, matches in scored_subtitles:
+        for subtitle, score, score_without_hash, matches, orig_matches in scored_subtitles:
             # check score
             if score < min_score and not subtitle.wrong_series:
                 Log.Info(u'%s: Score %d is below min_score (%d)', self.name, score, min_score)
