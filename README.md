@@ -94,6 +94,15 @@ the.vbm, mmgoodnow, Vertig0ne, thliu78, tattoomees, ostman, count_confucius, ehe
 
 ## Changelog
 
+2.6.5.3223
+
+subscene, addic7ed
+- either of those providers might impose a reCAPTCHA verification. In order to use those providers, please create an account at an AntiCaptcha service ([anti-captcha.com](http://getcaptchasolution.com/kkvviom7nh) or [deathbycaptcha.com](http://deathbycaptcha.com)), add funds, then supply your credentials/apikey in the configuration
+
+Changelog
+- core: scoring: reorder subtitles based on second non-hash-score if main hash score is the same; morpheus65535/bazarr#821
+- providers: bsplayer: verify hash; clean up
+
 
 2.6.5.3217
 
