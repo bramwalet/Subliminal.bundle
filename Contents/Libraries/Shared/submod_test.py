@@ -24,6 +24,7 @@ if debug:
 sub = Subtitle(Language.fromietf("eng"), mods=["common", "remove_HI", "OCR_fixes", "fix_uppercase", "shift_offset(ms=0,s=1)"])
 sub.content = open(fn).read()
 sub.normalize()
+sub.is_valid()
 content = sub.get_modified_content(debug=True)
 
 #submod = SubMod(debug=debug)
