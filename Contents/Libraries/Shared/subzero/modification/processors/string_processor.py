@@ -12,7 +12,7 @@ class StringProcessor(Processor):
     String replacement processor base
     """
 
-    def __init__(self, search, replace, name=None, parent=None, supported=None):
+    def __init__(self, search, replace, name=None, parent=None, supported=None, **kwargs):
         super(StringProcessor, self).__init__(name=name, supported=supported)
         self.search = search
         self.replace = replace
@@ -31,7 +31,7 @@ class MultipleLineProcessor(Processor):
         "data": {"old_value": "new_value"}
     }
     """
-    def __init__(self, snr_dict, name=None, parent=None, supported=None):
+    def __init__(self, snr_dict, name=None, parent=None, supported=None, **kwargs):
         super(MultipleLineProcessor, self).__init__(name=name, supported=supported)
         self.snr_dict = snr_dict
 

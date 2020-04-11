@@ -241,12 +241,20 @@ class SubZeroRequestsTransport(xmlrpclib.SafeTransport):
     # change our user agent to reflect Requests
     user_agent = "Python XMLRPC with Requests (python-requests.org)"
     proxies = None
+    xm_ver = 1
+    session_var = "PHPSESSID"
 
     def __init__(self, use_https=True, verify=None, user_agent=None, timeout=10, *args, **kwargs):
         self.verify = pem_file if verify is None else verify
         self.use_https = use_https
         self.user_agent = user_agent if user_agent is not None else self.user_agent
         self.timeout = timeout
+        self.session = requests.Session()
+        self.session.headers['User-Agent'] = self.user_agent
+        # if 'requests' in self.session.headers['User-Agent']:
+        #     # Set a random User-Agent if no custom User-Agent has been set
+        #     self.session.headers = User_Agent(allow_brotli=False).headers
+
         proxy = os.environ.get('SZ_HTTP_PROXY')
         if proxy:
             self.proxies = {
@@ -260,18 +268,40 @@ class SubZeroRequestsTransport(xmlrpclib.SafeTransport):
         """
         Make an xmlrpc request.
         """
-        headers = {'User-Agent': self.user_agent}
         url = self._build_url(host, handler)
+        cache_key = "xm%s_%s" % (self.xm_ver, host)
+
+        old_sessvar = self.session.cookies.get(self.session_var, "")
+        if not old_sessvar:
+            data = region.get(cache_key)
+            if data is not NO_VALUE:
+                logger.debug("Trying to re-use headers/cookies for %s" % host)
+                self.session.cookies, self.session.headers = data
+                old_sessvar = self.session.cookies.get(self.session_var, "")
+
         try:
-            resp = requests.post(url, data=request_body, headers=headers,
-                                 stream=True, timeout=self.timeout, proxies=self.proxies,
-                                 verify=self.verify)
+            resp = self.session.post(url, data=request_body,
+                                     stream=True, timeout=self.timeout, proxies=self.proxies,
+                                     verify=self.verify)
+
+            if self.session_var in resp.cookies and resp.cookies[self.session_var] != old_sessvar:
+                logger.debug("Storing %s cookies" % host)
+                region.set(cache_key, [self.session.cookies, self.session.headers])
         except ValueError:
+            logger.debug("Wiping cookies/headers cache (VE) for %s" % host)
+            region.delete(cache_key)
             raise
         except Exception:
+            logger.debug("Wiping cookies/headers cache (EX) for %s" % host)
+            region.delete(cache_key)
             raise  # something went wrong
         else:
-            resp.raise_for_status()
+            try:
+                resp.raise_for_status()
+            except requests.exceptions.HTTPError:
+                logger.debug("Wiping cookies/headers cache (RE) for %s" % host)
+                region.delete(cache_key)
+                raise
 
             try:
                 if 'x-ratelimit-remaining' in resp.headers and int(resp.headers['x-ratelimit-remaining']) <= 2:

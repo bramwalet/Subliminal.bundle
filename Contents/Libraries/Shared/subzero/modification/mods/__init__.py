@@ -107,9 +107,3 @@ empty_line_post_processors = [
 ]
 
 
-class EmptyEntryError(Exception):
-    pass
-
-
-class EmptyLineError(Exception):
-    pass

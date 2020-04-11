@@ -105,7 +105,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
 
     def __init__(self, username=None, password=None, use_tag_search=False, only_foreign=False, also_foreign=False,
                  skip_wrong_fps=True, is_vip=False, use_ssl=True, timeout=15):
-        if any((username, password)) and not all((username, password)):
+        if not all((username, password)):
             raise ConfigurationError('Username and password must be specified')
 
         self.username = username or ''
@@ -154,6 +154,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         logger.debug('Logged in with token %r', self.token[:10]+"X"*(len(self.token)-10))
 
         region.set("os_token", self.token)
+        time.sleep(1)
 
     def use_token_or_login(self, func):
         if not self.token:
@@ -162,6 +163,7 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
         try:
             return func()
         except Unauthorized:
+            logger.debug("Token not valid, logging in again")
             self.log_in()
             return func()
 
@@ -197,16 +199,11 @@ class OpenSubtitlesProvider(ProviderRetryMixin, _OpenSubtitlesProvider):
                     return
 
             logger.error("Login failed, please check your credentials")
+            raise
                 
     def terminate(self):
-        if self.token:
-            try:
-                checked(lambda: self.server.LogOut(self.token))
-            except:
-                logger.error("Logout failed: %s", traceback.format_exc())
-
         self.server = None
-        self.token = None
+        #self.token = None
 
     def list_subtitles(self, video, languages):
         """

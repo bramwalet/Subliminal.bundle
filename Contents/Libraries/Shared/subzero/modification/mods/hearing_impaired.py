@@ -1,7 +1,8 @@
 # coding=utf-8
 import re
 
-from subzero.modification.mods import SubtitleTextModification, empty_line_post_processors, EmptyEntryError, TAG
+from subzero.modification.mods import SubtitleTextModification, empty_line_post_processors, TAG
+from subzero.modification.exc import EmptyEntryError
 from subzero.modification.processors.re_processor import NReProcessor
 from subzero.modification import registry
 
@@ -46,7 +47,7 @@ class HearingImpaired(SubtitleTextModification):
                      name="HI_before_colon_noncaps"),
 
         # brackets (only remove if at least 3 chars in brackets)
-        NReProcessor(re.compile(ur'(?sux)-?%(t)s[([][^([)\]]+?(?=[A-zÀ-ž"\'.]{3,})[^([)\]]+[)\]][\s:]*%(t)s' %
+        NReProcessor(re.compile(ur'(?sux)-?%(t)s["\']*[([][^([)\]]+?(?=[A-zÀ-ž"\'.]{3,})[^([)\]]+[)\]]["\']*[\s:]*%(t)s' %
                                 {"t": TAG}), "", name="HI_brackets"),
 
         #NReProcessor(re.compile(ur'(?sux)-?%(t)s[([]%(t)s(?=[A-zÀ-ž"\'.]{3,})[^([)\]]+%(t)s$' % {"t": TAG}),
@@ -90,8 +91,8 @@ class HearingImpaired(SubtitleTextModification):
                      "", name="HI_music_symbols_only"),
 
         # remove music entries
-        NReProcessor(re.compile(ur'(?ums)(^[-\s>~]*[♫♪]+\s*.+|.+\s*[♫♪]+\s*$)'),
-                     "", name="HI_music"),
+        NReProcessor(re.compile(ur'(?ums)(^[-\s>~]*[*#¶♫♪]+\s*.+|.+\s*[*#¶♫♪]+\s*$)'),
+                     "", name="HI_music", entry=True),
     ]
 
 
