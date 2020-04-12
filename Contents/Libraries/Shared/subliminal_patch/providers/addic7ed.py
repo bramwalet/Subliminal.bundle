@@ -403,9 +403,13 @@ class Addic7edProvider(_Addic7edProvider):
 
     def download_subtitle(self, subtitle):
         last_dl = region.get("addic7ed_dl_ts")
+        last_reset = region.get("addic7ed_dl_ts_lr")
         amount = region.get("addic7ed_dl_amount")
         if amount is NO_VALUE:
             amount = 0
+
+        if last_reset is NO_VALUE:
+            last_reset = "never"
 
         cap = self.vip and 80 or 40
 
@@ -414,9 +418,11 @@ class Addic7edProvider(_Addic7edProvider):
         midnight = datetime.datetime.combine(germany_now, datetime.time.min)
 
         # reset at night
-        if last_dl <= midnight:
+        if last_dl and last_dl != NO_VALUE and last_dl <= midnight:
             logger.info("Reset dl amount (max: %s)", cap)
             region.set("addic7ed_dl_amount", 0)
+            region.set("addic7ed_dl_ts_lr", germany_now)
+            last_reset = germany_now
             amount = 0
 
         if amount >= cap:
@@ -444,3 +450,4 @@ class Addic7edProvider(_Addic7edProvider):
         subtitle.content = fix_line_ending(r.content)
         region.set("addic7ed_dl_amount", amount + 1)
         region.set("addic7ed_dl_ts", germany_now)
+        logger.info("Used %s/%s of downloads since %s", (amount + 1, cap, last_reset))
