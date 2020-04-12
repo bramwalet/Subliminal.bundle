@@ -376,6 +376,12 @@
     "secure": "true"
   },
   {
+    "id": "provider.addic7ed.is_vip",
+    "label": "Addic7ed VIP? (80 vs 40 downloads per day)",
+    "type": "bool",
+    "default": "false"
+  },
+  {
     "id": "provider.addic7ed.boost_by2",
     "label": "Addic7ed: boost score (if requirements met)",
     "type": "enum",

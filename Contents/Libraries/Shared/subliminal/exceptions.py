@@ -27,3 +27,8 @@ class ServiceUnavailable(ProviderError):
 class DownloadLimitExceeded(ProviderError):
     """Exception raised by providers when download limit is exceeded."""
     pass
+
+
+class DownloadLimitPerDayExceeded(ProviderError):
+    """Exception raised by providers when download limit is exceeded."""
+    pass

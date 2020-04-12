@@ -15,7 +15,8 @@ import subliminal
 import subliminal_patch
 import subzero.constants
 import lib
-from subliminal.exceptions import ServiceUnavailable, DownloadLimitExceeded, AuthenticationError
+from subliminal.exceptions import ServiceUnavailable, DownloadLimitExceeded, AuthenticationError, \
+    DownloadLimitPerDayExceeded
 from subliminal_patch.core import is_windows_special_path
 from whichdb import whichdb
 
@@ -61,12 +62,14 @@ def int_or_default(s, default):
         return default
 
 
-VALID_THROTTLE_EXCEPTIONS = (TooManyRequests, DownloadLimitExceeded, ServiceUnavailable, APIThrottled)
+VALID_THROTTLE_EXCEPTIONS = (TooManyRequests, DownloadLimitExceeded, DownloadLimitPerDayExceeded,
+                             ServiceUnavailable, APIThrottled)
 
 PROVIDER_THROTTLE_MAP = {
     "default": {
         TooManyRequests: (datetime.timedelta(hours=1), "1 hour"),
         DownloadLimitExceeded: (datetime.timedelta(hours=3), "3 hours"),
+        DownloadLimitPerDayExceeded: (datetime.timedelta(days=1), "1 days"),
         ServiceUnavailable: (datetime.timedelta(minutes=20), "20 minutes"),
         APIThrottled: (datetime.timedelta(minutes=10), "10 minutes"),
         AuthenticationError: (datetime.timedelta(hours=2), "2 hours"),
@@ -873,6 +876,7 @@ class Config(object):
 
         provider_settings = {'addic7ed': {'username': Prefs['provider.addic7ed.username'],
                                           'password': Prefs['provider.addic7ed.password'],
+                                          'is_vip': cast_bool(Prefs['provider.addic7ed.is_vip']),
                                           },
                              'opensubtitles': {'username': Prefs['provider.opensubtitles.username'],
                                                'password': Prefs['provider.opensubtitles.password'],

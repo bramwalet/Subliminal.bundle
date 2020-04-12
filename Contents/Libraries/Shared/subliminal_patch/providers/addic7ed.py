@@ -2,6 +2,8 @@
 import logging
 import re
 import datetime
+
+import pytz
 import subliminal
 import time
 
@@ -10,7 +12,8 @@ from random import randint
 from dogpile.cache.api import NO_VALUE
 from requests import Session
 from subliminal.cache import region
-from subliminal.exceptions import DownloadLimitExceeded, AuthenticationError, ConfigurationError
+from subliminal.exceptions import DownloadLimitExceeded, AuthenticationError, ConfigurationError, \
+    DownloadLimitPerDayExceeded
 from subliminal.providers.addic7ed import Addic7edProvider as _Addic7edProvider, \
     Addic7edSubtitle as _Addic7edSubtitle, ParserBeautifulSoup
 from subliminal.subtitle import fix_line_ending
@@ -64,6 +67,7 @@ class Addic7edProvider(_Addic7edProvider):
         'slk', 'slv', 'spa', 'sqi', 'srp', 'swe', 'tha', 'tur', 'ukr', 'vie', 'zho'
     ]} | {Language.fromietf(l) for l in ["sr-Latn", "sr-Cyrl"]}
 
+    vip = False
     USE_ADDICTED_RANDOM_AGENTS = False
     hearing_impaired_verifiable = True
     subtitle_class = Addic7edSubtitle
@@ -72,9 +76,10 @@ class Addic7edProvider(_Addic7edProvider):
     sanitize_characters = {'-', ':', '(', ')', '.', '/'}
     last_show_ids_fetch_key = "addic7ed_last_id_fetch"
 
-    def __init__(self, username=None, password=None, use_random_agents=False):
+    def __init__(self, username=None, password=None, use_random_agents=False, is_vip=False):
         super(Addic7edProvider, self).__init__(username=username, password=password)
         self.USE_ADDICTED_RANDOM_AGENTS = use_random_agents
+        self.vip = is_vip
 
         if not all((username, password)):
             raise ConfigurationError('Username and password must be specified')
@@ -397,6 +402,27 @@ class Addic7edProvider(_Addic7edProvider):
         return subtitles
 
     def download_subtitle(self, subtitle):
+        last_dl = region.get("addic7ed_dl_ts")
+        amount = region.get("addic7ed_dl_amount")
+        if amount is NO_VALUE:
+            amount = 0
+
+        cap = self.vip and 80 or 40
+
+        # we may be falsely assuming germany here; also they might just use UTC.
+        germany_now = datetime.datetime.now(tz=pytz.timezone("Europe/Berlin"))
+        midnight = datetime.datetime.combine(germany_now, datetime.time.min)
+
+        # reset at night
+        if last_dl <= midnight:
+            logger.info("Reset dl amount (max: %s)", cap)
+            region.set("addic7ed_dl_amount", 0)
+            amount = 0
+
+        if amount >= cap:
+            logger.info("Used %s/%s of downloads since %s", (amount, cap, last_dl))
+            raise DownloadLimitPerDayExceeded
+
         # download the subtitle
         r = self.session.get(self.server_url + subtitle.download_link, headers={'Referer': subtitle.page_link},
                              timeout=10)
@@ -416,3 +442,5 @@ class Addic7edProvider(_Addic7edProvider):
             raise DownloadLimitExceeded
 
         subtitle.content = fix_line_ending(r.content)
+        region.set("addic7ed_dl_amount", amount + 1)
+        region.set("addic7ed_dl_ts", germany_now)
