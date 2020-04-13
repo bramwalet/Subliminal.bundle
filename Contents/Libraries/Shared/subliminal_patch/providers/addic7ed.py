@@ -2,8 +2,8 @@
 import logging
 import re
 import datetime
+import types
 
-import pytz
 import subliminal
 import time
 
@@ -402,31 +402,22 @@ class Addic7edProvider(_Addic7edProvider):
         return subtitles
 
     def download_subtitle(self, subtitle):
-        last_dl = region.get("addic7ed_dl_ts")
-        last_reset = region.get("addic7ed_dl_ts_lr")
-        amount = region.get("addic7ed_dl_amount")
-        if amount is NO_VALUE:
-            amount = 0
+        last_dls = region.get("addic7ed_dls")
+        now = datetime.datetime.now()
+        one_day = datetime.timedelta(hours=24)
 
-        if last_reset is NO_VALUE:
-            last_reset = "never"
+        if not isinstance(last_dls, types.ListType):
+            last_dls = []
+        else:
+            # filter all non-expired DLs
+            last_dls = filter(lambda t: t + one_day > now, last_dls)
+            region.set("addic7ed_dls", last_dls)
 
         cap = self.vip and 80 or 40
-
-        # we may be falsely assuming germany here; also they might just use UTC.
-        germany_now = datetime.datetime.now(tz=pytz.timezone("Europe/Berlin"))
-        midnight = datetime.datetime.combine(germany_now, datetime.time.min)
-
-        # reset at night
-        if last_dl and last_dl != NO_VALUE and last_dl <= midnight:
-            logger.info("Reset dl amount (max: %s)", cap)
-            region.set("addic7ed_dl_amount", 0)
-            region.set("addic7ed_dl_ts_lr", germany_now)
-            last_reset = germany_now
-            amount = 0
+        amount = len(last_dls)
 
         if amount >= cap:
-            logger.info("Used %s/%s of downloads since %s", (amount, cap, last_dl))
+            logger.info("Addic7ed: Downloads per day exceeded (%s)", cap)
             raise DownloadLimitPerDayExceeded
 
         # download the subtitle
@@ -440,7 +431,7 @@ class Addic7edProvider(_Addic7edProvider):
         if not r.content:
             # Provider wrongful return a status of 304 Not Modified with an empty content
             # raise_for_status won't raise exception for that status code
-            logger.error('Unable to download subtitle. No data returned from provider')
+            logger.error('Addic7ed: Unable to download subtitle. No data returned from provider')
             return
 
         # detect download limit exceeded
@@ -448,6 +439,6 @@ class Addic7edProvider(_Addic7edProvider):
             raise DownloadLimitExceeded
 
         subtitle.content = fix_line_ending(r.content)
-        region.set("addic7ed_dl_amount", amount + 1)
-        region.set("addic7ed_dl_ts", germany_now)
-        logger.info("Used %s/%s of downloads since %s", (amount + 1, cap, last_reset))
+        last_dls.append(datetime.datetime.now())
+        region.set("addic7ed_dls", last_dls)
+        logger.info("Addic7ed: Used %s/%s downloads", amount+1, cap)
