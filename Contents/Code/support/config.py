@@ -69,7 +69,7 @@ PROVIDER_THROTTLE_MAP = {
     "default": {
         TooManyRequests: (datetime.timedelta(hours=1), "1 hour"),
         DownloadLimitExceeded: (datetime.timedelta(hours=3), "3 hours"),
-        DownloadLimitPerDayExceeded: (datetime.timedelta(days=1), "1 days"),
+        DownloadLimitPerDayExceeded: (datetime.timedelta(hours=4), "4 hours"),
         ServiceUnavailable: (datetime.timedelta(minutes=20), "20 minutes"),
         APIThrottled: (datetime.timedelta(minutes=10), "10 minutes"),
         AuthenticationError: (datetime.timedelta(hours=2), "2 hours"),

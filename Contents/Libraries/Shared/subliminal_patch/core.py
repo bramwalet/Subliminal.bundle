@@ -264,7 +264,7 @@ class SZProviderPool(ProviderPool):
                     requests.exceptions.SSLError,
                     requests.Timeout,
                     socket.timeout):
-                logger.error('Provider %r connection error', subtitle.provider_name)
+                logger.exception('Provider %r connection error', subtitle.provider_name)
 
             except ResponseNotReady:
                 logger.error('Provider %r response error, reinitializing', subtitle.provider_name)
