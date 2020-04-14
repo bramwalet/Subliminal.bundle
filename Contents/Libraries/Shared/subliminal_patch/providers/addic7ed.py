@@ -406,6 +406,10 @@ class Addic7edProvider(_Addic7edProvider):
         now = datetime.datetime.now()
         one_day = datetime.timedelta(hours=24)
 
+        def raise_limit():
+            logger.info("Addic7ed: Downloads per day exceeded (%s)", cap)
+            raise DownloadLimitPerDayExceeded
+
         if not isinstance(last_dls, types.ListType):
             last_dls = []
         else:
@@ -417,8 +421,7 @@ class Addic7edProvider(_Addic7edProvider):
         amount = len(last_dls)
 
         if amount >= cap:
-            logger.info("Addic7ed: Downloads per day exceeded (%s)", cap)
-            raise DownloadLimitPerDayExceeded
+            raise_limit()
 
         # download the subtitle
         r = self.session.get(self.server_url + subtitle.download_link, headers={'Referer': subtitle.page_link},
@@ -441,4 +444,8 @@ class Addic7edProvider(_Addic7edProvider):
         subtitle.content = fix_line_ending(r.content)
         last_dls.append(datetime.datetime.now())
         region.set("addic7ed_dls", last_dls)
-        logger.info("Addic7ed: Used %s/%s downloads", amount+1, cap)
+        logger.info("Addic7ed: Used %s/%s downloads", amount + 1, cap)
+
+        if amount + 1 >= cap:
+            raise_limit()
+
