@@ -666,12 +666,18 @@ class Config(object):
             if not agent.primary:
                 continue
 
-            for t in list(agent.media_types):
-                if t.media_type in (MOVIE, SHOW):
-                    related_agents = Plex.primary_agent(agent.identifier, t.media_type)
+            media_types = [t.media_type for t in list(agent.media_types)]
+
+            # the new movie agent doesn't populate its media types, workaround
+            if not media_types and agent.identifier == "tv.plex.agents.movie":
+                media_types = [MOVIE]
+
+            for media_type in media_types:
+                if media_type in (MOVIE, SHOW):
+                    related_agents = Plex.primary_agent(agent.identifier, media_type)
                     for a in related_agents:
                         if a.identifier == PLUGIN_IDENTIFIER and a.enabled:
-                            enabled_for_primary_agents[MEDIA_TYPE_TO_STRING[t.media_type]].append(agent.identifier)
+                            enabled_for_primary_agents[MEDIA_TYPE_TO_STRING[media_type]].append(agent.identifier)
 
         # find the libraries that use them
         for library in self.sections:
