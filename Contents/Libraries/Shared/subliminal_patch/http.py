@@ -35,7 +35,8 @@ except ImportError:
 from subzero.lib.io import get_viable_encoding
 
 logger = logging.getLogger(__name__)
-pem_file = os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(unicode(__file__, get_viable_encoding()))), "..", certifi.where()))
+pem_file = os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(unicode(__file__, get_viable_encoding()))),
+                                         "..", certifi.where()))
 
 
 class TimeoutSession(requests.Session):
@@ -53,9 +54,9 @@ class TimeoutSession(requests.Session):
 
 
 class CertifiSession(TimeoutSession):
-    def __init__(self):
+    def __init__(self, verify=None):
         super(CertifiSession, self).__init__()
-        self.verify = pem_file
+        self.verify = verify or pem_file
 
 
 class NeedsCaptchaException(Exception):

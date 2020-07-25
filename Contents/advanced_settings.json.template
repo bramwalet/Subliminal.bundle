@@ -85,9 +85,12 @@ Don't expect support if you mess this up.
         "sonarr": {
             // don't verify HTTPS certificates? Set to True for self-signed certificates
             "ssl_no_verify": false,
+            // custom path to certificate pem file
+            "pem_file": None,
         },
         "radarr": {
             "ssl_no_verify": false,
+            "pem_file": None,
         },
     }
 }
