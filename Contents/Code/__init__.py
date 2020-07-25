@@ -262,7 +262,8 @@ class SubZeroAgent(object):
 
 
 class SubZeroSubtitlesAgentMovies(SubZeroAgent, Agent.Movies):
-    contributes_to = ['com.plexapp.agents.imdb', 'com.plexapp.agents.xbmcnfo', 'com.plexapp.agents.themoviedb', 'com.plexapp.agents.hama']
+    contributes_to = ['com.plexapp.agents.imdb', 'com.plexapp.agents.xbmcnfo', 'com.plexapp.agents.themoviedb',
+                      'com.plexapp.agents.hama',  'tv.plex.agents.movie']
     score_prefs_key = "subtitles.search.minimumMovieScore2"
     agent_type_verbose = "Movies"
 
