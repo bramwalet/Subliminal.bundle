@@ -1,3 +1,20 @@
+2.6.5.3217
+
+subscene, addic7ed
+- either of those providers might impose a reCAPTCHA verification. In order to use those providers, please create an account at an AntiCaptcha service ([anti-captcha.com](http://getcaptchasolution.com/kkvviom7nh) or [deathbycaptcha.com](http://deathbycaptcha.com)), add funds, then supply your credentials/apikey in the configuration
+
+Changelog
+- core: also extract (missing) embedded subtitles when SearchAllRecentlyAddedMissing is running
+- core: core: clarify detecting streams (in logs)
+- core: UnRAR: set binary to executable, even if not checked out from git; might fix #693
+- core: bazarr-backport: morpheus65535/bazarr#703: use proper language code detection instead of a wild guess; should fix bad existing subtitle detection
+- core: bazarr-backport: morpheus65535/bazarr#660: fix BOM encoding stuff
+- core: bazarr-backport: morpheus65535/bazarr#656 further generalize formats; skip release group match if format match failed
+- core: fix stream detection when using mediainfo (#711)
+- config/core: make periodic SZ-internal subtitle maintenance interval configurable
+- providers: add BSPlayer Subtitles
+- providers: add ScrewZira (Hebrew)
+
 2.6.5.3183
 
 subscene, addic7ed

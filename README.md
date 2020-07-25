@@ -94,6 +94,24 @@ the.vbm, mmgoodnow, Vertig0ne, thliu78, tattoomees, ostman, count_confucius, ehe
 
 ## Changelog
 
+2.6.5.3241
+
+subscene, addic7ed
+- either of those providers might impose a reCAPTCHA verification. In order to use those providers, please create an account at an AntiCaptcha service ([anti-captcha.com](http://getcaptchasolution.com/kkvviom7nh) or [deathbycaptcha.com](http://deathbycaptcha.com)), add funds, then supply your credentials/apikey in the configuration
+
+Changelog
+- core: add support for new Plex Movie agent
+- core: remove py3 compat breaking unnecessary change
+- core: skip drawing tags for SRT
+- core: advanced_settings: refiners: drone: add custom pem_file support; fixes #735
+- providers: core: set DownloadLimitPerDayExceeded timeout to 4 hours (was one day);
+- providers: addic7ed: limit downloads per day; add vip setting
+- providers: addic7ed: properly compare last_dl, add last_reset tracking info to log #723
+- providers: addic7ed: properly implement limits
+- submod: HI: remove more music tags
+- submod: common CM_punctuation_space2: detect AND don't try changing domain/url/host when fixing punctuation
+
+
 2.6.5.3223
 
 subscene, addic7ed
@@ -103,23 +121,6 @@ Changelog
 - core: scoring: reorder subtitles based on second non-hash-score if main hash score is the same; morpheus65535/bazarr#821
 - providers: bsplayer: verify hash; clean up
 
-
-2.6.5.3217
-
-subscene, addic7ed
-- either of those providers might impose a reCAPTCHA verification. In order to use those providers, please create an account at an AntiCaptcha service ([anti-captcha.com](http://getcaptchasolution.com/kkvviom7nh) or [deathbycaptcha.com](http://deathbycaptcha.com)), add funds, then supply your credentials/apikey in the configuration
-
-Changelog
-- core: also extract (missing) embedded subtitles when SearchAllRecentlyAddedMissing is running
-- core: core: clarify detecting streams (in logs)
-- core: UnRAR: set binary to executable, even if not checked out from git; might fix #693
-- core: bazarr-backport: morpheus65535/bazarr#703: use proper language code detection instead of a wild guess; should fix bad existing subtitle detection
-- core: bazarr-backport: morpheus65535/bazarr#660: fix BOM encoding stuff
-- core: bazarr-backport: morpheus65535/bazarr#656 further generalize formats; skip release group match if format match failed
-- core: fix stream detection when using mediainfo (#711)
-- config/core: make periodic SZ-internal subtitle maintenance interval configurable
-- providers: add BSPlayer Subtitles
-- providers: add ScrewZira (Hebrew)
 
 [older changes](CHANGELOG.md)
 
