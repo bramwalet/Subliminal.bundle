@@ -22,7 +22,7 @@ Don't expect support if you mess this up.
     // when the find better subtitles task finds a subtitle for an item that has an active extracted embedded subtitle
     // set, what should be the minimum score that subtitle has to have in order to be considered better?
     "find_better_as_extracted_tv_score": 352,
-    "find_better_as_extracted_movie_score": 82,
+    "find_better_as_extracted_movie_score": 112,
 
     // SZ can use mediainfo if present to detect titles/forced state of MP4 MOV_TEXT, because the PMS currently doesn't
     // set the title attribute
