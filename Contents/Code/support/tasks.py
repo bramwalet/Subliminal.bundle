@@ -670,7 +670,7 @@ class FindBetterSubtitles(DownloadSubtitleMixin, SubtitleListingMixin, Task):
         min_score_series = int(Prefs["subtitles.search.minimumTVScore2"].strip())
         min_score_movies = int(Prefs["subtitles.search.minimumMovieScore2"].strip())
         min_score_extracted_series = config.advanced.find_better_as_extracted_tv_score or 352
-        min_score_extracted_movies = config.advanced.find_better_as_extracted_movie_score or 82
+        min_score_extracted_movies = config.advanced.find_better_as_extracted_movie_score or 112
         overwrite_manually_modified = cast_bool(
             Prefs["scheduler.tasks.FindBetterSubtitles.overwrite_manually_modified"])
         overwrite_manually_selected = cast_bool(
