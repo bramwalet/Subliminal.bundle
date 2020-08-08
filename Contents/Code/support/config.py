@@ -10,6 +10,8 @@ import jstyleson
 import datetime
 import stat
 import traceback
+import socket
+import requests
 
 import subliminal
 import subliminal_patch
@@ -63,7 +65,7 @@ def int_or_default(s, default):
 
 
 VALID_THROTTLE_EXCEPTIONS = (TooManyRequests, DownloadLimitExceeded, DownloadLimitPerDayExceeded,
-                             ServiceUnavailable, APIThrottled)
+                             ServiceUnavailable, APIThrottled, requests.Timeout, socket.timeout)
 
 PROVIDER_THROTTLE_MAP = {
     "default": {
@@ -73,6 +75,8 @@ PROVIDER_THROTTLE_MAP = {
         ServiceUnavailable: (datetime.timedelta(minutes=20), "20 minutes"),
         APIThrottled: (datetime.timedelta(minutes=10), "10 minutes"),
         AuthenticationError: (datetime.timedelta(hours=2), "2 hours"),
+        requests.Timeout: (datetime.timedelta(minutes=20), "20 minutes"),
+        socket.timeout: (datetime.timedelta(minutes=20), "20 minutes"),
     },
     "opensubtitles": {
         TooManyRequests: (datetime.timedelta(hours=3), "3 hours"),
