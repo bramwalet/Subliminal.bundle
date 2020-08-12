@@ -65,7 +65,9 @@ def int_or_default(s, default):
 
 
 VALID_THROTTLE_EXCEPTIONS = (TooManyRequests, DownloadLimitExceeded, DownloadLimitPerDayExceeded,
-                             ServiceUnavailable, APIThrottled, requests.Timeout, socket.timeout)
+                             ServiceUnavailable, APIThrottled, requests.Timeout, requests.ReadTimeout, socket.timeout)
+
+def_timeout = (datetime.timedelta(minutes=20), "20 minutes")
 
 PROVIDER_THROTTLE_MAP = {
     "default": {
@@ -75,8 +77,9 @@ PROVIDER_THROTTLE_MAP = {
         ServiceUnavailable: (datetime.timedelta(minutes=20), "20 minutes"),
         APIThrottled: (datetime.timedelta(minutes=10), "10 minutes"),
         AuthenticationError: (datetime.timedelta(hours=2), "2 hours"),
-        requests.Timeout: (datetime.timedelta(minutes=20), "20 minutes"),
-        socket.timeout: (datetime.timedelta(minutes=20), "20 minutes"),
+        requests.Timeout: def_timeout,
+        socket.timeout: def_timeout,
+        requests.ReadTimeout: def_timeout,
     },
     "opensubtitles": {
         TooManyRequests: (datetime.timedelta(hours=3), "3 hours"),
