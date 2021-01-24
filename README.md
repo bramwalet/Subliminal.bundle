@@ -92,6 +92,7 @@ For further help or manual installation, [please go to the wiki](https://github.
 
 After installation, you need to enable the plugin for your libraries:
 
+- set your movie libraries to "Plex Movie (legacy)" otherwise no plugins will work
 - go to Settings -> Server -> Agents -> Movies/TV Shows.
 - select the metadata provider you use on your library, e.g.: Freebase (movies) or TheTVDB (series)
 - enable Sub-Zero Subtitles (TV/Movies)
