@@ -779,8 +779,8 @@ class Config(object):
         if not Prefs["subtitles.save.filesystem"]:
             return
 
-        fld_custom = Prefs["subtitles.save.subFolder.Custom"].strip() if cast_bool(
-            Prefs["subtitles.save.subFolder.Custom"]) else None
+        fld_custom = Prefs["subtitles.save.subFolder.Custom"].strip() if \
+            Prefs["subtitles.save.subFolder.Custom"] else None
         return fld_custom or (
             Prefs["subtitles.save.subFolder"] if Prefs["subtitles.save.subFolder"] != "current folder" else None)
 
