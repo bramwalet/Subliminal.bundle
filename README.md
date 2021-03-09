@@ -94,6 +94,16 @@ the.vbm, mmgoodnow, Vertig0ne, thliu78, tattoomees, ostman, count_confucius, ehe
 
 ## Changelog
 
+2.6.5.3254
+
+subscene, addic7ed
+- either of those providers might impose a reCAPTCHA verification. In order to use those providers, please create an account at an AntiCaptcha service ([anti-captcha.com](http://getcaptchasolution.com/kkvviom7nh) or [deathbycaptcha.com](http://deathbycaptcha.com)), add funds, then supply your credentials/apikey in the configuration
+
+Changelog
+core: properly handle ReadTimeout
+core: fix existing subtitle detection for custom subtitle folders (fix #761)
+core: add option to not download subtitles for certain audio languages existing; and/or no audio stream (fix #756)
+
 2.6.5.3247
 
 subscene, addic7ed
@@ -102,35 +112,6 @@ subscene, addic7ed
 Changelog
 core: fix for tv.plex.agents.movie not populating its media types
 core: tasks: findBetterSubtitles: increase minimum score for better subtitles for movies with extracted embedded subs from 82 to 112
-
-
-2.6.5.3241
-
-subscene, addic7ed
-- either of those providers might impose a reCAPTCHA verification. In order to use those providers, please create an account at an AntiCaptcha service ([anti-captcha.com](http://getcaptchasolution.com/kkvviom7nh) or [deathbycaptcha.com](http://deathbycaptcha.com)), add funds, then supply your credentials/apikey in the configuration
-
-Changelog
-- core: add support for new Plex Movie agent
-- core: remove py3 compat breaking unnecessary change
-- core: skip drawing tags for SRT
-- core: advanced_settings: refiners: drone: add custom pem_file support; fixes #735
-- providers: core: set DownloadLimitPerDayExceeded timeout to 4 hours (was one day);
-- providers: addic7ed: limit downloads per day; add vip setting
-- providers: addic7ed: properly compare last_dl, add last_reset tracking info to log #723
-- providers: addic7ed: properly implement limits
-- submod: HI: remove more music tags
-- submod: common CM_punctuation_space2: detect AND don't try changing domain/url/host when fixing punctuation
-
-
-2.6.5.3223
-
-subscene, addic7ed
-- either of those providers might impose a reCAPTCHA verification. In order to use those providers, please create an account at an AntiCaptcha service ([anti-captcha.com](http://getcaptchasolution.com/kkvviom7nh) or [deathbycaptcha.com](http://deathbycaptcha.com)), add funds, then supply your credentials/apikey in the configuration
-
-Changelog
-- core: scoring: reorder subtitles based on second non-hash-score if main hash score is the same; morpheus65535/bazarr#821
-- providers: bsplayer: verify hash; clean up
-
 
 [older changes](CHANGELOG.md)
 
