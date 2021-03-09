@@ -86,18 +86,7 @@ In addition to that Sub-Zero also fixes problems introduced by the subtitle crea
 Ever had broken music icons in a subtitle? Nordic characters like `Å` which turned into `Ã¥`? Not anymore.
 
 ## Installation
-
-Simply go to the Plex Plugins in your Plex Media Server, search for Sub-Zero and install it.
-For further help or manual installation, [please go to the wiki](https://github.com/pannal/Sub-Zero.bundle/wiki/Installation).
-
-After installation, you need to enable the plugin for your libraries:
-
-- set your movie libraries to "Plex Movie (legacy)" otherwise no plugins will work
-- go to Settings -> Server -> Agents -> Movies/TV Shows.
-- select the metadata provider you use on your library, e.g.: Freebase (movies) or TheTVDB (series)
-- enable Sub-Zero Subtitles (TV/Movies)
-- configure them.
-- refresh your library (or individual movies/TV shows)
+[Please go to the wiki](https://github.com/pannal/Sub-Zero.bundle/wiki/Installation).
 
 ## Big thanks to the beta/i18n testing team (in no particular order)!
 the.vbm, mmgoodnow, Vertig0ne, thliu78, tattoomees, ostman, count_confucius, eherberg, tywilliams_88, Swanny, Jippo, Joost1991 / joost, Marik, Jon, AmbyDK, Clay, Abenlog, michael, smikwily, shoghicp, Zuikkis, Isilorn, Jacob K, Ninjouz, chopeta, fvb, Uthman, Claus Møller, Semi Doludizgin, Rafael, sugarman402, Morpheus1333, Yamil.llanos, Notorius28 
