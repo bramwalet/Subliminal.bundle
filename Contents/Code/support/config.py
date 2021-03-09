@@ -160,6 +160,8 @@ class Config(object):
     exact_filenames = False
     only_one = False
     any_language_is_enough = False
+    ignore_for_audio = False
+    ignore_subs_for_empty_audio = False
     embedded_auto_extract = False
     ietf_as_alpha3 = False
     unrar = None
@@ -252,6 +254,7 @@ class Config(object):
         self.plex_transcoder = self.get_plex_transcoder()
         self.only_one = cast_bool(Prefs['subtitles.only_one'])
         self.any_language_is_enough = Prefs['subtitles.any_language_is_enough']
+        self.ignore_for_audio = self.ignore_subs_for_audio()
         self.embedded_auto_extract = cast_bool(Prefs["subtitles.embedded.autoextract"])
         self.ietf_as_alpha3 = cast_bool(Prefs["subtitles.language.ietf_normalize"])
         self.use_custom_dns = self.parse_custom_dns()
@@ -694,6 +697,22 @@ class Config(object):
         Log.Debug(u"I'm enabled for: %s" % [lib.title for key, lib in enabled_sections.iteritems()])
         return enabled_sections
 
+    def lang_str_to_list(self, s, l):
+        if len(s) and s != "None":
+            for lang in s.split(u","):
+                lang = lang.strip()
+                if lang == "NULL":
+                    l.append(lang)
+                    continue
+                try:
+                    real_lang = Language.fromietf(lang)
+                except:
+                    try:
+                        real_lang = Language.fromname(lang)
+                    except:
+                        continue
+                l.append(real_lang)
+
     # Prepare a list of languages we want subs for
     def get_lang_list(self, provider=None, ordered=False):
         # advanced settings
@@ -734,17 +753,9 @@ class Config(object):
             except:
                 pass
 
-        if len(lang_custom) and lang_custom != "None":
-            for lang in lang_custom.split(u","):
-                lang = lang.strip()
-                try:
-                    real_lang = Language.fromietf(lang)
-                except:
-                    try:
-                        real_lang = Language.fromname(lang)
-                    except:
-                        continue
-                l.append(real_lang)
+        self.lang_str_to_list(lang_custom, l)
+        if "NULL" in l:
+            l.remove("NULL")
 
         if self.forced_also:
             if Prefs["subtitles.when_forced"] == "Always":
@@ -774,6 +785,16 @@ class Config(object):
         return set(l) if not ordered else l
 
     lang_list = property(get_lang_list)
+
+    def ignore_subs_for_audio(self):
+        c = Prefs['subtitles.ignore_for_audio'].strip()
+        l = []
+
+        self.lang_str_to_list(c, l)
+        if "NULL" in l:
+            l.remove("NULL")
+            self.ignore_subs_for_empty_audio = True
+        return l
 
     def get_subtitle_destination_folder(self):
         if not Prefs["subtitles.save.filesystem"]:

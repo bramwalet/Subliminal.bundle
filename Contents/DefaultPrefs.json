@@ -193,6 +193,12 @@
     "default": "Always"
   },
   {
+    "id": "subtitles.ignore_for_audio",
+    "label": "No subtitles for Audio languages (use ISO-639-1 codes; comma-separated; NULL=no audio)",
+    "type": "text",
+    "default": "None"
+  },
+  {
     "id": "subtitles.when_forced",
     "label": "Download foreign/forced subtitles",
     "type": "enum",

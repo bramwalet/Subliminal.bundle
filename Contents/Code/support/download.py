@@ -16,6 +16,7 @@ from support.storage import get_pack_data, store_pack_data
 def get_missing_languages(video, part):
     languages_list = config.get_lang_list(ordered=True)
     languages = set(languages_list)
+    ignore_langs = set(config.ignore_for_audio)
     valid_langs_in_media = set()
 
     if Prefs["subtitles.when"] != "Always":
@@ -27,6 +28,15 @@ def get_missing_languages(video, part):
     if valid_langs_in_media and not languages:
         Log.Debug("Skipping subtitle search for %s, audio streams are in correct language(s)",
                   video)
+        return set()
+
+    if config.ignore_subs_for_empty_audio and not video.audio_languages:
+        Log.Debug("Skipping subtitle search for %s, ignoring as no audio stream exists", video)
+        return set()
+
+    inter = ignore_langs.intersection(video.audio_languages)
+    if ignore_langs and inter:
+        Log.Debug("Skipping subtitle search for %s, ignoring due to existing audio streams: %s", video, inter)
         return set()
 
     # should we treat IETF as alpha3? (ditch the country part)
