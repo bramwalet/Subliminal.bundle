@@ -194,7 +194,7 @@
   },
   {
     "id": "subtitles.ignore_for_audio",
-    "label": "No subtitles for Audio languages (use ISO-639-1 codes; comma-separated; NULL=no audio)",
+    "label": "Don't download subtitles for Audio languages (use ISO-639-1 codes; comma-separated; NULL=no audio)",
     "type": "text",
     "default": "None"
   },
