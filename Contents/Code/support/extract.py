@@ -94,30 +94,36 @@ def multi_extract_embedded(stream_list, refresh=False, with_mods=False, single_t
         execute()
 
 
-def season_extract_embedded(rating_key, requested_language, with_mods=False, force=False):
+def season_extract_embedded(rating_key, requested_language, with_mods=False, force=False, mode="season"):
     # get stored subtitle info for item id
     subtitle_storage = get_subtitle_storage()
 
     try:
-        for data in get_all_items(key="children", value=rating_key, base="library/metadata"):
-            item = get_item(data[MI_KEY])
-            if item:
-                stored_subs = subtitle_storage.load_or_new(item)
-                for part in get_all_parts(item):
-                    embedded_subs = stored_subs.get_by_provider(part.id, requested_language, "embedded")
-                    current = stored_subs.get_any(part.id, requested_language)
-                    if not embedded_subs or force:
-                        stream_data = get_embedded_subtitle_streams(part, requested_language=requested_language)
-                        if stream_data:
-                            stream = stream_data[0]["stream"]
+        rating_keys = [rating_key]
+        if mode == "series":
+            seasons = get_all_items(key="children", value=rating_key, base="library/metadata")
+            rating_keys = [season[MI_KEY] for season in seasons]
 
-                            set_current = not current or force
-                            refresh = not current
+        for rating_key in rating_keys:
+            for data in get_all_items(key="children", value=rating_key, base="library/metadata"):
+                item = get_item(data[MI_KEY])
+                if item:
+                    stored_subs = subtitle_storage.load_or_new(item)
+                    for part in get_all_parts(item):
+                        embedded_subs = stored_subs.get_by_provider(part.id, requested_language, "embedded")
+                        current = stored_subs.get_any(part.id, requested_language)
+                        if not embedded_subs or force:
+                            stream_data = get_embedded_subtitle_streams(part, requested_language=requested_language)
+                            if stream_data:
+                                stream = stream_data[0]["stream"]
 
-                            extract_embedded_sub(rating_key=item.rating_key, part_id=part.id,
-                                                 stream_index=str(stream.index), set_current=set_current,
-                                                 refresh=refresh, language=requested_language, with_mods=with_mods,
-                                                 extract_mode="m")
+                                set_current = not current or force
+                                refresh = not current
+
+                                extract_embedded_sub(rating_key=item.rating_key, part_id=part.id,
+                                                     stream_index=str(stream.index), set_current=set_current,
+                                                     refresh=refresh, language=requested_language, with_mods=with_mods,
+                                                     extract_mode="m")
     finally:
         subtitle_storage.destroy()
 

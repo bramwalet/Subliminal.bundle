@@ -108,28 +108,51 @@ def MetadataMenu(rating_key, title=None, base_title=None, display_items=False, p
             add_incl_excl_options(oc, current_kind, title=sub_title, rating_key=rating_key, callback_menu=InclExclMenu)
 
         # mass-extract embedded
-        if current_kind == "season" and config.plex_transcoder:
-            for lang in config.lang_list:
-                oc.add(DirectoryObject(
-                    key=Callback(SeasonExtractEmbedded, rating_key=rating_key, language=lang,
-                                 base_title=show.section.title, display_items=display_items, item_title=item_title,
-                                 title=title,
-                                 previous_item_type=previous_item_type, with_mods=True,
-                                 previous_rating_key=previous_rating_key, randomize=timestamp()),
-                    title=_(u"Extract missing %(language)s embedded subtitles", language=display_language(lang)),
-                    summary=_("Extracts the not yet extracted embedded subtitles of all episodes for the current "
-                              "season with all configured default modifications")
-                ))
-                oc.add(DirectoryObject(
-                    key=Callback(SeasonExtractEmbedded, rating_key=rating_key, language=lang,
-                                 base_title=show.section.title, display_items=display_items, item_title=item_title,
-                                 title=title, force=True,
-                                 previous_item_type=previous_item_type, with_mods=True,
-                                 previous_rating_key=previous_rating_key, randomize=timestamp()),
-                    title=_(u"Extract and activate %(language)s embedded subtitles", language=display_language(lang)),
-                    summary=_("Extracts embedded subtitles of all episodes for the current season "
-                              "with all configured default modifications")
-                ))
+        if config.plex_transcoder:
+            if current_kind == "season":
+                for lang in config.lang_list:
+                    oc.add(DirectoryObject(
+                        key=Callback(SeasonExtractEmbedded, rating_key=rating_key, language=lang,
+                                     base_title=show.section.title, display_items=display_items, item_title=item_title,
+                                     title=title,
+                                     previous_item_type=previous_item_type, with_mods=True,
+                                     previous_rating_key=previous_rating_key, randomize=timestamp()),
+                        title=_(u"Extract missing %(language)s embedded subtitles", language=display_language(lang)),
+                        summary=_("Extracts the not yet extracted embedded subtitles of all episodes for the current "
+                                  "season with all configured default modifications")
+                    ))
+                    oc.add(DirectoryObject(
+                        key=Callback(SeasonExtractEmbedded, rating_key=rating_key, language=lang,
+                                     base_title=show.section.title, display_items=display_items, item_title=item_title,
+                                     title=title, force=True,
+                                     previous_item_type=previous_item_type, with_mods=True,
+                                     previous_rating_key=previous_rating_key, randomize=timestamp()),
+                        title=_(u"Extract and activate %(language)s embedded subtitles", language=display_language(lang)),
+                        summary=_("Extracts embedded subtitles of all episodes for the current season "
+                                  "with all configured default modifications")
+                    ))
+            elif current_kind == "series":
+                for lang in config.lang_list:
+                    oc.add(DirectoryObject(
+                        key=Callback(SeasonExtractEmbedded, rating_key=rating_key, language=lang,
+                                     base_title=title, display_items=display_items, item_title=item_title,
+                                     title=title, mode="series",
+                                     previous_item_type=previous_item_type, with_mods=True,
+                                     previous_rating_key=previous_rating_key, randomize=timestamp()),
+                        title=_(u"Extract missing %(language)s embedded subtitles", language=display_language(lang)),
+                        summary=_("Extracts the not yet extracted embedded subtitles of all episodes for the current "
+                                  "series with all configured default modifications")
+                    ))
+                    oc.add(DirectoryObject(
+                        key=Callback(SeasonExtractEmbedded, rating_key=rating_key, language=lang,
+                                     base_title=title, display_items=display_items, item_title=item_title,
+                                     title=title, force=True, mode="series",
+                                     previous_item_type=previous_item_type, with_mods=True,
+                                     previous_rating_key=previous_rating_key, randomize=timestamp()),
+                        title=_(u"Extract and activate %(language)s embedded subtitles", language=display_language(lang)),
+                        summary=_("Extracts embedded subtitles of all episodes for the current series "
+                                  "with all configured default modifications")
+                    ))
 
         # add refresh
         oc.add(DirectoryObject(
@@ -160,9 +183,10 @@ def SeasonExtractEmbedded(**kwargs):
     item_title = kwargs.pop("item_title")
     title = kwargs.pop("title")
     force = kwargs.pop("force", False)
+    mode = kwargs.pop("mode", "season")
 
     Thread.Create(season_extract_embedded, **{"rating_key": rating_key, "requested_language": requested_language,
-                                              "with_mods": with_mods, "force": force})
+                                              "with_mods": with_mods, "force": force, "mode": mode})
 
     kwargs["header"] = _("Success")
     kwargs["message"] = _(u"Extracting of embedded subtitles for %s triggered", title)
