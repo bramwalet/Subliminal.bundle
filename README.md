@@ -93,24 +93,17 @@ the.vbm, mmgoodnow, Vertig0ne, thliu78, tattoomees, ostman, count_confucius, ehe
 
 ## Changelog
 
-2.6.5.3254
-
+2.6.5.3268
 subscene, addic7ed
 - either of those providers might impose a reCAPTCHA verification. In order to use those providers, please create an account at an AntiCaptcha service ([anti-captcha.com](http://getcaptchasolution.com/kkvviom7nh) or [deathbycaptcha.com](http://deathbycaptcha.com)), add funds, then supply your credentials/apikey in the configuration
 
 Changelog
-core: properly handle ReadTimeout
-core: fix existing subtitle detection for custom subtitle folders (fix #761)
-core: add option to not download subtitles for certain audio languages existing; and/or no audio stream (fix #756)
-
-2.6.5.3247
-
-subscene, addic7ed
-- either of those providers might impose a reCAPTCHA verification. In order to use those providers, please create an account at an AntiCaptcha service ([anti-captcha.com](http://getcaptchasolution.com/kkvviom7nh) or [deathbycaptcha.com](http://deathbycaptcha.com)), add funds, then supply your credentials/apikey in the configuration
-
-Changelog
-core: fix for tv.plex.agents.movie not populating its media types
-core: tasks: findBetterSubtitles: increase minimum score for better subtitles for movies with extracted embedded subs from 82 to 112
+- clarify README
+- core: fix custom folder handling; #761
+- core: providers: screwzira: move to ktuvit and wizdom
+- core: add option to not download subtitles for certain audio languages existing; and/or no audio stream; fix #756
+- core: delay item refreshes after refresh call (default: 5 seconds; exposed in advanced settings)
+- menu: allow extraction of embedded subtitles for whole tv shows
 
 [older changes](CHANGELOG.md)
 

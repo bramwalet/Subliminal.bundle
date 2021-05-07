@@ -1,3 +1,56 @@
+2.6.5.3268
+subscene, addic7ed
+- either of those providers might impose a reCAPTCHA verification. In order to use those providers, please create an account at an AntiCaptcha service ([anti-captcha.com](http://getcaptchasolution.com/kkvviom7nh) or [deathbycaptcha.com](http://deathbycaptcha.com)), add funds, then supply your credentials/apikey in the configuration
+
+Changelog
+- clarify README
+- core: fix custom folder handling; #761
+- core: providers: screwzira: move to ktuvit and wizdom
+- core: add option to not download subtitles for certain audio languages existing; and/or no audio stream; fix #756
+- core: delay item refreshes after refresh call (default: 5 seconds; exposed in advanced settings)
+- menu: allow extraction of embedded subtitles for whole tv shows
+
+
+2.6.5.3247
+
+subscene, addic7ed
+
+either of those providers might impose a reCAPTCHA verification. In order to use those providers, please create an account at an AntiCaptcha service (anti-captcha.com or deathbycaptcha.com), add funds, then supply your credentials/apikey in the configuration
+Changelog
+core: fix for tv.plex.agents.movie not populating its media types
+core: tasks: findBetterSubtitles: increase minimum score for better subtitles for movies with extracted embedded subs from 82 to 112
+
+
+2.6.5.3241
+
+subscene, addic7ed
+
+either of those providers might impose a reCAPTCHA verification. In order to use those providers, please create an account at an AntiCaptcha service (anti-captcha.com or deathbycaptcha.com), add funds, then supply your credentials/apikey in the configuration
+Changelog
+
+core: add support for new Plex Movie agent
+core: remove py3 compat breaking unnecessary change
+core: skip drawing tags for SRT
+core: advanced_settings: refiners: drone: add custom pem_file support; fixes #735
+providers: core: set DownloadLimitPerDayExceeded timeout to 4 hours (was one day);
+providers: addic7ed: limit downloads per day; add vip setting
+providers: addic7ed: properly compare last_dl, add last_reset tracking info to log #723
+providers: addic7ed: properly implement limits
+submod: HI: remove more music tags
+submod: common CM_punctuation_space2: detect AND don't try changing domain/url/host when fixing punctuation
+
+
+2.6.5.3223
+
+subscene, addic7ed
+
+either of those providers might impose a reCAPTCHA verification. In order to use those providers, please create an account at an AntiCaptcha service (anti-captcha.com or deathbycaptcha.com), add funds, then supply your credentials/apikey in the configuration
+Changelog
+
+core: scoring: reorder subtitles based on second non-hash-score if main hash score is the same; morpheus65535/bazarr#821
+providers: bsplayer: verify hash; clean up
+
+
 2.6.5.3217
 
 subscene, addic7ed
@@ -16,6 +69,7 @@ Changelog
 - providers: add ScrewZira (Hebrew)
 
 2.6.5.3183
+
 
 subscene, addic7ed
 - either of those providers might impose a reCAPTCHA verification. In order to use those providers, please create an account at an AntiCaptcha service ([anti-captcha.com](http://getcaptchasolution.com/kkvviom7nh) or [deathbycaptcha.com](http://deathbycaptcha.com)), add funds, then supply your credentials/apikey in the configuration
