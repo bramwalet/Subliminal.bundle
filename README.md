@@ -1,7 +1,7 @@
 # Sub-Zero for Plex
 [![](https://img.shields.io/github/release/pannal/Sub-Zero.bundle.svg?style=flat&label=stable)](https://github.com/pannal/Sub-Zero.bundle/releases/latest) 
 [![master](https://img.shields.io/badge/master-stable-green.svg?maxAge=2592000)]()
-[![Maintenance](https://img.shields.io/maintenance/yes/2020.svg)]()
+[![Maintenance](https://img.shields.io/maintenance/yes/2021.svg)]()
 [![Slack Status](https://szslack.fragstore.net/badge.svg)](https://szslack.fragstore.net)
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fpannal%2FSub-Zero.bundle.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fpannal%2FSub-Zero.bundle?ref=badge_shield)
 
