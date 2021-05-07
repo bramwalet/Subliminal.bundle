@@ -833,7 +833,8 @@ class Config(object):
                      'subscenter': False,
                      'assrt': cast_bool(Prefs['provider.assrt.enabled']),
                      'bsplayer': cast_bool(Prefs['provider.bsplayer.enabled']),
-                     'screwzira': cast_bool(Prefs['provider.screwzira.enabled']),
+                     'ktuvit': cast_bool(Prefs['provider.ktuvit.enabled']),
+                     'wizdom': cast_bool(Prefs['provider.wizdom.enabled']),
                 }
 
     @property
@@ -864,7 +865,8 @@ class Config(object):
             providers["subscene"] = False
             providers["napisy24"] = False
             providers["bsplayer"] = False
-            providers["screwzira"] = False
+            providers["ktuvit"] = False
+            providers["wizdom"] = False
             providers_forced_off = dict(providers)
 
         if not self.unrar and providers["legendastv"]:
@@ -942,7 +944,11 @@ class Config(object):
                              'legendastv': {'username': Prefs['provider.legendastv.username'],
                                             'password': Prefs['provider.legendastv.password'],
                                             },
-                             'assrt': {'token': Prefs['provider.assrt.token'], }
+                             'assrt': {'token': Prefs['provider.assrt.token'], },
+                             'ktuvit': {
+                                 'username': Prefs['provider.ktuvit.username'],
+                                 'password': Prefs['provider.ktuvit.password'],
+                             },
                              }
 
         return provider_settings

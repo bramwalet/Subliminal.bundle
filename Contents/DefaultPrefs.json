@@ -528,10 +528,30 @@
     "default": "true"
   },
   {
-    "id": "provider.screwzira.enabled",
-    "label": "Provider: Enable ScrewZira (Hebrew)",
+    "id": "provider.wizdom.enabled",
+    "label": "Provider: Enable WizdomSubs (Hebrew)",
     "type": "bool",
-    "default": "false"
+    "default": "true"
+  },
+ {
+    "id": "provider.ktuvit.enabled",
+    "label": "Provider: Enable Ktuvit (Hebrew)",
+    "type": "bool",
+    "default": "true"
+  },
+  {
+    "id": "provider.ktuvit.username",
+    "label": "Ktuvit Username",
+    "type": "text",
+    "default": ""
+  },
+  {
+    "id": "provider.ktuvit.password",
+    "label": "Ktuvit Password",
+    "type": "text",
+    "option": "hidden",
+    "secure": "true",
+    "default": ""
   },
   {
     "id": "providers.multithreading",
