@@ -33,6 +33,9 @@ Don't expect support if you mess this up.
 
     "debug_i18n": false,
 
+    // refresh item after plugin refresh has been called (default: 5)
+    "refresh_after_called": 5,
+
     // per-provider-config
     "providers": {
         // enabled_for: specifies which media type to enable the provider for. does not override global/throttled

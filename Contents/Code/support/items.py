@@ -349,6 +349,7 @@ def refresh_item(rating_key, force=False, timeout=8000, refresh_kind=None, paren
         refresh = [item.rating_key for item in list(Plex["library/metadata"].children(int(rating_key)))]
 
     multiple = len(refresh) > 1
+    Thread.Sleep(config.advanced.get("refresh_after_called", 5))
     for key in refresh:
         Log.Info("%s item %s", "Refreshing" if not force else "Forced-refreshing", key)
         Plex["library/metadata"].refresh(key)
