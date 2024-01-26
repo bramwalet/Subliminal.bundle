@@ -97,6 +97,19 @@ the.vbm, mmgoodnow, Vertig0ne, thliu78, tattoomees, ostman, count_confucius, ehe
 
 ## Changelog
 
+2.6.5.3280
+
+temporarily enable OpenSubtitles.com instead of OpenSubtitles.org.
+You need to have an account there and an API consumer configured. Enter your API key in settings.
+
+This is barely tested but should work for basic usage.
+
+THIS PLUGIN IS DEPRECATED, PLEASE USE BAZARR!
+
+Changelog
+- cheaply backport opensubtitlescom from bazarr
+
+
 2.6.5.3277
 - core: fix enabled library/agents detection (Plex removed certain features)
   fix Plex agent integration; Plex Inc removed certain attributes; SZ is now limited to thetvdb, thetvdbdvdorder, hama, themoviedb, imdb)
