@@ -86,6 +86,10 @@ PROVIDER_THROTTLE_MAP = {
         DownloadLimitExceeded: (datetime.timedelta(hours=6), "6 hours"),
         APIThrottled: (datetime.timedelta(seconds=15), "15 seconds"),
     },
+    "opensubtitlescom": {
+        TooManyRequests: (datetime.timedelta(minutes=1), "1 minute"),
+        DownloadLimitExceeded: (datetime.timedelta(hours=24), "24 hours"),
+    },
     "addic7ed": {
         DownloadLimitExceeded: (datetime.timedelta(hours=3), "3 hours"),
         TooManyRequests: (datetime.timedelta(minutes=5), "5 minutes"),
@@ -827,7 +831,7 @@ class Config(object):
 
     @property
     def providers_by_prefs(self):
-        return {'opensubtitles': cast_bool(Prefs['provider.opensubtitles.enabled']),
+        return {'opensubtitlescom': cast_bool(Prefs['provider.opensubtitles.enabled']),
                      # 'thesubdb': Prefs['provider.thesubdb.enabled'],
                      'podnapisi': cast_bool(Prefs['provider.podnapisi.enabled']),
                      'napisy24': cast_bool(Prefs['provider.napisy24.enabled']),
@@ -925,15 +929,18 @@ class Config(object):
                                           'password': Prefs['provider.addic7ed.password'],
                                           'is_vip': cast_bool(Prefs['provider.addic7ed.is_vip']),
                                           },
-                             'opensubtitles': {'username': Prefs['provider.opensubtitles.username'],
+                             'opensubtitlescom': {'username': Prefs['provider.opensubtitles.username'],
                                                'password': Prefs['provider.opensubtitles.password'],
-                                               'use_tag_search': self.exact_filenames,
-                                               'only_foreign': self.forced_only,
-                                               'also_foreign': self.forced_also,
-                                               'is_vip': cast_bool(Prefs['provider.opensubtitles.is_vip']),
-                                               'use_ssl': os_use_https,
-                                               'timeout': self.advanced.providers.opensubtitles.timeout or 15,
-                                               'skip_wrong_fps': os_skip_wrong_fps,
+                                               #'use_tag_search': self.exact_filenames,
+                                               #'only_foreign': self.forced_only,
+                                               #'also_foreign': self.forced_also,
+                                               #'is_vip': cast_bool(Prefs['provider.opensubtitles.is_vip']),
+                                               #'use_ssl': os_use_https,
+                                               #'timeout': self.advanced.providers.opensubtitles.timeout or 15,
+                                               #'skip_wrong_fps': os_skip_wrong_fps,
+                                               'use_hash': cast_bool(Prefs['provider.opensubtitles.use_hash']),
+                                               'include_ai_translated': True,
+                                               'api_key': Prefs['provider.opensubtitles.api_key'],
                                                },
                              'podnapisi': {
                                  'only_foreign': self.forced_only,

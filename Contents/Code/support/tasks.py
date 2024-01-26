@@ -128,8 +128,8 @@ class SubtitleListingMixin(object):
         config.init_subliminal_patches()
 
         provider_settings = config.provider_settings
-        if not skip_wrong_fps:
-            provider_settings["opensubtitles"]["skip_wrong_fps"] = False
+        #if not skip_wrong_fps:
+        #    provider_settings["opensubtitlescom"]["skip_wrong_fps"] = False
 
         if item_type == "episode":
             min_score = 240
