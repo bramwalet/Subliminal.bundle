@@ -1,3 +1,16 @@
+2.6.5.3280
+
+temporarily enable OpenSubtitles.com instead of OpenSubtitles.org.
+You need to have an account there and an API consumer configured. Enter your API key in settings.
+
+This is barely tested but should work for basic usage.
+
+THIS PLUGIN IS DEPRECATED, PLEASE USE BAZARR!
+
+Changelog
+- cheaply backport opensubtitlescom from bazarr
+
+
 2.6.5.3268
 subscene, addic7ed
 - either of those providers might impose a reCAPTCHA verification. In order to use those providers, please create an account at an AntiCaptcha service ([anti-captcha.com](http://getcaptchasolution.com/kkvviom7nh) or [deathbycaptcha.com](http://deathbycaptcha.com)), add funds, then supply your credentials/apikey in the configuration
