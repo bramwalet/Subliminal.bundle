@@ -12,6 +12,7 @@ Check out **[the Sub-Zero Wiki](https://github.com/pannal/Sub-Zero.bundle/wiki)*
 
 <br />
 
+**DEPRECATED, USE BAZARR**
 ## Legacy maintenance mode
 This addon will not be developed any further. It still works and arguably is still the best for managing subtitles when using Plex. As long as Plex Inc. supports agents, Sub-Zero will be maintained to work with the latest PMS version.
 
